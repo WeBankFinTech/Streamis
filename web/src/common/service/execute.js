@@ -20,7 +20,7 @@ import router from '@/router';
 import storage from '@/common/helper/storage';
 import Vue from 'vue';
 import axios from 'axios';
-import { Message } from 'iview';
+import { Message } from 'view-design';
 import i18n from '@/i18n'
 
 /**
