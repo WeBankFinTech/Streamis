@@ -21,7 +21,7 @@
 import util from '@/common/util';
 import axios from 'axios';
 import router from '@/router';
-import { Message } from 'iview';
+import { Message } from 'view-design';
 import cache from './apiCache';
 
 // 什么一个数组用于存储每个请求的取消函数和标识

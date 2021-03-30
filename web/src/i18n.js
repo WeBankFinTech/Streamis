@@ -18,8 +18,8 @@
 import Vue from 'vue';
 import VueI18n from 'vue-i18n'
 import { merge } from 'lodash'
-import en from 'iview/dist/locale/en-US'
-import zh from 'iview/dist/locale/zh-CN'
+import en from 'view-design/dist/locale/en-US'
+import zh from 'view-design/dist/locale/zh-CN'
 
 import dssI18n from './common/i18n'
 import scriptisI18n from './apps/scriptis/i18n'

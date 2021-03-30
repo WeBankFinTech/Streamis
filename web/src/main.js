@@ -16,7 +16,7 @@
  */
 
 import Vue from 'vue'
-import iView from 'iview'
+import iView from 'view-design'
 import VueRouter from 'vue-router'
 import component from './components'
 import App from './dss/view/app.vue'
@@ -24,7 +24,7 @@ import router from './router'
 import i18n from './i18n'
 
 import API_PATH from './common/config/apiPath.js'
-import 'iview/dist/styles/iview.css'
+import 'view-design/dist/styles/iview.css'
 
 // Icon
 import './components/svgIcon/index.js'
