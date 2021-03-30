@@ -10,3 +10,4 @@
 * [需求文档](Requirements_documentation/README.md)
     * [StreamDataSource 需求文档]()
     * [StreamJobManager 需求文档]()
+* [UI交互稿](UI_draft/Streamis交互稿V4.zip)
