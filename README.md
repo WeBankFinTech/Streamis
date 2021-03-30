@@ -4,7 +4,7 @@
 
 ## 引言
 
- &nbsp; &nbsp; &nbsp; &nbsp;Streamis 是微众银行联合萨摩耶金服和仙翁科技联合共建的一站式流式应用开发管理系统。
+ &nbsp; &nbsp; &nbsp; &nbsp;Streamis 是微众银行联合**萨摩耶金服**、**仙翁科技**和**中国电信天翼云**联合共建的一站式流式应用开发管理系统。
 
  &nbsp; &nbsp; &nbsp; &nbsp;基于DataSphere Studio的Orchestrator编排模式、工作流微模块和框架化能力，以及底层对接Linkis的Flink引擎，以工作流式的图形化拖拽开发体验，将实时流式应用以Source节点、
 Dimension节点、Transform节点、Sink节点和Visualis节点串连成一条实时工作流，让用户几乎0学习成本完成流式应用的开发、调试、发布和生产管理。
