@@ -1,0 +1,28 @@
+{
+  "message": {
+    "streamis": {
+      "routerName": {
+        "realTimeJobCenter": "Real-time job center",
+        "scriptisRealTimeJob": "Scriptis real-time job",
+        "VisualisRealTimeJob": "Visualis real-time job"
+      },
+      "moduleName": {
+        "coreIndex": "Core index",
+        "jobList": "Job list",
+        "jobSummary": "Job summary",
+        "jobHistory": "Job history",
+        "jobConfigure": "Job configure",
+        "jobDetail": "Job detail"
+      },
+
+      "jobStatus": {
+        "failture": "Failture",
+        "running": "Runnning",
+        "slowTask": "Slow task",
+        "alert": "Alert",
+        "waitRestart": "Wait restart",
+        "success": "Success"
+      }
+    }
+  }
+}

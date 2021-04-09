@@ -1,0 +1,28 @@
+{
+    "message": {
+      "streamis": {
+        "routerName": {
+          "realTimeJobCenter": "实时应用中心",
+          "scriptisRealTimeJob": "Scriptis实时任务",
+          "VisualisRealTimeJob": "Visualis实时任务"
+        },
+        "moduleName": {
+          "coreIndex": "核心指标",
+          "jobList": "任务列表",
+          "jobSummary": "运行情况",
+          "jobHistory": "执行历史",
+          "jobConfigure": "配置",
+          "jobDetail": "任务详情"
+        },
+  
+        "jobStatus": {
+          "failture": "失败任务",
+          "running": "运行中",
+          "slowTask": "慢任务",
+          "alert": "告警",
+          "waitRestart": "等待重启",
+          "success": "已完成"
+        }
+      }
+    }
+  }

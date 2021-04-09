@@ -19,9 +19,10 @@ import VueRouter from "vue-router";
 import dssRoute from './dss/router';
 import scriptisRoute from './apps/scriptis/router'
 import workflowsRoute from './apps/workflows/router'
+import streamisRoute from './apps/streamis/router'
 
 const router = new VueRouter({
-  routes: [...workflowsRoute, ...scriptisRoute, ...dssRoute]
+  routes: [...workflowsRoute, ...scriptisRoute, ...dssRoute, ...streamisRoute]
 });
 
 // router.beforeEach((to, from, next) => {
