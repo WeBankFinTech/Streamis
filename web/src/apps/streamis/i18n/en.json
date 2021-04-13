@@ -21,7 +21,36 @@
         "slowTask": "Slow task",
         "alert": "Alert",
         "waitRestart": "Wait restart",
-        "success": "Success"
+        "success": "Success",
+        "uploaded" : "Uploaded",
+        "all": "All",
+        "stoped": "Stoped"
+      },
+      "formItems": {
+        "queryBtn": "Query",
+        "jobStatus": "Job status",
+        "submitter": "Submitter",
+        "jobName": "Job name",
+        "stopBtn": "Stop",
+        "startBtn": "Start",
+        "configBtn": "Config"
+      },
+      "jobListTableColumns":{
+        "jobName": "Job name",
+        "taskStatus": "Task status",
+        "lastReleaseTime": "Last release time",
+        "label": "Label",
+        "version": "Version",
+        "lastRelease": "Last release",
+        "description": "Description",
+        "operation": "Operation"
+        
+      },
+      "jobMoudleRouter": {
+        "paramsConfiguration": "Params configuration",
+        "alertConfiguration": "Alert configuration",
+        "runningHistory": "Running history",
+        "runningLogs": "Running logs"
       }
     }
   }
