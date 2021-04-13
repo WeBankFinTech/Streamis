@@ -19,7 +19,7 @@ export default {
     };
   },
   mounted() {
-    this.init();
+    // this.init();
   },
   methods: {
     resize(height) {

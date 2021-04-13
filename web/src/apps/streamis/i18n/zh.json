@@ -1,28 +1,56 @@
 {
-    "message": {
-      "streamis": {
-        "routerName": {
-          "realTimeJobCenter": "实时应用中心",
-          "scriptisRealTimeJob": "Scriptis实时任务",
-          "VisualisRealTimeJob": "Visualis实时任务"
-        },
-        "moduleName": {
-          "coreIndex": "核心指标",
-          "jobList": "任务列表",
-          "jobSummary": "运行情况",
-          "jobHistory": "执行历史",
-          "jobConfigure": "配置",
-          "jobDetail": "任务详情"
-        },
-  
-        "jobStatus": {
-          "failture": "失败任务",
-          "running": "运行中",
-          "slowTask": "慢任务",
-          "alert": "告警",
-          "waitRestart": "等待重启",
-          "success": "已完成"
-        }
+  "message": {
+    "streamis": {
+      "routerName": {
+        "realTimeJobCenter": "实时应用中心",
+        "scriptisRealTimeJob": "Scriptis实时任务",
+        "VisualisRealTimeJob": "Visualis实时任务"
+      },
+      "moduleName": {
+        "coreIndex": "核心指标",
+        "jobList": "任务列表",
+        "jobSummary": "运行情况",
+        "jobHistory": "执行历史",
+        "jobConfigure": "配置",
+        "jobDetail": "任务详情"
+      },
+      "jobStatus": {
+        "failture": "失败任务",
+        "running": "运行中",
+        "slowTask": "慢任务",
+        "alert": "告警",
+        "waitRestart": "等待重启",
+        "success": "已完成",
+        "uploaded" : "已上传",
+        "all": "全部",
+        "stoped": "已停止"
+      },
+      "formItems": {
+        "queryBtn": "查询",
+        "jobStatus": "作业状态",
+        "submitter": "提交人",
+        "jobName": "作业名称",
+        "stopBtn": "停止",
+        "startBtn": "启动",
+        "configBtn": "配置"
+      },
+      "jobListTableColumns":{
+        "jobName": "作业名称",
+        "taskStatus": "运行状态",
+        "lastReleaseTime": "最近发布时间",
+        "label": "标签",
+        "version": "版本",
+        "lastRelease": "最近发布人",
+        "description": "描述",
+        "operation": "操作"
+        
+      },
+      "jobMoudleRouter": {
+        "paramsConfiguration": "参数配置",
+        "alertConfiguration": "告警配置",
+        "runningHistory": "运行历史",
+        "runningLogs": "运行日志"
       }
     }
   }
+}
