@@ -42,7 +42,8 @@
         "version": "版本",
         "lastRelease": "最近发布人",
         "description": "描述",
-        "operation": "操作"
+        "operation": "操作",
+        "upload": "导入"
         
       },
       "jobMoudleRouter": {
@@ -50,6 +51,21 @@
         "alertConfiguration": "告警配置",
         "runningHistory": "运行历史",
         "runningLogs": "运行日志"
+      },
+      "jobHistoryColumns": {
+        "taskId": "运行ID",
+        "jobName": "名称",
+        "creator": "责任人",
+        "version": "版本",
+        "status": "状态",
+        "startTime": "开始时间",
+        "endTime": "结束时间",
+        "runTime": "运行时间",
+        "stopCause": "结束原因",
+        "operation": "操作",
+        "showVersionInfo":"查看版本信息",
+        "detail":"详情",
+        "logs":"历史版本"
       }
     }
   }

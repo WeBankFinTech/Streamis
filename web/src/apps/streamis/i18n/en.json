@@ -43,7 +43,8 @@
         "version": "Version",
         "lastRelease": "Last release",
         "description": "Description",
-        "operation": "Operation"
+        "operation": "Operation",
+        "upload": "Upload"
         
       },
       "jobMoudleRouter": {
@@ -51,6 +52,21 @@
         "alertConfiguration": "Alert configuration",
         "runningHistory": "Running history",
         "runningLogs": "Running logs"
+      },
+      "jobHistoryColumns": {
+        "taskId": "Running id",
+        "jobName": "job name",
+        "creator": "Creator",
+        "version": "Version",
+        "status": "Status",
+        "startTime": "Start time",
+        "endTime": "End time",
+        "runTime": "Run time",
+        "stopCause": "Stop Cause",
+        "operation": "Operation",
+        "showVersionInfo":"Show version info",
+        "detail":"Detail",
+        "logs":"History logs"
       }
     }
   }
