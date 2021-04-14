@@ -16,7 +16,7 @@
       },
 
       "jobStatus": {
-        "failture": "Failture",
+        "failure": "Failure",
         "running": "Runnning",
         "slowTask": "Slow task",
         "alert": "Alert",
@@ -52,6 +52,21 @@
         "alertConfiguration": "Alert configuration",
         "runningHistory": "Running history",
         "runningLogs": "Running logs"
+      },
+      "jobSummary": {
+        "resourceUse": "Resource use",
+        "realTimeTraffic": "Real-time Traffic",
+        "dataNumber": "Data number",
+        "loadCondition": "Load condition",
+        "unit": "",
+        "loadColumns": {
+          "type": "Type",
+          "host": "Host",
+          "memoryUse": "memory Use",
+          "gcTotalTime": "GC total time",
+          "gcLastConsume": "GC last consume",
+          "gcLastTime": "GC last time"
+        }
       },
       "jobHistoryColumns": {
         "taskId": "Running id",

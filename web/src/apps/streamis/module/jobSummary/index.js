@@ -16,7 +16,7 @@
  */
 
 export default {
-  name: 'coreIndex',
+  name: 'jobSummary',
   dispatchs: {
   },
   component: () => import('./index.vue'),

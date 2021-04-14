@@ -122,12 +122,14 @@ module.exports = {
     }
   },
   devServer: {
+    host: 'localhost',
+    port: 8080,
     proxy: {
       '/api': {
-        target: 'http://121.36.31.90/mock/15',
+        target: 'http://121.36.31.90',
         changeOrigin: true,
         pathRewrite: {
-          '^/api': '/api'
+          '^/api': '/mock/15/api'
         }
       }
     }

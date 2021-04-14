@@ -1,75 +1,140 @@
 <template>
   <div>
-    <titleCard :title="$t('message.streamis.moduleName.coreIndex')">
-      <div class="cardWrap">
-        <Card
-          v-for="(item, index) in indexItems"
-          :key="index"
-          style="margin-left: 50px;"
-        >
-          <div class="cardInner">
-            <Icon :type="item.icon" size="26" :color="item.color" />
-            <p :style="{ color: item.color, 'font-size': '18px' }">
-              {{ item.num }}
-            </p>
-            <p>{{ $t(`message.streamis.jobStatus.${item.name}`) }}</p>
+    <div class="itemWrap">
+      <p>{{ $t("message.streamis.jobSummary.dataNumber") }}:</p>
+      <div class="dataNumber">
+        <div class="dataWrap">
+          <div
+            v-for="(item, index) in dataNumber"
+            :key="index"
+            :style="{ 'margin-top': index > 0 ? '5px' : 0 }"
+          >
+            {{ item.dataName }}
           </div>
-        </Card>
+        </div>
+        <div class="dataWrap">
+          <div
+            v-for="(item, index) in dataNumber"
+            :key="index"
+            class="number"
+            :style="{ 'margin-top': index > 0 ? '5px' : 0 }"
+          >
+            {{ item.dataNumber }}
+          </div>
+        </div>
+        <div class="dataWrap">
+          <div
+            v-for="(item, index) in dataNumber"
+            :key="index"
+            :style="{ 'margin-top': index > 0 ? '5px' : 0 }"
+          >
+            {{ $t("message.streamis.jobSummary.unit") }}
+          </div>
+        </div>
       </div>
-    </titleCard>
+    </div>
+    <div class="itemWrap">
+      <p>{{ $t("message.streamis.jobSummary.loadCondition") }}:</p>
+      <Table :columns="loadColumns" :data="loadCondition" border>
+      </Table>
+    </div>
   </div>
 </template>
 <script>
 import api from "@/common/service/api";
-import titleCard from '@/apps/streamis/components/titleCard';
 export default {
-  components: { titleCard },
   data() {
     return {
-      indexItems: [
-        { name: "failture", num: 0, icon: "md-close-circle", color: "#990033" },
-        { name: "running", num: 0, icon: "md-pint", color: "#008000" },
-        { name: "slowTask", num: 0, icon: "md-help-circle", color: "#6666FF" },
-        { name: "alert", num: 0, icon: "md-warning", color: "#FF99CC" },
-        { name: "waitRestart", num: 0, icon: "md-alert", color: "#FF00CC" },
+      loadColumns: [
         {
-          name: "success",
-          num: 0,
-          icon: "md-checkmark-circle",
-          color: "#008000"
+          title: this.$t("message.streamis.jobSummary.loadColumns.type"),
+          key: "type"
+        },
+        {
+          title: this.$t("message.streamis.jobSummary.loadColumns.host"),
+          key: "host"
+        },
+        {
+          title: this.$t("message.streamis.jobSummary.loadColumns.memoryUse"),
+          key: "memoryUse",
+          slot: "memoryUse"
+        },
+        {
+          title: this.$t("message.streamis.jobSummary.loadColumns.gcTotalTime"),
+          key: "gcTotalTime"
+        },
+        {
+          title: this.$t(
+            "message.streamis.jobSummary.loadColumns.gcLastConsume"
+          ),
+          key: "gcLastConsume"
+        },
+        {
+          title: this.$t("message.streamis.jobSummary.loadColumns.gcLastTime"),
+          key: "gcLastTime"
         }
-      ]
+      ],
+      loadCondition: [],
+      dataNumber: []
     };
   },
   mounted() {
-    this.getIndexData();
+    this.getDatas();
   },
   methods: {
-    getIndexData() {
+    getDatas() {
       api
-        .fetch(
-          "api/rest_j/v1/streamis/streamJobManager/project/core/target",
-          "get"
-        )
+        .fetch("streamis/streamJobManager/job/details", "get")
         .then(res => {
           console.log(res);
-        }).catch(e => console.log(e));
+          if (res && res.details) {
+            this.loadCondition = res.details.loadCondition;
+            this.dataNumber = res.details.dataNumber;
+          }
+        })
+        .catch(e => console.log(e));
+    },
+    showVersionInfo(row) {
+      console.log(row);
+    },
+    showDetail(row) {
+      console.log(row);
+    },
+    showLogs(row) {
+      console.log(row);
     }
   }
 };
 </script>
 <style lang="scss" scoped>
-.cardWrap {
+.itemWrap {
+  display: flex;
+  margin-top: 30px;
+  & > p {
+    width: 120px;
+  }
+  & > div {
+    flex: 1;
+  }
+}
+.dataWrap div {
+  display: flex;
+  height: 30px;
+  justify-content: flex-start;
+  align-items: center;
+}
+.dataWrap:first-child {
+  margin-top: 0px;
+}
+.dataNumber {
   display: flex;
 }
-.cardInner {
-  display: flex;
-  width: 86px;
-  flex-direction: column;
-  justify-content: center;
-  align-content: center;
-  & p {
-    text-align: center;
-  }
+.number {
+  margin-left: 10px;
+  background: rgb(0, 128, 0);
+  padding-left: 5px;
+  padding-right: 5px;
+  margin-right: 5px;
+  color: #fff;
 }
 </style>
