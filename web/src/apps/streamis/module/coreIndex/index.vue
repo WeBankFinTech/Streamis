@@ -5,7 +5,7 @@
         <Card
           v-for="(item, index) in indexItems"
           :key="index"
-          style="margin-left: 50px;"
+          style="margin-left: 50px; margin-top: 10px;"
         >
           <div class="cardInner">
             <Icon :type="item.icon" size="26" :color="item.color" />
@@ -27,7 +27,7 @@ export default {
   data() {
     return {
       indexItems: [
-        { name: "failture", num: 0, icon: "md-close-circle", color: "#990033" },
+        { name: "failure", num: 0, icon: "md-close-circle", color: "#990033" },
         { name: "running", num: 0, icon: "md-pint", color: "#008000" },
         { name: "slowTask", num: 0, icon: "md-help-circle", color: "#6666FF" },
         { name: "alert", num: 0, icon: "md-warning", color: "#FF99CC" },
@@ -48,11 +48,18 @@ export default {
     getIndexData() {
       api
         .fetch(
-          "api/rest_j/v1/streamis/streamJobManager/project/core/target",
+          "streamis/streamJobManager/project/core/target",
           "get"
         )
         .then(res => {
           console.log(res);
+          const newDatas = [];
+          this.indexItems.forEach(item => {
+            const newItem = {...item};
+            newItem.num = res[`${newItem.name}Num`];
+            newDatas.push(newItem)
+          });
+          this.indexItems= newDatas;
         }).catch(e => console.log(e));
     }
   }
@@ -61,10 +68,11 @@ export default {
 <style lang="scss" scoped>
 .cardWrap {
   display: flex;
+  flex-wrap: wrap;
 }
 .cardInner {
   display: flex;
-  width: 86px;
+  min-width: 86px;
   flex-direction: column;
   justify-content: center;
   align-content: center;

@@ -157,18 +157,7 @@ export default {
       jobStatus: ["all", "running", "failture", "uploaded"],
       submitterOptions: ["all"],
 
-      tableDatas: [
-        {
-          taskId: "elit",
-          jobName: "ex elit",
-          taskStatus: -70675600.96517575,
-          lastReleaseTime: "tempor nostrud",
-          label: "reprehenderit",
-          version: "Ut aliqua elit ad",
-          lastRelease: "magna quis elit in ad",
-          description: "amet labore do"
-        }
-      ],
+      tableDatas: [{}],
       columns: [
         {
           title: this.$t("message.streamis.jobListTableColumns.jobName"),
@@ -263,7 +252,7 @@ export default {
         "runningLogs"
       ],
       pageData: {
-        total: 200,
+        total: 0,
         current: 1,
         pageSize: 20
       }
@@ -274,27 +263,16 @@ export default {
   },
   methods: {
     getJobList() {
-      const datas = new Array(10).fill(
-        {
-          taskId: "ipsum laboris ut proiden",
-          jobName: "in",
-          taskStatus: -31359204.375604272,
-          lastReleaseTime: "ea",
-          label: "non",
-          version: "et occaecat velit",
-          lastRelease: "dolor co",
-          description: "exercitation nulla et"
-        },
-        0,
-        30
-      );
-      datas.unshift({});
-      this.tableDatas = datas;
-
       api
-        .fetch("api/rest_j/v1/streamis/streamJobManager/job/list", "get")
+        .fetch("streamis/streamJobManager/job/list", "get")
         .then(res => {
           console.log(res);
+          if (res) {
+            const datas = res.tasks || [];
+            datas.unshift({});
+            this.tableDatas = datas;
+            this.pageData.total = parseInt(res.totalPage);
+          }
         })
         .catch(e => console.log(e));
     },
@@ -319,7 +297,7 @@ export default {
       this.$router.push({
         name: "JobDetail",
         params: {
-          id: rowData.taskId.replace(/\s/g, ""),
+          id: rowData.jobId,
           module: moduleName
             ? moduleMap[moduleName] || moduleName
             : "jobSummary",

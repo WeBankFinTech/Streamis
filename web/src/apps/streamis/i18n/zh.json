@@ -15,7 +15,7 @@
         "jobDetail": "任务详情"
       },
       "jobStatus": {
-        "failture": "失败任务",
+        "failure": "失败任务",
         "running": "运行中",
         "slowTask": "慢任务",
         "alert": "告警",
@@ -51,6 +51,21 @@
         "alertConfiguration": "告警配置",
         "runningHistory": "运行历史",
         "runningLogs": "运行日志"
+      },
+      "jobSummary": {
+        "resourceUse": "资源使用",
+        "realTimeTraffic": "实时流量",
+        "dataNumber": "数据总量",
+        "loadCondition": "负载情况",
+        "unit": "条",
+        "loadColumns": {
+            "type": "类型",
+            "host": "Host",
+            "memoryUse": "内存使用",
+            "gcTotalTime": "GC总时间",
+            "gcLastConsume": "上次GC耗时",
+            "gcLastTime": "上次GC时间"
+          }
       },
       "jobHistoryColumns": {
         "taskId": "运行ID",

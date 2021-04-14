@@ -69,30 +69,7 @@ export default {
           slot: "operation"
         }
       ],
-      tableDatas: [
-        {
-          taskId: "elit commodo irure",
-          jobName: "amet ut sint ea dolor",
-          creator: "adipisicing amet",
-          version: "Duis esse dolor",
-          status: "Ut est mollit et ullamco",
-          startTime: "proident et sint elit Excepteur",
-          endTime: "quis incididunt officia",
-          runTime: "fugiat velit sunt nostrud magna",
-          stopCause: "deserunt pariatur minim"
-        },
-        {
-          taskId: "cupidatat ea",
-          jobName: "consectetur esse laborum",
-          creator: "amet dolore proident enim",
-          version: "aliquip est",
-          status: "adipisicing laborum ex quis ea",
-          startTime: "est",
-          endTime: "incididunt in est",
-          runTime: "Excepteur",
-          stopCause: "exercitation est occaecat n"
-        }
-      ]
+      tableDatas: []
     };
   },
   mounted() {
@@ -102,11 +79,14 @@ export default {
     getDatas() {
       api
         .fetch(
-          "api/rest_j/v1/streamis/streamJobManager/job/execute/history",
+          "streamis/streamJobManager/job/execute/history",
           "get"
         )
         .then(res => {
           console.log(res);
+          if(res && res.details){
+            this.tableDatas = res.details; 
+          }
         })
         .catch(e => console.log(e));
     },

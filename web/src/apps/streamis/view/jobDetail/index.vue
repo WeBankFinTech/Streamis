@@ -5,7 +5,7 @@
         name="jobSummary"
         :label="$t('message.streamis.moduleName.jobSummary')"
       >
-        <coreIndex/>
+        <jobSummary/>
       </TabPane>
       <TabPane
         name="jobHistory"
@@ -29,11 +29,11 @@
   </div>
 </template>
 <script>
-import jobList from "@/apps/streamis/module/jobList";
+import jobSummary from "@/apps/streamis/module/jobSummary";
 import jobHistory from "@/apps/streamis/module/jobHistory";
 export default {
   components: {
-    jobList: jobList.component,
+    jobSummary: jobSummary.component,
     jobHistory: jobHistory.component
   },
   data() {
