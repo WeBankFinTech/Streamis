@@ -36,6 +36,21 @@
     <div class="itemWrap">
       <p>{{ $t("message.streamis.jobSummary.loadCondition") }}:</p>
       <Table :columns="loadColumns" :data="loadCondition" border>
+        <template slot-scope="{ row }" slot="memoryUse">
+          <div class="memory">
+            <div
+              :style="{
+                width: row.memoryPercent + '%',
+                background:
+                  row.memoryPercent > 50
+                    ? 'rgba(255, 204, 51, 1)'
+                    : 'rgba(0, 128, 0, 1)'
+              }"
+            >
+              {{ row.memoryUse }}
+            </div>
+          </div>
+        </template>
       </Table>
     </div>
   </div>
@@ -57,7 +72,8 @@ export default {
         {
           title: this.$t("message.streamis.jobSummary.loadColumns.memoryUse"),
           key: "memoryUse",
-          slot: "memoryUse"
+          slot: "memoryUse",
+          minWidth: 160
         },
         {
           title: this.$t("message.streamis.jobSummary.loadColumns.gcTotalTime"),
@@ -88,7 +104,16 @@ export default {
         .then(res => {
           console.log(res);
           if (res && res.details) {
-            this.loadCondition = res.details.loadCondition;
+            const conditions = res.details.loadCondition || [];
+            this.loadCondition = conditions.map((item, index) => {
+              // item.memoryUse = parseInt(item.memory) + " / " + parseInt(item.totalMemory) + " G";
+              // item.memoryPercent = Math.ceil(item.memory * 100 / item.totalMemory);
+              item.memoryUse = index + 1 + " / " + conditions.length + " G";
+              item.memoryPercent = Math.ceil(
+                ((index + 1) * 100) / conditions.length
+              );
+              return item;
+            });
             this.dataNumber = res.details.dataNumber;
           }
         })
@@ -136,5 +161,20 @@ export default {
   padding-right: 5px;
   margin-right: 5px;
   color: #fff;
+}
+.memory {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background: rgba(215, 215, 215, 1);
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+  & > div{
+    display: flex;
+    justify-content: flex-end;
+    color: #fff;
+    padding-right: 5px;
+  }
 }
 </style>
