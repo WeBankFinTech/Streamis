@@ -17,13 +17,13 @@
         name="jobConfigure"
         :label="$t('message.streamis.moduleName.jobConfigure')"
       >
-        <coreIndex/>
+        <jobConfigure/>
       </TabPane>
       <TabPane
         name="jobDetail"
         :label="$t('message.streamis.moduleName.jobDetail')"
       >
-        <jobList/>
+        <jobDetail/>
       </TabPane>
     </Tabs>
   </div>
@@ -31,10 +31,14 @@
 <script>
 import jobSummary from "@/apps/streamis/module/jobSummary";
 import jobHistory from "@/apps/streamis/module/jobHistory";
+import jobConfigure from "@/apps/streamis/module/jobConfigure";
+import jobDetail from "@/apps/streamis/module/jobDetail";
 export default {
   components: {
     jobSummary: jobSummary.component,
-    jobHistory: jobHistory.component
+    jobHistory: jobHistory.component,
+    jobDetail: jobDetail.component,
+    jobConfigure: jobConfigure.component,
   },
   data() {
     return {

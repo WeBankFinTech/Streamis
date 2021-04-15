@@ -82,6 +82,51 @@
         "showVersionInfo":"Show version info",
         "detail":"Detail",
         "logs":"History logs"
+      },
+      "jobDetail": {
+        "flinkJarPac": "Flink main Jar package",
+        "dependJarPac": "depend Jar package",
+        "userResource": "User resource",
+        "columns": {
+            "name": "Name",
+            "version": "Version",
+            "versionDescription": "Version description",
+            "versionUploadTime": "Version upload time",
+            "operation": "Operation"
+          }
+      },
+      "jobConfigure": {
+        "resourceConfigure": "Resource configure",
+        "productionConfigure": "Production configure",
+        "flinkParameters": "Flink parameters",
+        "alertSet": "Alert set",
+        "authoritySet": "Authority set",
+        "formItems": {
+            "taskManagersNum": "Task Managers Num",
+            "checkpointGap": "Checkpoint Gap",
+            "restartStrategy": "Restart Strategy",
+            "alertRule": "Alert Rule",
+            "alertLevel": "Alert Level",
+            "alertUser": "Alert User",
+            "alertLevelFailed": "Alert Level When Failed",
+            "alertUserFailed": "Alert User When Failed",
+            "authorityModel": "Authority Model",
+            "authorityPersons": "Visible Personnel",
+            "options":{
+                "notRestart": "Not Restart",
+                "autoRestartBasedCheckpoint": "Auto Restart Based On Checkpoint",
+                "notStarNoCheckpoint": "Not Star When No Checkpoint",
+                "privite": "Privite",
+                "specifiedPersonVisible": "Specified Person Visible",
+                "all": "All",
+                "logsError": "ERROR/EXCEPTION Occured in Task's Logs",
+                "coreException": "EXCEPTION Occured in Task's Core Index"
+            },
+            "placeholders":{
+                "flinkParameters": "Input flink parameters",
+                "variable": "Input variable value"
+            }
+          }
       }
     }
   }

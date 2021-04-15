@@ -81,6 +81,51 @@
         "showVersionInfo":"查看版本信息",
         "detail":"详情",
         "logs":"历史版本"
+      },
+      "jobDetail": {
+        "flinkJarPac": "Flink主Jar包",
+        "dependJarPac": "依赖Jar包",
+        "userResource": "用户资源",
+        "columns": {
+            "name": "名称",
+            "version": "版本",
+            "versionDescription": "版本描述",
+            "versionUploadTime": "版本上传时间",
+            "operation": "操作"
+          }
+      },
+      "jobConfigure": {
+        "resourceConfigure": "资源配置",
+        "productionConfigure": "生产配置",
+        "flinkParameters": "Flink参数",
+        "alertSet": "告警设置",
+        "authoritySet": "权限设置",
+        "formItems": {
+            "taskManagersNum": "Task Managers数量",
+            "checkpointGap": "Checkpoint间隔",
+            "restartStrategy": "重启策略",
+            "alertRule": "告警规则",
+            "alertLevel": "告警级别",
+            "alertUser": "告警用户",
+            "alertLevelFailed": "失败时告警规则",
+            "alertUserFailed": "失败时告警用户",
+            "authorityModel": "授权模式",
+            "authorityPersons": "可见人员",
+            "options":{
+                "notRestart": "不重启",
+                "autoRestartBasedCheckpoint": "基于Checkpoint自动重启",
+                "notStarNoCheckpoint": "无Checkpoint不重启",
+                "privite": "私密",
+                "specifiedPersonVisible": "指定人员可见",
+                "all": "全部可见",
+                "logsError": "任务日志中出现ERROR/EXCEPTION",
+                "coreException": "任务核心指标出现异常"
+            },
+            "placeholders":{
+                "flinkParameters": "输入Flink参数名",
+                "variable": "输入参数值"
+            }
+          }
       }
     }
   }
