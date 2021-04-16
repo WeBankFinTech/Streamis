@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.datasource.appconn.service;
 
+import com.webank.wedatasphere.dss.appconn.core.AppConn;
 import com.webank.wedatasphere.dss.standard.app.development.DevelopmentService;
 import com.webank.wedatasphere.dss.standard.app.development.query.RefQueryOperation;
 import com.webank.wedatasphere.dss.standard.app.development.query.RefQueryService;
@@ -20,10 +21,13 @@ public class StreamisDatasourceQueryService implements RefQueryService {
 
     private AppInstance appInstance;
 
+    private AppConn appConn;
 
 
-    public StreamisDatasourceQueryService(AppInstance appInstance){
-        this.appInstance = appInstance;
+
+
+    public StreamisDatasourceQueryService(AppConn appConn){
+        this.appConn = appConn;
     }
 
 

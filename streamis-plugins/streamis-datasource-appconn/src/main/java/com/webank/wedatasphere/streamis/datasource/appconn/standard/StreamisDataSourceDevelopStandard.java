@@ -1,10 +1,12 @@
 package com.webank.wedatasphere.streamis.datasource.appconn.standard;
 
+import com.google.common.collect.Lists;
 import com.webank.wedatasphere.dss.appconn.core.AppConn;
 import com.webank.wedatasphere.dss.standard.app.development.AbstractLabelDevelopmentIntegrationStandard;
 import com.webank.wedatasphere.dss.standard.app.development.RefOperationService;
 import com.webank.wedatasphere.dss.standard.common.desc.AppDesc;
 import com.webank.wedatasphere.dss.standard.common.exception.AppStandardErrorException;
+import com.webank.wedatasphere.streamis.datasource.appconn.service.StreamisDatasourceQueryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,8 +32,18 @@ public class StreamisDataSourceDevelopStandard extends AbstractLabelDevelopmentI
 
     private AppConn appConn;
 
+
+    private List<RefOperationService> refOperationServiceList;
+
+    private final Object LOCK = new Object();
+
     private StreamisDataSourceDevelopStandard(AppConn appConn){
         this.appConn = appConn;
+        try {
+            init();
+        } catch (AppStandardErrorException e) {
+            LOGGER.error("Failed to init in Streamis datasource development standard", e);
+        }
     }
 
 
@@ -51,32 +63,44 @@ public class StreamisDataSourceDevelopStandard extends AbstractLabelDevelopmentI
 
     @Override
     protected List<RefOperationService> getRefOperationService() {
-        return null;
+        if (null == refOperationServiceList){
+            synchronized (LOCK){
+                if (null == refOperationServiceList){
+                    refOperationServiceList = Lists.newArrayList(new StreamisDatasourceQueryService(appConn));
+                }
+            }
+        }
+        return refOperationServiceList;
     }
 
     @Override
     public AppDesc getAppDesc() {
-        return null;
+        if (appConn == null){
+            LOGGER.warn("appconn in streamis datasource dev standard is null");
+            return null;
+        }
+        return this.appConn.getAppDesc();
     }
 
     @Override
     public void setAppDesc(AppDesc appDesc) {
-
+        //do noting
     }
 
     @Override
     public void init() throws AppStandardErrorException {
-
+        LOGGER.info("begin to init in streamis dataource develop standard");
+        //do noting
     }
 
     @Override
     public void close() throws IOException {
-
+        LOGGER.info("streamis dataource develop standard closes");
     }
 
     @Override
     public String getStandardName() {
-        return null;
+        return "StreamisDatasourceDevelopStandard";
     }
 
     @Override
@@ -86,6 +110,6 @@ public class StreamisDataSourceDevelopStandard extends AbstractLabelDevelopmentI
 
     @Override
     public boolean isNecessary() {
-        return false;
+        return true;
     }
 }
