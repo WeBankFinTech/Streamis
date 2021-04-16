@@ -11,7 +11,6 @@ import com.webank.wedatasphere.linkis.httpclient.request.HttpAction;
 import com.webank.wedatasphere.linkis.httpclient.response.HttpResult;
 import com.webank.wedatasphere.linkis.server.BDPJettyServerHelper;
 import com.webank.wedatasphere.streamis.appconn.service.StreamisProjectService;
-import org.apache.http.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +49,8 @@ public class StreamisProjectCreationOperation implements ProjectCreationOperatio
     @Override
     public ProjectResponseRef createProject(ProjectRequestRef projectRequestRef) throws ExternalOperationFailedException {
         LOGGER.info("begin to create project in streamis, request is {}", BDPJettyServerHelper.gson().toJson(projectRequestRef));
-
+        //todo 工程创建
+        return null;
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.webank.wedatasphere.streamis.appconn.standard;
 
-import com.google.common.collect.Lists;
 import com.webank.wedatasphere.dss.appconn.core.AppConn;
 import com.webank.wedatasphere.dss.standard.app.development.AbstractLabelDevelopmentIntegrationStandard;
 import com.webank.wedatasphere.dss.standard.app.development.RefOperationService;
@@ -62,11 +61,11 @@ public class StreamisDevelopmentIntegrationStandard extends AbstractLabelDevelop
             synchronized (StreamisDevelopmentIntegrationStandard.class){
                 if(null == refOperationServiceList){
                     streamisCRUDService = new StreamisCRUDService(appConn);
-
                     refOperationServiceList = new ArrayList<>();
                 }
             }
         }
+        return this.refOperationServiceList;
     }
 
     @Override
