@@ -24,6 +24,7 @@ import zh from 'view-design/dist/locale/zh-CN'
 import dssI18n from './common/i18n'
 import scriptisI18n from './apps/scriptis/i18n'
 import workflowsI18n from './apps/workflows/i18n'
+import streamisI18n from './apps/streamis/i18n'
 
 Vue.use(VueI18n);
 // 先判断是否有设置语言，没有就用本地语言
@@ -43,7 +44,7 @@ Vue.locale = () => {};
 
 const messages = {en, 'zh-CN': zh};
 
-[dssI18n, scriptisI18n, workflowsI18n].forEach(item=>{
+[dssI18n, scriptisI18n, workflowsI18n, streamisI18n].forEach(item=>{
   merge(messages.en, item.en);
   merge(messages['zh-CN'], item['zh-CN']);
 })
