@@ -162,7 +162,7 @@ const success = function(response) {
     let code = res.codePath;
     let message = res.messagePath;
     let result = res.resultPath;
-    if (code != api.constructionOfResponse.successCode) {
+    if (code === api.constructionOfResponse.successCode) {
       if (api.error[code]) {
         api.error[code](response);
         throw new Error('');
