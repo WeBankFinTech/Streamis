@@ -20,6 +20,13 @@ public class StreamisProject {
     private String workspaceName;
     private Long dssProjectId;
 
+    public StreamisProject(String name, String description, String workspaceName){
+        this.name = name;
+        this.description = description;
+        this.workspaceName = workspaceName;
+    }
+
+
 
     public Long getId() {
         return id;

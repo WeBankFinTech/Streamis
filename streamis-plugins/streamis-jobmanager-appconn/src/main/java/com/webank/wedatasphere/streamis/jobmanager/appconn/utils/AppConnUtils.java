@@ -11,4 +11,6 @@ public class AppConnUtils {
 
     public static final Gson COMMON_GSON = new GsonBuilder().disableHtmlEscaping().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
 
+    public static final String STREAMIS_NAME = "Streamis";
+
 }

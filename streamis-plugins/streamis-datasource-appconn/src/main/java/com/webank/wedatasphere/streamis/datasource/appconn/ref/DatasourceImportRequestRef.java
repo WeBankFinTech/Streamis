@@ -21,6 +21,19 @@ public class DatasourceImportRequestRef implements ImportRequestRef {
 
     private static final String TYPE = "import";
 
+
+    /**
+     * bmlresource includes resourceId and version
+     */
+    private Map<String, Object> bmlResource;
+
+
+    public DatasourceImportRequestRef(Map<String, Object> bmlResource){
+        this.bmlResource = bmlResource;
+    }
+
+
+
     @Override
     public Object getParameter(String s) {
         return this.parameters.get(s);
@@ -56,4 +69,11 @@ public class DatasourceImportRequestRef implements ImportRequestRef {
         return this.workspace;
     }
 
+    public Map<String, Object> getBmlResource() {
+        return bmlResource;
+    }
+
+    public void setBmlResource(Map<String, Object> bmlResource) {
+        this.bmlResource = bmlResource;
+    }
 }

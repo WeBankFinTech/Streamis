@@ -24,7 +24,7 @@
     <modules>
         <module>streamis-datasource</module>
         <module>streamis-jobmanager</module>
-        <module>streamis-workflow-server</module>
+        <module>streamis-workflow</module>
         <module>streamis-plugins</module>
     </modules>
 

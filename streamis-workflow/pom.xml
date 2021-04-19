@@ -11,6 +11,10 @@
 
     <artifactId>streamis-workflow</artifactId>
     <packaging>pom</packaging>
+
+
+
+
     <modules>
         <module>streamis-workflow-server</module>
         <module>streamis-workflow-common</module>
