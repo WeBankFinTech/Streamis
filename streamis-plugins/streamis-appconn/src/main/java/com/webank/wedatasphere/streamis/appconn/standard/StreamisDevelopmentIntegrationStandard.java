@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.appconn.standard;
 
+import com.google.common.collect.Lists;
 import com.webank.wedatasphere.dss.appconn.core.AppConn;
 import com.webank.wedatasphere.dss.standard.app.development.AbstractLabelDevelopmentIntegrationStandard;
 import com.webank.wedatasphere.dss.standard.app.development.RefOperationService;
@@ -11,12 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * created by yangzhiyue on 2021/4/8
- * Description:
+ * Description: streamis的开发规范是
  */
 public class StreamisDevelopmentIntegrationStandard extends AbstractLabelDevelopmentIntegrationStandard {
 
@@ -26,6 +26,9 @@ public class StreamisDevelopmentIntegrationStandard extends AbstractLabelDevelop
     private AppConn appConn;
 
     private static StreamisDevelopmentIntegrationStandard instance;
+
+
+    private AppDesc appDesc;
 
 
     private StreamisCRUDService streamisCRUDService;
@@ -61,7 +64,8 @@ public class StreamisDevelopmentIntegrationStandard extends AbstractLabelDevelop
             synchronized (StreamisDevelopmentIntegrationStandard.class){
                 if(null == refOperationServiceList){
                     streamisCRUDService = new StreamisCRUDService(appConn);
-                    refOperationServiceList = new ArrayList<>();
+                    streamisQueryService = new StreamisQueryService(appConn);
+                    refOperationServiceList = Lists.newArrayList(streamisCRUDService, streamisQueryService);
                 }
             }
         }

@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.appconn.service;
 
+import com.webank.wedatasphere.dss.appconn.core.AppConn;
 import com.webank.wedatasphere.dss.standard.app.development.DevelopmentService;
 import com.webank.wedatasphere.dss.standard.app.development.query.RefQueryOperation;
 import com.webank.wedatasphere.dss.standard.app.development.query.RefQueryService;
@@ -16,6 +17,11 @@ public class StreamisQueryService implements RefQueryService {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamisQueryService.class);
 
 
+    private AppConn appConn;
+
+    public StreamisQueryService(AppConn appConn){
+        this.appConn = appConn;
+    }
 
 
     @Override
