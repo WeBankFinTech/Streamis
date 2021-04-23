@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * created by yangzhiyue on 2021/4/8
- * Description:
+ * Description: streamis crud service是通过http的方式进行的
  */
 public class StreamisCRUDService implements RefCRUDService {
 

@@ -1,4 +1,4 @@
-package com.webank.wedatasphere.streamis.workflow.server.entity;
+package com.webank.wedatasphere.streamis.project.server.entity;
 
 import java.util.Date;
 
