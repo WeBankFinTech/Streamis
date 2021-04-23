@@ -9,6 +9,10 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <properties>
+        <linkis.version>1.0.0-RC1</linkis.version>
+    </properties>
+
     <artifactId>streamis-datasource</artifactId>
     <packaging>pom</packaging>
     <modules>
@@ -16,6 +20,15 @@
         <module>streamis-datasource-transfer</module>
         <module>streamis-datasource-server</module>
     </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.webank.wedatasphere.linkis</groupId>
+            <artifactId>linkis-common</artifactId>
+            <version>${linkis.version}</version>
+        </dependency>
+
+    </dependencies>
 
 
 </project>
