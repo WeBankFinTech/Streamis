@@ -28,24 +28,75 @@ case class StreamFlowCreateRequest(flowName:String,
                                    workspaceName:String,
                                    parentFlowId:Long,
                                    uses:String,
+                                   linkedAppConnNames:java.util.List[String],
+                                   contextId:String,
                                    projectId:Long,
                                    projectName:String
                                    ) extends StreamisProtocol
 
 
 
-case class StreamFlowCreateResponse(flowId:Long,
+case class StreamFlowCreateResponse(status:Int,
+                                    flowId:Long,
                                     flowVersion:String,
-                                    flowName:String) extends StreamisProtocol
+                                    flowName:String,
+                                    errorMessage:String) extends StreamisProtocol
 
 
 
-case class StreamFlowExportRequest(streamFlowId:Long,
-                                   StreamFlowName:String) extends StreamisProtocol
+case class StreamFlowExportRequest(username:String,
+                                   streamFlowId:Long,
+                                   projectId:Long,
+                                   projectName:String,
+                                   workspaceStr:String
+                                  ) extends StreamisProtocol
+
+
+case class StreamFlowCopyRequest(username:String,
+                                 workspaceName:String,
+                                 streamFlowId:Long,
+                                 contextId:String,
+                                 projectName:String,
+                                 orchestratorVersionId:Long,
+                                 version:String,
+                                 description:String,
+                                 orchestratorId:Long) extends StreamisProtocol
+
+
+case class StreamFlowCopyResponse(status:Int,
+                                  oldStreamFlowId:Long,
+                                  newStreamFlowId:Long,
+                                  orchestratorId:Long,
+                                  errorMessage:String) extends StreamisProtocol
 
 
 
-case class StreamFlowExportResponse(streamFlowId:Long,
+
+
+
+case class StreamFlowExportResponse(status:Int,
+                                    streamFlowId:Long,
                                     streamFlowName:String,
                                     bmlResourceId:String,
-                                    bmlVersion:String) extends StreamisProtocol
+                                    bmlVersion:String,
+                                    errorMessage:String) extends StreamisProtocol
+
+
+case class StreamFlowImportRequest(streamFlowName:String,
+                                   username:String,
+                                   projectName:String,
+                                   projectId:Long,
+                                   bmlResourceId:String,
+                                   bmlVersion:String,
+                                   orchestratorVersion:String,
+                                   workspaceName:String,
+                                   workspaceStr:String
+                                  ) extends StreamisProtocol
+
+
+case class StreamFlowImportResponse(status:Int,
+                                    streamFlowName:String,
+                                    errorMessage:String) extends StreamisProtocol
+
+
+case class StreamFlowQueryRequest()

@@ -1,7 +1,13 @@
 package com.webank.wedatasphere.streamis.workflow.server.service;
 
-import com.webank.wedatasphere.streamis.workflow.server.entity.StreamisFlow;
-import com.webank.wedatasphere.streamis.workflow.server.exception.StreamisErrorException;
+import com.webank.wedatasphere.dss.workflow.common.entity.DSSFlow;
+import com.webank.wedatasphere.streamis.workflow.common.protocol.StreamFlowCopyRequest;
+import com.webank.wedatasphere.streamis.workflow.common.protocol.StreamFlowCreateRequest;
+import com.webank.wedatasphere.streamis.workflow.common.protocol.StreamFlowExportRequest;
+import com.webank.wedatasphere.streamis.workflow.common.protocol.StreamFlowImportRequest;
+import com.webank.wedatasphere.streamis.workflow.server.exception.StreamisFlowErrorException;
+
+import java.util.List;
 
 /**
  * created by yangzhiyue on 2021/4/19
@@ -9,14 +15,18 @@ import com.webank.wedatasphere.streamis.workflow.server.exception.StreamisErrorE
  */
 public interface StreamFlowService {
 
-    StreamisFlow createStreamFlow();
+    DSSFlow createStreamFlow(StreamFlowCreateRequest streamFlowCreateRequest) throws StreamisFlowErrorException;
 
-    void updateStreamFlow();
+    void exportStreamFlow(StreamFlowExportRequest streamFlowExportRequest) throws StreamisFlowErrorException;
 
-    void publishStreamFlow();
+    List<DSSFlow> importStreamFlow(StreamFlowImportRequest streamFlowImportRequest) throws StreamisFlowErrorException;
 
-    void copyStreamFlow();
+    void updateStreamFlow() throws StreamisFlowErrorException ;
 
-    void deleteStreamFlow() throws StreamisErrorException;
+    void publishStreamFlow() throws StreamisFlowErrorException;
+
+    DSSFlow copyStreamFlow(StreamFlowCopyRequest streamFlowCopyRequest) throws StreamisFlowErrorException;
+
+    void deleteStreamFlow() throws StreamisFlowErrorException;
 
 }

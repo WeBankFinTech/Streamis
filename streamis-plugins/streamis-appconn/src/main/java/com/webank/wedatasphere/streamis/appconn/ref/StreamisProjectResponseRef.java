@@ -28,6 +28,12 @@ public class StreamisProjectResponseRef extends AbstractResponseRef implements P
         this("", 0, "");
     }
 
+
+    public StreamisProjectResponseRef(Long projectRefId){
+        this();
+        this.projectRefId = projectRefId;
+    }
+
     public StreamisProjectResponseRef(String responseBody, int status, String errorMsg) {
         super(responseBody, status);
         this.errorMsg = errorMsg;
