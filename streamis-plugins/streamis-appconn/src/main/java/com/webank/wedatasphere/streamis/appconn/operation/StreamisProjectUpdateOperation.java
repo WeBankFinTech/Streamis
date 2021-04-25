@@ -32,6 +32,7 @@ public class StreamisProjectUpdateOperation implements ProjectUpdateOperation {
 
     @Override
     public ProjectResponseRef updateProject(ProjectRequestRef projectRequestRef) throws ExternalOperationFailedException {
+        //todo 先不实现了
         return null;
     }
 

@@ -1,6 +1,7 @@
 package com.webank.wedatasphere.streamis.project.server.service.impl;
 
 
+import com.webank.wedatasphere.streamis.project.common.CreateStreamProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.entity.StreamisProject;
 import com.webank.wedatasphere.streamis.project.server.entity.request.CreateProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.exception.StreamisProjectErrorException;
@@ -27,6 +28,12 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public StreamisProject createProject(String username, CreateProjectRequest createProjectRequest) throws StreamisProjectErrorException {
         LOGGER.info("user {} starts to create project {}", username, createProjectRequest.getProjectName());
+        return null;
+    }
+
+    @Override
+    public StreamisProject createProject(CreateStreamProjectRequest createStreamProjectRequest) throws StreamisProjectErrorException {
+        LOGGER.info("user {} starts to create project {}", createStreamProjectRequest.createBy(), createStreamProjectRequest.projectName());
         return null;
     }
 

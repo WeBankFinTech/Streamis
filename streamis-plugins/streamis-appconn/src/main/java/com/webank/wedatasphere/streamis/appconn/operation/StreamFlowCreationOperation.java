@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.appconn.operation;
 
+import com.google.common.collect.Lists;
 import com.webank.wedatasphere.dss.common.utils.DSSExceptionUtils;
 import com.webank.wedatasphere.dss.standard.app.development.DevelopmentService;
 import com.webank.wedatasphere.dss.standard.app.development.crud.RefCreationOperation;
@@ -14,6 +15,8 @@ import com.webank.wedatasphere.streamis.workflow.common.protocol.StreamFlowCreat
 import com.webank.wedatasphere.streamis.workflow.common.protocol.StreamFlowCreateResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * created by yangzhiyue on 2021/4/20
@@ -51,12 +54,16 @@ public class StreamFlowCreationOperation implements RefCreationOperation<StreamF
     public StreamFlowCreateResponseRef createRef(StreamFlowCreateRequestRef streamFlowCreateRequestRef) throws ExternalOperationFailedException {
         LOGGER.info("begin to create stream flow for user {}, ref is {}", streamFlowCreateRequestRef.getUserName(),
                 StreamisUtils.COMMON_GSON.toJson(streamFlowCreateRequestRef));
+        //todo linkedAppConnName先写死吧
+        List<String> linkedAppConnNames = Lists.newArrayList("source","sink");
         StreamFlowCreateRequest streamFlowCreateRequest = new StreamFlowCreateRequest(streamFlowCreateRequestRef.getDSSOrchestratorInfo().getName(),
                 streamFlowCreateRequestRef.getUserName(),
                 streamFlowCreateRequestRef.getDSSOrchestratorInfo().getDesc(),
                 streamFlowCreateRequestRef.getWorkspaceName(),
                 streamFlowCreateRequestRef.getParentFlowId(),
                 streamFlowCreateRequestRef.getDSSOrchestratorInfo().getUses(),
+                linkedAppConnNames,
+                streamFlowCreateRequestRef.getContextIDStr(),
                 streamFlowCreateRequestRef.getProjectId(),
                 streamFlowCreateRequestRef.getProjectName());
         StreamFlowCreateResponse response = null;
