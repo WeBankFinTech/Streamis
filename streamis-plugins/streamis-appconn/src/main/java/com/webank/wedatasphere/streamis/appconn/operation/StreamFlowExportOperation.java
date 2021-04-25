@@ -48,8 +48,11 @@ public class StreamFlowExportOperation implements RefExportOperation<StreamFlowE
     @Override
     public StreamFlowExportResponseRef exportRef(StreamFlowExportRequestRef streamFlowExportRequestRef) throws ExternalOperationFailedException {
         LOGGER.info("begin to export stream flow {} from streamis", streamFlowExportRequestRef.getStreamFlowId());
-        StreamFlowExportRequest streamFlowExportRequest = new StreamFlowExportRequest(streamFlowExportRequestRef.getStreamFlowId(),
-                streamFlowExportRequestRef.getName());
+        StreamFlowExportRequest streamFlowExportRequest = new StreamFlowExportRequest(streamFlowExportRequestRef.getUserName(),
+                streamFlowExportRequestRef.getStreamFlowId(),
+                streamFlowExportRequestRef.getProjectId(),
+                streamFlowExportRequestRef.getProjectName(),
+                streamFlowExportRequestRef.getWorkspaceName());
         StreamFlowExportResponse streamFlowExportResponse = null;
         try{
             streamFlowExportResponse = (StreamFlowExportResponse) sender.ask(streamFlowExportRequest);
