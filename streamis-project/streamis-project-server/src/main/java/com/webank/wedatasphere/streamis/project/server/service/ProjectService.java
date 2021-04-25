@@ -18,4 +18,7 @@ public interface ProjectService {
      void updateProject() throws StreamisProjectErrorException;
 
 
+     void deleteProject() throws StreamisProjectErrorException;
+
+
 }

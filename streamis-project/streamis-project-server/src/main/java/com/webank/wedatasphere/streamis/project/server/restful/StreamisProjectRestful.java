@@ -4,6 +4,7 @@ package com.webank.wedatasphere.streamis.project.server.restful;
 import com.webank.wedatasphere.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.streamis.project.server.entity.StreamisProject;
 import com.webank.wedatasphere.streamis.project.server.entity.request.CreateProjectRequest;
+import com.webank.wedatasphere.streamis.project.server.entity.request.DeleteProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.entity.request.UpdateProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.service.ProjectService;
 import com.webank.wedatasphere.streamis.project.server.utils.RestfulUtils;
@@ -68,6 +69,12 @@ public class StreamisProjectRestful {
         return null;
     }
 
+
+    @POST
+    @Path("deleteProject")
+    public Response deleteProject(@Context HttpServletRequest request, @Valid DeleteProjectRequest deleteProjectRequest){
+        return null;
+    }
 
 
 
