@@ -34,4 +34,10 @@ public class ProjectServiceImpl implements ProjectService {
     public void updateProject() throws StreamisProjectErrorException {
 
     }
+
+
+    @Override
+    public void deleteProject() throws StreamisProjectErrorException {
+
+    }
 }
