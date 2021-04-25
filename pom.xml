@@ -30,6 +30,7 @@
         <module>streamis-plugins/streamis-plugins-common</module>
         <module>streamis-project</module>
         <module>streamis-project/streamis-project-server</module>
+        <module>streamis-project/streamis-project-common</module>
     </modules>
 
     <properties>
