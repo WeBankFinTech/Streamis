@@ -10,7 +10,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>streamis-project-server</artifactId>
+    <artifactId>streamis-project-common</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -18,44 +18,16 @@
     </properties>
 
 
-
     <dependencies>
+
         <dependency>
-            <groupId>com.webank.wedatasphere.dss</groupId>
-            <artifactId>dss-workflow-server</artifactId>
-            <version>${dss.version}</version>
+            <groupId>com.webank.wedatasphere.linkis</groupId>
+            <artifactId>linkis-common</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.webank.wedatasphere.linkis</groupId>
-            <artifactId>linkis-module</artifactId>
-            <version>${linkis.version}</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>com.webank.wedatasphere.linkis</groupId>
-            <artifactId>linkis-mybatis</artifactId>
-            <version>${linkis.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.webank.wedatasphere.streamis</groupId>
-            <artifactId>streamis-project-common</artifactId>
-            <version>${streamis.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.webank.wedatasphere.linkis</groupId>
-            <artifactId>linkis-rpc</artifactId>
-            <version>${linkis.version}</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-math3</artifactId>
-            <scope>provided</scope>
+            <artifactId>linkis-protocol</artifactId>
         </dependency>
 
     </dependencies>
@@ -83,16 +55,7 @@
                     <include>**/*.xml</include>
                 </includes>
             </resource>
-            <!--<resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>**/*.xml</include>
-                    <include>**/*.properties</include>
-                    <include>**/*.yml</include>
-                </includes>
-            </resource>-->
         </resources>
     </build>
-
 
 </project>
