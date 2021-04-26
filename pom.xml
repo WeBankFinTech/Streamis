@@ -59,6 +59,7 @@
         <jersey-bean-validation.version>2.21</jersey-bean-validation.version>
         <aspectj.version>1.9.5</aspectj.version>
         <xstream.version>1.4.15</xstream.version>
+        <jobmanager.version>0.1.0-SNAPSHOT</jobmanager.version>
     </properties>
 
 
@@ -89,6 +90,26 @@
                 <groupId>commons-lang</groupId>
                 <artifactId>commons-lang</artifactId>
                 <version>${commons.lang.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.webank.wedatasphere.linkis</groupId>
+                <artifactId>linkis-mybatis</artifactId>
+                <version>${linkis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.webank.wedatasphere.linkis</groupId>
+                <artifactId>linkis-module</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-starter-tomcat</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>hibernate-validator</artifactId>
+                        <groupId>org.hibernate.validator</groupId>
+                    </exclusion>
+                </exclusions>
+                <version>${linkis.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.webank.wedatasphere.linkis</groupId>
