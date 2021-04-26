@@ -1,14 +1,14 @@
 package com.webank.wedatasphere.streamis.appconn;
 
-import com.webank.wedatasphere.dss.appconn.core.AppConn;
+import com.google.common.collect.Lists;
 import com.webank.wedatasphere.dss.appconn.core.ext.AlmightyAppConn;
 import com.webank.wedatasphere.dss.standard.common.core.AppStandard;
 import com.webank.wedatasphere.dss.standard.common.desc.AppDesc;
+import com.webank.wedatasphere.streamis.appconn.standard.StreamisDevelopmentIntegrationStandard;
 import com.webank.wedatasphere.streamis.appconn.standard.StreamisStructureIntegrationStandard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -23,12 +23,22 @@ public class StreamisAppConn implements AlmightyAppConn {
 
     private final StreamisStructureIntegrationStandard streamisStructureIntegrationStandard = StreamisStructureIntegrationStandard.getInstance(this);
 
+    private final StreamisDevelopmentIntegrationStandard developmentIntegrationStandard = StreamisDevelopmentIntegrationStandard.getInstance(this);
 
+
+    private List<AppStandard> appStandards;
 
 
     @Override
     public List<AppStandard> getAppStandards() {
-        return Arrays.asList(streamisStructureIntegrationStandard);
+        if (appStandards == null) {
+            synchronized (StreamisAppConn.class) {
+                if (appStandards == null) {
+                    appStandards = Lists.newArrayList(streamisStructureIntegrationStandard, developmentIntegrationStandard);
+                }
+            }
+        }
+        return appStandards;
     }
 
     @Override

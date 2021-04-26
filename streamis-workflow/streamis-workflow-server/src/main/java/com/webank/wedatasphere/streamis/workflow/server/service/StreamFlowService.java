@@ -5,6 +5,7 @@ import com.webank.wedatasphere.streamis.workflow.common.protocol.StreamFlowCopyR
 import com.webank.wedatasphere.streamis.workflow.common.protocol.StreamFlowCreateRequest;
 import com.webank.wedatasphere.streamis.workflow.common.protocol.StreamFlowExportRequest;
 import com.webank.wedatasphere.streamis.workflow.common.protocol.StreamFlowImportRequest;
+import com.webank.wedatasphere.streamis.workflow.server.entity.ExportResponse;
 import com.webank.wedatasphere.streamis.workflow.server.exception.StreamisFlowErrorException;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public interface StreamFlowService {
 
     DSSFlow createStreamFlow(StreamFlowCreateRequest streamFlowCreateRequest) throws StreamisFlowErrorException;
 
-    void exportStreamFlow(StreamFlowExportRequest streamFlowExportRequest) throws StreamisFlowErrorException;
+    ExportResponse exportStreamFlow(StreamFlowExportRequest streamFlowExportRequest) throws StreamisFlowErrorException;
 
     List<DSSFlow> importStreamFlow(StreamFlowImportRequest streamFlowImportRequest) throws StreamisFlowErrorException;
 
