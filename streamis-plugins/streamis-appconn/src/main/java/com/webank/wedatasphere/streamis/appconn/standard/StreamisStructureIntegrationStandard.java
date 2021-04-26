@@ -6,7 +6,6 @@ import com.webank.wedatasphere.dss.standard.app.structure.project.ProjectService
 import com.webank.wedatasphere.dss.standard.app.structure.role.RoleService;
 import com.webank.wedatasphere.dss.standard.app.structure.status.AppStatusService;
 import com.webank.wedatasphere.dss.standard.common.desc.AppDesc;
-import com.webank.wedatasphere.dss.standard.common.exception.AppStandardErrorException;
 import com.webank.wedatasphere.streamis.appconn.service.StreamisProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,11 +30,7 @@ public class StreamisStructureIntegrationStandard implements StructureIntegratio
 
     private StreamisStructureIntegrationStandard(AppConn appConn){
         this.appConn = appConn;
-        try{
-            init();
-        }catch(final Exception e){
-            LOGGER.warn("Failed to init for class {}", this.getClass().getSimpleName(), e);
-        }
+        init();
     }
 
     public static StreamisStructureIntegrationStandard getInstance(AppConn appConn){
@@ -51,7 +46,7 @@ public class StreamisStructureIntegrationStandard implements StructureIntegratio
 
 
     @Override
-    public void init() throws AppStandardErrorException {
+    public void init()  {
         this.projectService = new StreamisProjectService(this.appConn);
         this.projectService.setAppDesc(getAppDesc());
     }

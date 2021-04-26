@@ -10,17 +10,6 @@ trait StreamisProtocol extends Protocol
 
 
 
-case class ProjectCreateRequest(projectName:String,
-                                description:String,
-                                createBy:String,
-                                tags:String) extends StreamisProtocol
-
-
-
-case class ProjectCreateResponse(projectName:String,
-                                 projectId:Long) extends StreamisProtocol
-
-
 
 case class StreamFlowCreateRequest(flowName:String,
                                    createBy:String,
@@ -62,6 +51,14 @@ case class StreamFlowCopyRequest(username:String,
                                  description:String,
                                  orchestratorId:Long) extends StreamisProtocol
 
+case class StreamFlowExportResponse(status:Int,
+                                    streamFlowId:Long,
+                                    streamFlowName:String,
+                                    bmlResourceId:String,
+                                    bmlVersion:String,
+                                    errorMessage:String) extends StreamisProtocol
+
+
 
 case class StreamFlowCopyResponse(status:Int,
                                   oldStreamFlowId:Long,
@@ -74,12 +71,6 @@ case class StreamFlowCopyResponse(status:Int,
 
 
 
-case class StreamFlowExportResponse(status:Int,
-                                    streamFlowId:Long,
-                                    streamFlowName:String,
-                                    bmlResourceId:String,
-                                    bmlVersion:String,
-                                    errorMessage:String) extends StreamisProtocol
 
 
 case class StreamFlowImportRequest(streamFlowName:String,
@@ -95,7 +86,7 @@ case class StreamFlowImportRequest(streamFlowName:String,
 
 
 case class StreamFlowImportResponse(status:Int,
-                                    streamFlowName:String,
+                                    flowIds:java.util.List[Long],
                                     errorMessage:String) extends StreamisProtocol
 
 
