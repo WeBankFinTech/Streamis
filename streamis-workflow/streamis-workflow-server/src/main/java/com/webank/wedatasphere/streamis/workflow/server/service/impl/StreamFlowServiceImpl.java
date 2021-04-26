@@ -12,6 +12,7 @@ import com.webank.wedatasphere.streamis.workflow.common.protocol.StreamFlowCopyR
 import com.webank.wedatasphere.streamis.workflow.common.protocol.StreamFlowCreateRequest;
 import com.webank.wedatasphere.streamis.workflow.common.protocol.StreamFlowExportRequest;
 import com.webank.wedatasphere.streamis.workflow.common.protocol.StreamFlowImportRequest;
+import com.webank.wedatasphere.streamis.workflow.server.entity.ExportResponse;
 import com.webank.wedatasphere.streamis.workflow.server.exception.StreamisFlowErrorException;
 import com.webank.wedatasphere.streamis.workflow.server.service.StreamFlowService;
 import org.slf4j.Logger;
@@ -55,7 +56,7 @@ public class StreamFlowServiceImpl implements StreamFlowService {
     }
 
     @Override
-    public void exportStreamFlow(StreamFlowExportRequest streamFlowExportRequest) throws StreamisFlowErrorException{
+    public ExportResponse exportStreamFlow(StreamFlowExportRequest streamFlowExportRequest) throws StreamisFlowErrorException{
         try{
             LOGGER.info("begin to export stream flow {} for user {}", streamFlowExportRequest.streamFlowId(), streamFlowExportRequest.streamFlowId());
             Map<String, Object> exportResponse = workFlowManager.exportWorkflow(streamFlowExportRequest.username(), streamFlowExportRequest.streamFlowId(),
@@ -64,6 +65,7 @@ public class StreamFlowServiceImpl implements StreamFlowService {
             String resourceId = exportResponse.get("resourceId").toString();
             String version = exportResponse.get("version").toString();
             LOGGER.info("End to export stream flow, resourceId is {}, version is {}", resourceId, version);
+            return new ExportResponse(resourceId, version);
         }catch(final Throwable t){
             LOGGER.error("failed to export stream flow {} for user {}", streamFlowExportRequest.streamFlowId(), streamFlowExportRequest.username());
             throw new StreamisFlowErrorException(600402, "Failed to export streamflow", t);
