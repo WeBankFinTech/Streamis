@@ -53,8 +53,7 @@ if (process.env.NODE_ENV !== 'dev') {
       "worker-src": "'self'",
       "connect-src": [
         "'self'",
-        "ws:",
-        "http://adm.webank.io"
+        "ws:"
       ],
       "img-src": [
         "data:",
