@@ -56,6 +56,7 @@ class StreamisWorkflowReceiver extends Receiver with Logging {
       t => logger.error(s"failed to import resourceId: ${streamFlowImportRequest.bmlResourceId} version is ${streamFlowImportRequest.bmlVersion}", t)
         StreamFlowImportResponse(-1, null, t.getCause.getMessage)
     }
+    case _ =>
   }
 
 
