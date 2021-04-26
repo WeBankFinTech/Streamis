@@ -10,6 +10,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>streamis-job-manager</artifactId>
-
+    <packaging>pom</packaging>
+    <modules>
+        <module>streamis-job-manager-base</module>
+        <module>streamis-job-manager-service</module>
+    </modules>
 
 </project>
