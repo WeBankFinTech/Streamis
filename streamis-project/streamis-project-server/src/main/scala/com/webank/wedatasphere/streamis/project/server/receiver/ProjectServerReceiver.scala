@@ -2,7 +2,7 @@ package com.webank.wedatasphere.streamis.project.server.receiver
 
 import com.webank.wedatasphere.linkis.common.utils.{Logging, Utils}
 import com.webank.wedatasphere.linkis.rpc.{Receiver, Sender}
-import com.webank.wedatasphere.streamis.project.common.{CreateStreamProjectRequest, CreateStreamProjectResponse}
+import com.webank.wedatasphere.streamis.project.common.{CreateStreamProjectRequest, CreateStreamProjectResponse, UpdateStreamProjectRequest, UpdateStreamProjectResponse}
 import com.webank.wedatasphere.streamis.project.server.entity.request.CreateProjectRequest
 import com.webank.wedatasphere.streamis.project.server.service.ProjectService
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,9 +36,16 @@ class ProjectServerReceiver extends Receiver with Logging{
         val streamisProject = projectService.createProject(createStreamProjectRequest)
         CreateStreamProjectResponse(0, streamisProject.getName, streamisProject.getId, "")
       }{
-        t => error("failed to create project in streamis", t)
+        t => logger.error("failed to create project in streamis", t)
           CreateStreamProjectResponse(-1, createStreamProjectRequest.projectName, -1, t.getCause.getMessage)
       }
+    case updateStreamProjectRequest: UpdateStreamProjectRequest => Utils.tryCatch{
+      projectService.updateProject(updateStreamProjectRequest)
+      UpdateStreamProjectResponse(0, updateStreamProjectRequest.streamisProjectId, "")
+    }{
+      t => logger.error(s"failed to update project ${updateStreamProjectRequest.projectName} in streamis",t)
+        UpdateStreamProjectResponse(-1, updateStreamProjectRequest.streamisProjectId, t.getCause.getMessage)
+    }
     case _ =>
   }
 
