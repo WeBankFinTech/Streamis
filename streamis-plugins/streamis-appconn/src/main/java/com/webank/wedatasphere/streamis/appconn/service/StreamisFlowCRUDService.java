@@ -1,8 +1,8 @@
 package com.webank.wedatasphere.streamis.appconn.service;
 
-import com.webank.wedatasphere.dss.appconn.core.AppConn;
 import com.webank.wedatasphere.dss.standard.app.development.DevelopmentService;
 import com.webank.wedatasphere.dss.standard.app.development.crud.*;
+import com.webank.wedatasphere.dss.standard.common.desc.AppInstance;
 import com.webank.wedatasphere.dss.standard.common.entity.ref.RequestRef;
 import com.webank.wedatasphere.dss.standard.common.entity.ref.ResponseRef;
 import org.slf4j.Logger;
@@ -12,16 +12,16 @@ import org.slf4j.LoggerFactory;
  * created by yangzhiyue on 2021/4/8
  * Description: streamis crud service是通过http的方式进行的
  */
-public class StreamisCRUDService implements RefCRUDService {
+public class StreamisFlowCRUDService implements RefCRUDService {
 
 
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StreamisCRUDService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StreamisFlowCRUDService.class);
 
-    private AppConn appConn;
+    private AppInstance appInstance;
 
-    public StreamisCRUDService(AppConn appConn){
-        this.appConn = appConn;
+    public StreamisFlowCRUDService(AppInstance appInstance){
+        this.appInstance = appInstance;
     }
 
 
