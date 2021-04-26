@@ -2,6 +2,8 @@ package com.webank.wedatasphere.streamis.project.server.service;
 
 
 import com.webank.wedatasphere.streamis.project.common.CreateStreamProjectRequest;
+import com.webank.wedatasphere.streamis.project.common.DeleteStreamProjectRequest;
+import com.webank.wedatasphere.streamis.project.common.UpdateStreamProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.entity.StreamisProject;
 import com.webank.wedatasphere.streamis.project.server.entity.request.CreateProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.exception.StreamisProjectErrorException;
@@ -12,15 +14,17 @@ import com.webank.wedatasphere.streamis.project.server.exception.StreamisProject
  */
 public interface ProjectService {
 
+
+
      StreamisProject createProject(String username, CreateProjectRequest createProjectRequest) throws StreamisProjectErrorException;
 
      StreamisProject createProject(CreateStreamProjectRequest createStreamProjectRequest) throws StreamisProjectErrorException;
 
 
-     void updateProject() throws StreamisProjectErrorException;
+     void updateProject(UpdateStreamProjectRequest updateStreamProjectRequest) throws StreamisProjectErrorException;
 
 
-     void deleteProject() throws StreamisProjectErrorException;
+     void deleteProject(DeleteStreamProjectRequest deleteStreamProjectRequest) throws StreamisProjectErrorException;
 
 
 }
