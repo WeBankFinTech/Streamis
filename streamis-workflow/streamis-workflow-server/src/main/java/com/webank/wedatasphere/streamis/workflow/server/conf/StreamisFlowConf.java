@@ -7,7 +7,7 @@ package com.webank.wedatasphere.streamis.workflow.server.conf;
 public class StreamisFlowConf {
 
 
-
+    public static final String DEFAULT_VERSION = "v00001";
 
 
 }
