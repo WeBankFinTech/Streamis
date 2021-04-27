@@ -12,6 +12,7 @@
     <artifactId>streamis-plugins</artifactId>
     <packaging>pom</packaging>
     <modules>
+        <module>streamis-plugins-common</module>
         <module>streamis-appconn</module>
         <module>streamis-jobmanager-appconn</module>
         <module>streamis-datasource-appconn</module>
