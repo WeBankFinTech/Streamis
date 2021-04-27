@@ -25,13 +25,9 @@
         <module>streamis-datasource</module>
         <module>streamis-jobmanager</module>
         <module>streamis-workflow</module>
+        <module>streamis-project</module>
         <module>streamis-plugins</module>
         <module>streamis-server</module>
-        <module>streamis-plugins/streamis-plugins-common</module>
-        <module>streamis-project</module>
-        <module>streamis-project/streamis-project-server</module>
-        <module>streamis-project/streamis-project-common</module>
-        <module>streamis-jobmanager/streamis-jobmanager-common</module>
     </modules>
 
     <properties>
