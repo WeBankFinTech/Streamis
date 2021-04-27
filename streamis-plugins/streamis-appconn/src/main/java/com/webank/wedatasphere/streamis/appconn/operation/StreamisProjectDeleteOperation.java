@@ -17,7 +17,7 @@ public class StreamisProjectDeleteOperation implements ProjectDeletionOperation 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamisProjectDeleteOperation.class);
 
-    //todo 以后写
+    //todo 以后写，先等下写
 
     @Override
     public ProjectResponseRef deleteProject(ProjectRequestRef projectRequestRef) throws ExternalOperationFailedException {
