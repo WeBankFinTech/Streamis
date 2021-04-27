@@ -10,10 +10,16 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>streamis-project</artifactId>
-
+    <packaging>pom</packaging>
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
+
+
+    <modules>
+        <module>streamis-project-common</module>
+        <module>streamis-project-server</module>
+    </modules>
 
 </project>
