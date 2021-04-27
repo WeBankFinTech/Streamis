@@ -2,6 +2,7 @@ package com.webank.wedatasphere.streamis.datasource.appconn.ref;
 
 import com.webank.wedatasphere.dss.standard.app.development.publish.ImportRequestRef;
 import com.webank.wedatasphere.dss.standard.app.sso.Workspace;
+import com.webank.wedatasphere.streamis.plugins.common.StreamisPluginUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,7 @@ public class DatasourceImportRequestRef implements ImportRequestRef {
 
     private static final String TYPE = "import";
 
+    private String user;
 
     /**
      * bmlresource includes resourceId and version
@@ -28,10 +30,9 @@ public class DatasourceImportRequestRef implements ImportRequestRef {
     private Map<String, Object> bmlResource;
 
 
-    public DatasourceImportRequestRef(Map<String, Object> bmlResource){
-        this.bmlResource = bmlResource;
-    }
+    public DatasourceImportRequestRef(){
 
+    }
 
 
     @Override
@@ -72,6 +73,22 @@ public class DatasourceImportRequestRef implements ImportRequestRef {
     public Map<String, Object> getBmlResource() {
         return bmlResource;
     }
+
+    public String getBmlResourceId(){
+        return (String) this.parameters.get(StreamisPluginUtils.BML_RESOURCE_ID_STR);
+    }
+
+    public String getBmlVersion(){
+        return (String) this.parameters.get(StreamisPluginUtils.BML_RESOURCE_VERSION_STR);
+    }
+
+    public String getUser(){
+        return (String)this.parameters.get(StreamisPluginUtils.USER_STR);
+    }
+
+
+
+
 
     public void setBmlResource(Map<String, Object> bmlResource) {
         this.bmlResource = bmlResource;
