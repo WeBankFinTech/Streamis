@@ -45,6 +45,6 @@ public class StreamFlowQueryOperation implements RefQueryOperation<StreamFlowQue
 
     @Override
     public void setDevelopmentService(DevelopmentService developmentService) {
-
+        this.developmentService = developmentService;
     }
 }
