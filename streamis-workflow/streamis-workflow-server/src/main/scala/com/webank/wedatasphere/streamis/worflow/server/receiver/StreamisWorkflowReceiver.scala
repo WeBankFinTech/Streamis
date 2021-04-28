@@ -10,6 +10,7 @@ import com.webank.wedatasphere.streamis.workflow.server.service.StreamFlowServic
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
+import java.util
 import scala.concurrent.duration.Duration
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -51,7 +52,9 @@ class StreamisWorkflowReceiver extends Receiver with Logging {
     }
     case streamFlowImportRequest: StreamFlowImportRequest => Utils.tryCatch{
       val dssFlows = streamFlowService.importStreamFlow(streamFlowImportRequest)
-      StreamFlowImportResponse(0, Lists.newArrayList(dssFlows.map(_.getId).toList.asJavaCollection), "")
+      val idList = new util.ArrayList[Long]()
+      dssFlows.foreach(flow => idList.add(flow.getId))
+      StreamFlowImportResponse(0, idList, "")
     }{
       t => logger.error(s"failed to import resourceId: ${streamFlowImportRequest.bmlResourceId} version is ${streamFlowImportRequest.bmlVersion}", t)
         StreamFlowImportResponse(-1, null, t.getCause.getMessage)
