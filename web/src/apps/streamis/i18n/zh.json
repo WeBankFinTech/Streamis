@@ -28,7 +28,7 @@
       "formItems": {
         "queryBtn": "查询",
         "jobStatus": "作业状态",
-        "submitter": "提交人",
+        "jobCreator": "提交人",
         "jobName": "作业名称",
         "stopBtn": "停止",
         "startBtn": "启动",
