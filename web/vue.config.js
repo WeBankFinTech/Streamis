@@ -125,10 +125,12 @@ module.exports = {
     port: 8080,
     proxy: {
       '/api': {
-        target: 'http://121.36.31.90',
+        //target: 'http://121.36.31.90',
+        target: 'http://124.70.3.96:9009',
         changeOrigin: true,
         pathRewrite: {
-          '^/api': '/mock/15/api'
+          //'^/api': '/mock/15/api'
+          '^/api': '/api'
         }
       }
     }
