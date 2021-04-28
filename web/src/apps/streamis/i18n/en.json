@@ -29,7 +29,7 @@
       "formItems": {
         "queryBtn": "Query",
         "jobStatus": "Job status",
-        "submitter": "Submitter",
+        "jobCreator": "Job Creator",
         "jobName": "Job name",
         "stopBtn": "Stop",
         "startBtn": "Start",
