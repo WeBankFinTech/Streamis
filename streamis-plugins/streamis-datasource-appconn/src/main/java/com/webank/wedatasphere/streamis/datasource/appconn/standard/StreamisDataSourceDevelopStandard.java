@@ -5,7 +5,6 @@ import com.webank.wedatasphere.dss.appconn.core.AppConn;
 import com.webank.wedatasphere.dss.standard.app.development.AbstractLabelDevelopmentIntegrationStandard;
 import com.webank.wedatasphere.dss.standard.app.development.RefOperationService;
 import com.webank.wedatasphere.dss.standard.common.desc.AppDesc;
-import com.webank.wedatasphere.dss.standard.common.exception.AppStandardErrorException;
 import com.webank.wedatasphere.streamis.datasource.appconn.service.StreamisDatasourceQueryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,16 +38,11 @@ public class StreamisDataSourceDevelopStandard extends AbstractLabelDevelopmentI
 
     private StreamisDataSourceDevelopStandard(AppConn appConn){
         this.appConn = appConn;
-        try {
-            init();
-        } catch (AppStandardErrorException e) {
-            LOGGER.error("Failed to init in Streamis datasource development standard", e);
-        }
+        init();
     }
 
 
     public static StreamisDataSourceDevelopStandard getInstance(AppConn appConn){
-
         if(instance == null){
             synchronized (StreamisDataSourceDevelopStandard.class){
                 if (instance == null){
@@ -88,7 +82,7 @@ public class StreamisDataSourceDevelopStandard extends AbstractLabelDevelopmentI
     }
 
     @Override
-    public void init() throws AppStandardErrorException {
+    public void init()  {
         LOGGER.info("begin to init in streamis dataource develop standard");
         //do noting
     }
