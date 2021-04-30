@@ -11,7 +11,7 @@
         "jobList": "Job list",
         "jobSummary": "Job summary",
         "jobHistory": "Job history",
-        "jobConfigure": "Job configure",
+        "jobConfig": "Job config",
         "jobDetail": "Job detail"
       },
 
@@ -33,7 +33,8 @@
         "jobName": "Job name",
         "stopBtn": "Stop",
         "startBtn": "Start",
-        "configBtn": "Config"
+        "configBtn": "Config",
+        "saveBtn": "Save"
       },
       "jobListTableColumns":{
         "jobName": "Job name",
@@ -95,9 +96,9 @@
             "operation": "Operation"
           }
       },
-      "jobConfigure": {
-        "resourceConfigure": "Resource configure",
-        "productionConfigure": "Production configure",
+      "jobConfig": {
+        "resourceConfig": "Resource config",
+        "productionConfig": "Production config",
         "flinkParameters": "Flink parameters",
         "alertSet": "Alert set",
         "authoritySet": "Authority set",

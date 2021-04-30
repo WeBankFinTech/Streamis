@@ -11,7 +11,7 @@
         "jobList": "任务列表",
         "jobSummary": "运行情况",
         "jobHistory": "执行历史",
-        "jobConfigure": "配置",
+        "jobConfig": "配置",
         "jobDetail": "任务详情"
       },
       "jobStatus": {
@@ -32,7 +32,8 @@
         "jobName": "作业名称",
         "stopBtn": "停止",
         "startBtn": "启动",
-        "configBtn": "配置"
+        "configBtn": "配置",
+        "saveBtn": "保存"
       },
       "jobListTableColumns":{
         "jobName": "作业名称",
@@ -94,9 +95,9 @@
             "operation": "操作"
           }
       },
-      "jobConfigure": {
-        "resourceConfigure": "资源配置",
-        "productionConfigure": "生产配置",
+      "jobConfig": {
+        "resourceConfig": "资源配置",
+        "productionConfig": "生产配置",
         "flinkParameters": "Flink参数",
         "alertSet": "告警设置",
         "authoritySet": "权限设置",

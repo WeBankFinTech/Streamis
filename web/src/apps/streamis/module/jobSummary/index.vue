@@ -1,6 +1,38 @@
 <template>
   <div>
     <div class="itemWrap">
+      <p>{{ $t("message.streamis.jobSummary.realTimeTraffic") }}:</p>
+      <div class="realTimeTraffic">
+        <div
+          class="trafficItem"
+          v-for="(item, index) in realTimeTraffic"
+          :key="index"
+          :style="{ 'margin-top': index > 0 ? '5px' : 0 }"
+        >
+          <div class="trafficName" style="margin-left:0;">
+            <img src="../../assets/images/u4002.png" />
+            <p>{{ item.sourceKey }}</p>
+          </div>
+          <div class="trafficName">
+            <img src="../../assets/images/u4002.png" />
+            <p>{{ item.transformKey }}</p>
+          </div>
+          <div class="trafficName">
+            <img src="../../assets/images/u4002.png" />
+            <p>{{ item.sinkKey }}</p>
+          </div>
+          <div class="trafficSpeed speedOne">
+            <img src="../../assets/images/u1909.png" />
+            <p>{{ item.sourceSpeed }}</p>
+          </div>
+          <div class="trafficSpeed speedTwo">
+            <img src="../../assets/images/u1909.png" />
+            <p>{{ item.sinkSpeed }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="itemWrap">
       <p>{{ $t("message.streamis.jobSummary.dataNumber") }}:</p>
       <div class="dataNumber">
         <div class="dataWrap">
@@ -91,30 +123,35 @@ export default {
         }
       ],
       loadCondition: [],
-      dataNumber: []
+      dataNumber: [],
+      realTimeTraffic: []
     };
   },
   mounted() {
+    console.log(this.$route.params);
     this.getDatas();
   },
   methods: {
     getDatas() {
       api
-        .fetch("streamis/streamJobManager/job/details", "get")
+        .fetch(
+          "streamis/streamJobManager/job/details?jobId=" +
+            this.$route.params.id,
+          "get"
+        )
         .then(res => {
           console.log(res);
           if (res && res.details) {
             const conditions = res.details.loadCondition || [];
-            this.loadCondition = conditions.map((item, index) => {
-              // item.memoryUse = parseInt(item.memory) + " / " + parseInt(item.totalMemory) + " G";
-              // item.memoryPercent = Math.ceil(item.memory * 100 / item.totalMemory);
-              item.memoryUse = index + 1 + " / " + conditions.length + " G";
+            this.loadCondition = conditions.map(item => {
+              item.memoryUse = item.memory + " / " + item.totalMemory + " G";
               item.memoryPercent = Math.ceil(
-                ((index + 1) * 100) / conditions.length
+                (item.memory * 100) / item.totalMemory
               );
               return item;
             });
             this.dataNumber = res.details.dataNumber;
+            this.realTimeTraffic = [...res.details.realTimeTraffic];
           }
         })
         .catch(e => console.log(e));
@@ -142,7 +179,7 @@ export default {
     flex: 1;
   }
 }
-.dataWrap div {
+.dataWrap > div {
   display: flex;
   height: 30px;
   justify-content: flex-start;
@@ -155,10 +192,10 @@ export default {
   display: flex;
 }
 .number {
-  margin-left: 10px;
+  margin-left: 20px;
   background: rgb(0, 128, 0);
-  padding-left: 5px;
-  padding-right: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
   margin-right: 5px;
   color: #fff;
 }
@@ -170,11 +207,49 @@ export default {
   border-radius: 3px;
   position: relative;
   overflow: hidden;
-  & > div{
+  & > div {
     display: flex;
     justify-content: flex-end;
     color: #fff;
     padding-right: 5px;
   }
+}
+.trafficItem {
+  position: relative;
+  height: 80px;
+  display: flex;
+}
+.trafficName {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100px;
+  padding-top: 5px;
+  margin-left: 75px;
+  & p {
+    margin-top: 10px;
+  }
+}
+.trafficSpeed {
+  position: absolute;
+  top: 0;
+  & img{
+    margin-top: 5px;
+  }
+  & p{
+    position: absolute;
+    top:0px;
+    width: calc( 100% - 15px );
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+.speedOne {
+  left: 61px;
+}
+.speedTwo {
+  left: 236px;
 }
 </style>
