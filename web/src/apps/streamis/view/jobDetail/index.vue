@@ -14,10 +14,10 @@
         <jobHistory/>
       </TabPane>
       <TabPane
-        name="jobConfigure"
-        :label="$t('message.streamis.moduleName.jobConfigure')"
+        name="jobConfig"
+        :label="$t('message.streamis.moduleName.jobConfig')"
       >
-        <jobConfigure/>
+        <jobConfig/>
       </TabPane>
       <TabPane
         name="jobDetail"
@@ -31,19 +31,19 @@
 <script>
 import jobSummary from "@/apps/streamis/module/jobSummary";
 import jobHistory from "@/apps/streamis/module/jobHistory";
-import jobConfigure from "@/apps/streamis/module/jobConfigure";
+import jobConfig from "@/apps/streamis/module/jobConfig";
 import jobDetail from "@/apps/streamis/module/jobDetail";
 export default {
   components: {
     jobSummary: jobSummary.component,
     jobHistory: jobHistory.component,
     jobDetail: jobDetail.component,
-    jobConfigure: jobConfigure.component,
+    jobConfig: jobConfig.component,
   },
   data() {
     return {
       choosedModule: this.$route.params.module || "jobSummary",
-      tabs: ["jobSummary", "jobHistory", "jobConfigure", "jobDetail"]
+      tabs: ["jobSummary", "jobHistory", "jobConfig", "jobDetail"]
     };
   },
   mounted() {
