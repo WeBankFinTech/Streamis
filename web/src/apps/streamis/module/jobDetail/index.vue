@@ -17,7 +17,7 @@
     <div class="itemWrap">
       <p>{{ $t("message.streamis.jobDetail.dependJarPac") }}</p>
       <div>
-        <Table :columns="columns.filter(item => item.key !== 'entry')" :data="dependJar" border>
+        <Table :columns="columns.filter(item => item.key !== 'entryClass')" :data="dependJar" border>
           <template slot-scope="{ row }" slot="operation">
             <div>{{ row.id }}</div>
           </template>
@@ -27,7 +27,7 @@
     <div class="itemWrap">
       <p>{{ $t("message.streamis.jobDetail.userResource") }}</p>
       <div>
-        <Table :columns="columns.filter(item => item.key !== 'entry')" :data="userResource" border>
+        <Table :columns="columns.filter(item => item.key !== 'entryClass')" :data="userResource" border>
           <template slot-scope="{ row }" slot="operation">
             <div>{{ row.id }}</div>
           </template>
@@ -37,6 +37,7 @@
   </div>
 </template>
 <script>
+import api from "@/common/service/api";
 export default {
   data() {
     return {
@@ -57,17 +58,17 @@ export default {
           title: this.$t(
             "message.streamis.jobDetail.columns.versionDescription"
           ),
-          key: "versionDescription"
+          key: "description"
         },
         {
           title: "Entry Class",
-          key: "entry"
+          key: "entryClass"
         },
         {
           title: this.$t(
             "message.streamis.jobDetail.columns.versionUploadTime"
           ),
-          key: "versionUploadTime"
+          key: "updateTime"
         },
         {
           title: this.$t("message.streamis.jobDetail.columns.operation"),
@@ -77,9 +78,44 @@ export default {
       flinkDatas: [],
       dependJar: [],
       userResource: [],
-      programArguement: "fsjfkldsal sgfsajfjdsa fsadjsakfsda",
+      programArguement: "",
     };
   },
+  mounted() {
+    console.log(this.$route.params);
+    this.getJarDetail();
+  },
+  methods: {
+    getJarDetail() {
+      api
+        .fetch(
+          "streamis/streamJobManager/job/upload/details?jobId=" +
+            this.$route.params.id,
+          "get"
+        )
+        .then(res => {
+          console.log(res);
+          if (res && res.details) {
+            const {mainJars, programArguement, userList, dependentList} = res.details;
+            this.flinkDatas = [...mainJars];
+            this.dependJar = [...dependentList];
+            this.userResource = [...userList];
+            this.programArguement = programArguement;
+
+          }
+        })
+        .catch(e => console.log(e));
+    },
+    showVersionInfo(row) {
+      console.log(row);
+    },
+    showDetail(row) {
+      console.log(row);
+    },
+    showLogs(row) {
+      console.log(row);
+    }
+  }
 };
 </script>
 <style lang="scss" scoped>
