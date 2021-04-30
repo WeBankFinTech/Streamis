@@ -85,6 +85,11 @@
                 </div>
               </div>
             </template>
+            <template slot-scope="{ row, index }" slot="version">
+              <div class="version" v-show="index !== 0" @click="versionDetail(row)">
+                {{row.version}}
+              </div>
+            </template>
             <template slot-scope="{ row, index }" slot="operation">
               <div v-show="index !== 0">
                 <Button
@@ -99,7 +104,7 @@
                       : $t("message.streamis.formItems.stopBtn")
                   }}
                 </Button>
-                <Button type="primary" size="small" @click="handleConfig(row)">
+                <Button type="primary" size="small" @click="handleRouter(row, 'jobConfigure')">
                   {{ $t("message.streamis.formItems.configBtn") }}
                 </Button>
                 <Button
@@ -220,20 +225,7 @@ export default {
         {
           title: this.$t("message.streamis.jobListTableColumns.version"),
           key: "version",
-          render: (h, params) => {
-            return h(
-              "span",
-              {
-                style: {
-                  background: params.index === 0 ? "fff" : "#008000",
-                  color: "#fff",
-                  display: "inline-block",
-                  padding: "2px"
-                }
-              },
-              params.row.version
-            );
-          }
+          slot: "version"
         },
         {
           title: this.$t("message.streamis.jobListTableColumns.lastRelease"),
@@ -358,7 +350,8 @@ export default {
           module: moduleName
             ? moduleMap[moduleName] || moduleName
             : "jobSummary",
-          name: rowData.jobName
+          name: rowData.jobName,
+          version: rowData.version
         }
       });
     },
@@ -372,6 +365,23 @@ export default {
       this.pageData.pageSize = pageSize;
       this.pageData.current = 1;
       this.getJobList();
+    },
+    versionDetail(data){
+      console.log(data);
+      this.loading = true;
+      api
+        .fetch("streamis/streamJobManager/job/version?jobId=" + data.jobId, "get")
+        .then(res => {
+          console.log(res);
+          if (res) {
+            this.loading = false;
+          }
+        })
+        .catch(e => {
+          console.log(e);
+          this.loading = false;
+        });
+
     }
   }
 };
@@ -392,5 +402,14 @@ export default {
 }
 .page {
   margin-top: 20px;
+}
+.version{
+  background-color: #008000;
+  width: 30px;
+  text-align: center;
+  color: #ffffff;
+  font-size: 16px;
+  cursor: pointer;
+
 }
 </style>
