@@ -47,6 +47,18 @@
         "upload": "导入"
         
       },
+      "versionDetail":{
+        "modalTitle":"版本详情",
+        "jobId":"作业id",
+        "version":"版本",
+        "description":"描述",
+        "createTime":"创建时间",
+        "creator":"创建者",
+        "projectID":"项目id",
+        "dssLabels":"dss环境",
+        "resourceId":"bml id",
+        "bmlVersion":"bml版本"
+      },
       "jobMoudleRouter": {
         "paramsConfiguration": "参数配置",
         "alertConfiguration": "告警配置",
