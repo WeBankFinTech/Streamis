@@ -74,12 +74,15 @@ export default {
   },
   mounted() {
     this.getDatas();
+    console.log(this.$route.params)
   },
   methods: {
     getDatas() {
+      const {id, version} = this.$route.params || {};
+      const queries = `?jodId=${id}&version=${version}`
       api
         .fetch(
-          "streamis/streamJobManager/job/execute/history",
+          "streamis/streamJobManager/job/execute/history" + queries,
           "get"
         )
         .then(res => {
