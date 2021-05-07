@@ -51,7 +51,7 @@
               <Button
                 type="primary"
                 @click="handleQuery()"
-                style="margin-left:80px"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;"
               >
                 {{ $t("message.streamis.formItems.queryBtn") }}
               </Button>
@@ -60,7 +60,7 @@
           <Table :columns="columns" :data="tableDatas" :loading="loading">
             <template slot-scope="{ row, index }" slot="jobName">
               <div class="jobName" v-show="index === 0">
-                <Upload action="uuu" format="['jar']">
+                <Upload action="/api/rest_j/v1/streamis/streamJobManager/job/upload">
                   <Icon type="md-add" class="upload" />
                   <span>{{
                     $t("message.streamis.jobListTableColumns.upload")
@@ -86,33 +86,45 @@
               </div>
             </template>
             <template slot-scope="{ row, index }" slot="version">
-              <div class="version" v-show="index !== 0" @click="versionDetail(row)">
-                {{row.version}}
+              <div
+                class="version"
+                v-show="index !== 0"
+                @click="versionDetail(row)"
+              >
+                {{ row.version }}
               </div>
             </template>
             <template slot-scope="{ row, index }" slot="operation">
               <div v-show="index !== 0">
                 <Button
-                  :type="row.taskStatus !== 5 ? 'success' : 'error'"
-                  size="small"
-                  style="margin-right: 5px"
+                  type="primary"
+                  v-show="row.taskStatus !== 5"
+                  style="width:60px;height:22px;background:#008000;margin-right: 5px"
                   @click="handleAction(row)"
                 >
-                  {{
-                    row.taskStatus !== 5
-                      ? $t("message.streamis.formItems.startBtn")
-                      : $t("message.streamis.formItems.stopBtn")
-                  }}
-                </Button>
-                <Button type="primary" size="small" @click="handleRouter(row, 'jobConfigure')">
-                  {{ $t("message.streamis.formItems.configBtn") }}
+                  {{ $t("message.streamis.formItems.startBtn") }}
                 </Button>
                 <Button
-                  type="success"
-                  size="small"
-                  style="margin-right: 5px"
+                  type="primary"
+                  v-show="row.taskStatus === 5"
+                  style="width:60px;height:22px;background:#ff0000;margin-right: 5px"
+                  @click="handleAction(row)"
+                >
+                  {{ $t("message.streamis.formItems.stopBtn") }}
+                </Button>
+                <Button
+                  type="primary"
+                  @click="handleRouter(row, 'jobConfig')"
+                  style="width:60px;height:22px;background:rgba(22, 155, 213, 1);margin-right: 5px;"
+                >
+                  {{ $t("message.streamis.formItems.configBtn") }}
+                </Button>
+                <br />
+                <Button
+                  type="primary"
                   v-show="row.taskStatus !== 'running'"
                   @click="handleAction(row)"
+                  style="width:125px;height:24px;background:#008000;margin-right: 5px;margin-top:2px;"
                 >
                   checkpoint
                 </Button>
@@ -132,7 +144,7 @@
         </div>
       </div>
     </titleCard>
-    <versionDetail :visible="modalVisible" :datas="versionDatas"/>
+    <versionDetail :visible="modalVisible" :datas="versionDatas" />
   </div>
 </template>
 <script>
@@ -257,7 +269,7 @@ export default {
       },
       loading: false,
       modalVisible: false,
-      versionDatas: [],
+      versionDatas: []
     };
   },
   mounted() {
@@ -318,10 +330,7 @@ export default {
         taskStatus === 5
           ? "streamis/streamJobManager/job/stop?jobId=" + jobId
           : "streamis/streamJobManager/job/execute";
-      const second =
-        taskStatus === 5
-          ? "get"
-          : {jobId};
+      const second = taskStatus === 5 ? "get" : { jobId };
       api
         .fetch(path, second)
         .then(res => {
@@ -343,9 +352,10 @@ export default {
       console.log(rowData);
       console.log(moduleName);
       const moduleMap = {
-        paramsConfiguration: "jobConfigure",
-        alertConfiguration: "jobConfigure",
-        runningHistory: "jobHistory"
+        paramsConfiguration: "jobConfig",
+        alertConfiguration: "jobConfig",
+        runningHistory: "jobHistory",
+        runningLogs: "jobHistory"
       };
       this.$router.push({
         name: "JobDetail",
@@ -370,11 +380,17 @@ export default {
       this.pageData.current = 1;
       this.getJobList();
     },
-    versionDetail(data){
+    versionDetail(data) {
       console.log(data);
       this.loading = true;
       api
-        .fetch("streamis/streamJobManager/job/version?jobId=" + data.jobId +"&version=" + data.version, "get")
+        .fetch(
+          "streamis/streamJobManager/job/version?jobId=" +
+            data.jobId +
+            "&version=" +
+            data.version,
+          "get"
+        )
         .then(res => {
           console.log(res);
           if (res) {
@@ -386,7 +402,6 @@ export default {
           console.log(e);
           this.loading = false;
         });
-
     }
   }
 };
@@ -408,13 +423,12 @@ export default {
 .page {
   margin-top: 20px;
 }
-.version{
+.version {
   background-color: #008000;
   width: 30px;
   text-align: center;
   color: #ffffff;
   font-size: 16px;
   cursor: pointer;
-
 }
 </style>
