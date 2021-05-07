@@ -2,6 +2,7 @@ package com.webank.wedatasphere.streamis.datasource.manager.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.webank.wedatasphere.streamis.datasource.manager.domain.StreamisDatasourceAuthority;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * <p>
@@ -11,6 +12,7 @@ import com.webank.wedatasphere.streamis.datasource.manager.domain.StreamisDataso
  * @author c01013
  * @since 2021-04-02
  */
+@Mapper
 public interface StreamisDatasourceAuthorityDao extends BaseMapper<StreamisDatasourceAuthority> {
 
 }
