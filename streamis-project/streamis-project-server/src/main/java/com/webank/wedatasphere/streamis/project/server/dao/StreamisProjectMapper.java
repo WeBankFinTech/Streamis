@@ -1,6 +1,5 @@
 package com.webank.wedatasphere.streamis.project.server.dao;
 
-import com.webank.wedatasphere.streamis.project.server.entity.StreamisProject;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -8,10 +7,6 @@ import org.apache.ibatis.annotations.Mapper;
  * Description:
  */
 @Mapper
-public interface ProjectMapper {
-
-    void insertProject(StreamisProject streamisProject);
-
-
+public interface StreamisProjectMapper {
 
 }
