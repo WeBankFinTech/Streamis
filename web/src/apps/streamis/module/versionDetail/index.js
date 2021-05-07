@@ -15,5 +15,5 @@
  *
  */
 
-import titleCard from './index.vue';
-export default titleCard;
+import versionDetail from './index.vue';
+export default versionDetail;
