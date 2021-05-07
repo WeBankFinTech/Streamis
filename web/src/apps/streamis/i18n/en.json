@@ -11,7 +11,7 @@
         "jobList": "Job list",
         "jobSummary": "Job summary",
         "jobHistory": "Job history",
-        "jobConfigure": "Job configure",
+        "jobConfig": "Job config",
         "jobDetail": "Job detail"
       },
 
@@ -29,11 +29,12 @@
       "formItems": {
         "queryBtn": "Query",
         "jobStatus": "Job status",
-        "submitter": "Submitter",
+        "jobCreator": "Job Creator",
         "jobName": "Job name",
         "stopBtn": "Stop",
         "startBtn": "Start",
-        "configBtn": "Config"
+        "configBtn": "Config",
+        "saveBtn": "Save"
       },
       "jobListTableColumns":{
         "jobName": "Job name",
@@ -46,6 +47,18 @@
         "operation": "Operation",
         "upload": "Upload"
         
+      },
+      "versionDetail":{
+        "modalTitle":"Version detail",
+        "jobId":"Job id",
+        "version":"Version",
+        "description":"Description",
+        "createTime":"Create time",
+        "creator":"Creator",
+        "projectID":"Project id",
+        "dssLabels":"Dss labels",
+        "resourceId":"Resource id",
+        "bmlVersion":"Bml version"
       },
       "jobMoudleRouter": {
         "paramsConfiguration": "Params configuration",
@@ -95,9 +108,9 @@
             "operation": "Operation"
           }
       },
-      "jobConfigure": {
-        "resourceConfigure": "Resource configure",
-        "productionConfigure": "Production configure",
+      "jobConfig": {
+        "resourceConfig": "Resource config",
+        "productionConfig": "Production config",
         "flinkParameters": "Flink parameters",
         "alertSet": "Alert set",
         "authoritySet": "Authority set",
