@@ -48,6 +48,18 @@
         "upload": "Upload"
         
       },
+      "versionDetail":{
+        "modalTitle":"Version detail",
+        "jobId":"Job id",
+        "version":"Version",
+        "description":"Description",
+        "createTime":"Create time",
+        "creator":"Creator",
+        "projectID":"Project id",
+        "dssLabels":"Dss labels",
+        "resourceId":"Resource id",
+        "bmlVersion":"Bml version"
+      },
       "jobMoudleRouter": {
         "paramsConfiguration": "Params configuration",
         "alertConfiguration": "Alert configuration",

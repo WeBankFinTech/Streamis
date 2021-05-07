@@ -15,5 +15,5 @@
  *
  */
 
-import uploadDialog from './index.vue';
-export default uploadDialog;
+import titleCard from './index.vue';
+export default titleCard;
