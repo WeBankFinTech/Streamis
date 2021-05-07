@@ -16,7 +16,7 @@
  */
 
 export default {
-  name: 'jobConfigure',
+  name: 'jobConfig',
   dispatchs: {
   },
   component: () => import('./index.vue'),
