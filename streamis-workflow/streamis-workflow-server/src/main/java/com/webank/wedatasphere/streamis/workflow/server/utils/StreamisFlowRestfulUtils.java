@@ -1,4 +1,4 @@
-package com.webank.wedatasphere.streamis.project.server.utils;
+package com.webank.wedatasphere.streamis.workflow.server.utils;
 
 import com.webank.wedatasphere.linkis.server.Message;
 import org.apache.commons.math3.util.Pair;
@@ -10,7 +10,7 @@ import java.util.Arrays;
  * created by yangzhiyue on 2021/4/20
  * Description:
  */
-public class RestfulUtils {
+public class StreamisFlowRestfulUtils {
 
 
 
