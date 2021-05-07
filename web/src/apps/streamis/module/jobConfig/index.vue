@@ -191,20 +191,12 @@
                 :label-width="labelWidth"
               >
                 <CheckboxGroup v-model="alertSet.alertRule">
-                  <Checkbox label="logsError">
-                    <span>{{
-                      $t(
-                        "message.streamis.jobConfig.formItems.options.logsError"
-                      )
-                    }}</span>
-                  </Checkbox>
-                  <br />
-                  <Checkbox label="coreException">
-                    <span>{{
-                      $t(
-                        "message.streamis.jobConfig.formItems.options.coreException"
-                      )
-                    }}</span>
+                  <Checkbox
+                    :label="option.value"
+                    v-for="option in alertRuleOptions"
+                    :key="option.value"
+                  >
+                    <span>{{ option.title }}</span>
                   </Checkbox>
                 </CheckboxGroup>
               </FormItem>
@@ -289,10 +281,7 @@
                 "
                 :label-width="labelWidth"
               >
-                <Select
-                  v-model="authoritySet.authorityVisible"
-                  class="select"
-                >
+                <Select v-model="authoritySet.authorityVisible" class="select">
                   <Option
                     v-for="(item, index) in authorityVisibleOptions"
                     :value="item.value"
@@ -329,7 +318,7 @@ function resetFormValue(vueThis, dataName, configs) {
   const keys = Object.keys(vueThis[dataName]);
   const options = {};
   configs.forEach(item => {
-    const { key, value, valueLists } = item;
+    const { key, value, valueLists, name } = item;
     const temp = (key && key.replace(/\./g, "").toLowerCase()) || "";
     const hit = keys.find(i => temp.endsWith(i.toLowerCase()));
     let finalValue = value || value === 0 ? value : "";
@@ -340,8 +329,15 @@ function resetFormValue(vueThis, dataName, configs) {
           value: option.value,
           title: option.value
         });
+        if (name === "告警规则") {
+          finalValue = [];
+        }
         if (option.selected) {
-          finalValue = option.value;
+          if (name === "告警规则") {
+            finalValue.push(option.value);
+          } else {
+            finalValue = option.value;
+          }
         }
       });
       options[hit + "Options"] = ar;
@@ -371,7 +367,7 @@ export default {
       rebootStrategyOptions: [],
       flinkParameters: [[]],
       alertSet: {
-        alertRule: "",
+        alertRule: [],
         alertLeve: "",
         alertUser: "",
         alertFailureLevel: "",
@@ -417,13 +413,13 @@ export default {
             resetFormValue(this, "productionConfig", produceConfig);
             resetFormValue(this, "alertSet", alarmConfig);
             resetFormValue(this, "authoritySet", permissionConfig);
-            if(parameterConfig){
+            if (parameterConfig) {
               const parameters = [];
               parameterConfig.forEach(item => {
-                const {key, vlaue} = item;
+                const { key, vlaue } = item;
                 parameters.push([key, vlaue]);
-              })
-              this.flinkParameters= parameters;
+              });
+              this.flinkParameters = parameters;
             }
           }
         })
@@ -441,7 +437,68 @@ export default {
       newParams.push([]);
       this.flinkParameters = newParams;
     },
-    handleSaveConfig() {}
+    handleSaveConfig() {
+      const map = {
+        resourceConfig: "resourceConfig",
+        productionConfig: "produceConfig",
+        flinkParameters: "parameterConfig",
+        alertSet: "alarmConfig",
+        authoritySet: "permissionConfig"
+      };
+      [
+        "resourceConfig",
+        "productionConfig",
+        "flinkParameters",
+        "alertSet",
+        "authoritySet"
+      ].forEach(name => {
+        const obj = this.fullTree[map[name]];
+        const values = this[name];
+        if (name === "flinkParameters") {
+          if (values[0][0]) {
+            const params = [];
+            values.forEach(ar => {
+              params.push({
+                key: ar[0],
+                name: ar[0],
+                value: ar[1]
+              });
+            });
+            this.fullTree.parameterConfig = params;
+          } else {
+            this.fullTree.parameterConfig = null;
+          }
+          return;
+        }
+        const keys = Object.keys(values);
+        obj.forEach(item => {
+          const { key, valueLists } = item;
+          const temp = (key && key.replace(/\./g, "").toLowerCase()) || "";
+          const hit = keys.find(i => temp.endsWith(i.toLowerCase()));
+          const finalValue = values[hit];
+          item.value = Array.isArray(finalValue)? finalValue[0] : finalValue;
+          if (valueLists) {
+            valueLists.forEach(vl => {
+              if (Array.isArray(finalValue)) {
+                vl.selected = finalValue.includes(vl.value);
+              } else {
+                vl.selected = vl.value === finalValue;
+              }
+            });
+          }
+        });
+      });
+      console.log(this.fullTree);
+      api
+        .fetch("streamis/streamJobManager/config/add", {
+          jobId: this.$route.params.id,
+          fullTree: this.fullTree
+        })
+        .then(res => {
+          console.log(res);
+        })
+        .catch(e => console.log(e));
+    }
   }
 };
 </script>
