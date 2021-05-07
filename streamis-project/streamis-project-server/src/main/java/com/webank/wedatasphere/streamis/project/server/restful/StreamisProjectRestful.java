@@ -6,8 +6,8 @@ import com.webank.wedatasphere.streamis.project.server.entity.StreamisProject;
 import com.webank.wedatasphere.streamis.project.server.entity.request.CreateProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.entity.request.DeleteProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.entity.request.UpdateProjectRequest;
-import com.webank.wedatasphere.streamis.project.server.service.ProjectService;
-import com.webank.wedatasphere.streamis.project.server.utils.RestfulUtils;
+import com.webank.wedatasphere.streamis.project.server.service.StreamisProjectService;
+import com.webank.wedatasphere.streamis.project.server.utils.StreamisProjectRestfulUtils;
 import org.apache.commons.math3.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ public class StreamisProjectRestful {
 
 
     @Autowired
-    private ProjectService projectService;
+    private StreamisProjectService projectService;
 
 
 
@@ -52,11 +52,11 @@ public class StreamisProjectRestful {
         String username = SecurityFilter.getLoginUsername(request);
         try{
             StreamisProject streamisProject = projectService.createProject(username, createProjectRequest);
-            return RestfulUtils.dealOk("创建工程成功",
+            return StreamisProjectRestfulUtils.dealOk("创建工程成功",
                     new Pair<>("projectName", streamisProject.getName()), new Pair<>("projectId", streamisProject.getId()));
         }catch(final Throwable t){
             LOGGER.error("failed to create project for user {}", username, t);
-            return RestfulUtils.dealError("创建工程失败,原因是:" + t.getMessage());
+            return StreamisProjectRestfulUtils.dealError("创建工程失败,原因是:" + t.getMessage());
         }
     }
 
