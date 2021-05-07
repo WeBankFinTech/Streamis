@@ -132,11 +132,13 @@
         </div>
       </div>
     </titleCard>
+    <versionDetail :visible="modalVisible" :datas="versionDatas"/>
   </div>
 </template>
 <script>
 import api from "@/common/service/api";
 import titleCard from "@/apps/streamis/components/titleCard";
+import versionDetail from "@/apps/streamis/module/versionDetail";
 import { jobStatuses } from "@/apps/streamis/common/common";
 function renderSpecialHeader(h, params) {
   return h("div", [
@@ -154,7 +156,7 @@ function renderSpecialHeader(h, params) {
 }
 
 export default {
-  components: { titleCard },
+  components: { titleCard, versionDetail },
   data() {
     return {
       query: {
@@ -253,7 +255,9 @@ export default {
         current: 1,
         pageSize: 20
       },
-      loading: false
+      loading: false,
+      modalVisible: false,
+      versionDatas: [],
     };
   },
   mounted() {
@@ -370,11 +374,12 @@ export default {
       console.log(data);
       this.loading = true;
       api
-        .fetch("streamis/streamJobManager/job/version?jobId=" + data.jobId, "get")
+        .fetch("streamis/streamJobManager/job/version?jobId=" + data.jobId +"&version=" + data.version, "get")
         .then(res => {
           console.log(res);
           if (res) {
             this.loading = false;
+            this.modalVisible = true;
           }
         })
         .catch(e => {
