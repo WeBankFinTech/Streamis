@@ -1,29 +1,23 @@
 package com.webank.wedatasphere.streamis.worflow.server.receiver
 
-import com.google.common.collect.Lists
 import com.webank.wedatasphere.linkis.common.conf.CommonVars
 import com.webank.wedatasphere.linkis.common.utils.{Logging, Utils}
 import com.webank.wedatasphere.linkis.rpc.{Receiver, Sender}
-import com.webank.wedatasphere.streamis.workflow.common.protocol.{StreamFlowCreateRequest, StreamFlowCreateResponse, StreamFlowExportRequest, StreamFlowExportResponse, StreamFlowImportRequest, StreamFlowImportResponse}
+import com.webank.wedatasphere.streamis.workflow.common.protocol._
 import com.webank.wedatasphere.streamis.workflow.server.conf.StreamisFlowConf
 import com.webank.wedatasphere.streamis.workflow.server.service.StreamFlowService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
 
 import java.util
-import scala.concurrent.duration.Duration
 import scala.collection.JavaConversions._
-import scala.collection.JavaConverters._
+import scala.concurrent.duration.Duration
 
 /**
  * created by yangzhiyue on 2021/4/20
  * Description:
  */
-@Component
-class StreamisWorkflowReceiver extends Receiver with Logging {
+class StreamisWorkflowReceiver(streamFlowService: StreamFlowService) extends Receiver with Logging {
 
-  @Autowired
-  var streamFlowService: StreamFlowService = _
 
 
   private val timeout = CommonVars("wds.streamis.workflow.ask.timeout", 300).getValue

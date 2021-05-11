@@ -6,7 +6,7 @@ import com.webank.wedatasphere.linkis.protocol.Protocol
  * created by yangzhiyue on 2021/4/20
  * Description:
  */
-trait StreamisProtocol extends Protocol
+trait StreamFlowProtocol extends Protocol
 
 
 
@@ -21,7 +21,7 @@ case class StreamFlowCreateRequest(flowName:String,
                                    contextId:String,
                                    projectId:Long,
                                    projectName:String
-                                   ) extends StreamisProtocol
+                                   ) extends StreamFlowProtocol
 
 
 
@@ -29,7 +29,7 @@ case class StreamFlowCreateResponse(status:Int,
                                     flowId:Long,
                                     flowVersion:String,
                                     flowName:String,
-                                    errorMessage:String) extends StreamisProtocol
+                                    errorMessage:String) extends StreamFlowProtocol
 
 
 
@@ -38,7 +38,7 @@ case class StreamFlowExportRequest(username:String,
                                    projectId:Long,
                                    projectName:String,
                                    workspaceStr:String
-                                  ) extends StreamisProtocol
+                                  ) extends StreamFlowProtocol
 
 
 case class StreamFlowCopyRequest(username:String,
@@ -49,14 +49,14 @@ case class StreamFlowCopyRequest(username:String,
                                  orchestratorVersionId:Long,
                                  version:String,
                                  description:String,
-                                 orchestratorId:Long) extends StreamisProtocol
+                                 orchestratorId:Long) extends StreamFlowProtocol
 
 case class StreamFlowExportResponse(status:Int,
                                     streamFlowId:Long,
                                     streamFlowName:String,
                                     bmlResourceId:String,
                                     bmlVersion:String,
-                                    errorMessage:String) extends StreamisProtocol
+                                    errorMessage:String) extends StreamFlowProtocol
 
 
 
@@ -64,7 +64,7 @@ case class StreamFlowCopyResponse(status:Int,
                                   oldStreamFlowId:Long,
                                   newStreamFlowId:Long,
                                   orchestratorId:Long,
-                                  errorMessage:String) extends StreamisProtocol
+                                  errorMessage:String) extends StreamFlowProtocol
 
 
 
@@ -82,12 +82,12 @@ case class StreamFlowImportRequest(streamFlowName:String,
                                    orchestratorVersion:String,
                                    workspaceName:String,
                                    workspaceStr:String
-                                  ) extends StreamisProtocol
+                                  ) extends StreamFlowProtocol
 
 
 case class StreamFlowImportResponse(status:Int,
                                     flowIds:java.util.List[Long],
-                                    errorMessage:String) extends StreamisProtocol
+                                    errorMessage:String) extends StreamFlowProtocol
 
 
 case class StreamFlowQueryRequest()
