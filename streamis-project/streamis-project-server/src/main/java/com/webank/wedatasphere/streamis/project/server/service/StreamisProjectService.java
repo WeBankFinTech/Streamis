@@ -12,7 +12,7 @@ import com.webank.wedatasphere.streamis.project.server.exception.StreamisProject
  * created by yangzhiyue on 2021/4/6
  * Description:
  */
-public interface ProjectService {
+public interface StreamisProjectService {
 
 
 
