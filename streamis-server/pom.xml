@@ -70,7 +70,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.3</version>
-                <inherited>false</inherited>
+                <inherited>false</inherited>FLo
                 <executions>
                     <execution>
                         <id>make-assembly</id>
@@ -87,7 +87,7 @@
                 </executions>
                 <configuration>
                     <skipAssembly>false</skipAssembly>
-                    <finalName>out</finalName>
+                    <finalName>streamis-server</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                     <attach>false</attach>
                     <descriptors>
@@ -111,14 +111,14 @@
                     <include>**/*.xml</include>
                 </includes>
             </resource>
-            <!--<resource>
+            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/*.xml</include>
                     <include>**/*.properties</include>
                     <include>**/*.yml</include>
                 </includes>
-            </resource>-->
+            </resource>
         </resources>
     </build>
 
