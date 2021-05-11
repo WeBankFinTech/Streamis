@@ -4,7 +4,7 @@ import com.webank.wedatasphere.linkis.common.utils.{Logging, Utils}
 import com.webank.wedatasphere.linkis.rpc.{Receiver, Sender}
 import com.webank.wedatasphere.streamis.project.common.{CreateStreamProjectRequest, CreateStreamProjectResponse, UpdateStreamProjectRequest, UpdateStreamProjectResponse}
 import com.webank.wedatasphere.streamis.project.server.entity.request.CreateProjectRequest
-import com.webank.wedatasphere.streamis.project.server.service.ProjectService
+import com.webank.wedatasphere.streamis.project.server.service.StreamisProjectService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
@@ -15,13 +15,9 @@ import scala.concurrent.duration.Duration
  * Description: streamis project 支持rest 和 rpc两种方式
  * 本receiver是rpc的方式
  */
-@Component
-class ProjectServerReceiver extends Receiver with Logging{
+class StreamisProjectServerReceiver(projectService:StreamisProjectService) extends Receiver with Logging{
 
 
-
-  @Autowired
-  private var projectService:ProjectService = _
 
 
   override def receive(message: Any, sender: Sender): Unit = {
