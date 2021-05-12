@@ -15,6 +15,8 @@ public interface StreamJobMapper {
 
     List<StreamJob> getJobLists(@Param("projectId") Long projectId,@Param("name") String name,@Param("status") Integer status,@Param("createBy") String createBy);
 
+    List<StreamJob> getJobByName(@Param("name") String name);
+
     StreamJob getJobById(@Param("jobId") Long jobId);
 
     List<StreamJob> getByJobCount(@Param("projectId") Long projectId);
