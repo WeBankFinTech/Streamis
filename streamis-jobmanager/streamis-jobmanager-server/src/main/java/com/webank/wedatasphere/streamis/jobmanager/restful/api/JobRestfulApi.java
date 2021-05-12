@@ -2,20 +2,20 @@ package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-
 import com.webank.wedatasphere.linkis.server.Message;
 import com.webank.wedatasphere.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.*;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.ProjectService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.TaskService;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -35,7 +35,10 @@ public class JobRestfulApi {
     JobService jobService;
     @Autowired
     TaskService taskService;
+    @Autowired
+    ProjectService projectService;
 
+    ObjectMapper mapper = new ObjectMapper();
 
     @GET
     @Path("/list")
@@ -81,7 +84,7 @@ public class JobRestfulApi {
                            @FormDataParam("projectId") Long projectId,
                            @FormDataParam("path") String path,
                            FormDataMultiPart form) throws IOException, JobException {
-        String userName = SecurityFilter.getLoginUsername(req);
+
         if (StringUtils.isEmpty(path)) {
             JobExceptionManager.createException(30300,path);
         }
@@ -172,6 +175,22 @@ public class JobRestfulApi {
 
         return Message.messageToResponse(Message.ok());
     }
+    @POST
+    @Path("/publishToJobManager")
+    public Response publishToJobManager(@Context HttpServletRequest req, Map<String, Object> json) throws IOException, JobException{
+        if(json == null){
+            JobExceptionManager.createException(30301,"version");
+        }
+        PublishRequestVO publishRequestVO = mapper.readValue(mapper.writeValueAsString(json), PublishRequestVO.class);
+        if(publishRequestVO == null){
+            JobExceptionManager.createException(30301,"version");
+        }
+
+
+        //todo 发布
+        return Message.messageToResponse(Message.ok());
+    }
+
     @GET
     @Path("/flow")
     public Response flowJob(@Context HttpServletRequest req,@QueryParam("jobId") Long jobId,@QueryParam("version") String version) throws IOException, JobException{
