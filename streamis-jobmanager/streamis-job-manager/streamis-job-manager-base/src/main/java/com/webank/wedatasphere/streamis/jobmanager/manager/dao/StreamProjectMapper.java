@@ -14,6 +14,6 @@ public interface StreamProjectMapper {
 
     void updateProject(StreamProject streamProject);
 
-    List<StreamProject> getByProjects(@Param("id") Long id,@Param("workspaceId") Long workspaceId);
+    List<StreamProject> getByProjects(@Param("id") Long id,@Param("workspaceId") Long workspaceId,@Param("name") String name);
 
 }

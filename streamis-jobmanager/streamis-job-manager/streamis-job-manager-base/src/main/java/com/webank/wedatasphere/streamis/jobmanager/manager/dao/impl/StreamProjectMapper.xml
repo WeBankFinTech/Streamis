@@ -50,7 +50,26 @@
             <if test="name != null and name != ''">
                 name=#{name},
             </if>
+            <if test="createBy != null and createBy=!=''">
+                create_by=#{createBy},
+            </if>
         </trim>
           WHERE id=#{id}
     </update>
+
+    <select id="getByProjects" resultMap="StreamProjectMap">
+        select <include refid="Project_Column" /> from linkis_stream_project
+        <where>
+            1=1
+            <if test="id != null">
+                AND id=#{id}
+            </if>
+            <if test="workspaceId != null">
+                AND workspace_id=#{workspaceId}
+            </if>
+            <if test="name != null and name!=''">
+                AND `name`=#{name}
+            </if>
+        </where>
+    </select>
 </mapper>
