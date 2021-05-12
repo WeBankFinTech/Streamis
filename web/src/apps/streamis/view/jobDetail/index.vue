@@ -38,7 +38,7 @@ export default {
     jobSummary: jobSummary.component,
     jobHistory: jobHistory.component,
     jobDetail: jobDetail.component,
-    jobConfig: jobConfig.component,
+    jobConfig: jobConfig.component
   },
   data() {
     return {
