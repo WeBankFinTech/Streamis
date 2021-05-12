@@ -3,10 +3,12 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import com.webank.wedatasphere.linkis.common.utils.Logging
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
-import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamBmlMapper, StreamJobMapper}
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobFlowVO, JobProgressVO, QueryJobListVO, TaskCoreNumVO}
+import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamBmlMapper, StreamJobMapper, StreamProjectMapper}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamProject
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobFlowVO, JobProgressVO, PublishRequestVO, QueryJobListVO, TaskCoreNumVO}
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.DateUtils
-import org.slf4j.Logger
+import org.apache.commons.lang.StringUtils
+import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -20,6 +22,8 @@ class JobService extends Logging{
 
   @Autowired private var streamJobMapper:StreamJobMapper=_
   @Autowired private var streamBmlMapper:StreamBmlMapper=_
+  @Autowired private var streamProjectMapper:StreamProjectMapper=_
+
 
   def getByProList(projectId:Long,jobName:String,jobStatus:Integer,jobCreator:String):java.util.List[QueryJobListVO] = {
     val jobLists = streamJobMapper.getJobLists(projectId, jobName, jobStatus, jobCreator).asScala
@@ -95,5 +99,53 @@ class JobService extends Logging{
     val jobVersionHead = jobVersions.asScala.head
 
   }
+
+  /**
+   * 发布
+   * @param publishRequestVO
+   */
+  def publishToJobManager(publishRequestVO:PublishRequestVO): Unit ={
+    //处理项目
+    val projectName = publishRequestVO.getProjectName
+    if(StringUtils.isEmpty(projectName)){
+        error("projectName is null")
+        return
+    }
+    if(StringUtils.isEmpty(publishRequestVO.getStreamisJobName)){
+        error("jobName is null")
+        return
+    }
+
+    addPublishProject(publishRequestVO)
+    //作业
+
+
+  }
+
+  /**
+   * 存储项目
+   * @param publishRequestVO
+   */
+  def addPublishProject(publishRequestVO:PublishRequestVO): Unit ={
+    val projectName = publishRequestVO.getProjectName
+    val projectList = streamProjectMapper.getByProjects(null, null, projectName)
+    if(projectList!=null && projectList.size() > 0){
+      val project = new StreamProject()
+      BeanUtils.copyProperties(projectList.asScala.head,project)
+      streamProjectMapper.updateProject(project)
+    }else{
+      val project = new StreamProject()
+      project.setName(projectName)
+      project.setCreateBy(publishRequestVO.getCreateBy)
+      streamProjectMapper.instertProject(project)
+    }
+  }
+
+  def addPublishJob(publishRequestVO:PublishRequestVO): Unit ={
+    val jobName = publishRequestVO.getStreamisJobName
+
+
+  }
+
 
 }
