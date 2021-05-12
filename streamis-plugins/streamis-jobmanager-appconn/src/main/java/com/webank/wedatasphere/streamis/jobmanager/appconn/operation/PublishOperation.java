@@ -30,7 +30,7 @@ public class PublishOperation implements Operation<PublishRequestRef, PublishRes
 
     private AppInstance appInstance;
 
-    private static final String DEFAULT_PUBLISH_URL = "api/rest_j/v1/streamis/publishToJobManager";
+    private static final String DEFAULT_PUBLISH_URL = "api/rest_j/v1/streamis/streamJobManager/job/publishToJobManager";
 
     private SSORequestOperation<HttpAction, HttpResult> ssoRequestOperation;
 

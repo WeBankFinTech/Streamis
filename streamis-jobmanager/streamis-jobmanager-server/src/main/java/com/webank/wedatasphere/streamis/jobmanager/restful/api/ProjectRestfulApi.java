@@ -28,7 +28,7 @@ public class ProjectRestfulApi {
     @GET
     @Path("/core/target")
     public Response getView(@Context HttpServletRequest req, @QueryParam("projectId") Long projectId) throws IOException, ProjectException {
-        String username = SecurityFilter.getLoginUsername(req);
+
         if(projectId==null){
             throw new ProjectException("params cannot be empty!");
         }
