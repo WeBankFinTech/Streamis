@@ -36,7 +36,6 @@ public class ConfigurationRestfulApi {
     @GET
     @Path("/view")
     public Response getView(@Context HttpServletRequest req,@QueryParam("jobId") Long jobId) throws IOException, ConfigurationException {
-        String username = SecurityFilter.getLoginUsername(req);
         if(jobId==null){
             throw new ConfigurationException("params cannot be empty!");
         }
