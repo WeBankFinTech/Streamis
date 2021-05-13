@@ -63,7 +63,7 @@ public class DataSourceServer2managerRestfulApi {
 
     }
 
-    @GET
+    @POST
     @Path("streamisTableMetaInfo/{streamis_table_meta_Id}")
     public Response deleteStreamisTableMeta(@Context  HttpServletRequest req,  @PathParam("streamis_table_meta_Id")Long id) throws ErrorException {
         return streamisTableMetaApi.deleteStreamisTableMeta(req,id);

@@ -3,11 +3,13 @@ package com.webank.wedatasphere.streamis.workflow.server.service.impl;
 import com.google.common.collect.Lists;
 import com.webank.wedatasphere.dss.common.entity.DSSLabel;
 import com.webank.wedatasphere.dss.common.entity.IOEnv;
+import com.webank.wedatasphere.dss.common.exception.DSSErrorException;
 import com.webank.wedatasphere.dss.common.utils.DSSCommonUtils;
 import com.webank.wedatasphere.dss.standard.app.sso.Workspace;
 import com.webank.wedatasphere.dss.workflow.WorkFlowManager;
 import com.webank.wedatasphere.dss.workflow.common.entity.DSSFlow;
 import com.webank.wedatasphere.dss.workflow.entity.DSSFlowImportParam;
+import com.webank.wedatasphere.dss.workflow.service.DSSFlowService;
 import com.webank.wedatasphere.streamis.workflow.common.protocol.StreamFlowCopyRequest;
 import com.webank.wedatasphere.streamis.workflow.common.protocol.StreamFlowCreateRequest;
 import com.webank.wedatasphere.streamis.workflow.common.protocol.StreamFlowExportRequest;
@@ -37,6 +39,10 @@ public class StreamFlowServiceImpl implements StreamFlowService {
 
     @Autowired
     private WorkFlowManager workFlowManager;
+
+
+    @Autowired
+    DSSFlowService dssFlowService;
 
     @Override
     public DSSFlow createStreamFlow(StreamFlowCreateRequest streamFlowCreateRequest) throws StreamisFlowErrorException {
@@ -127,5 +133,15 @@ public class StreamFlowServiceImpl implements StreamFlowService {
     @Override
     public void deleteStreamFlow() throws StreamisFlowErrorException {
 
+    }
+
+    @Override
+    public DSSFlow getStreamFlow(Long flowId) throws StreamisFlowErrorException {
+        try {
+            return dssFlowService.getLatestVersionFlow(flowId);
+        } catch (DSSErrorException e) {
+            LOGGER.error("failed to get dssFlow for {}", flowId);
+            throw new StreamisFlowErrorException(600407, "failed to get flow", e);
+        }
     }
 }
