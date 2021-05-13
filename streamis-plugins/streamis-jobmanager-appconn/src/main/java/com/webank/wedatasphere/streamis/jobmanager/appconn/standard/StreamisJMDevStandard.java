@@ -4,7 +4,6 @@ import com.webank.wedatasphere.dss.appconn.core.AppConn;
 import com.webank.wedatasphere.dss.standard.app.development.AbstractLabelDevelopmentIntegrationStandard;
 import com.webank.wedatasphere.dss.standard.app.development.RefOperationService;
 import com.webank.wedatasphere.dss.standard.common.desc.AppDesc;
-import com.webank.wedatasphere.dss.standard.common.exception.AppStandardErrorException;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,9 +26,11 @@ public class StreamisJMDevStandard extends AbstractLabelDevelopmentIntegrationSt
 
 
 
+
     private StreamisJMDevStandard(AppConn appConn){
         this.appConn = appConn;
         this.appDesc = appConn.getAppDesc();
+        init();
     }
 
 
@@ -44,6 +45,10 @@ public class StreamisJMDevStandard extends AbstractLabelDevelopmentIntegrationSt
         return instance;
     }
 
+    @Override
+    public void init()  {
+
+    }
 
 
 
@@ -63,10 +68,7 @@ public class StreamisJMDevStandard extends AbstractLabelDevelopmentIntegrationSt
 
     }
 
-    @Override
-    public void init() throws AppStandardErrorException {
 
-    }
 
     @Override
     public void close() throws IOException {
