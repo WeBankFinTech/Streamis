@@ -1,92 +1,31 @@
 <template>
   <div>
-    <div class="itemWrap">
-      <p>{{ $t("message.streamis.jobDetail.flinkJarPac") }}</p>
-      <div>
-        <Table :columns="columns" :data="flinkDatas" border>
-          <template slot-scope="{ row }" slot="operation">
-            <div>{{ row.id }}</div>
-          </template>
-        </Table>
-      </div>
-    </div>
-    <div class="itemWrap">
-      <p>Program Arguement</p>
-      <div class="programArguement">{{programArguement}}</div>
-    </div>
-    <div class="itemWrap">
-      <p>{{ $t("message.streamis.jobDetail.dependJarPac") }}</p>
-      <div>
-        <Table :columns="columns.filter(item => item.key !== 'entryClass')" :data="dependJar" border>
-          <template slot-scope="{ row }" slot="operation">
-            <div>{{ row.id }}</div>
-          </template>
-        </Table>
-      </div>
-    </div>
-    <div class="itemWrap">
-      <p>{{ $t("message.streamis.jobDetail.userResource") }}</p>
-      <div>
-        <Table :columns="columns.filter(item => item.key !== 'entryClass')" :data="userResource" border>
-          <template slot-scope="{ row }" slot="operation">
-            <div>{{ row.id }}</div>
-          </template>
-        </Table>
-      </div>
-    </div>
+    <jarDetail v-if="detailName==='jarDetail'" :jarData="data" key="jar"/>
+    <workflow v-if="detailName==='workflow'" key="workflow"/>
   </div>
 </template>
 <script>
 import api from "@/common/service/api";
+import jarDetail from "@/apps/streamis/module/jarDetail";
+import workflow from "@/apps/streamis/module/workflow";
+  
 export default {
+  components: {
+    jarDetail: jarDetail.component,
+    workflow: workflow.component
+  },
   data() {
     return {
-      columns: [
-        {
-          title: "id",
-          key: "id"
-        },
-        {
-          title: this.$t("message.streamis.jobDetail.columns.name"),
-          key: "name"
-        },
-        {
-          title: this.$t("message.streamis.jobDetail.columns.version"),
-          key: "version"
-        },
-        {
-          title: this.$t(
-            "message.streamis.jobDetail.columns.versionDescription"
-          ),
-          key: "description"
-        },
-        {
-          title: "Entry Class",
-          key: "entryClass"
-        },
-        {
-          title: this.$t(
-            "message.streamis.jobDetail.columns.versionUploadTime"
-          ),
-          key: "updateTime"
-        },
-        {
-          title: this.$t("message.streamis.jobDetail.columns.operation"),
-          key: "operation"
-        }
-      ],
-      flinkDatas: [],
-      dependJar: [],
-      userResource: [],
-      programArguement: "",
+      detailName: 'workflow',
+      data: {}
     };
   },
   mounted() {
     console.log(this.$route.params);
-    this.getJarDetail();
+    this.getDetail();
   },
   methods: {
-    getJarDetail() {
+    getDetail() {
       api
         .fetch(
           "streamis/streamJobManager/job/upload/details?jobId=" +
@@ -96,11 +35,8 @@ export default {
         .then(res => {
           console.log(res);
           if (res && res.details) {
-            const {mainJars, programArguement, userList, dependentList} = res.details;
-            this.flinkDatas = [...mainJars];
-            this.dependJar = [...dependentList];
-            this.userResource = [...userList];
-            this.programArguement = programArguement;
+            this.detailName = "jarDetail";
+            this.data = res.details;
 
           }
         })
