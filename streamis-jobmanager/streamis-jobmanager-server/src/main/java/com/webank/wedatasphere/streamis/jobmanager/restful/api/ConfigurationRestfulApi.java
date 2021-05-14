@@ -1,7 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
 import com.webank.wedatasphere.linkis.server.Message;
-import com.webank.wedatasphere.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.streamis.jobmanager.exception.ConfigurationException;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.ConfigKeyVO;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.ConfigurationService;
