@@ -30,4 +30,5 @@ public interface StreamFlowService {
 
     void deleteStreamFlow() throws StreamisFlowErrorException;
 
+    DSSFlow getStreamFlow(Long flowId) throws StreamisFlowErrorException;
 }
