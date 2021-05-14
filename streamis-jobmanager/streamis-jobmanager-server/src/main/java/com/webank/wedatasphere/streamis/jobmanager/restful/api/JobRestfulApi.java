@@ -185,8 +185,7 @@ public class JobRestfulApi {
         if(publishRequestVO == null){
             JobExceptionManager.createException(30301,"version");
         }
-
-
+        jobService.publishToJobManager(publishRequestVO);
         //todo 发布
         return Message.messageToResponse(Message.ok());
     }

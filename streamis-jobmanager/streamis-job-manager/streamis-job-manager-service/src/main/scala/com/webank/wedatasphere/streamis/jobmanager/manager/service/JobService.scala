@@ -4,7 +4,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 import com.webank.wedatasphere.linkis.common.utils.Logging
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamBmlMapper, StreamJobMapper, StreamProjectMapper}
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamProject
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobRunRelation, StreamJobSqlResource, StreamJobVersion, StreamProject}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobFlowVO, JobProgressVO, PublishRequestVO, QueryJobListVO, TaskCoreNumVO}
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.DateUtils
 import org.apache.commons.lang.StringUtils
@@ -116,9 +116,9 @@ class JobService extends Logging{
         return
     }
 
-    addPublishProject(publishRequestVO)
-    //作业
-
+    val projectId = addPublishProject(publishRequestVO)
+    publishRequestVO.setProjectId(projectId)
+    addPublishJob(publishRequestVO)
 
   }
 
@@ -126,26 +126,116 @@ class JobService extends Logging{
    * 存储项目
    * @param publishRequestVO
    */
-  def addPublishProject(publishRequestVO:PublishRequestVO): Unit ={
+  def addPublishProject(publishRequestVO:PublishRequestVO): Long ={
     val projectName = publishRequestVO.getProjectName
     val projectList = streamProjectMapper.getByProjects(null, null, projectName)
     if(projectList!=null && projectList.size() > 0){
       val project = new StreamProject()
       BeanUtils.copyProperties(projectList.asScala.head,project)
       streamProjectMapper.updateProject(project)
+      project.getId
     }else{
       val project = new StreamProject()
       project.setName(projectName)
       project.setCreateBy(publishRequestVO.getCreateBy)
       streamProjectMapper.instertProject(project)
+      project.getId
     }
   }
 
   def addPublishJob(publishRequestVO:PublishRequestVO): Unit ={
     val jobName = publishRequestVO.getStreamisJobName
+    val jobLists = streamJobMapper.getJobLists(null, jobName, null, null)
+    val job = new StreamJob()
+    val jobVersion = new StreamJobVersion()
+    val jobSql = new StreamJobSqlResource()
 
+    if(jobLists != null && jobLists.size() > 0) {
+      val jobHead = jobLists.asScala.head
+      BeanUtils.copyProperties(jobHead,job)
+      val tags = publishRequestVO.getTags
+      if(tags != null && tags.size() > 0){
+        job.setLabel(tags.asScala.mkString(","))
+      }
+
+      job.setCreateBy(publishRequestVO.getCreateBy)
+      publishRequestVO.getType match {
+        case "sql"=> job.setJobType(JobConf.JOBMANAGER_FLINK_SQL.getValue)
+      }
+      val preVersion = job.getCurrentVersion
+
+      job.setCurrentVersion(publishRequestVO.getVersion)
+      streamJobMapper.updateJob(job)
+
+      jobVersion.setJobId(job.getId)
+      jobVersion.setVersion(publishRequestVO.getVersion)
+      streamJobMapper.insertJobVersion(jobVersion)
+
+      publishRequestVO.getType match {
+        case "sql"=> {
+          jobSql.setJobVersionId(jobVersion.getId)
+          jobSql.setExecuteSql(publishRequestVO.getExecutionCode)
+          streamJobMapper.updateJobSqlResource(jobSql)
+        }
+      }
+
+      val preVersionList = streamJobMapper.getJobVersionsById(job.getId,preVersion)
+      val jobRunRelation = new StreamJobRunRelation()
+      jobRunRelation.setJobId(job.getId)
+      jobRunRelation.setParentId(preVersionList.asScala.head.getId)
+      jobRunRelation.setJobVersionId(jobVersion.getId)
+
+      addJobRunRelation(job.getStatus.toInt,jobRunRelation)
+
+    }else{
+      val tags = publishRequestVO.getTags
+      if(tags != null && tags.size() > 0){
+        job.setLabel(tags.asScala.mkString(","))
+      }
+
+      publishRequestVO.getType match {
+        case "sql"=> job.setJobType(JobConf.JOBMANAGER_FLINK_SQL.getValue)
+      }
+      job.setProjectId(publishRequestVO.getProjectId)
+      job.setName(publishRequestVO.getStreamisJobName)
+      job.setCurrentVersion(publishRequestVO.getVersion)
+      job.setCreateBy(publishRequestVO.getCreateBy)
+      streamJobMapper.insertJob(job)
+
+      jobVersion.setJobId(job.getId)
+      jobVersion.setVersion(publishRequestVO.getVersion)
+      streamJobMapper.insertJobVersion(jobVersion)
+
+      publishRequestVO.getType match {
+        case "sql"=> {
+          jobSql.setJobVersionId(jobVersion.getId)
+          jobSql.setExecuteSql(publishRequestVO.getExecutionCode)
+          streamJobMapper.insertJobSqlResource(jobSql)
+        }
+      }
+
+    }
 
   }
+
+  def addJobRunRelation(status:Int,jobRunRelation:StreamJobRunRelation): Unit ={
+    val relations = streamJobMapper.getJobRunRelationList(jobRunRelation.getJobId)
+    if(relations == null || relations.isEmpty){
+      jobRunRelation.setParentId(null)
+    }
+    status match {
+      case JobConf.JOBMANAGER_FLINK_JOB_STATUS_TWO.getValue => {
+        streamJobMapper.insertJobRunRelation(jobRunRelation)
+      }
+      case JobConf.JOBMANAGER_FLINK_JOB_STATUS_THREE.getValue => {
+        streamJobMapper.insertJobRunRelation(jobRunRelation)
+      }
+      case JobConf.JOBMANAGER_FLINK_JOB_STATUS_FOUR.getValue => {
+        streamJobMapper.insertJobRunRelation(jobRunRelation)
+      }
+    }
+  }
+
 
 
 }
