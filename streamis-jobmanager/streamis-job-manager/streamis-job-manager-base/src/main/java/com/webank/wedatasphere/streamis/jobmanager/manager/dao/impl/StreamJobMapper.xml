@@ -103,6 +103,7 @@
         </where>
     </select>
 
+
     <insert id="insertJob" useGeneratedKeys="true" keyProperty="id" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
         INSERT INTO linkis_stream_job(`project_id`,`name`,`current_task_id`,`current_version`,`current_release_time`,`org_identification`,`create_by`,`label`,`description`,`job_type`) VALUES(#{projectId},#{name},#{currentTaskId},#{currentVersion},#{currentReleaseTime},#{orgIdentification},#{createBy},#{label},#{description},#{jobType})
     </insert>
