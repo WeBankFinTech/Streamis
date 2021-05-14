@@ -20,4 +20,5 @@ object JobConf {
 
   val JOBMANAGER_FLINK_JOB_STATUS_SEVEN = CommonVars("wds.linkis.flink.job.status.seven", 7,"Stop task")
 
+  val JOBMANAGER_FLINK_SQL = CommonVars("wds.linkis.flink.job.sql", 1,"flink type sql")
 }
