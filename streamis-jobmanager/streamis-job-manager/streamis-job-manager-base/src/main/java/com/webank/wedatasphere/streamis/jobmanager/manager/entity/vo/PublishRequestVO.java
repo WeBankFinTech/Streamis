@@ -3,6 +3,8 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo;
 import java.util.List;
 
 public class PublishRequestVO {
+
+    private Long projectId;
     /**
      * sql或者scala等
      */
@@ -135,5 +137,13 @@ public class PublishRequestVO {
 
     public void setProjectName(String projectName) {
         this.projectName = projectName;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }
