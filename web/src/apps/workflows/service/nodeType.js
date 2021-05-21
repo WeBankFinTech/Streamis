@@ -55,12 +55,14 @@ const NODETYPE = {
   EXCHANGE: 'linkis.data.exchange',
   QUALITIS: 'linkis.appjoint.qualitis',
   PROJECTNODE: 'projectNode',
-  MLSS: 'linkis.appjoint.mlss'
+  MLSS: 'linkis.appjoint.mlss',
+  FLINK: 'linkis.flink.flinksql'
 }
 const ext = {
   [NODETYPE.SHELL]: 'shell',
   [NODETYPE.HQL]: 'hql',
   [NODETYPE.SPARKSQL]: 'sql',
+  [NODETYPE.FLINK]: 'sql',
   [NODETYPE.SPARKPY]: 'pyspark',
   [NODETYPE.SCALA]: 'scala',
   [NODETYPE.PYTHON]: 'python'
@@ -146,5 +148,9 @@ const NODEICON = {
     icon: mlss,
     class: {'mlss': true}
   },
+  [NODETYPE.FLINK]: {
+    icon: sql,
+    class: {}
+  }
 }
 export { NODETYPE, ext, NODEICON};
