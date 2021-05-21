@@ -94,10 +94,10 @@ module.exports = {
       config.plugin('compress').use(FileManagerPlugin, [{
         onEnd: {
           // 先删除根目录下的zip包
-          delete: [`./wedatasphere-DataSphereStudio-${getVersion()}-dist.zip`],
+          delete: [`./streamis-${getVersion()}-dist.zip`],
           // 将dist文件夹下的文件进行打包
           archive: [
-            { source: './dist', destination: `./wedatasphere-DataSphereStudio-${getVersion()}-dist.zip` },
+            { source: './dist', destination: `./streamis-${getVersion()}-dist.zip` },
           ]
         },
       }])
