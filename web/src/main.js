@@ -32,6 +32,7 @@ import './components/svgIcon/index.js'
 import './dss/module/index.js'
 import './apps/scriptis/module/index.js'
 import './apps/workflows/module/index.js'
+import './apps/streamis/assets/streamisIconFont/iconfont.css'
 
 Vue.use(VueRouter)
 Vue.use(component)
