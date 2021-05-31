@@ -843,7 +843,7 @@ export default {
       });
     },
     getOriginJson() {
-      return api.fetch(`/dss/workflow/get`, {
+      return api.fetch(`/streamis/get`, {
         flowId: this.newFlowId,
         labels: this.getCurrentDsslabels()
       },'get').then((res) => {
