@@ -2,11 +2,11 @@
   <div class="table-list">
     <Table :columns="columns" :data="tableDatas" :loading="loading">
       <template slot-scope="{ row, index }" slot="fieldName">
-        <div class="fieldName" v-show="index === 0" @click="addColumn(row, index, tableDatas)">
+        <div class="fieldName" v-if="index === 0" @click="addColumn(row, index, tableDatas)">
           <Icon type="md-add" class="addField"/>
           <span>新增字段</span>
         </div>
-        <div class="fieldName" v-show="index !== 0">
+        <div class="fieldName" v-else>
           <Icon type="md-more" class="more"/>
           <div v-if="!row.edit" style="margin-left: 5px">
             {{ row.fieldName }}
@@ -14,16 +14,16 @@
           <Input v-else v-model="tableColumn.fieldName" placeholder="字段名称" style="width: 100px" />
         </div>
       </template>
-      <template slot-scope="{ row}" slot="fieldIsPrimary">
+      <!-- <template slot-scope="{ row}" slot="fieldIsPrimary">
         <div v-if="!row.edit" style="margin-left: 5px">
           {{ row.fieldIsPrimary }}
-        </div>
-        <!--<Input v-else v-model="tableColumn.fieldIsPrimary" placeholder="是否主键" style="width: 100px" /> -->
-        <RadioGroup v-else v-model="tableColumn.fieldIsPrimary">
+        </div> -->
+      <!--<Input v-else v-model="tableColumn.fieldIsPrimary" placeholder="是否主键" style="width: 100px" /> -->
+      <!--<RadioGroup v-else v-model="tableColumn.fieldIsPrimary">
           <Radio label="是" disabled></Radio>
           <Radio label="否"></Radio>
-        </RadioGroup>
-      </template>
+        </RadioGroup> -->
+      <!-- </template> -->
       <template slot-scope="{ row }" slot="fieldIsPartition">
         <div v-if="!row.edit" style="margin-left: 5px">
           {{ row.fieldIsPartition }}
@@ -56,27 +56,40 @@
       </template>
       <template slot-scope="{ row, index }" slot="operation">
         <div v-if="!row.edit && index !== 0">
-          <Button
-            :type="row.taskStatus !== 'running' ? 'success' : 'error'"
+          <!-- <Button
+            v-bind:disabled="tableInfoFlag"
+            type="primary"
             size="small"
             style="margin-right: 5px"
             @click="editColumn(row, index, tableDatas)">
             修改
           </Button>
-          <Button type="primary" size="small" @click="deleteColumn(row, index)">
+          <Button 
+            v-bind:disabled="tableInfoFlag"
+            type="error" size="small" @click="deleteColumn(row, index)">
+            删除
+         </Button> -->
+          <Button
+            type="primary"
+            size="small"
+            style="margin-right: 5px"
+            @click="editColumn(row, index, tableDatas)">
+            修改
+          </Button>
+          <Button type="error" size="small" @click="deleteColumn(row, index)">
             删除
           </Button>
         </div>
         <!--第一列隐藏确定和取消 -->
         <div v-else-if="row.edit && index !== 0">
           <Button
-            :type="row.taskStatus !== 'running' ? 'success' : 'error'"
+            type="primary"
             size="small"
             style="margin-right: 5px"
             @click="submit(row, index)">
             确定
           </Button>
-          <Button type="primary" size="small" @click="cancelColumn(row, index)">
+          <Button type="error" size="small" @click="cancelColumn(row, index)">
             取消
           </Button>
         </div>
@@ -85,7 +98,11 @@
   </div>
 </template>
 <script>
-import api from "@/common/service/api";
+// import api from "@/common/service/api";
+// import config from '../../../scriptis/module/workbench/createTable/config';
+/**
+ * 
+ */
 function renderSpecialHeader(h, params) {
   return h("div", [
     h("strong", params.column.title),
@@ -102,8 +119,12 @@ function renderSpecialHeader(h, params) {
 }
 
 export default {
+  props: ["fieldsListInfo"],
   data() {
     return {
+      tableInfoFlag: '',
+      //保留编辑前的初始值
+      saveDatas: '',
       tableColumn: {},
       query: {
         jobName: "",
@@ -156,7 +177,7 @@ export default {
           title: "是否主键",
           key: "fieldIsPrimary",
           renderHeader: renderSpecialHeader,
-          slot: "fieldIsPrimary",
+          // slot: "fieldIsPrimary",
           render: (h, params) => {
             //this.tableDatas.forEach((e)=>{
             // const bol = Boolean(e.fieldIsPrimary);
@@ -190,7 +211,6 @@ export default {
         {
           title: "字段别名",
           key: "fieldAlias",
-          renderHeader: renderSpecialHeader,
           slot: "fieldAlias"
         },
         {
@@ -220,6 +240,8 @@ export default {
   },
   mounted() {
     this.getFieldsList();
+    console.log(this.fieldsListInfo,"父组件传过来的值")///a1
+    this.tableInfoFlag = Boolean(this.fieldsListInfo);
   },
   methods: {
     // 删除字段
@@ -260,7 +282,23 @@ export default {
     },
     //取消新增字段
     cancelColumn(row, index){
-      this.tableDatas.splice(index, 1)
+      // 如果是添加的取消按钮 我们就直接取消一行
+      if(!this.saveDatas){
+        this.tableDatas.splice(index, 1)
+      } else {
+        // 点击取消编辑框里面的数据恢复到原始值
+        console.log(this.saveDatas,"6666")
+        this.tableDatas.splice(index, 1, {
+          fieldName: this.saveDatas[0],
+          fieldType: this.saveDatas[1],
+          fieldIsPrimary: this.saveDatas[2],
+          fieldIsPartition: this.saveDatas[3],
+          verifyRule: this.saveDatas[4],
+          fieldAlias: this.saveDatas[5],
+          fieldDescription: this.saveDatas[6],
+          edit: false,
+        })
+      }
     },
     //新增字段
     addColumn(row, index){
@@ -272,20 +310,29 @@ export default {
       this.tableColumn.fieldAlias = ''
       this.tableColumn.fieldDescription = ''
       this.tableDatas.splice(index + 1, 0, { edit: true })
+      this.saveDatas = ''
     },
     getFieldsList() {
-      api
-        .fetch("streamis/streamisTableMetaInfo/13", "get")
-        .then(res => {
-          console.log(res);
-          if (res) {
-            const datas = res.tasks || [];
-            datas.unshift({});
-            //this.tableDatas = datas;
-            this.pageData.total = parseInt(res.totalPage);
-          }
-        })
-        .catch(e => console.log(e));
+      // 有星星的时候删除加的第一行空对象
+      // this.tableDatas.splice(0,1)
+
+      
+      // this.tableDatas.forEach((e)=>{
+      // const bol = Boolean(e.fieldIsPrimary);
+      // })
+
+      // api
+      //   .fetch("streamis/streamisTableMetaInfo/13", "get")
+      //   .then(res => {
+      //     console.log(res);
+      //     if (res) {
+      //       const datas = res.tasks || [];
+      //       datas.unshift({});
+      //       //this.tableDatas = datas;
+      //       this.pageData.total = parseInt(res.totalPage);
+      //     }
+      //   })
+      //   .catch(e => console.log(e));
     },
     handleNameQuery() {
       console.log(this.query.jobName);
@@ -293,8 +340,7 @@ export default {
     handleQuery() {},
     // 修改字段
     editColumn(row, index) {
-      console.log(row,"888")
-      //this.tableDatas = this.tableDatas.filter((item) => !item.edit)
+      this.tableDatas = this.tableDatas.filter((item) => !item.edit)
       this.tableDatas.splice(index, 1, { edit: true })
       this.tableColumn.fieldName = row.fieldName
       this.tableColumn.fieldIsPrimary = row.fieldIsPrimary
@@ -303,6 +349,7 @@ export default {
       this.tableColumn.verifyRule = row.verifyRule
       this.tableColumn.fieldAlias = row.fieldAlias
       this.tableColumn.fieldDescription = row.fieldDescription
+      this.saveDatas = [row.fieldName, row.fieldIsPrimary,row.fieldIsPartition,row.fieldType,row.verifyRule,row.fieldAlias,row.fieldDescription]
     },
     handleConfig(data) {
       console.log(data);

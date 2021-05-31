@@ -30,7 +30,7 @@
       </div>
       <div class="panel-pg"></div>
     </div>
-    <tableFieldsList />
+    <tableFieldsList :fieldsListInfo="nodeNameValue"/>
     <div class="panel-table-data">
       <div class="panel-color">
         <img class="icon" src="../../assets/images/u2618.png" />
@@ -49,6 +49,20 @@
 import tableFieldsList from '@/apps/streamis/module/tableFieldsList';
 import tableInfo from '@/apps/streamis/module/tableInfo';
 export default {
+  props: ["fieldsListInfo"],
+  data(){
+    return {
+      nodeNameValue: this.fieldsListInfo
+    }
+  },
+  watch: {
+    fieldsListInfo(){
+      this.nodeNameValue = this.fieldsListInfo; 
+    }
+  },
+  mounted(){
+    // this.nodeNameValue = this.fieldsListInfo; 
+  },
   components: {
     tableFieldsList: tableFieldsList.component,
     tableInfo: tableInfo
