@@ -1,6 +1,5 @@
 <template>
-  <!--数据源内容(动态面板): Source表左侧数据源
-                            Sink表左侧 -->
+  <!--数据源内容(动态面板): Source表左侧数据源Sink表左侧 -->
   <div class="left-container">
     <!--搜索 -->
     <div class="search">
@@ -13,7 +12,6 @@
         <Icon type="md-sync" />
       </div>
     </div>
-    <!--flex布局 -->
     <!--数据源下拉选择框 -->
     <div class="select">
       <div class="select-type">
@@ -39,7 +37,6 @@
     </div>
     <!--数据源内容(库表模式) -->
     <div class="libtable">
-      <!--<Tree :data="list" class="demo-tree-render"></Tree> -->
       <Menu width="228">
         <div v-for="item in list" :key="item.nodeName">
           <Submenu :name="item.nodeName" v-if="item.tablist.length !== 0">
@@ -47,6 +44,7 @@
               <Icon custom="iconfont icon-shuju1" size="16" />
               <span>{{ item.nodeName }}</span>
               <template v-if="streamisFlag">
+                <!--有星星标识的没有添加字段的功能 -->
                 <Icon type="md-star" class="streamisIcon" />
               </template>
             </template>
@@ -84,15 +82,34 @@ export default {
       model15: '',
       isCollapsed: false,
       list: [
+        // {
+        //   nodeName: "db_test_mask1",
+        //   tablist: [
+        //     { "tableName": "a1", "a2": "a2" },
+        //     { "tableName": "a2", "a2": "a2" }
+        //   ]
+        // },
+        // {
+        //   nodeName: "db_test_mask2",
+        //   tablist: []
+        // }
         {
-          nodeName: "db_test_mask1",
+          nodeName: "topic1",//表
+          tablist: []////字段
+        },
+        {
+          nodeName: "topic_test1",
           tablist: [
-            { "tableName": "a1", "a2": "a2" },
-            { "tableName": "a2", "a2": "a2" }
+            { "tableName": "uid", "a2": "a2" },
+            { "tableName": "name", "a2": "a2" }
           ]
         },
         {
-          nodeName: "db_test_mask2",
+          nodeName: "topic_test2",
+          tablist: []
+        },
+        {
+          nodeName: "topic_test3",
           tablist: []
         }
       ],
@@ -117,7 +134,8 @@ export default {
   mounted () {
     //this.getDatasets()
     let that = this
-    let submenuValue = document.querySelectorAll(".ivu-menu-item")
+    // let submenuValue = document.querySelectorAll(".ivu-menu-item")  
+    let submenuValue = document.querySelectorAll(".ivu-menu-submenu-title")
     for (let i = 0; i < submenuValue.length; i++) {
       submenuValue[i].addEventListener("click", function () {
         that.goTablePanel(this.innerText)
@@ -128,8 +146,6 @@ export default {
     goTablePanel (query) {
       this.nodeNameValue = query
       this.$emit('goTableFun', this.nodeNameValue)
-      //this.$emit('goTablePanel', this.nodeNameValue)
-      console.log(this.nodeNameValue, "参数")
     },
   },
   computed: {
@@ -155,6 +171,7 @@ export default {
   font-family: 'Arial Normal', 'Arial';
   font-weight: 400;
   font-style: normal;
+  margin-left: 5px;
   .search{
     display: flex;
     line-height: 40px;
