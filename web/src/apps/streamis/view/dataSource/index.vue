@@ -4,14 +4,16 @@
       <Button type="primary" @click="goToRealTime">实时数据源</Button>
     </div> 
     <div class="container"> 
-      <treeSource @goTableFun="goTablePanel"/>
+      <!--子组件A -->
+      <treeSource @goTableFun="goTablePanel" />
       <div class="rightContainer"> 
         <datasourceToolbar/>
         <template v-if="!nodeNameValue">
           <dataSourceInit/>
         </template>
         <template v-else>
-          <sourceTablePanel/>
+          <!--子组件B -->
+          <sourceTablePanel :fieldsListInfo="nodeNameValue"/>
         </template>
       </div>
     </div>
@@ -38,6 +40,7 @@ export default {
   mounted() {
   },
   methods: {
+    // 父组件
     goTablePanel(nodeNameValue) {
       this.nodeNameValue = nodeNameValue
       console.log(this.nodeNameValue,'子组件传过来的值')
@@ -53,7 +56,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 .dataSource{
-   padding: 10px 30px 0;
+   padding: 10px 30px 0px;
 .container{
   display: flex;
   .rightContainer{
