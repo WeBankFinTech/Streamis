@@ -121,11 +121,13 @@
 <script>
 import storage from "@/common/helper/storage";
 import tag from '@component/tag/index.vue';
+import mixin from '@/common/service/mixin';
 import { GetWorkspaceUserList, GetDicList } from '@/common/service/apiCommonMethod.js';
 export default {
   components: {
     'we-tag': tag,
   },
+  mixins: [mixin],
   props: {
     projectData: {
       type: Object,
