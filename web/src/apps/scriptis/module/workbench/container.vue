@@ -1044,7 +1044,7 @@ export default {
         this.dispatch('WorkSidebar:revealInSideBar', currentWork);
       }
     },
-    convertSettingParams(params) {
+    convertSettingParams(params = {}) {
       let variable = [];
       let configuration = {
         special: {},
