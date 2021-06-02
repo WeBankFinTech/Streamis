@@ -115,8 +115,8 @@ export default {
     // 获取工作空间名称
     getCurrentWorkspaceName() {
       const workspaceData = storage.get("currentWorkspace");
-      if (this.$router.query.workspaceName){
-        return this.$router.query.workspaceName
+      if (this.$route.query.workspaceName){
+        return this.$route.query.workspaceName
       }
       return workspaceData ? workspaceData.name : ''
     },
