@@ -440,7 +440,7 @@ export default {
       // 更新节点的编辑器的内容也更新缓存的tabs
       this.updateProjectCacheByTab();
     },
-    convertSettingParamsVariable(params) {
+    convertSettingParamsVariable(params = {}) {
       const variable = isEmpty(params.variable) ? [] : util.convertObjectToArray(params.variable);
       return variable;
     },
