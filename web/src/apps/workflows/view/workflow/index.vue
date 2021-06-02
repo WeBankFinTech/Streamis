@@ -77,6 +77,7 @@ import WorkflowTabList from '@/apps/workflows/module/common/tabList/index.vue';
 import MakeUp from '@/apps/workflows/module/makeUp'
 import ProjectForm from '@/components/projectForm/index.js'
 import api from '@/common/service/api';
+import mixin from '@/common/service/mixin';
 import { DEVPROCESS, ORCHESTRATORMODES } from '@/common/config/const.js';
 import { GetDicSecondList, GetAreaMap } from '@/common/service/apiCommonMethod.js';
 export default {
@@ -87,6 +88,7 @@ export default {
     makeUp: MakeUp.component,
     ProjectForm
   },
+  mixins: [mixin],
   data() {
     return {
       textColor: '#2D8CF0',
