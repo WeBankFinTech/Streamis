@@ -62,7 +62,7 @@ const ext = {
   [NODETYPE.SHELL]: 'shell',
   [NODETYPE.HQL]: 'hql',
   [NODETYPE.SPARKSQL]: 'sql',
-  [NODETYPE.FLINK]: 'sql',
+  [NODETYPE.FLINK]: 'fql',
   [NODETYPE.SPARKPY]: 'pyspark',
   [NODETYPE.SCALA]: 'scala',
   [NODETYPE.PYTHON]: 'python'
