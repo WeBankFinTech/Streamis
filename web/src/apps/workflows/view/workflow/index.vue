@@ -140,9 +140,6 @@ export default {
       if (val.length > 0) {
         this.currentMode = val[0].dicKey;
       }
-    },
-    currentWorkdapceData(val) {
-      console.log(val, '工作空间数据')
     }
   },
   created() {
@@ -153,7 +150,7 @@ export default {
     // this.getCache();
     let workspaceId = this.$route.query.workspaceId;
 
-    let currentWorkspaceName = storage.get('currentWorkspace') ? storage.get('currentWorkspace').name : '';
+    let currentWorkspaceName = this.getCurrentWorkspaceName();
     let projectName = this.$route.query.projectName;
     this.topTabList = [
       { name: currentWorkspaceName, url: `/workspaceHome?workspaceId=${workspaceId}` },
@@ -164,9 +161,6 @@ export default {
     }
   },
   computed: {
-    currentWorkdapceData() {
-      return storage.get('currentWorkspace')
-    }
   },
   methods: {
     // 获取开发流程基本数据
@@ -263,12 +257,11 @@ export default {
           this.openItemAction(params);
         } else {
           // 打开新的编排先获取接口后在来判断是什么编排
-          const workspaceData = storage.get("currentWorkspace");
           this.loading = true;
           api.fetch(`${this.$API_PATH.ORCHESTRATOR_PATH}openOrchestrator`, {
             orchestratorId: params.id,
             labels: {route: this.modeOfKey},
-            workspaceName: workspaceData.name
+            workspaceName: this.getCurrentWorkspaceName()
           }, 'post')
             .then((openOrchestrator) => {
               this.loading = false;

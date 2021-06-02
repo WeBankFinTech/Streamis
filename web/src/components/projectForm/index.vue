@@ -182,7 +182,7 @@ export default {
     },
     formValid() {
       let validateName = (rule, value, callback) => {
-        let currentWorkspaceName = storage.get("currentWorkspace") ? storage.get("currentWorkspace").name : null;
+        let currentWorkspaceName = this.getCurrentWorkspaceName();
         let username = storage.get("baseInfo", 'local') ? storage.get("baseInfo", 'local').username : null;
         if (currentWorkspaceName && username && value.match(currentWorkspaceName) || value.match(username)) {
           callback(new Error(this.$t('message.workflow.projectDetail.validateName')))
