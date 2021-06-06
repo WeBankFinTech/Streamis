@@ -10,7 +10,10 @@ trait LinkisJobInfo {
 
   def getId: String
 
+  def getUser: String
+
   def getStatus: String
+  def setStatus(status: String): Unit
 
   def getLogPath: String
 
