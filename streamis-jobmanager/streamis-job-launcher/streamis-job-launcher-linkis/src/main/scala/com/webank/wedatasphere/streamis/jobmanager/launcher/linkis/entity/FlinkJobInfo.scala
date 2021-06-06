@@ -10,6 +10,7 @@ import java.util
 class FlinkJobInfo extends YarnJobInfo {
 
   private var id: String = _
+  private var user: String = _
   private var savepoint: String = _
   private var checkpoint: String = _
   private var applicationId: String = _
@@ -27,8 +28,12 @@ class FlinkJobInfo extends YarnJobInfo {
   override def getId: String = id
   def setId(id: String): Unit = this.id = id
 
+
+  override def getUser: String = user
+  def setUser(user: String): Unit = this.user = user
+
   override def getStatus: String = status
-  def setStatus(status: String): Unit = this.status = status
+  override def setStatus(status: String): Unit = this.status = status
 
   override def getLogPath: String = logPath
   def setLogPath(logPath: String): Unit = this.logPath = logPath
@@ -42,4 +47,5 @@ class FlinkJobInfo extends YarnJobInfo {
   def getCheckpoint: String = checkpoint
   def setCheckpoint(checkpoint: String): Unit = this.checkpoint = checkpoint
 
+  override def toString: String = s"FlinkJobInfo(id: $id, status: $status, applicationId: $applicationId, applicationUrl: $applicationUrl, logPath: $logPath)"
 }

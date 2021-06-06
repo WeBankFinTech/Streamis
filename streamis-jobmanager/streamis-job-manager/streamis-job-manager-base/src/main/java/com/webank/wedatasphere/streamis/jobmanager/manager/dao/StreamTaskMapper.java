@@ -17,4 +17,6 @@ public interface StreamTaskMapper {
     List<StreamTask> getByJobIds(@Param("jobId") Long jobId,@Param("version") String version);
 
     StreamTask getTaskById(@Param("id") Long id);
+
+    List<StreamTask> getTasksByStatus(List<int> status);
 }
