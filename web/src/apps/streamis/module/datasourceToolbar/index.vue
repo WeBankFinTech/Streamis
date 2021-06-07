@@ -41,8 +41,6 @@ export default {
 
 <style lang="scss">
 .designer-toolbar {
-    left: 0;
-    top: 0;
     height: 40px;
     padding-left: 10px;
     background: #f7f7f7;
