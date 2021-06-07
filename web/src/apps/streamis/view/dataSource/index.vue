@@ -1,19 +1,61 @@
 <template>
   <div class="dataSource">
-    <div class="header">
-      <Button type="primary" @click="goToRealTime">实时数据源</Button>
-    </div> 
     <div class="container"> 
-      <!--子组件A -->
-      <treeSource @goTableFun="goTablePanel" />
+      <!--左边树 -->
+      <div class="leftContainer">
+        <treeSource @goTableFun="goTablePanel" />
+      </div>
       <div class="rightContainer"> 
-        <datasourceToolbar/>
+        <datasourceToolbar />
         <template v-if="!nodeNameValue">
           <dataSourceInit/>
         </template>
         <template v-else>
           <!--子组件B -->
-          <sourceTablePanel :fieldsListInfo="nodeNameValue"/>
+          <div class="right-container">
+            <div class="panel-table-data">
+              <div class="panel-color">
+                <img class="icon" src="../../assets/images/u2618.png" />
+                <div class="text">
+                  <span>数据源</span>
+                </div>
+                <img src="../../assets/images/u2616.png" />
+              </div>
+              <div class="panel-pg"></div>
+            </div>
+            <div class="datasource">
+              <div class="data-title">
+                <span style="color: #000000">数据源</span>
+                <span style="color: #ff0000">*</span>
+              </div>
+              <div class="data-text">
+                <span>Kafka - 集群1：</span>
+                <span>topic_test1</span>
+              </div>
+            </div>
+            <div class="panel-table-data">
+              <div class="panel-color">
+                <img class="icon" src="../../assets/images/u2618.png" />
+                <div class="text">
+                  <span>表字段</span>
+                </div>
+                <img src="../../assets/images/u2616.png" />
+              </div>
+              <div class="panel-pg"></div>
+            </div>
+            <tableFieldsList :fieldsListInfo="nodeNameValue"/>
+            <div class="panel-table-data">
+              <div class="panel-color">
+                <img class="icon" src="../../assets/images/u2618.png" />
+                <div class="text">
+                  <span>表信息</span>
+                </div>
+                <img src="../../assets/images/u2616.png" />
+              </div>
+              <div class="panel-pg"></div>
+            </div>
+            <tableInfo />
+          </div>
         </template>
       </div>
     </div>
@@ -23,10 +65,12 @@
 import treeSource from '@/apps/streamis/module/treeSource';
 import dataSourceInit from '@/apps/streamis/module/dataSourceInit';
 import datasourceToolbar from '@/apps/streamis/module/datasourceToolbar';
-import sourceTablePanel from '@/apps/streamis/module/sourceTablePanel';
+import tableFieldsList from '@/apps/streamis/module/tableFieldsList';
+import tableInfo from '@/apps/streamis/module/tableInfo';
 export default {
   components: {
-    sourceTablePanel: sourceTablePanel,
+    tableFieldsList: tableFieldsList.component,
+    tableInfo: tableInfo,
     treeSource: treeSource,
     dataSourceInit: dataSourceInit,
     datasourceToolbar: datasourceToolbar,
@@ -45,9 +89,6 @@ export default {
       this.nodeNameValue = nodeNameValue
       console.log(this.nodeNameValue,'子组件传过来的值')
     },
-    goToRealTime(){
-    // this.$router.push({path:'/realTimeDataSource'})
-    },
     resize(height) {
       this.navHeight = height;
     },
@@ -57,18 +98,82 @@ export default {
 <style lang="scss" scoped>
 .dataSource{
    padding: 10px 30px 0px;
-.container{
-  display: flex;
-  .rightContainer{
-    width: 1167px;
-    display: flex;
-    flex-direction: column;
-  }
-}
- .header{
-    width: 2000px;
-    height: 115px;
-    background-color: rgba(242, 242, 242, 1);
+  .container{
+      display: flex;
+      width: 100%;
+    .leftContainer{
+      flex-shrink: 1;
+    }
+    .rightContainer{
+      flex-shrink: 1;
+      width: 1167px;
+      // display: flex;
+      // flex-direction: column;
+      .right-container{
+        border-width: 0px;
+        border-left: 1px solid #AEAEAE;
+        .panel-table-data{
+          display: flex;
+          .panel-pg{
+            width: 1068px;
+            height: 33px;
+            background-color: rgba(107, 107, 107, 1);
+            margin-left: -16px;
+          }
+          .panel-color{
+            position: relative;
+            width: 123px;
+            height: 33px;
+            z-index: 1;
+            .icon{
+              position: absolute;
+              top: 4px;
+              left: 18px;
+              width: 25px;
+              height: 25px;
+            }
+            .text{
+              position: absolute;
+              left: 49px;
+              top: 5px;
+              margin-left: 7px;
+              span{
+                font-weight: 700;
+                font-style: normal;
+                font-size: 16px;
+                color: #FFFFFF;
+              }
+            }
+          }
+        }
+        .datasource{
+          display: flex;
+          padding: 18px 0px 25px 48px;
+          .data-title{
+            width: 48px;
+            white-space: nowrap;
+            line-height: 38px;
+          }
+            .data-text{
+              width: 206px;
+              height: 41px;
+              background: inherit;
+              background-color: rgba(204, 204, 255, 1);
+              border: none;
+              border-radius: 5px;
+              box-shadow: none;
+              margin-left: 84px;
+              font-size: 13px;
+              color: #0033CC;
+              line-height: 41px;
+              text-align: center;
+                span:nth-child(2){
+                  margin-left: 9px;
+                }
+            }
+        }
+      }
+    }
   }
 }
 </style>
