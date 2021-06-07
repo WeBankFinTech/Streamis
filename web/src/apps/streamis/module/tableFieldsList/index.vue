@@ -98,8 +98,7 @@
   </div>
 </template>
 <script>
-// import api from "@/common/service/api";
-// import config from '../../../scriptis/module/workbench/createTable/config';
+import api from "@/common/service/api";
 /**
  * 
  */
@@ -315,27 +314,22 @@ export default {
     getFieldsList() {
       // 有星星的时候删除加的第一行空对象
       // this.tableDatas.splice(0,1)
-
       
       // this.tableDatas.forEach((e)=>{
       // const bol = Boolean(e.fieldIsPrimary);
       // })
-
-      // api
-      //   .fetch("streamis/streamisTableMetaInfo/13", "get")
-      //   .then(res => {
-      //     console.log(res);
-      //     if (res) {
-      //       const datas = res.tasks || [];
-      //       datas.unshift({});
-      //       //this.tableDatas = datas;
-      //       this.pageData.total = parseInt(res.totalPage);
-      //     }
-      //   })
-      //   .catch(e => console.log(e));
-    },
-    handleNameQuery() {
-      console.log(this.query.jobName);
+      api
+        .fetch("streamis/streamisTableMetaInfo/13", "get")
+        .then(res => {
+          console.log(res,"后端返回的数据");
+          if (res) {
+            // const datas = res.tasks || [];
+            // datas.unshift({});
+            //this.tableDatas = datas;
+            this.pageData.total = parseInt(res.totalPage);
+          }
+        })
+        .catch(e => console.log(e));
     },
     handleQuery() {},
     // 修改字段
@@ -351,28 +345,6 @@ export default {
       this.tableColumn.fieldDescription = row.fieldDescription
       this.saveDatas = [row.fieldName, row.fieldIsPrimary,row.fieldIsPartition,row.fieldType,row.verifyRule,row.fieldAlias,row.fieldDescription]
     },
-    handleConfig(data) {
-      console.log(data);
-    },
-    handleRouter(rowData, moduleName) {
-      console.log(rowData);
-      console.log(moduleName);
-      const moduleMap = {
-        paramsConfiguration: "jobConfigure",
-        alertConfiguration: "jobConfigure",
-        runningHistory: "jobHistory"
-      };
-      this.$router.push({
-        name: "JobDetail",
-        params: {
-          id: rowData.jobId,
-          module: moduleName
-            ? moduleMap[moduleName] || moduleName
-            : "jobSummary",
-          name: rowData.jobName
-        }
-      });
-    }
   }
 };
 </script>
