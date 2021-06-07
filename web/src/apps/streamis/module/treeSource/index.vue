@@ -161,9 +161,6 @@ export default {
 
 <style lang="scss">
 .left-container{
-  position: relative;
-  width: 230px;
-  height: 572px;
   border-width: 0px;
   overflow-y: hidden;
   background-color: rgba(255, 255, 255, 1);
@@ -234,16 +231,18 @@ export default {
       padding: 7px 24px;
     }
     .ivu-menu-light.ivu-menu-vertical .ivu-menu-item-active:not(.ivu-menu-submenu):after {
-    content: '';
-    background: #fff;
+      content: '';
+      background: #fff;
+    }
+    .streamisIcon{
+      color: #3300ff;
+      font-size: 16px;
+      margin-left: 15px;
+    }
   }
-  .streamisIcon{
-    color: #3300ff;
-    font-size: 16px;
-    margin-left: 15px;
+  .ivu-menu-vertical.ivu-menu-light:after{
+    display: none;
   }
-  }
-  
 }
 
 
