@@ -1,6 +1,9 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager
+import java.util
+
 import com.webank.wedatasphere.linkis.computation.client.once.simple.SimpleOnceJob
 import com.webank.wedatasphere.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
+import com.webank.wedatasphere.linkis.computation.client.operator.impl.ApplicationInfoOperator
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{FlinkJobInfo, LaunchJob, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
@@ -31,13 +34,21 @@ class SimpleFlinkJobManager extends FlinkJobManager {
   override def triggerSavepoint(id: String, user: String): LinkisJobInfo = throw new FlinkJobLaunchErrorException(30401, "Not support method")
 
   override def createJobInfo(id: String, user: String): LinkisJobInfo = {
+    val nodeInfo = getOnceJob(id, user).getNodeInfo
     val jobInfo = new FlinkJobInfo
     jobInfo.setId(id)
     jobInfo.setUser(user)
-    jobInfo.setApplicationId()
-    jobInfo.setApplicationUrl()
-    jobInfo.setResources()
-    jobInfo.setLogPath()
+    fetchApplicationInfo(jobInfo)
+    jobInfo.setResources(nodeInfo.get("nodeResource").asInstanceOf[util.Map[String, Object]])
+    jobInfo.setLogPath("") //TODO wait for completed
     jobInfo
+  }
+
+  protected def fetchApplicationInfo(jobInfo: FlinkJobInfo): Unit = {
+    val applicationInfo = getOnceJob(jobInfo.getId, jobInfo.getUser).getOperator(ApplicationInfoOperator.OPERATOR_NAME) match {
+      case applicationInfoOperator: ApplicationInfoOperator => applicationInfoOperator.apply()
+    }
+    jobInfo.setApplicationId(applicationInfo.applicationId)
+    jobInfo.setApplicationUrl(applicationInfo.applicationUrl)
   }
 }
