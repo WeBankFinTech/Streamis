@@ -13,6 +13,8 @@ public class StreamTask {
     private String version;
     private Date startTime;
     private Date endTime;
+    private String linkisJobId;
+    private String linkisJobInfo;
     private String errDesc;
     private Integer status;
 
@@ -86,5 +88,21 @@ public class StreamTask {
 
     public void setSubmitUser(String submitUser) {
         this.submitUser = submitUser;
+    }
+
+    public String getLinkisJobId() {
+        return linkisJobId;
+    }
+
+    public void setLinkisJobId(String linkisJobId) {
+        this.linkisJobId = linkisJobId;
+    }
+
+    public String getLinkisJobInfo() {
+        return linkisJobInfo;
+    }
+
+    public void setLinkisJobInfo(String linkisJobInfo) {
+        this.linkisJobInfo = linkisJobInfo;
     }
 }
