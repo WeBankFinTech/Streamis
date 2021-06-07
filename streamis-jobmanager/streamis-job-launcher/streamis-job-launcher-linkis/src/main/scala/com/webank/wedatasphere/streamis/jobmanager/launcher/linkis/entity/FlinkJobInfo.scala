@@ -18,6 +18,7 @@ class FlinkJobInfo extends YarnJobInfo {
   private var status: String = _
   private var logPath: String = _
   private var resources: java.util.Map[String, Object] = _
+  private var completedMsg: String = _
 
   override def getApplicationId: String = applicationId
   def setApplicationId(applicationId: String): Unit = this.applicationId = applicationId
@@ -46,6 +47,9 @@ class FlinkJobInfo extends YarnJobInfo {
 
   def getCheckpoint: String = checkpoint
   def setCheckpoint(checkpoint: String): Unit = this.checkpoint = checkpoint
+
+  override def getCompletedMsg: String = completedMsg
+  def setCompletedMsg(completedMsg: String): Unit = this.completedMsg = completedMsg
 
   override def toString: String = s"FlinkJobInfo(id: $id, status: $status, applicationId: $applicationId, applicationUrl: $applicationUrl, logPath: $logPath)"
 }
