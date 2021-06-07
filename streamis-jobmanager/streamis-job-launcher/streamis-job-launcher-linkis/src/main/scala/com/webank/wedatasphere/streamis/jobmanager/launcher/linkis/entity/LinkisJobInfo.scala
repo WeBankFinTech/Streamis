@@ -19,4 +19,6 @@ trait LinkisJobInfo {
 
   def getResources: java.util.Map[String, Object]
 
+  def getCompletedMsg: String
+
 }
