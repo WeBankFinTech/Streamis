@@ -2,9 +2,10 @@ package com.webank.wedatasphere.streamis.datasource.transfer.client
 
 import java.util.concurrent.TimeUnit
 
-import com.webank.wedatasphere.linkis.datasource.client.impl.LinkisDataSourceRemoteClient
-import com.webank.wedatasphere.linkis.datasource.client.request.QueryDataSourceAction
-import com.webank.wedatasphere.linkis.datasource.client.response.QueryDataSourceResult
+import com.webank.wedatasphere.linkis.datasource.client.impl.{LinkisDataSourceRemoteClient, LinkisMetaDataRemoteClient}
+import com.webank.wedatasphere.linkis.datasource.client.request.{GetAllDataSourceTypesAction, GetConnectParamsByDataSourceIdAction, MetadataGetDatabasesAction, MetadataGetTablesAction, QueryDataSourceAction, QueryDataSourceEnvAction}
+import com.webank.wedatasphere.linkis.datasource.client.response.{GetConnectParamsByDataSourceIdResult, MetadataGetDatabasesResult, MetadataGetTablesResult, QueryDataSourceResult}
+import com.webank.wedatasphere.linkis.datasourcemanager.common.domain.{DataSource, DataSourceEnv, DataSourceType}
 import com.webank.wedatasphere.linkis.httpclient.dws.authentication.StaticAuthenticationStrategy
 import com.webank.wedatasphere.linkis.httpclient.dws.config.DWSClientConfigBuilder
 import com.webank.wedatasphere.streamis.datasource.transfer.conf.TransferConfiguration
@@ -41,6 +42,8 @@ object LinkisDataSourceClient {
 
   val dataSourceClient = new LinkisDataSourceRemoteClient(clientConfig)
 
+  val metaDataClient = new LinkisMetaDataRemoteClient(clientConfig)
+
   def queryDataSource(linkisDatasourceName:String) : QueryDataSourceResult = {
     dataSourceClient.queryDataSource(QueryDataSourceAction.builder()
       .setSystem("")
@@ -48,8 +51,83 @@ object LinkisDataSourceClient {
       .setTypeId(1)
       .setIdentifies("")
       .setCurrentPage(1)
+      .setUser("hadoop")
       .setPageSize(1).build()
     )
   }
+
+  /**
+   * get datasourceConnect information
+   * @param dataSourceId  id
+   * @param system dssSystem
+   * @param user username
+   * @return
+   */
+  def queryConnectParams(dataSourceId:Long,system: String,user:String) : GetConnectParamsByDataSourceIdResult = {
+    dataSourceClient.getConnectParams(GetConnectParamsByDataSourceIdAction.builder()
+      .setDataSourceId(dataSourceId)
+      .setSystem(system)
+      .setUser(user)
+      .build()
+    )
+  }
+  /**
+   * get all DataSourceTypes
+   * @param user user
+   * @return
+   */
+  def queryDataSourceTypes(user:String):java.util.List[DataSourceType]  = {
+    dataSourceClient.getAllDataSourceTypes(GetAllDataSourceTypesAction.builder()
+      .setUser(user)
+      .build()
+    ).getAllDataSourceType
+  }
+
+
+
+  def queryClusterByDataSourceType(system: String,name:String,typeId:Long,user:String):java.util.List[DataSource]  = {
+    dataSourceClient.queryDataSource(QueryDataSourceAction.builder()
+      .setSystem(system)
+      .setName(name)
+      .setTypeId(typeId)
+      .setIdentifies("")
+      .setCurrentPage(1)
+      .setPageSize(10)
+      .setUser(user)
+      .build()
+    ).getAllDataSource
+  }
+
+
+  /**
+   * get DataBases list
+   * @param system
+   * @param dataSourceId
+   * @param user
+   * @return list<String>
+   */
+  def queryDataBasesByCuster(system: String,dataSourceId:Long,user:String):MetadataGetDatabasesResult  = {
+    metaDataClient.getDatabases(MetadataGetDatabasesAction.builder()
+      .setSystem(system)
+      .setDataSourceId(dataSourceId)
+      .setUser(user)
+      .build()
+    )
+  }
+
+  def queryTablesByDataBase(system: String,dataSourceId:Long,dataBase:String , user:String):MetadataGetTablesResult  = {
+    metaDataClient.getTables(MetadataGetTablesAction.builder()
+      .setSystem(system)
+      .setDataSourceId(dataSourceId)
+      .setDatabase(dataBase)
+      .setUser(user)
+      .build()
+    )
+  }
+
+
+
+
+
 
 }

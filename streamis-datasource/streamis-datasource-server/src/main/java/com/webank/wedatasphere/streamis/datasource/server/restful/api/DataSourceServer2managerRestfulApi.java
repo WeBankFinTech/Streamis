@@ -23,14 +23,32 @@ public class DataSourceServer2managerRestfulApi {
     private StreamisTableMetaApi streamisTableMetaApi;
 
 
-    /**
-     * 获取左侧数据源树，需要调用API获取linkis数据源，还需获取streamis数据源
-     */
     @POST
-    @Path("streamisDataSourceList")
-    public Response getStreamisDataSourceList(@Context HttpServletRequest req, Map<String,Object> json
+    @Path("dataSourceType")
+    public Response getDataSourceType(@Context HttpServletRequest req, Map<String,Object> json
     ) throws ErrorException {
-        return  streamisTableMetaApi.getStreamisDataSourceList(req, json);
+        return streamisTableMetaApi.getDataSourceTypes(req, json);
+    }
+
+    @POST
+    @Path("dataSourceCluster")
+    public Response getDataSourceCluster(@Context HttpServletRequest req, Map<String,String> json
+    ) throws ErrorException {
+        return streamisTableMetaApi.getDataSourceCluster(req,json);
+    }
+
+    @POST
+    @Path("dataBases")
+    public Response getDataBasesByCuster(@Context HttpServletRequest req, Map<String,String> json
+    ) throws ErrorException {
+        return streamisTableMetaApi.getDataBasesByCuster(req,json);
+    }
+
+    @POST
+    @Path("tables")
+    public Response getTablesByDataBase(@Context HttpServletRequest req, Map<String,String> json
+    ) throws ErrorException {
+        return streamisTableMetaApi.getTablesByDataBase(req,json);
     }
 
     /**
