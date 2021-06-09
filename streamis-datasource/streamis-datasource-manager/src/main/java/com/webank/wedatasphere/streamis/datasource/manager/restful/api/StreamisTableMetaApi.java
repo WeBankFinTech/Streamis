@@ -18,13 +18,21 @@ package com.webank.wedatasphere.streamis.datasource.manager.restful.api;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.conditions.update.UpdateChainWrapper;
 import com.webank.wedatasphere.linkis.common.exception.ErrorException;
-import com.webank.wedatasphere.streamis.datasource.manager.domain.StreamisDatasourceFields;
-import com.webank.wedatasphere.streamis.datasource.manager.domain.StreamisTableMeta;
+import com.webank.wedatasphere.linkis.datasource.client.response.MetadataGetDatabasesResult;
+import com.webank.wedatasphere.linkis.datasourcemanager.common.domain.DataSource;
+import com.webank.wedatasphere.linkis.datasourcemanager.common.domain.DataSourceType;
+import com.webank.wedatasphere.streamis.datasource.manager.domain.*;
+import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisDatasourceAuthorityService;
+import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisDatasourceExtraInfoService;
 import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisDatasourceFieldsService;
 import com.webank.wedatasphere.linkis.server.Message;
 import com.webank.wedatasphere.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisTableMetaService;
+import com.webank.wedatasphere.streamis.datasource.transfer.client.LinkisDataSourceClient;
+import org.apache.commons.collections.CollectionUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -38,7 +46,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.*;
-
 @Service
 public class StreamisTableMetaApi {
 
@@ -49,40 +56,99 @@ public class StreamisTableMetaApi {
 
     @Autowired
     private StreamisDatasourceFieldsService streamisDatasourceFieldsService;
+
+    @Autowired
+    private StreamisDatasourceAuthorityService streamisDatasourceAuthorityService;
+
+    @Autowired
+    StreamisDatasourceExtraInfoService streamisDatasourceExtraInfoService;
     ObjectMapper mapper = new ObjectMapper();
 
 
-    /**
-     * 获取左侧数据源树，需要调用API获取linkis数据源，还需获取streamis数据源
-     */
-    public Response getStreamisDataSourceList( HttpServletRequest req, Map<String,Object> json
+
+
+
+    public Response getDataSourceCluster( HttpServletRequest req, Map<String,String> json
     ) throws ErrorException {
         Message message = null;
         try{
             String userName = SecurityFilter.getLoginUsername(req);
-            String workSpaceName = (String) json.get("workSpaceName");
-            String projectName = (String) json.get("projectName");
-            String task = (String) json.get("task");
-            String dataSourceType = (String) json.get("dataSourceType");
-            //TODO: invoke rpc interface to get linkisDataSource Information
-
-
-            StreamisTableMeta streamisTableMeta = streamisTableMetaService.getById(1);
-            logger.warn(streamisTableMeta.toString());
-            QueryWrapper<StreamisTableMeta> wrapper = new QueryWrapper<>();
-            wrapper.eq("id",1);
-            StreamisTableMeta one = streamisTableMetaService.getOne(wrapper);
+            String system = json.get("system");
+            String name = json.get("name");
+            Long dataSourceTypeId = Long.valueOf(json.get("dataSourceTypeId"));
+            List<DataSource> dataSourceClusters = getDataSourceClusters(system, name, dataSourceTypeId, userName);
+            message = Message.ok().data("dataSourceCluster",dataSourceClusters);
         }catch (Throwable e){
-            logger.error("",e);
-            throw new ErrorException(30001, "抱歉，后台获取数据源列表失败");
+            logger.error("failed to get dataSourceType list",e);
+            throw new ErrorException(30016, "sorry,failed to get dataSource list");
         }
         return Message.messageToResponse(message);
-
     }
 
+    public Response getDataSourceTypes( HttpServletRequest req, Map<String,Object> json
+    ) throws ErrorException {
+        Message message = null;
+        try{
+            String userName = SecurityFilter.getLoginUsername(req);
+            List<DataSourceType> dataSourceTypes = getDataSourceTypes(userName);
+            message = Message.ok().data("dataSourceTypes",dataSourceTypes);
+        }catch (Throwable e){
+            logger.error("failed to get dataSourceType list",e);
+            throw new ErrorException(30015, "sorry,failed to get dataSourceType list");
+        }
+        return Message.messageToResponse(message);
+    }
+
+    public Response getDataBasesByCuster( HttpServletRequest req, Map<String,String> json
+    ) throws ErrorException {
+        Message message = null;
+        try{
+            String userName = SecurityFilter.getLoginUsername(req);
+            String system = json.get("system");
+            Long dataSourceTypeId = Long.valueOf(json.get("dataSourceId"));
+            List<String> dataBases = queryDataBasesByCuster(system, dataSourceTypeId, userName);
+            message = Message.ok().data("dataBases",dataBases);
+        }catch (Throwable e){
+            logger.error("failed to get dataBases list",e);
+            throw new ErrorException(30017, "sorry,failed to get dataBases list");
+        }
+        return Message.messageToResponse(message);
+    }
+
+    public Response getTablesByDataBase( HttpServletRequest req, Map<String,String> json
+    ) throws ErrorException {
+        Message message = null;
+        try{
+            String userName = SecurityFilter.getLoginUsername(req);
+            String system = json.get("system");
+            Long dataSourceId = Long.valueOf(json.get("dataSourceId"));
+            String dataBase = json.get("dataBase");
+            QueryWrapper<StreamisTableMeta> wrapper = new QueryWrapper<>();;
+            List<String> tables = queryTablesByDataBase(system, dataSourceId, dataBase,userName);
+            List<StreamisDataSourceTableVO> tableList = new ArrayList<>();
+            StreamisDataSourceTableVO tableVO = null;
+            wrapper.eq("node_name",dataBase);
+            List<StreamisTableMeta> list = streamisTableMetaService.list(wrapper);
+
+            for (String table : tables) {
+                for (StreamisTableMeta streamisTableMeta : list) {
+                    tableVO = new StreamisDataSourceTableVO();
+                    tableVO.setTableName(table);
+                    tableVO.setStreamisDataSource(table.equals(streamisTableMeta.getTableName()));
+                    tableList.add(tableVO);
+                }
+
+            }
+            message = Message.ok().data("tables",tableList);
+        }catch (Throwable e){
+            logger.error("failed to get tables list",e);
+            throw new ErrorException(30018, "sorry,failed to get tables list");
+        }
+        return Message.messageToResponse(message);
+    }
 
     public Response getStreamisTableMeta( HttpServletRequest req, Long streamisTableMetaId
-                                     ) throws ErrorException {
+    ) throws ErrorException {
         Message message = null;
         try{
             StreamisTableMeta streamisTableMeta = streamisTableMetaService.getById(streamisTableMetaId);
@@ -92,7 +158,7 @@ public class StreamisTableMetaApi {
             message=Message.ok().data("streamisTableMeta",streamisTableMeta).data("streamisDatasourceFields",streamisDatasourceFields);
         }catch (Throwable e){
             logger.error("Failed to get streamisTableMetaInfo",e);
-            throw new ErrorException(30002, "抱歉，后台获取数据源详细信息失败");
+            throw new ErrorException(30002, "Failed to get streamisTableMetaInfo(后台获取数据源详细信息失败)");
         }
         return Message.messageToResponse(message);
 
@@ -107,6 +173,10 @@ public class StreamisTableMetaApi {
         try{
             List<String> nodeNames = mapper.readValue(json.get("nodeNames"), new TypeReference<List<String>>() {});
 
+            if(CollectionUtils.isEmpty(nodeNames)){
+                logger.error("Failed to get streamisDataSource Tree,node_name is null");
+                throw new ErrorException(30012, "Failed to get streamisDataSource Tree,node_name is null");
+            }
             for (String nodeName : nodeNames) {
                 wrapper = new QueryWrapper<>();
                 wrapper.eq("node_name",nodeName);
@@ -116,8 +186,9 @@ public class StreamisTableMetaApi {
             message = Message.ok().data("nodeTables", nodeTablesMap);
 
         }catch (Throwable e){
+
             logger.error("Failed to get streamisDataSource Tree",e);
-            throw new ErrorException(30011, "抱歉，后台获取左侧数据源树失败");
+            throw new ErrorException(30011, e.getMessage());
         }
         return Message.messageToResponse(message);
 
@@ -128,24 +199,51 @@ public class StreamisTableMetaApi {
         Message message = null;
         try {
             String userName = SecurityFilter.getLoginUsername(req);
+            String authorityId = json.get("authorityId").asText();
+
             StreamisTableMeta streamisTableMeta = mapper.readValue(json.get("streamisTableMeta"), StreamisTableMeta.class);
             //第一次保存linkisDataSource数据源
             streamisTableMeta.setCreateBy(userName);
             boolean result = streamisTableMetaService.save(streamisTableMeta);
             if(!result){
-                throw new ErrorException(30003, "抱歉，添加streamis数据源失败");
+                throw new ErrorException(30003, "Sorry, failed to add streamis data source(抱歉，添加streamis数据源失败_");
             }
             Long streamisTableMetaId = streamisTableMeta.getId();
 
+            //add StreamisDatasourceFields
             List<StreamisDatasourceFields> fieldsList = mapper.readValue(json.get("streamisTableFields"), new TypeReference<List<StreamisDatasourceFields>>() {
             });
 
             fieldsList.forEach(obj ->obj.setStreamisTableMetaId(streamisTableMetaId));
-            boolean b = streamisDatasourceFieldsService.saveBatch(fieldsList);
+            result = streamisDatasourceFieldsService.saveBatch(fieldsList);
+            if(!result){
+                throw new ErrorException(30013, "Sorry, failed to add StreamisTableFields table field information(抱歉，添加StreamisTableFields表字段信息失败)");
+            }
+//            String scope = streamisTableMeta.getScope();
+            StreamisDatasourceAuthority streamisDatasourceAuthority = new StreamisDatasourceAuthority();
+
+            streamisDatasourceAuthority.setAuthorityScope(streamisTableMeta.getScope());
+            streamisDatasourceAuthority.setStreamisTableMetaId(streamisTableMetaId);
+            streamisDatasourceAuthority.setAuthorityId(authorityId);
+            streamisDatasourceAuthority.setGrantUser("*");
+            result = streamisDatasourceAuthorityService.save(streamisDatasourceAuthority);
+            if(!result){
+                throw new ErrorException(30014, " sorry, add streamisDatasourceAuthority information failure (抱歉，添加streamisDatasourceAuthority信息失败)");
+            }
+            List<StreamisDatasourceExtraInfo> extraInfoList = mapper.readValue(json.get("streamisExtraInfo"), new TypeReference<List<StreamisDatasourceExtraInfo>>() {
+            });
+
+            extraInfoList.forEach(obj-> obj.setStreamisTableMetaId(streamisTableMetaId));
+
+            result = streamisDatasourceExtraInfoService.saveBatch(extraInfoList);
+            if(!result){
+                throw new ErrorException(30019, " sorry, add extraInfo information failure");
+            }
+            //add to StreamisDatasourceAuthority
             message = Message.ok().data("streamisTableMetaId",streamisTableMetaId);
         } catch (Exception e) {
             logger.error("Failed to add StreamisTableMeta: ", e);
-            throw new ErrorException(30003, "抱歉，添加streamis数据源失败");
+            throw new ErrorException(30003, e.getMessage());
         }
         return  Message.messageToResponse(message);
     }
@@ -158,16 +256,31 @@ public class StreamisTableMetaApi {
             StreamisTableMeta streamisTableMeta = mapper.readValue(json.get("streamisTableMeta"), StreamisTableMeta.class);
             Long streamisTableMetaId = streamisTableMeta.getId();
             if(null == streamisTableMetaId ){
-                throw new ErrorException(30004, "抱歉，更新streamis数据源信息失败，streamisTableMetaId is null");
+                throw new ErrorException(30004, "sorry，Failed to update streamis data source information(更新streamis数据源信息失败)，streamisTableMetaId is null");
             }
             streamisTableMeta.setUpdateBy(userName);
             // update StreamisTableMeta
             streamisTableMetaService.updateById(streamisTableMeta);
+
+            List<StreamisDatasourceExtraInfo> extraInfoList = mapper.readValue(json.get("streamisExtraInfo"), new TypeReference<List<StreamisDatasourceExtraInfo>>() {
+            });
+
+            extraInfoList.forEach(obj-> obj.setStreamisTableMetaId(streamisTableMetaId));
+            UpdateWrapper<StreamisDatasourceExtraInfo> wrapper = null;
+            boolean result ;
+            for (StreamisDatasourceExtraInfo extraInfo : extraInfoList) {
+                wrapper.eq("key",extraInfo.getKey()).eq("streamis_table_meta_id",streamisTableMetaId).set("value",extraInfo.getValue());
+                result = streamisDatasourceExtraInfoService.update(null, wrapper);
+                if(!result){
+                    throw new ErrorException(30020, String.format("sorry，Failed to update the %s information(更新%s失败)",extraInfo.getKey(),extraInfo.getKey()));
+                }
+            }
+
             message = Message.ok();
 
         } catch (Exception e) {
             logger.error("Failed to update StreamisTableMeta: ", e);
-            throw new ErrorException(30004, "抱歉，更新streamis数据源信息失败");
+            throw new ErrorException(30004,e.getMessage());
         }
         return  Message.messageToResponse(message);
     }
@@ -180,10 +293,16 @@ public class StreamisTableMetaApi {
             streamisDatasourceFieldsQueryWrapper.eq("streamis_table_meta_id",id);
             boolean remove = streamisDatasourceFieldsService.remove(streamisDatasourceFieldsQueryWrapper);
             if (!remove){
-                throw new ErrorException(30008, String.format("抱歉，删除streamis数据源 表[%s]字段信息失败",id));
+                throw new ErrorException(30008, String.format("Sorry, failed to delete the streamis data source table [%s] field information(抱歉，删除streamis数据源 表[%s]字段信息失败)",id,id));
+            }
+            QueryWrapper<StreamisDatasourceAuthority> datasourceAuthorityQueryWrapper = new QueryWrapper<>();
+            datasourceAuthorityQueryWrapper.eq("streamis_table_meta_id",id);
+            remove = streamisDatasourceAuthorityService.remove(datasourceAuthorityQueryWrapper);
+            if (!remove){
+                throw new ErrorException(30015, String.format("抱歉，删除streamisDatasourceAuthority数据源 表[%s]字段信息失败",id));
             }
             // delete StreamisTableMeta
-            boolean result = streamisDatasourceFieldsService.removeById(id);
+            boolean result = streamisTableMetaService.removeById(id);
             if (!result){
                 throw new ErrorException(30009, String.format("抱歉，删除streamis数据源 表[%s]失败",id));
             }
@@ -191,7 +310,7 @@ public class StreamisTableMetaApi {
 
         } catch (Exception e) {
             logger.error("Failed to delete StreamisTableMeta: ", e);
-            throw new ErrorException(30010, "抱歉，删除streamis数据源信息失败");
+            throw new ErrorException(30010, e.getMessage());
         }
         return  Message.messageToResponse(message);
     }
@@ -208,7 +327,7 @@ public class StreamisTableMetaApi {
             message = Message.ok();
         } catch (Exception e) {
             logger.error("Failed to add streamisDatasourceFields: ", e);
-            throw new ErrorException(30005, "抱歉，添加StreamisTableFields表字段信息失败");
+            throw new ErrorException(30005, e.getMessage());
         }
         return  Message.messageToResponse(message);
     }
@@ -239,6 +358,53 @@ public class StreamisTableMetaApi {
         }
         return  Message.messageToResponse(message);
     }
+
+
+    /**
+     * 获取数据源类型
+     * @return 数据源类型列表
+     */
+    public List<DataSourceType> getDataSourceTypes(String userName){
+        return LinkisDataSourceClient.queryDataSourceTypes(userName);
+    }
+
+    /**
+     *
+     * @param system system
+     * @param name username
+     * @param typeId  typeId
+     * @param user hadoop
+     * @return 获取数据源集群
+     */
+    public List<DataSource> getDataSourceClusters(String system,String name,Long typeId ,String user){
+        return LinkisDataSourceClient.queryClusterByDataSourceType(system,name,typeId,user);
+    }
+
+    /**
+     * 获取数据库列表
+     * @param system system
+     * @param dataSourceId dataSourceId
+     * @param user hadoop
+     * @return list<String>
+     */
+    public List<String> queryDataBasesByCuster(String system, Long dataSourceId , String user){
+        return LinkisDataSourceClient.queryDataBasesByCuster(system,dataSourceId,user).dbs();
+    }
+
+    /**
+     * 获取table列表
+     * @param system system
+     * @param dataSourceId dataSourceId
+     * @param dataBase dataBase
+     * @param user user
+     * @return      * @return
+     */
+    public List<String> queryTablesByDataBase(String system, Long dataSourceId , String dataBase,String user){
+        return LinkisDataSourceClient.queryTablesByDataBase(system,dataSourceId,dataBase ,user).tables();
+    }
+
+
+
 
 
 }
