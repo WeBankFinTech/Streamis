@@ -51,6 +51,13 @@ public class DataSourceServer2managerRestfulApi {
         return streamisTableMetaApi.getTablesByDataBase(req,json);
     }
 
+    @POST
+    @Path("columns")
+    public Response getColumnsByTable(@Context HttpServletRequest req, Map<String,String> json
+    ) throws ErrorException {
+        return streamisTableMetaApi.getColumnsByTable(req,json);
+    }
+
     /**
      * 获取数据源的详细信息，包括数据源信息、表信息和字段信息
      */
