@@ -18,6 +18,7 @@ import com.webank.wedatasphere.linkis.common.io.FsPath;
 import com.webank.wedatasphere.linkis.server.Message;
 import com.webank.wedatasphere.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.linkis.storage.FSFactory;
+import com.webank.wedatasphere.streamis.datasource.manager.domain.StreamisDatasourceExtraInfo;
 import com.webank.wedatasphere.streamis.datasource.manager.domain.StreamisDatasourceFields;
 import com.webank.wedatasphere.streamis.datasource.manager.domain.StreamisTableMeta;
 import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisDatasourceFieldsService;
@@ -28,6 +29,8 @@ import com.webank.wedatasphere.streamis.datasource.transfer.service.DataSourceTr
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,14 +68,21 @@ public class DataSourceTransferRestfulApi {
     private ResourceService resourceService;
     @Autowired
     private VersionService versionService;
+    ObjectMapper mapper = new ObjectMapper();
 
-    @GET
+    @POST
     @Path("/transfer")
-    public Response transfer(@Context HttpServletRequest request, @QueryParam("streamisTableMetaId") String streamisTableMetaId, @QueryParam("dataSourceId") String dataSource,@QueryParam("nodeName") String nodeName, @FormDataParam("labels") Map<String, Object> labels) throws ErrorException {
+    public Response transfer(@Context HttpServletRequest request, JsonNode json) throws ErrorException, IOException {
         Message message;
+        String streamisTableMetaId =json.get("streamisTableMetaId").asText();
+        String dataSource =json.get("dataSourceId").asText();
+        String nodeName =json.get("nodeName").asText();
+        Map<String, Object> labels = mapper.readValue(json.get("streamisExtraInfo"), new TypeReference<Map<String, Object>>() {
+        });
         if(StringUtils.isBlank(streamisTableMetaId)){
             throw new ErrorException(30201,"streamisTableMetaId is null.");
         }
+        //@QueryParam("streamisTableMetaId") String streamisTableMetaId, @QueryParam("dataSourceId") String dataSource,@QueryParam("nodeName") String nodeName, @FormDataParam("labels") Map<String, Object> labels
         String userName = SecurityFilter.getLoginUsername(request);
         Map<String,Object> params = new HashMap<>();
         try {
