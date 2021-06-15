@@ -2,7 +2,6 @@ package com.webank.wedatasphere.streamis.datasource.transfer.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.webank.wedatasphere.linkis.common.exception.ErrorException;
-import com.webank.wedatasphere.linkis.datasource.client.response.GetConnectParamsByDataSourceIdResult;
 import com.webank.wedatasphere.linkis.manager.label.entity.engine.EngineType;
 import com.webank.wedatasphere.linkis.manager.label.entity.engine.RunType;
 import com.webank.wedatasphere.streamis.datasource.manager.domain.StreamisDatasourceExtraInfo;
@@ -11,7 +10,7 @@ import com.webank.wedatasphere.streamis.datasource.manager.domain.StreamisTableM
 import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisDatasourceExtraInfoService;
 import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisDatasourceFieldsService;
 import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisTableMetaService;
-import com.webank.wedatasphere.streamis.datasource.transfer.client.LinkisDataSourceClient;
+import com.webank.wedatasphere.streamis.datasource.manager.client.LinkisDataSourceClient;
 import com.webank.wedatasphere.streamis.datasource.transfer.entity.StreamisDataSourceCode;
 import com.webank.wedatasphere.streamis.datasource.transfer.entity.StreamisTableEntity;
 import com.webank.wedatasphere.streamis.datasource.transfer.service.DataSourceTransfer;

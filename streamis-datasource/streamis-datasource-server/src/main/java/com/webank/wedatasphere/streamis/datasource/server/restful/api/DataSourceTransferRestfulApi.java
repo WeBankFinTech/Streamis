@@ -2,7 +2,6 @@ package com.webank.wedatasphere.streamis.datasource.server.restful.api;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.gson.Gson;
-import com.webank.wedatasphere.dss.server.service.BMLService;
 import com.webank.wedatasphere.linkis.bml.Entity.Resource;
 import com.webank.wedatasphere.linkis.bml.Entity.ResourceVersion;
 import com.webank.wedatasphere.linkis.bml.common.*;
@@ -28,14 +27,13 @@ import com.webank.wedatasphere.streamis.datasource.transfer.service.DataSourceTr
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonNode;
-import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import scala.tools.cmd.Opt;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
@@ -65,14 +63,21 @@ public class DataSourceTransferRestfulApi {
     private ResourceService resourceService;
     @Autowired
     private VersionService versionService;
+    ObjectMapper mapper = new ObjectMapper();
 
-    @GET
+    @POST
     @Path("/transfer")
-    public Response transfer(@Context HttpServletRequest request, @QueryParam("streamisTableMetaId") String streamisTableMetaId, @QueryParam("dataSourceId") String dataSource,@QueryParam("nodeName") String nodeName, @FormDataParam("labels") Map<String, Object> labels) throws ErrorException {
+    public Response transfer(@Context HttpServletRequest request, JsonNode json) throws ErrorException, IOException {
         Message message;
+        String streamisTableMetaId =json.get("streamisTableMetaId").asText();
+        String dataSource =json.get("dataSourceId").asText();
+        String nodeName =json.get("nodeName").asText();
+        Map<String, Object> labels = mapper.readValue(json.get("streamisExtraInfo"), new TypeReference<Map<String, Object>>() {
+        });
         if(StringUtils.isBlank(streamisTableMetaId)){
             throw new ErrorException(30201,"streamisTableMetaId is null.");
         }
+        //@QueryParam("streamisTableMetaId") String streamisTableMetaId, @QueryParam("dataSourceId") String dataSource,@QueryParam("nodeName") String nodeName, @FormDataParam("labels") Map<String, Object> labels
         String userName = SecurityFilter.getLoginUsername(request);
         Map<String,Object> params = new HashMap<>();
         try {
