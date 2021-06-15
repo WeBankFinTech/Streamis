@@ -1,4 +1,4 @@
-package com.webank.wedatasphere.streamis.datasource.transfer.client
+package com.webank.wedatasphere.streamis.datasource.manager.client
 
 import java.util.concurrent.TimeUnit
 
@@ -8,7 +8,7 @@ import com.webank.wedatasphere.linkis.datasource.client.response.{GetConnectPara
 import com.webank.wedatasphere.linkis.datasourcemanager.common.domain.{DataSource, DataSourceEnv, DataSourceType}
 import com.webank.wedatasphere.linkis.httpclient.dws.authentication.StaticAuthenticationStrategy
 import com.webank.wedatasphere.linkis.httpclient.dws.config.DWSClientConfigBuilder
-import com.webank.wedatasphere.streamis.datasource.transfer.conf.TransferConfiguration
+import com.webank.wedatasphere.streamis.datasource.manager.conf.TransferConfiguration
 
 object LinkisDataSourceClient {
   //Linkis Datasource Client Config

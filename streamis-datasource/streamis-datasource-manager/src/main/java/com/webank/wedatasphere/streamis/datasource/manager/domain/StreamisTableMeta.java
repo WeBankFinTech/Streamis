@@ -66,6 +66,16 @@ public class StreamisTableMeta extends Model<StreamisTableMeta> {
     @TableField("node_name")
     private String nodeName;
 
+    private String alias;
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+
     public String getTableName() {
         return tableName;
     }
@@ -215,6 +225,7 @@ public class StreamisTableMeta extends Model<StreamisTableMeta> {
                 ", linkisDatasourceName='" + linkisDatasourceName + '\'' +
                 ", tableName='" + tableName + '\'' +
                 ", nodeName='" + nodeName + '\'' +
+                ", alias='" + alias + '\'' +
                 ", createBy='" + createBy + '\'' +
                 ", createTime=" + createTime +
                 ", updateBy='" + updateBy + '\'' +
