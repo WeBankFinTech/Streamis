@@ -3,7 +3,7 @@
 <mapper namespace="com.webank.wedatasphere.dao.StreamisDatasourceExtraInfoMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.webank.wedatasphere.domain.StreamisDatasourceExtraInfo">
+    <resultMap id="BaseResultMap" type="com.webank.wedatasphere.streamis.datasource.manager.domain.StreamisDatasourceExtraInfo">
         <id column="id" property="id" />
         <result column="key" property="key" />
         <result column="value" property="value" />
