@@ -16,22 +16,16 @@
 package com.webank.wedatasphere.streamis.datasource.manager.restful.api;
 
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.extension.conditions.update.UpdateChainWrapper;
 import com.webank.wedatasphere.linkis.common.exception.ErrorException;
-import com.webank.wedatasphere.linkis.datasource.client.response.MetadataGetDatabasesResult;
 import com.webank.wedatasphere.linkis.datasourcemanager.common.domain.DataSource;
 import com.webank.wedatasphere.linkis.datasourcemanager.common.domain.DataSourceType;
 import com.webank.wedatasphere.streamis.datasource.manager.domain.*;
-import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisDatasourceAuthorityService;
-import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisDatasourceExtraInfoService;
-import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisDatasourceFieldsService;
+import com.webank.wedatasphere.streamis.datasource.manager.service.*;
 import com.webank.wedatasphere.linkis.server.Message;
 import com.webank.wedatasphere.linkis.server.security.SecurityFilter;
-import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisTableMetaService;
-import com.webank.wedatasphere.streamis.datasource.transfer.client.LinkisDataSourceClient;
+import com.webank.wedatasphere.streamis.datasource.manager.client.LinkisDataSourceClient;
 import org.apache.commons.collections.CollectionUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -42,8 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.*;
 @Service
@@ -62,6 +54,10 @@ public class StreamisTableMetaApi {
 
     @Autowired
     StreamisDatasourceExtraInfoService streamisDatasourceExtraInfoService;
+
+    @Autowired
+    StreamisDatasourceExtraUiService streamisDatasourceExtraUiService;
+
     ObjectMapper mapper = new ObjectMapper();
 
 
@@ -164,7 +160,10 @@ public class StreamisTableMetaApi {
             if(!"kafka".equalsIgnoreCase(dataSourceType)){
                 columns = queryColumnsByTable(system, dataSourceTypeId, dataBase, table, userName);
             }
-            message = Message.ok().data("columns",columns);
+            QueryWrapper<StreamisDatasourceExtraUi> wrapper = new QueryWrapper<>();
+            wrapper.eq("datasource_type",dataSourceType);
+            List<StreamisDatasourceExtraUi> extraUis = streamisDatasourceExtraUiService.list(wrapper);
+            message = Message.ok().data("columns",columns).data("extraUis",extraUis);
         }catch (Throwable e){
             logger.error("failed to get columns list",e);
             throw new ErrorException(30017, "sorry,failed to get columns list");
@@ -290,19 +289,35 @@ public class StreamisTableMetaApi {
             // update StreamisTableMeta
             streamisTableMetaService.updateById(streamisTableMeta);
 
+            //更新字段信息；
+//            StreamisDatasourceFields streamisDatasourceFields = mapper.readValue(json.get("streamisTableFields"), StreamisDatasourceFields.class);
+//            streamisDatasourceFieldsService.updateById(streamisDatasourceFields);
+
+            List<StreamisDatasourceFields> streamisDatasourceFields = mapper.readValue(json.get("streamisTableFields"), new TypeReference<List<StreamisDatasourceFields>>() {
+            });
+            if(CollectionUtils.isNotEmpty(streamisDatasourceFields)){
+                boolean b = streamisDatasourceFieldsService.updateBatchById(streamisDatasourceFields);
+                if(!b){
+                    throw new ErrorException(30021, "sorry，Failed to update the streamisDatasourceFields information(更新字段信息失败)");
+                }
+            }
+
             List<StreamisDatasourceExtraInfo> extraInfoList = mapper.readValue(json.get("streamisExtraInfo"), new TypeReference<List<StreamisDatasourceExtraInfo>>() {
             });
 
-            extraInfoList.forEach(obj-> obj.setStreamisTableMetaId(streamisTableMetaId));
-            UpdateWrapper<StreamisDatasourceExtraInfo> wrapper = null;
-            boolean result ;
-            for (StreamisDatasourceExtraInfo extraInfo : extraInfoList) {
-                wrapper.eq("key",extraInfo.getKey()).eq("streamis_table_meta_id",streamisTableMetaId).set("value",extraInfo.getValue());
-                result = streamisDatasourceExtraInfoService.update(null, wrapper);
-                if(!result){
-                    throw new ErrorException(30020, String.format("sorry，Failed to update the %s information(更新%s失败)",extraInfo.getKey(),extraInfo.getKey()));
+            if(CollectionUtils.isNotEmpty(extraInfoList)){
+                extraInfoList.forEach(obj-> obj.setStreamisTableMetaId(streamisTableMetaId));
+                UpdateWrapper<StreamisDatasourceExtraInfo> wrapper = null;
+                boolean result ;
+                for (StreamisDatasourceExtraInfo extraInfo : extraInfoList) {
+                    wrapper.eq("key",extraInfo.getKey()).eq("streamis_table_meta_id",streamisTableMetaId).set("value",extraInfo.getValue());
+                    result = streamisDatasourceExtraInfoService.update(null, wrapper);
+                    if(!result){
+                        throw new ErrorException(30020, String.format("sorry，Failed to update the %s information(更新%s失败)",extraInfo.getKey(),extraInfo.getKey()));
+                    }
                 }
             }
+
 
             message = Message.ok();
 
