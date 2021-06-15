@@ -16,22 +16,16 @@
 package com.webank.wedatasphere.streamis.datasource.manager.restful.api;
 
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.extension.conditions.update.UpdateChainWrapper;
 import com.webank.wedatasphere.linkis.common.exception.ErrorException;
-import com.webank.wedatasphere.linkis.datasource.client.response.MetadataGetDatabasesResult;
 import com.webank.wedatasphere.linkis.datasourcemanager.common.domain.DataSource;
 import com.webank.wedatasphere.linkis.datasourcemanager.common.domain.DataSourceType;
 import com.webank.wedatasphere.streamis.datasource.manager.domain.*;
-import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisDatasourceAuthorityService;
-import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisDatasourceExtraInfoService;
-import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisDatasourceFieldsService;
+import com.webank.wedatasphere.streamis.datasource.manager.service.*;
 import com.webank.wedatasphere.linkis.server.Message;
 import com.webank.wedatasphere.linkis.server.security.SecurityFilter;
-import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisTableMetaService;
-import com.webank.wedatasphere.streamis.datasource.transfer.client.LinkisDataSourceClient;
+import com.webank.wedatasphere.streamis.datasource.manager.client.LinkisDataSourceClient;
 import org.apache.commons.collections.CollectionUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -42,8 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.*;
 @Service
@@ -62,6 +54,10 @@ public class StreamisTableMetaApi {
 
     @Autowired
     StreamisDatasourceExtraInfoService streamisDatasourceExtraInfoService;
+
+    @Autowired
+    StreamisDatasourceExtraUiService streamisDatasourceExtraUiService;
+
     ObjectMapper mapper = new ObjectMapper();
 
 
@@ -70,10 +66,10 @@ public class StreamisTableMetaApi {
 
     public Response getDataSourceCluster( HttpServletRequest req, Map<String,String> json
     ) throws ErrorException {
-        Message message = null;
+        Message message;
         try{
             String userName = SecurityFilter.getLoginUsername(req);
-            String system = json.get("system");
+            String system = json.getOrDefault("system","streamis");
             String name = json.get("name");
             Long dataSourceTypeId = Long.valueOf(json.get("dataSourceTypeId"));
             List<DataSource> dataSourceClusters = getDataSourceClusters(system, name, dataSourceTypeId, userName);
@@ -87,7 +83,7 @@ public class StreamisTableMetaApi {
 
     public Response getDataSourceTypes( HttpServletRequest req, Map<String,Object> json
     ) throws ErrorException {
-        Message message = null;
+        Message message;
         try{
             String userName = SecurityFilter.getLoginUsername(req);
             List<DataSourceType> dataSourceTypes = getDataSourceTypes(userName);
@@ -101,10 +97,10 @@ public class StreamisTableMetaApi {
 
     public Response getDataBasesByCuster( HttpServletRequest req, Map<String,String> json
     ) throws ErrorException {
-        Message message = null;
+        Message message;
         try{
             String userName = SecurityFilter.getLoginUsername(req);
-            String system = json.get("system");
+            String system = json.getOrDefault("system","streamis");
             Long dataSourceTypeId = Long.valueOf(json.get("dataSourceId"));
             List<String> dataBases = queryDataBasesByCuster(system, dataSourceTypeId, userName);
             message = Message.ok().data("dataBases",dataBases);
@@ -117,10 +113,10 @@ public class StreamisTableMetaApi {
 
     public Response getTablesByDataBase( HttpServletRequest req, Map<String,String> json
     ) throws ErrorException {
-        Message message = null;
+        Message message;
         try{
             String userName = SecurityFilter.getLoginUsername(req);
-            String system = json.get("system");
+            String system = json.getOrDefault("system","streamis");
             Long dataSourceId = Long.valueOf(json.get("dataSourceId"));
             String dataBase = json.get("dataBase");
             QueryWrapper<StreamisTableMeta> wrapper = new QueryWrapper<>();;
@@ -134,6 +130,9 @@ public class StreamisTableMetaApi {
                 for (StreamisTableMeta streamisTableMeta : list) {
                     tableVO = new StreamisDataSourceTableVO();
                     tableVO.setTableName(table);
+                    if(table.equals(streamisTableMeta.getTableName())){
+                        tableVO.setStreamisTableMetaId(streamisTableMeta.getId());
+                    }
                     tableVO.setStreamisDataSource(table.equals(streamisTableMeta.getTableName()));
                     tableList.add(tableVO);
                 }
@@ -147,15 +146,43 @@ public class StreamisTableMetaApi {
         return Message.messageToResponse(message);
     }
 
+    public Response getColumnsByTable( HttpServletRequest req, Map<String,String> json
+    ) throws ErrorException {
+        Message message;
+        try{
+            String userName = SecurityFilter.getLoginUsername(req);
+            String system = json.getOrDefault("system","streamis");
+            Long dataSourceTypeId = Long.valueOf(json.get("dataSourceId"));
+            String dataBase = json.get("dataBase");
+            String table = json.get("table");
+            String dataSourceType = json.get("dataSourceType");
+            List<Map<String, Object>> columns =null;
+            if(!"kafka".equalsIgnoreCase(dataSourceType)){
+                columns = queryColumnsByTable(system, dataSourceTypeId, dataBase, table, userName);
+            }
+            QueryWrapper<StreamisDatasourceExtraUi> wrapper = new QueryWrapper<>();
+            wrapper.eq("datasource_type",dataSourceType);
+            List<StreamisDatasourceExtraUi> extraUis = streamisDatasourceExtraUiService.list(wrapper);
+            message = Message.ok().data("columns",columns).data("extraUis",extraUis);
+        }catch (Throwable e){
+            logger.error("failed to get columns list",e);
+            throw new ErrorException(30017, "sorry,failed to get columns list");
+        }
+        return Message.messageToResponse(message);
+    }
+
     public Response getStreamisTableMeta( HttpServletRequest req, Long streamisTableMetaId
     ) throws ErrorException {
-        Message message = null;
+        Message message;
         try{
             StreamisTableMeta streamisTableMeta = streamisTableMetaService.getById(streamisTableMetaId);
             QueryWrapper<StreamisDatasourceFields> streamisDatasourceFieldsWrapper = new QueryWrapper<>();
             streamisDatasourceFieldsWrapper.eq("streamis_table_meta_id",streamisTableMetaId);
             List<StreamisDatasourceFields> streamisDatasourceFields = streamisDatasourceFieldsService.list(streamisDatasourceFieldsWrapper);
+
+            //查询一下
             message=Message.ok().data("streamisTableMeta",streamisTableMeta).data("streamisDatasourceFields",streamisDatasourceFields);
+
         }catch (Throwable e){
             logger.error("Failed to get streamisTableMetaInfo",e);
             throw new ErrorException(30002, "Failed to get streamisTableMetaInfo(后台获取数据源详细信息失败)");
@@ -166,7 +193,7 @@ public class StreamisTableMetaApi {
 
     public Response getStreamisTableMetaByNodeNames( HttpServletRequest req,JsonNode json
     ) throws ErrorException {
-        Message message = null;
+        Message message;
         QueryWrapper<StreamisTableMeta> wrapper = null;
         Map<String,List<StreamisTableMeta>> nodeTablesMap = new HashMap<>();
         List<StreamisTableMeta> list = null;
@@ -196,7 +223,7 @@ public class StreamisTableMetaApi {
 
 
     public Response addStreamisTableMeta( HttpServletRequest req,  JsonNode json) throws ErrorException {
-        Message message = null;
+        Message message;
         try {
             String userName = SecurityFilter.getLoginUsername(req);
             String authorityId = json.get("authorityId").asText();
@@ -250,7 +277,7 @@ public class StreamisTableMetaApi {
 
 
     public Response updateStreamisTableMeta( HttpServletRequest req,  JsonNode json) throws ErrorException {
-        Message message = null;
+        Message message;
         try {
             String userName = SecurityFilter.getLoginUsername(req);
             StreamisTableMeta streamisTableMeta = mapper.readValue(json.get("streamisTableMeta"), StreamisTableMeta.class);
@@ -262,19 +289,35 @@ public class StreamisTableMetaApi {
             // update StreamisTableMeta
             streamisTableMetaService.updateById(streamisTableMeta);
 
+            //更新字段信息；
+//            StreamisDatasourceFields streamisDatasourceFields = mapper.readValue(json.get("streamisTableFields"), StreamisDatasourceFields.class);
+//            streamisDatasourceFieldsService.updateById(streamisDatasourceFields);
+
+            List<StreamisDatasourceFields> streamisDatasourceFields = mapper.readValue(json.get("streamisTableFields"), new TypeReference<List<StreamisDatasourceFields>>() {
+            });
+            if(CollectionUtils.isNotEmpty(streamisDatasourceFields)){
+                boolean b = streamisDatasourceFieldsService.updateBatchById(streamisDatasourceFields);
+                if(!b){
+                    throw new ErrorException(30021, "sorry，Failed to update the streamisDatasourceFields information(更新字段信息失败)");
+                }
+            }
+
             List<StreamisDatasourceExtraInfo> extraInfoList = mapper.readValue(json.get("streamisExtraInfo"), new TypeReference<List<StreamisDatasourceExtraInfo>>() {
             });
 
-            extraInfoList.forEach(obj-> obj.setStreamisTableMetaId(streamisTableMetaId));
-            UpdateWrapper<StreamisDatasourceExtraInfo> wrapper = null;
-            boolean result ;
-            for (StreamisDatasourceExtraInfo extraInfo : extraInfoList) {
-                wrapper.eq("key",extraInfo.getKey()).eq("streamis_table_meta_id",streamisTableMetaId).set("value",extraInfo.getValue());
-                result = streamisDatasourceExtraInfoService.update(null, wrapper);
-                if(!result){
-                    throw new ErrorException(30020, String.format("sorry，Failed to update the %s information(更新%s失败)",extraInfo.getKey(),extraInfo.getKey()));
+            if(CollectionUtils.isNotEmpty(extraInfoList)){
+                extraInfoList.forEach(obj-> obj.setStreamisTableMetaId(streamisTableMetaId));
+                UpdateWrapper<StreamisDatasourceExtraInfo> wrapper = null;
+                boolean result ;
+                for (StreamisDatasourceExtraInfo extraInfo : extraInfoList) {
+                    wrapper.eq("key",extraInfo.getKey()).eq("streamis_table_meta_id",streamisTableMetaId).set("value",extraInfo.getValue());
+                    result = streamisDatasourceExtraInfoService.update(null, wrapper);
+                    if(!result){
+                        throw new ErrorException(30020, String.format("sorry，Failed to update the %s information(更新%s失败)",extraInfo.getKey(),extraInfo.getKey()));
+                    }
                 }
             }
+
 
             message = Message.ok();
 
@@ -286,7 +329,7 @@ public class StreamisTableMetaApi {
     }
 
     public Response deleteStreamisTableMeta(HttpServletRequest req,  Long id) throws ErrorException {
-        Message message = null;
+        Message message;
         try {
             //delete TableFields
             QueryWrapper<StreamisDatasourceFields> streamisDatasourceFieldsQueryWrapper = new QueryWrapper<>();
@@ -317,7 +360,7 @@ public class StreamisTableMetaApi {
 
 
     public Response addStreamisTableFields( HttpServletRequest req,  JsonNode json) throws ErrorException {
-        Message message = null;
+        Message message;
         try {
             StreamisDatasourceFields streamisDatasourceFields = mapper.readValue(json.get("streamisTableFields"), StreamisDatasourceFields.class);
             boolean result = streamisDatasourceFieldsService.save(streamisDatasourceFields);
@@ -333,7 +376,7 @@ public class StreamisTableMetaApi {
     }
 
     public Response updateStreamisTableFields( HttpServletRequest req,  JsonNode json) throws ErrorException {
-        Message message = null;
+        Message message;
         try {
             StreamisDatasourceFields streamisDatasourceFields = mapper.readValue(json.get("streamisTableFields"), StreamisDatasourceFields.class);
             streamisDatasourceFieldsService.updateById(streamisDatasourceFields);
@@ -346,7 +389,7 @@ public class StreamisTableMetaApi {
     }
 
     public Response deleteStreamisTableFields( HttpServletRequest req, Long id) throws ErrorException {
-        Message message = null;
+        Message message;
         String userName = SecurityFilter.getLoginUsername(req);
         try {
             logger.info(userName+" delete StreamisTableFields："+id);
@@ -403,6 +446,9 @@ public class StreamisTableMetaApi {
         return LinkisDataSourceClient.queryTablesByDataBase(system,dataSourceId,dataBase ,user).tables();
     }
 
+    public List<Map<String, Object>> queryColumnsByTable(String system, Long dataSourceId , String dataBase,String table,String user){
+        return  LinkisDataSourceClient.queryColumnsByTable(system, dataSourceId, dataBase, table, user).columns();
+    }
 
 
 

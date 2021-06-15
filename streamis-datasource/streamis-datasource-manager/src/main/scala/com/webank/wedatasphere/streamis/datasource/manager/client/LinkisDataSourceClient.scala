@@ -1,14 +1,14 @@
-package com.webank.wedatasphere.streamis.datasource.transfer.client
+package com.webank.wedatasphere.streamis.datasource.manager.client
 
 import java.util.concurrent.TimeUnit
 
 import com.webank.wedatasphere.linkis.datasource.client.impl.{LinkisDataSourceRemoteClient, LinkisMetaDataRemoteClient}
-import com.webank.wedatasphere.linkis.datasource.client.request.{GetAllDataSourceTypesAction, GetConnectParamsByDataSourceIdAction, MetadataGetDatabasesAction, MetadataGetTablesAction, QueryDataSourceAction, QueryDataSourceEnvAction}
-import com.webank.wedatasphere.linkis.datasource.client.response.{GetConnectParamsByDataSourceIdResult, MetadataGetDatabasesResult, MetadataGetTablesResult, QueryDataSourceResult}
+import com.webank.wedatasphere.linkis.datasource.client.request.{GetAllDataSourceTypesAction, GetConnectParamsByDataSourceIdAction, MetadataGetColumnsAction, MetadataGetDatabasesAction, MetadataGetTablesAction, QueryDataSourceAction, QueryDataSourceEnvAction}
+import com.webank.wedatasphere.linkis.datasource.client.response.{GetConnectParamsByDataSourceIdResult, MetadataGetColumnsResult, MetadataGetDatabasesResult, MetadataGetTablesResult, QueryDataSourceResult}
 import com.webank.wedatasphere.linkis.datasourcemanager.common.domain.{DataSource, DataSourceEnv, DataSourceType}
 import com.webank.wedatasphere.linkis.httpclient.dws.authentication.StaticAuthenticationStrategy
 import com.webank.wedatasphere.linkis.httpclient.dws.config.DWSClientConfigBuilder
-import com.webank.wedatasphere.streamis.datasource.transfer.conf.TransferConfiguration
+import com.webank.wedatasphere.streamis.datasource.manager.conf.TransferConfiguration
 
 object LinkisDataSourceClient {
   //Linkis Datasource Client Config
@@ -120,6 +120,16 @@ object LinkisDataSourceClient {
       .setSystem(system)
       .setDataSourceId(dataSourceId)
       .setDatabase(dataBase)
+      .setUser(user)
+      .build()
+    )
+  }
+  def queryColumnsByTable(system: String,dataSourceId:Long,dataBase:String ,table:String, user:String):MetadataGetColumnsResult  = {
+    metaDataClient.getColumns(MetadataGetColumnsAction.builder()
+      .setSystem(system)
+      .setDataSourceId(dataSourceId)
+      .setDatabase(dataBase)
+      .setTable(table)
       .setUser(user)
       .build()
     )
