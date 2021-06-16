@@ -22,7 +22,7 @@ class StreamisFlinkSqlTransformJobBuilder extends StreamisTransformJobBuilder {
   @Autowired private var streamJobMapper: StreamJobMapper = _
   @Autowired private var configurationService: ConfigurationService = _
 
-  override def canBuild(streamJob: StreamJob): Boolean = JOBMANAGER_FLINK_SQL.getValue == streamJob.getJobType
+  override def canBuild(streamJob: StreamJob): Boolean = JOBMANAGER_FLINK_SQL.getValue == streamJob.getJobType.intValue()
 
   override def build(streamJob: StreamJob): StreamisTransformJob = {
     val transformJob = new StreamisSqlTransformJob
