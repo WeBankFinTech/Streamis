@@ -13,7 +13,7 @@ public class JobFlowVO {
     private String creator;
     private Long projectID;
     private String dssLabels;
-    private Long resourceId;
+    private String resourceId;
     private String bmlVersion;
     private String flowJson;
     private Boolean rootFlow;
@@ -116,11 +116,11 @@ public class JobFlowVO {
         this.rootFlow = rootFlow;
     }
 
-    public Long getResourceId() {
+    public String getResourceId() {
         return resourceId;
     }
 
-    public void setResourceId(Long resourceId) {
+    public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
     }
 }
