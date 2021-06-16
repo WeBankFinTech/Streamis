@@ -20,13 +20,14 @@ class ResourceConfigTransform extends ConfigTransform {
   override protected def transform(config: ConfigKeyVO, job: LaunchJob): LaunchJob =
     transformConfig(config.getResourceConfig, job)
 
-  protected def transformConfig(getConfig: => Seq[ConfigRelationVO], job: LaunchJob): LaunchJob = {
+  protected def transformConfig(getConfig: => util.List[ConfigRelationVO], job: LaunchJob): LaunchJob = {
     val startupMap = new util.HashMap[String, Any]
-    getConfig.foreach { vo =>
+    val configSeq = getConfig
+    if(configSeq != null) configSeq.foreach { vo =>
       startupMap.put(vo.getKey, vo.getValue)
     }
     val params = if(job.getParams == null) new util.HashMap[String, Any] else job.getParams
-    TaskUtils.addStartupMap(params, startupMap)
+    if(!startupMap.isEmpty) TaskUtils.addStartupMap(params, startupMap)
     LaunchJob.builder().setLaunchJob(job).setParams(params).build()
   }
 
