@@ -1,7 +1,5 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis
 
-import java.util
-
 import com.webank.wedatasphere.linkis.common.utils.ClassUtils
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{LaunchJob, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
@@ -29,14 +27,14 @@ object LinkisJobManager {
 
   val SIMPLE_FLINK = "simpleFlink"
 
-  private val linkisJobManagers = new util.HashMap[String, LinkisJobManager]()
+  private val linkisJobManagers =
   ClassUtils.reflections.getSubTypesOf(classOf[LinkisJobManager]).filterNot(ClassUtils.isInterfaceOrAbstract)
-    .foreach { clazz =>
+    .map { clazz =>
       val jobManager = clazz.newInstance()
-      linkisJobManagers.put(jobManager.getName, jobManager)
-    }
+      jobManager.getName -> jobManager
+    }.toMap
 
-  def getLinkisJobManager(jobManagerType: String): LinkisJobManager = linkisJobManagers.getOrDefault(jobManagerType,
+  def getLinkisJobManager(jobManagerType: String): LinkisJobManager = linkisJobManagers.getOrElse(jobManagerType,
     throw new FlinkJobLaunchErrorException(30402, "Not exist LinkisJobManagerType " + jobManagerType))
 
   def getLinkisJobManager: LinkisJobManager = getLinkisJobManager(SIMPLE_FLINK)
