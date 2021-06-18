@@ -9,6 +9,6 @@ import java.util.Map;
 public interface DataSourceTransfer {
     StreamisDataSourceCode transfer(StreamisTableEntity streamisTableEntity, Map<String, Object> labels, Map<String, Object> params);
 
-    StreamisTableEntity getStreamisTableMetaById(String streamisTableMetaId) throws ErrorException;
+    StreamisTableEntity getStreamisTableMetaById(String tableMetaId, String userName, Long dataSourceId) throws ErrorException;
 
 }

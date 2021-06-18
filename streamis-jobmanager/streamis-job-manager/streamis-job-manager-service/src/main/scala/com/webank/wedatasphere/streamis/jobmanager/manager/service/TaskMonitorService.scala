@@ -40,7 +40,8 @@ class TaskMonitorService extends Logging {
 
   def doMonitor(): Unit = {
     info("Try to update all StreamTasks status.")
-    val streamTasks = streamTaskMapper.getTasksByStatus(util.Arrays.asList(JobConf.NOT_COMPLETED_STATUS_ARRAY.map(_.getValue)))
+    val status = util.Arrays.asList(JobConf.NOT_COMPLETED_STATUS_ARRAY.map(c => new Integer(c.getValue)) :_*)
+    val streamTasks = streamTaskMapper.getTasksByStatus(status)
     if(streamTasks == null || streamTasks.isEmpty) {
       info("No StreamTasks is running, return...")
       return
