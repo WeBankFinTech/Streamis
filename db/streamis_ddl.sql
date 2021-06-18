@@ -23,12 +23,12 @@ CREATE TABLE `streamis_stream_bml`  (
 -- Table structure for streamis_stream_bml_version
 -- ----------------------------
 DROP TABLE IF EXISTS `streamis_stream_bml_version`;
-CREATE TABLE `streamis_stream_bml_version`  (
+CREATE TABLE `streamis_stream_bml_version`(
   `id` bigint(20) NOT NULL,
   `bml_id` bigint(20) NULL DEFAULT NULL,
   `version` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `storage_path` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
-  ` attribute` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `attribute` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '物料版本' ROW_FORMAT = Compact;
 
