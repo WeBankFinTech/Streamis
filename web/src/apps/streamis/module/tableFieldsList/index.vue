@@ -14,21 +14,25 @@
           <Input v-else v-model="tableColumn.fieldName" placeholder="字段名称" style="width: 100px" />
         </div>
       </template>
-      <!-- <template slot-scope="{ row}" slot="fieldIsPrimary">
-        <div v-if="!row.edit" style="margin-left: 5px">
-          {{ row.fieldIsPrimary }}
-        </div> -->
-      <!--<Input v-else v-model="tableColumn.fieldIsPrimary" placeholder="是否主键" style="width: 100px" /> -->
-      <!--<RadioGroup v-else v-model="tableColumn.fieldIsPrimary">
-          <Radio label="是" disabled></Radio>
-          <Radio label="否"></Radio>
-        </RadioGroup> -->
-      <!-- </template> -->
-      <template slot-scope="{ row }" slot="fieldIsPartition">
-        <div v-if="!row.edit" style="margin-left: 5px">
-          {{ row.fieldIsPartition }}
+      <template slot-scope="{ row, index }" slot="fieldIsPrimary">
+        <div v-if="!row.edit && index!=0" style="margin-left: 5px">
+          <Radio label="是" :value="true" v-if="row.fieldIsPrimary===1"></Radio>
+          <span v-else>否</span>
         </div>
-        <Input v-else v-model="tableColumn.fieldIsPartition" placeholder="分区字段" style="width: 100px" />
+        <RadioGroup v-if="row.edit && index!=0" @on-change="funPrimary">
+          <Radio label="是"></Radio>
+          <Radio label="否"></Radio>
+        </RadioGroup>
+      </template> 
+      <template slot-scope="{ row, index }" slot="fieldIsPartition">
+        <div v-if="!row.edit && index!=0" style="margin-left: 5px">
+          <Radio label="是"  :value="true"  v-if="row.fieldIsPartition===1"></Radio>
+          <span v-else>否</span>
+        </div>
+        <RadioGroup v-if="row.edit && index!=0" @on-change="funPartition">
+          <Radio label="是"></Radio>
+          <Radio label="否"></Radio>
+        </RadioGroup>
       </template>
       <template slot-scope="{ row }" slot="fieldType">
         <div v-if="!row.edit" style="margin-left: 5px">
@@ -56,19 +60,6 @@
       </template>
       <template slot-scope="{ row, index }" slot="operation">
         <div v-if="!row.edit && index !== 0">
-          <!-- <Button
-            v-bind:disabled="tableInfoFlag"
-            type="primary"
-            size="small"
-            style="margin-right: 5px"
-            @click="editColumn(row, index, tableDatas)">
-            修改
-          </Button>
-          <Button 
-            v-bind:disabled="tableInfoFlag"
-            type="error" size="small" @click="deleteColumn(row, index)">
-            删除
-         </Button> -->
           <Button
             type="primary"
             size="small"
@@ -118,10 +109,11 @@ function renderSpecialHeader(h, params) {
 }
 
 export default {
-  props: ["fieldsListInfo"],
+  props: ["nodeNameValue"],
   data() {
     return {
-      tableInfoFlag: '',
+      mapTableList: '',
+      //tableInfoFlag: '',
       //保留编辑前的初始值
       saveDatas: '',
       tableColumn: {},
@@ -132,39 +124,7 @@ export default {
       },
       jobStatus: ["all", "running", "failture", "uploaded"],
       submitterOptions: ["all"],
-      tableDatas: [
-        {},
-        {
-          "streamisTableMetaId": 13,
-          "fieldName": "id",
-          "fieldType": "string",
-          "fieldIsPrimary": true,
-          "fieldIsPartition": 1,
-          "verifyRule": "ls",
-          "fieldAlias": "fieldsa",
-          "fieldDescription": "this is a files"
-        },
-        {
-          "streamisTableMetaId": 13,
-          "fieldName": "age",
-          "fieldType": "int",
-          "fieldIsPrimary": false,
-          "fieldIsPartition": 0,
-          "verifyRule": "ls",
-          "fieldAlias": "fieldsa",
-          "fieldDescription": "this is a files for update"
-        },
-        {
-          "streamisTableMetaId": 13,
-          "fieldName": "age",
-          "fieldType": "int",
-          "fieldIsPrimary": false,
-          "fieldIsPartition": 0,
-          "verifyRule": "ls",
-          "fieldAlias": "fieldsa",
-          "fieldDescription": "this is a files"
-        }
-      ],
+      tableDatas: [],
       columns: [
         {
           title: "字段名称",
@@ -176,19 +136,7 @@ export default {
           title: "是否主键",
           key: "fieldIsPrimary",
           renderHeader: renderSpecialHeader,
-          // slot: "fieldIsPrimary",
-          render: (h, params) => {
-            //this.tableDatas.forEach((e)=>{
-            // const bol = Boolean(e.fieldIsPrimary);
-            if(params.row.fieldIsPrimary) {
-              return h('Radio', { props: {value: params.row.fieldIsPrimary },}, "是")
-            } else if(params.index==0){
-              return h('span', { props: {value: params.row.fieldIsPrimary },},)
-            } else{
-              return h('span', { props: {value: params.row.fieldIsPrimary },}, "否")
-            }
-            //})
-          }
+          slot: "fieldIsPrimary",
         },
         {
           title: "分区字段",
@@ -239,36 +187,42 @@ export default {
   },
   mounted() {
     this.getFieldsList();
-    console.log(this.fieldsListInfo,"父组件传过来的值")///a1
-    this.tableInfoFlag = Boolean(this.fieldsListInfo);
+    //this.tableInfoFlag = Boolean(this.fieldsListInfo);
   },
   methods: {
-    // 删除字段
-    deleteColumn(row, index){
+    funPrimary(params){
+      this.tableColumn.fieldIsPrimary=(params=='是'?1:0)
+    },
+    funPartition(params){
+      this.tableColumn.fieldIsPartition=(params=='是'?1:0)
+    },
+    //删除字段
+    deleteColumn(row){
       //发送请求
-      //const params = {
-      //id: row.id
-      //}
-      //api
-      //.fetch("streamis/deleteFields/{id}", "POST")
-      //.then(() => {
-      //let index = this.tableDatas.findIndex(subitem => subitem.id === subitem.row.id )
-      //this.tableDatas.splice(index, 1)
-      //this.$Message.success('删除成功')
-      //})
-      //.catch(() => {
-      //this.$Message.success('删除失败')
-      //});
-      this.tableDatas.splice(index, 1)
+      api.fetch("streamis/deleteFields/" + row.id, "get").then((res) => {
+        if(res){
+          let index = this.tableDatas.findIndex(subitem => subitem.id === row.id )
+          this.tableDatas.splice(index, 1)
+          this.$Message.success('删除成功')
+        } else {
+          this.$Message.error('删除失败')
+        }
+      }).catch(() => {
+        this.$Message.error('删除失败')
+      });
     },
     submit(row, index){
-      //发送添加的请求接口
-      // api
-      //.fetch("streamis/addFields",this.tableColumn, "POST")
-      //.then(res => {
-      //this.$Message.success('添加成功')
-      //})
-      //.catch(e => console.log(e));
+      const objectKey = {
+        fieldName: "字段名称",
+        fieldIsPrimary: "是否是主键",
+        fieldIsPartition: "是否是分区",
+      }
+      const keys = Object.keys(this.tableColumn)
+      const findItem = keys.find(item => this.tableColumn[item] === '')
+      if(findItem&&findItem !== 'fieldDescription'){
+        this.$Message.error(`请输入${objectKey[findItem]}`)
+        return
+      }
       this.tableDatas.splice(index, 1,{
         fieldName: this.tableColumn.fieldName,
         fieldType: this.tableColumn.fieldType,
@@ -278,15 +232,50 @@ export default {
         fieldAlias: this.tableColumn.fieldAlias,
         fieldDescription: this.tableColumn.fieldDescription,
       })
+      //存储到一个map里面
+      this.mapTableList = [
+        {
+          key: this.nodeNameValue,
+          value: this.tableDatas
+        }
+      ]
+      //传值的时候把空的过滤掉
+      //this.tableDatas.splice(0,1)
+      this.$emit('funTableColumn',this.tableDatas)
+      //console.log(this.mapTableList[0],"map的值")
+      
+      //发送添加的请求接口
+      const params = {
+        streamisTableFields: {
+          streamisTableMetaId: 13,
+          fieldName: this.tableColumn.fieldName,
+          fieldType: this.tableColumn.fieldType,
+          fieldIsPrimary: this.tableColumn.fieldIsPrimary,
+          fieldIsPartition: this.tableColumn.fieldIsPartition,
+          verifyRule: this.tableColumn.verifyRule,
+          fieldAlias: this.tableColumn.fieldAlias,
+          fieldDescription: this.tableColumn.fieldDescription
+        }
+      }
+      api.fetch("streamis/addFields", params, "post").then(res => {
+        if(res){
+          console.log(res, "增加")
+          this.getFieldsList()
+          this.$Message.info('添加成功')
+        }else{
+          this.$Message.error();('添加失败')
+        }
+      }).catch(() => {
+        this.$Message.error('添加失败')
+      });
     },
     //取消新增字段
     cancelColumn(row, index){
-      // 如果是添加的取消按钮 我们就直接取消一行
+      //如果是添加的取消按钮 我们就直接取消一行
       if(!this.saveDatas){
         this.tableDatas.splice(index, 1)
       } else {
-        // 点击取消编辑框里面的数据恢复到原始值
-        console.log(this.saveDatas,"6666")
+        //点击取消编辑框里面的数据恢复到原始值
         this.tableDatas.splice(index, 1, {
           fieldName: this.saveDatas[0],
           fieldType: this.saveDatas[1],
@@ -312,27 +301,38 @@ export default {
       this.saveDatas = ''
     },
     getFieldsList() {
-      // 有星星的时候删除加的第一行空对象
-      // this.tableDatas.splice(0,1)
-      
-      // this.tableDatas.forEach((e)=>{
-      // const bol = Boolean(e.fieldIsPrimary);
-      // })
+      //有星星的时候删除加的第一行空对象
+      //this.tableDatas.splice(0,1)
+      //如果没有id就不要发送请求 查找是否有缓存的值 没有缓存的值表格显示暂无数据
+      if(this.nodeNameValue === 'topic1'){
+        this.tableDatas = []
+        this.tableDatas.unshift({})
+        //查找缓存的值
+        //this.mapTableList.forEach(item => {
+        //if(this.nodeNameValue===item.key){
+        //item.value = this.tableDatas
+        //}else{
+        //this.tableDatas = {}
+        //}
+        //});
+        return
+      }
+      let params = 13
       api
-        .fetch("streamis/streamisTableMetaInfo/13", "get")
+        .fetch("streamis/streamisTableMetaInfo/" + params , "get")
         .then(res => {
-          console.log(res,"后端返回的数据");
           if (res) {
-            // const datas = res.tasks || [];
-            // datas.unshift({});
-            //this.tableDatas = datas;
-            this.pageData.total = parseInt(res.totalPage);
+            const datas = res.streamisDatasourceFields || [];
+            datas.unshift({});
+            this.tableDatas = datas;
+            //拿到表信息的字段 传给父组件 然后父组件再传递给子组件 子组件拿到信息直接渲染出来
+            let formData = res.streamisTableMeta
+            this.$emit('tableInfoFun',formData)
           }
         })
         .catch(e => console.log(e));
     },
-    handleQuery() {},
-    // 修改字段
+    //修改字段
     editColumn(row, index) {
       this.tableDatas = this.tableDatas.filter((item) => !item.edit)
       this.tableDatas.splice(index, 1, { edit: true })
@@ -343,6 +343,7 @@ export default {
       this.tableColumn.verifyRule = row.verifyRule
       this.tableColumn.fieldAlias = row.fieldAlias
       this.tableColumn.fieldDescription = row.fieldDescription
+      //保存修改后的数据
       this.saveDatas = [row.fieldName, row.fieldIsPrimary,row.fieldIsPartition,row.fieldType,row.verifyRule,row.fieldAlias,row.fieldDescription]
     },
   }
