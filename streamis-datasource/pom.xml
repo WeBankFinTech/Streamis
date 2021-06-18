@@ -9,6 +9,10 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <properties>
+        <linkis.version>1.0.0-RC1</linkis.version>
+    </properties>
+
     <artifactId>streamis-datasource</artifactId>
     <packaging>pom</packaging>
     <modules>
