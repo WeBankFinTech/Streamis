@@ -41,7 +41,7 @@
         <result column="version" property="version" jdbcType="VARCHAR"/>
         <result column="program_arguments" property="programArguments" jdbcType="VARCHAR"/>
         <result column="bml_version" property="bmlVersion" jdbcType="VARCHAR"/>
-        <result column="bml_id" property="bmlId" jdbcType="BIGINT"/>
+        <result column="bml_id" property="bmlId" jdbcType="VARCHAR"/>
     </resultMap>
 
     <resultMap id="StreamJobSqlResourceMap" type="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobSqlResource">
@@ -51,7 +51,7 @@
     </resultMap>
 
     <sql id="Job_Column">
-        `id`,`project_id`,`name`,`current_task_id`,`current_version`,`current_release_time`,`org_identification`,`create_by`,`label`,`description`
+        `id`,`project_id`,`name`,`current_task_id`,`current_version`,`current_release_time`,`status`,`org_identification`,`create_by`,`label`,`description`,`submit_user`,`job_type`
     </sql>
 
     <sql id="JobVersion_Column">
@@ -105,7 +105,7 @@
 
 
     <insert id="insertJob" useGeneratedKeys="true" keyProperty="id" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
-        INSERT INTO linkis_stream_job(`project_id`,`name`,`current_task_id`,`current_version`,`current_release_time`,`org_identification`,`create_by`,`label`,`description`,`job_type`) VALUES(#{projectId},#{name},#{currentTaskId},#{currentVersion},#{currentReleaseTime},#{orgIdentification},#{createBy},#{label},#{description},#{jobType})
+        INSERT INTO linkis_stream_job(`project_id`,`name`,`current_task_id`,`current_version`,`current_release_time`,`org_identification`,`create_by`,`label`,`description`,`job_type`,`submit_user`,`status`) VALUES(#{projectId},#{name},#{currentTaskId},#{currentVersion},#{currentReleaseTime},#{orgIdentification},#{createBy},#{label},#{description},#{jobType},#{submitUser},#{status})
     </insert>
 
     <insert id="insertJobVersion" useGeneratedKeys="true" keyProperty="id" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion">
@@ -131,11 +131,14 @@
             <if test="currentReleaseTime != null">
                 current_release_time=#{currentReleaseTime},
             </if>
-            <if test="createBy != null">
-                create_by=#{createBy},
+            <if test="status != null">
+                status=#{status},
             </if>
             <if test="label != null">
                 label=#{label},
+            </if>
+            <if test="description != null">
+                description=#{description},
             </if>
         </trim>
          WHERE id=#{id}
