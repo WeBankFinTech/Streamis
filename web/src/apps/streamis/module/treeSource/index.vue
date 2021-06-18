@@ -5,7 +5,7 @@
     <div class="search">
       <!--搜索---文本框 -->
       <div class="search-text">
-        <Input v-model="value" :border="false" placeholder="搜索" />
+        <Input v-model="search" :border="false" placeholder="搜索" />
       </div>
       <!--搜索---图标 -->
       <div class="search-icon">
@@ -16,103 +16,123 @@
     <div class="select">
       <div class="select-type">
         <Icon custom="iconfont icon-apachekafka" size="30" />
-        <Select v-model="selectData" style="width: 70px">
-          <Option
-            v-for="item in cityList4"
-            :value="item.value"
-            :key="item.value"
-          >Kafka</Option>
-          <Option v-for="item in cityList4" :key="item.value">Kafka</Option>
+        <Select v-model="dataSourceType" style="width: 70px">
+          <Option v-for="(item, index) in typeList" :value="item.name" :key="index">{{ item.name }}</Option>
         </Select>
       </div>
       <!--集群下拉选择框 -->
       <div class="select-colony">
         <Icon custom="iconfont icon-jiqun" size="30" style="color: #3300ff; margin-left:6px"/>
-        <Select v-model="model15" style="width: 70px; margin-left: 5px">
-          <Option v-for="item in cityList" :value="item.value" :key="item.value">集群1</Option>
-          <Option v-for="item in cityList" :key="item.value">集群1</Option>
-          <Option v-for="item in cityList" :key="item.value">集群1</Option>
+        <Select v-model="colonyType" style="width: 70px; margin-left: 5px">
+          <Option v-for="(item, index) in colonyList" :value="item.value" :key="index">{{ item.label }}</Option>
         </Select>
       </div>
     </div>
     <!--数据源内容(库表模式) -->
     <div class="libtable">
-      <Menu width="228">
-        <div v-for="item in list" :key="item.nodeName">
-          <Submenu :name="item.nodeName" v-if="item.tablist.length !== 0">
-            <template slot="title">
-              <Icon custom="iconfont icon-shuju1" size="16" />
-              <span>{{ item.nodeName }}</span>
-              <template v-if="streamisFlag">
-                <!--有星星标识的没有添加字段的功能 -->
-                <Icon type="md-star" class="streamisIcon" />
+      <Menu width="auto">
+        <Submenu v-for="(item, index) in firstList" :key="index"  :name="item" >
+          <template slot="title">
+            <div @click="getSecondMenu(item)">
+              <Icon custom="iconfont icon-shuju1" size="16" style="margin-right: 8px"/>
+              <span>{{ item }}</span>
+            </div>
+          </template>
+          <template v-for="(item1, index) in secondList">
+            <Submenu :name="item1.tableName" :key="index">
+              <template slot="title">
+                <div @click="getThreeList(item1.tableName)">
+                  <Icon custom="iconfont icon-table" size="14" style="margin-right: 8px"/>
+                  <span>{{ item1.tableName }}</span>
+                  <template v-if="item1.isStreamisDataSource">
+                    <Icon type="md-star" class="streamisIcon" />
+                  </template>
+                </div>
               </template>
-            </template>
-            <MenuItem
-              :name="item1.tableName"
-              v-for="item1 in item.tablist"
-              :key="item1.tableName"
-            >
-              <Icon custom="iconfont icon-table" size="14" />
-              <span>{{ item1.tableName }}</span>
-            </MenuItem>
-          </Submenu>
-          <!--如果一级菜单没有二级子菜单 -->
-          <MenuItem v-else :name="item.nodeName">
-            <Icon custom="iconfont icon-shuju" size="16" />
-            <span>{{ item.nodeName }}</span>
-          </MenuItem>
-        </div>
+              <MenuItem 
+                v-for="(item2) in threeList"	
+                :name="item2.name" 								            
+                to="跳转路由"
+                :key="item2.index">
+                {{ item2.name }}
+              </MenuItem>
+            </Submenu>
+          </template>
+        </Submenu>
       </Menu>
     </div>
   </div>
 </template>
 
 <script>
+import api from "@/common/service/api";
 export default {
   data () {
     return {
-      selectData: 'Kafka',
-      streamisFlag: "true",
+      search: '',
+      firstName: '',
+      colonyId: 'kafka',
+      //默认选中kafka 随着工作流传来的页面而改变
+      dataSourceType: 'kafka',
+      colonyType: 'colony1',
       nodeNameValue: '',
-      value: '',
-      cityList: [],
-      cityList4: [],
-      model18: '',
-      model15: '',
-      isCollapsed: false,
-      list: [
-        // {
-        //   nodeName: "db_test_mask1",
-        //   tablist: [
-        //     { "tableName": "a1", "a2": "a2" },
-        //     { "tableName": "a2", "a2": "a2" }
-        //   ]
-        // },
-        // {
-        //   nodeName: "db_test_mask2",
-        //   tablist: []
-        // }
+      extraUis: [{
+        id: 1,
+        datasource_type: "kafka",
+        key: "kafka.group.id",
+        description: "消费者组，默认为空。",
+        lable_name: "消费组名",
+        lable_name_en: "consumer group",
+        ui_type: "input",
+        condition: "[a-zA-Z0-9_]+"
+      }],
+      typeList: [
         {
-          nodeName: "topic1",//表
-          tablist: []////字段
+          id: "1",
+          name: "mysql",
+          description: "mysql数据库",
+          option: "mysql数据库",
+          classifier: "关系型数据库",
+          icon: "https://img.alicdn.com/imgextra/i4/O1CN01uLYwgg1zS93Aq9W8C_!!6000000006712-2-tps-280-176.png"
         },
-        {
-          nodeName: "topic_test1",
-          tablist: [
-            { "tableName": "uid", "a2": "a2" },
-            { "tableName": "name", "a2": "a2" }
-          ]
-        },
-        {
-          nodeName: "topic_test2",
-          tablist: []
-        },
-        {
-          nodeName: "topic_test3",
-          tablist: []
+        { 
+          id: "4",
+          name: "kafka",
+          description: "kafka",
+          option: "kafka",
+          classifier: "消息队列",
+          icon: "https://img.alicdn.com/imgextra/i4/O1CN01uLYwgg1zS93Aq9W8C_!!6000000006712-2-tps-280-176.png"
         }
       ],
+      colonyList: [
+        {
+          value: 'colony1',
+          label: '集群1'
+        },
+        {
+          value: 'colony2',
+          label: '集群2'
+        }
+      ],
+      isCollapsed: false,
+      //一级菜单
+      firstList: [
+        "information_schema",
+        "drelephant",
+        "dss_ah3_prod",
+        "dss_dev",
+        "dss_prod",
+        "dss_prod_test",
+        "dss_test",
+        "hive","luban",
+        "metastore","mysql",
+        "op_user","opuser_old",
+        "performance_schema",
+        "skywalking","sys"
+      ],
+      secondList: '',
+      //三级菜单
+      threeList: '',
       data1: [
         {
           title: 'parent 1',
@@ -132,29 +152,124 @@ export default {
     }
   },
   mounted () {
-    //this.getDatasets()
-    let that = this
-    // let submenuValue = document.querySelectorAll(".ivu-menu-item")  
-    let submenuValue = document.querySelectorAll(".ivu-menu-submenu-title")
-    for (let i = 0; i < submenuValue.length; i++) {
-      submenuValue[i].addEventListener("click", function () {
-        that.goTablePanel(this.innerText)
-      })
-    }
+    //获取数据源类型
+    this.getDataSourceType()
+    //获取集群信息
+    this.getColonyType()
+    //获取一级菜单(库名)
+    this.getFirstMenu()
+  },
+  created(){
+    
   },
   methods: {
-    goTablePanel (query) {
+    getDataSourceType(){
+      // 向后台发送请求 获取数据源类型无带参
+      api.fetch("streamis/dataSourceType", "post").then(res => {
+        console.log(res,"后台返回的数据源类型信息")
+        //this.typeList = res.dataSourceTypes 
+      })
+    },
+    getColonyType(){
+      const params = {
+        //数据源类型的id 
+        dataSourceTypeId: "",
+        system: "streamis",
+        name: ""
+      }
+      api.fetch("streamis/dataSourceCluster?", params, "post").then(res => {
+        console.log(res,"后台返回的数据源集群信息")
+        //this.colonyList = res.dataSourceCluster 
+        //集群的id  选中之后也要随之发生变化
+        this.colonyId = res.dataSourceCluster
+      })
+    },
+    getFirstMenu(){
+      const params = {
+        //集群的id 默认进来选中哪个集群就传哪个集群
+        dataSourceId: "",
+        system: "streamis"
+      }
+      api.fetch("streamis/dataBases?", params, "post").then(res => {
+        console.log(res,"后台返回的获取一级菜单(库名)")
+        //this.firstList = res.dataBases
+      })
+    },
+    getSecondMenu(query){
+      this.firstName = query   
+      this.secondList=[
+        {
+          "tableName": "test_table1",
+          "isStreamisDataSource": true,
+          "streamisTableMetaId": 1
+        },
+        {
+          "tableName": "test_table2",
+          "isStreamisDataSource": false,
+          "streamisTableMetaId": 2
+        },
+        {
+          "tableName": "test_table3",
+          "isStreamisDataSource": true,
+          "streamisTableMetaId": 3
+        }
+      ]
+      //发送请求 获取二级菜单
+      const params = {
+        //集群的id 默认进来选中哪个集群就传哪个集群
+        dataSourceId: "",
+        system: "streamis",
+        dataBase: query
+      }
+      api.fetch("streamis/tables?", params, "post").then(res => {
+        console.log(res,"后台返回的获取二级菜单(表名)")
+        //this.secondList = res.tables
+      })
+    },
+    // 三级菜单
+    getThreeList(query){
+      //把类型、集群、表名传递给父组件 传一个对象过去 然后取值
+      let dataBase = {
+        dataSourceType: this.dataSourceType,
+        colonyType: this.colonyType,
+        tableName: `${this.firstName}.${query}`,
+        extraUis: this.extraUis
+      }
+      this.$emit('dataBaseFun', dataBase)
+      //传id
       this.nodeNameValue = query
       this.$emit('goTableFun', this.nodeNameValue)
-    },
-  },
-  computed: {
-    menuitemClasses: function () {
-      return [
-        'menu-item',
-        this.isCollapsed ? 'collapsed-menu' : ''
+      console.log(query,"触发二级菜单")
+      this.threeList = [
+        {index: 1, name: "id", type: "BIGINT", primaryKey: true},
+        {index: 2, name: "name", type: "VARCHAR", primaryKey: false},
+        {index: 3, name: "project_id", type: "BIGINT", primaryKey: false},
+        {index: 4, name: "job_type", type: "VARCHAR", primaryKey: false},
+        {index: 5, name: "job_status", type: "VARCHAR", primaryKey: false},
+        {index: 6, name: "cron_expression", type: "VARCHAR", primaryKey: false},
+        {index: 7, name: "start_date", type: "DATETIME", primaryKey: false},
+        {index: 8, name: "end_date", type: "DATETIME", primaryKey: false},
+        {index: 9, name: "config", type: "VARCHAR", primaryKey: false},
+        {index: 10, name: "description", type: "VARCHAR", primaryKey: false},
+        {index: 11, name: "exec_log", type: "VARCHAR", primaryKey: false},
+        {index: 12, name: "create_by", type: "BIGINT", primaryKey: false},
+        {index: 13, name: "create_time", type: "TIMESTAMP", primaryKey: false},
+        {index: 14, name: "update_time", type: "TIMESTAMP", primaryKey: false}
       ]
-    }
+      const params = {
+        dataSourceId: "",
+        system: "streamis",
+        dataBase: "",
+        table: "",
+        dataSourceType: ""
+      }
+      api.fetch("streamis/columns?", params, "post").then(res => {
+        console.log(res,"后台返回的获取二级菜单(表名)")
+        //this.threeList = res.columns
+        //还有额外的数据需要存储起来
+        //this.extraUis = res.extraUis
+      })
+    },
   }
 }
 </script>
@@ -189,6 +304,9 @@ export default {
     }
   }
   .select{
+    .ivu-select .ivu-select-dropdown {
+      z-index: 999;
+    }
     display: flex;
     margin-top: 10px;;
     .select-type{
@@ -223,7 +341,8 @@ export default {
   .libtable{
     margin-top: 30px;
     width: 228px;
-    height: 471px;
+    height: 464px;
+    overflow: auto;
     .ivu-icon-ios-arrow-down:before {
       content: "";
     }
@@ -240,6 +359,7 @@ export default {
       margin-left: 15px;
     }
   }
+  // 菜单的选中样式隐藏
   .ivu-menu-vertical.ivu-menu-light:after{
     display: none;
   }
