@@ -42,4 +42,9 @@ public class StreamisTableEntity {
     public void setTableInfo(StreamisTableMeta tableInfo) {
         this.tableInfo = tableInfo;
     }
+
+    public String toString(){
+
+        return null;
+    }
 }
