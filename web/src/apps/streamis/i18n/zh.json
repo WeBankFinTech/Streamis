@@ -1,8 +1,10 @@
 {
   "message": {
     "streamis": {
+      "enterLinkis": "进入Linkis查看",
+      "operationSuccess": "操作成功",
       "routerName": {
-        "realTimeJobCenter": "实时应用中心",
+        "realTimeJobCenter": "实时生产中心",
         "scriptisRealTimeJob": "Scriptis实时任务",
         "VisualisRealTimeJob": "Visualis实时任务"
       },
@@ -33,7 +35,8 @@
         "stopBtn": "停止",
         "startBtn": "启动",
         "configBtn": "配置",
-        "saveBtn": "保存"
+        "saveBtn": "保存",
+        "updateBtn": "更新"
       },
       "jobListTableColumns":{
         "jobName": "作业名称",

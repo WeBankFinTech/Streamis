@@ -303,13 +303,16 @@
         :loading="saveLoading"
         style="width:100px;height:40px;background:rgba(22, 155, 213, 1);"
       >
-        {{ $t("message.streamis.formItems.saveBtn") }}
+        {{ !hadSaved ? $t("message.streamis.formItems.saveBtn") : $t("message.streamis.formItems.updateBtn")  }}
       </Button>
     </div>
   </div>
 </template>
 <script>
 import api from "@/common/service/api";
+/**
+ * 重置表单数据
+ */
 function resetFormValue(vueThis, dataName, configs) {
   if (!configs) {
     return;
@@ -383,7 +386,8 @@ export default {
       authorityVisibleOptions: [],
       authorityAuthorOptions: [],
       saveLoading: false,
-      fullTree: {}
+      fullTree: {},
+      hadSaved: false,
     };
   },
   mounted() {
@@ -476,7 +480,7 @@ export default {
           const temp = (key && key.replace(/\./g, "").toLowerCase()) || "";
           const hit = keys.find(i => temp.endsWith(i.toLowerCase()));
           const finalValue = values[hit];
-          item.value = Array.isArray(finalValue)? finalValue[0] : finalValue;
+          item.value = finalValue;
           if (valueLists) {
             valueLists.forEach(vl => {
               if (Array.isArray(finalValue)) {
@@ -490,12 +494,18 @@ export default {
       });
       console.log(this.fullTree);
       api
-        .fetch("streamis/streamJobManager/config/add", {
+        .fetch("streamis/streamJobManager/config/" + (this.hadSaved ? "update" : "add"), {
           jobId: this.$route.params.id,
           fullTree: this.fullTree
         })
         .then(res => {
           console.log(res);
+          if(res.errorMsg){
+            this.$Message.error(res.errorMsg.desc);
+          }else{
+            this.$Message.success(this.$t("message.streamis.operationSuccess"));
+            this.hadSaved = true;
+          }
         })
         .catch(e => console.log(e));
     }

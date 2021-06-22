@@ -5,8 +5,9 @@
       v-model="visible"
       footer-hide
       width="1200"
+      @on-cancel="cancel"
     >
-      <Table :columns="columns" :data="tableDatas" border/>
+      <Table :columns="columns" :data="datas" border/>
     </Modal>
   </div>
 </template>
@@ -16,14 +17,14 @@ export default {
   components: { table },
   props: {
     visible: Boolean,
-    tableDatas: Array
+    datas: Array
   },
   data() {
     return {
       columns: [
         {
           title: this.$t("message.streamis.versionDetail.jobId"),
-          key: "jobId"
+          key: "id"
         },
         {
           title: this.$t("message.streamis.versionDetail.version"),
@@ -35,24 +36,24 @@ export default {
         },
         {
           title: this.$t("message.streamis.versionDetail.createTime"),
-          key: "createTime"
+          key: "releaseTime"
         },
         {
           title: this.$t("message.streamis.versionDetail.creator"),
-          key: "creator"
+          key: "createBy"
         },
 
         {
           title: this.$t("message.streamis.versionDetail.projectID"),
-          key: "projectID"
+          key: "projectId"
         },
         {
           title: this.$t("message.streamis.versionDetail.dssLabels"),
-          key: "dssLabels"
+          key: "dssEnv"
         },
         {
           title: this.$t("message.streamis.versionDetail.resourceId"),
-          key: "resourceId"
+          key: "bmlId"
         },
         {
           title: this.$t("message.streamis.versionDetail.bmlVersion"),
@@ -75,7 +76,7 @@ export default {
       this.$Message.info("Clicked ok");
     },
     cancel() {
-      this.$Message.info("Clicked cancel");
+      this.$emit('modalCancel');
     }
   }
 };
