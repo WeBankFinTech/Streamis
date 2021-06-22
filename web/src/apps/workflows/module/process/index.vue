@@ -1,10 +1,6 @@
 <template>
   <div class="page-process" ref="page_process">
-    <Card
-      v-if="!checkEditable(query) && showTip"
-      shadow
-      class="process-readonly-tip-card"
-    >
+    <Card v-if="!checkEditable(query) && showTip" shadow class="process-readonly-tip-card">
       <div>
         {{$t("message.workflow.workflowItem.readonlyTip")}}
       </div>
@@ -12,99 +8,60 @@
     </Card>
     <div class="process-tabs">
       <div class="process-tab">
-        <div
-          v-for="(item, index) in tabs"
-          :key="index"
-          class="process-tab-item"
-          :class="{active: index===active}"
-          @click="choose(index)"
-          @mouseenter.self="item.isHover = true"
-          @mouseleave.self="item.isHover = false"
-        >
+        <div v-for="(item, index) in tabs" :key="index" class="process-tab-item" :class="{active: index===active}"
+          @click="choose(index)" @mouseenter.self="item.isHover = true" @mouseleave.self="item.isHover = false">
           <div>
-            <img
-              class="tab-icon"
-              :class="nodeImg[item.node.type].class"
-              :src="nodeImg[item.node.type].icon"
-              alt
-            />
+            <img class="tab-icon" :class="nodeImg[item.node.type] ? nodeImg[item.node.type].class : ''"
+              :src="nodeImg[item.node.type] ? nodeImg[item.node.type].icon: ''" alt />
             <div :title="item.title" class="process-tab-name">{{ item.title }}</div>
-            <SvgIcon v-show="!item.isHover && item.node && item.node.isChange && checkEditable(query)" class="process-tab-unsave-icon" icon-class="fi-radio-on2"/>
-            <Icon
-              v-if="item.isHover && (item.close || query.product)"
-              type="md-close"
-              @click.stop="remove(index)"
-            />
+            <SvgIcon v-show="!item.isHover && item.node && item.node.isChange && checkEditable(query)"
+              class="process-tab-unsave-icon" icon-class="fi-radio-on2" />
+            <Icon v-if="item.isHover && (item.close || query.product)" type="md-close" @click.stop="remove(index)" />
           </div>
         </div>
       </div>
       <div class="process-container">
         <template v-for="(item, index) in tabs">
-          <Process
-            ref="process"
-            v-if="item.type === 'Process'"
-            v-show="index===active"
-            :key="item.key"
-            :import-replace="false"
-            :flow-id="item.data.appId"
-            :version="item.data.version"
-            :product="query.product"
-            :readonly="!checkEditable(query)"
-            :isLatest="query.isLatest === 'true'"
-            :tabs="tabs"
-            :open-files="openFiles"
-            :orchestratorId="item.data.id"
-            :orchestratorVersionId="item.data.orchestratorVersionId"
-            @changeMap="changeTitle"
-            @node-dblclick="dblclickNode(index, arguments)"
-            @isChange="isChange(index, arguments)"
-            @save-node="saveNode"
-            @check-opened="checkOpened"
-            @deleteNode="deleteNode"
-            @saveBaseInfo="saveBaseInfo"
-            @updateWorkflowList="$emit('updateWorkflowList')"
-          ></Process>
-          <Ide
-            v-if="item.type === 'IDE'"
-            v-show="index===active"
-            :key="item.title"
-            :parameters="item.data"
-            :node="item.node"
-            :in-flows-index="index"
-            :readonly="!checkEditable(query)"
-            @save="saveIDE(index, arguments)"
-          ></Ide>
-          <commonIframe
-            v-if="item.type === 'Iframe'"
-            v-show="index===active"
-            :key="item.title"
-            :parametes="item.data"
-            :node="item.node"
-            @save="saveNode"
-          ></commonIframe>
-          <div
-            v-if="item.type === 'DiaoDu'"
-            v-show="index===active"
-            :key="item.title"
-            style="width:100%; height:100%"
-          ></div>
+          <Process ref="process" v-if="item.type === 'Process'" v-show="index===active" :key="item.key"
+            :import-replace="false" :flow-id="item.data.appId" :version="item.data.version" :product="query.product"
+            :readonly="!checkEditable(query)" :isLatest="query.isLatest === 'true'" :tabs="tabs" :open-files="openFiles"
+            :orchestratorId="item.data.id" :orchestratorVersionId="item.data.orchestratorVersionId"
+            @changeMap="changeTitle" @node-dblclick="dblclickNode(index, arguments)"
+            @isChange="isChange(index, arguments)" @save-node="saveNode" @check-opened="checkOpened"
+            @deleteNode="deleteNode" @saveBaseInfo="saveBaseInfo" @updateWorkflowList="$emit('updateWorkflowList')">
+          </Process>
+          <Ide v-if="item.type === 'IDE'" v-show="index===active" :key="item.title" :parameters="item.data"
+            :node="item.node" :in-flows-index="index" :readonly="!checkEditable(query)"
+            @save="saveIDE(index, arguments)"></Ide>
+          <commonIframe v-if="item.type === 'Iframe'" v-show="index===active" :key="item.title" :parametes="item.data"
+            :node="item.node" @save="saveNode"></commonIframe>
+          <Datasource v-if="item.type === 'Datasource'" v-show="index===active" :key="item.title" :node="item.node"
+            :data="item.data" style="width:100%; height:100%"></Datasource>
         </template>
       </div>
     </div>
   </div>
 </template>
 <script>
-import { isEmpty, isArguments } from "lodash";
+import {
+  isEmpty,
+  isArguments
+} from "lodash";
 import api from "@/common/service/api";
 import util from "@/common/util";
 import Process from "./module.vue";
 import Ide from "@/apps/workflows/module/ide";
+import Datasource from "@/apps/streamis/view/dataSource/index";
 import commonModule from "@/apps/workflows/module/common";
-import { NODETYPE, NODEICON } from "@/apps/workflows/service/nodeType";
+import {
+  NODETYPE,
+  NODEICON
+} from "@/apps/workflows/service/nodeType";
 export default {
   components: {
     Process,
     Ide: Ide.component,
+    Datasource,
     commonIframe: commonModule.component.iframe
   },
   props: {
@@ -115,20 +72,18 @@ export default {
   },
   data() {
     return {
-      tabs: [
-        {
-          title: this.$t("message.workflow.process.index.BJMS"),
-          type: "Process",
-          close: false,
-          data: this.query,
-          node: {
-            isChange: false,
-            type: "workflow.subflow"
-          },
-          key: "工作流",
-          isHover: false
-        }
-      ],
+      tabs: [{
+        title: this.$t("message.workflow.process.index.BJMS"),
+        type: "Process",
+        close: false,
+        data: this.query,
+        node: {
+          isChange: false,
+          type: "workflow.subflow"
+        },
+        key: "工作流",
+        isHover: false
+      }],
       active: 0,
       setIntervalID: "",
       setTime: 40,
@@ -151,7 +106,7 @@ export default {
     // 没有权限的和历史的都不可编辑
     checkEditable(item) {
       // 编排权限由后台的priv字段判断，1-查看， 2-编辑， 3-发布
-      if ([2,3].includes(item.priv) && this.query.readonly !== 'true') {
+      if ([2, 3].includes(item.priv) && this.query.readonly !== 'true') {
         return true
       } else {
         return false
@@ -331,7 +286,12 @@ export default {
       if (node.type == NODETYPE.FLOW) {
         // 子流程必须已保存, 才可以被打开
         let flowId = node.jobContent ? node.jobContent.embeddedFlowId : "";
-        let {orchestratorVersionId, id} = {...this.query}
+        let {
+          orchestratorVersionId,
+          id
+        } = {
+          ...this.query
+        }
         this.getTabsAndChoose({
           type: "Process",
           node,
@@ -343,19 +303,33 @@ export default {
         });
         return;
       }
-      // iframe打开的节点
+      // node.jumpUrl 不为空且是http链接则iframe打开的节点，否则视为内部模块
       if (node.supportJump && node.jumpUrl) {
-        let id = node.jobContent ? node.jobContent.id : "";
-        this.getTabsAndChoose({
-          type: "Iframe",
-          node,
-          data: {
-            id
-          }
-        });
+        if (node.jumpUrl.startsWith('http')) {
+          let id = node.jobContent ? node.jobContent.id : "";
+          this.getTabsAndChoose({
+            type: "Iframe",
+            node,
+            data: {
+              id
+            }
+          });
+        } else {
+          this.getTabsAndChoose({
+            type: node.jumpUrl,
+            node,
+            data: {
+              //
+            }
+          });
+        }
       }
     },
-    getTabsAndChoose({ type, node, data }) {
+    getTabsAndChoose({
+      type,
+      node,
+      data
+    }) {
       this.$set(node, "isChange", false);
       this.tabs.push({
         type,
@@ -440,7 +414,7 @@ export default {
       // 更新节点的编辑器的内容也更新缓存的tabs
       this.updateProjectCacheByTab();
     },
-    convertSettingParamsVariable(params) {
+    convertSettingParamsVariable(params = {}) {
       const variable = isEmpty(params.variable) ? [] : util.convertObjectToArray(params.variable);
       return variable;
     },
