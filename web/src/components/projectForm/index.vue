@@ -121,11 +121,13 @@
 <script>
 import storage from "@/common/helper/storage";
 import tag from '@component/tag/index.vue';
+import mixin from '@/common/service/mixin';
 import { GetWorkspaceUserList, GetDicList } from '@/common/service/apiCommonMethod.js';
 export default {
   components: {
     'we-tag': tag,
   },
+  mixins: [mixin],
   props: {
     projectData: {
       type: Object,
@@ -182,7 +184,7 @@ export default {
     },
     formValid() {
       let validateName = (rule, value, callback) => {
-        let currentWorkspaceName = storage.get("currentWorkspace") ? storage.get("currentWorkspace").name : null;
+        let currentWorkspaceName = this.getCurrentWorkspaceName();
         let username = storage.get("baseInfo", 'local') ? storage.get("baseInfo", 'local').username : null;
         if (currentWorkspaceName && username && value.match(currentWorkspaceName) || value.match(username)) {
           callback(new Error(this.$t('message.workflow.projectDetail.validateName')))
