@@ -170,12 +170,6 @@ public class JobRestfulApi {
     }
 
     @POST
-    @Path("/release")
-    public Response releaseJob(@Context HttpServletRequest req, Map<String, Object> json) throws IOException, JobException{
-
-        return Message.messageToResponse(Message.ok());
-    }
-    @POST
     @Path("/publishToJobManager")
     public Response publishToJobManager(@Context HttpServletRequest req, Map<String, Object> json) throws IOException, JobException{
         if(json == null){
@@ -183,7 +177,7 @@ public class JobRestfulApi {
         }
         PublishRequestVO publishRequestVO = mapper.readValue(mapper.writeValueAsString(json), PublishRequestVO.class);
         if(publishRequestVO == null){
-            JobExceptionManager.createException(30301,"version");
+            JobExceptionManager.createException(30301,"publishRequestVO");
         }
         jobService.publishToJobManager(publishRequestVO);
         //todo 发布

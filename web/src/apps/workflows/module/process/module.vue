@@ -677,7 +677,7 @@ export default {
     },
     // 前往调度中心
     goScheduleCenter() {
-      let workspaceId = storage.get('currentWorkspace').id;
+      let workspaceId = this.getCurrentWorkspaceId();
       this.$router.push({
         path: '/scheduleCenter',
         query: {workspaceId}
@@ -843,7 +843,7 @@ export default {
       });
     },
     getOriginJson() {
-      return api.fetch(`/dss/workflow/get`, {
+      return api.fetch(`/streamis/get`, {
         flowId: this.newFlowId,
         labels: this.getCurrentDsslabels()
       },'get').then((res) => {
@@ -2213,11 +2213,10 @@ export default {
     publishSuccess(cb) {
       // 再次获取appId
       this.loading = true;
-      const workspaceData = storage.get("currentWorkspace");
       api.fetch(`${this.$API_PATH.ORCHESTRATOR_PATH}openOrchestrator`, {
         orchestratorId: this.orchestratorId,
         labels: {route: this.getCurrentDsslabels()},
-        workspaceName: workspaceData.name
+        workspaceName: this.getCurrentWorkspaceName()
       }, 'post').then((openOrchestrator) => {
         this.loading = false;
         if (openOrchestrator) {
@@ -2290,11 +2289,6 @@ export default {
       }).catch(() => {
 
       })
-    },
-    // 获取工作空间名称
-    getCurrentWorkspaceName() {
-      const workspaceData = storage.get("currentWorkspace");
-      return workspaceData ? workspaceData.name : ''
     }
   },
 };
