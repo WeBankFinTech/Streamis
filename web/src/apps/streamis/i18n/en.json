@@ -1,6 +1,8 @@
 {
   "message": {
     "streamis": {
+      "enterLinkis": "Enter Linkis",
+      "operationSuccess": "Operation Success",
       "routerName": {
         "realTimeJobCenter": "Real-time job center",
         "scriptisRealTimeJob": "Scriptis real-time job",
@@ -34,7 +36,8 @@
         "stopBtn": "Stop",
         "startBtn": "Start",
         "configBtn": "Config",
-        "saveBtn": "Save"
+        "saveBtn": "Save",
+        "updateBtn": "Update"
       },
       "jobListTableColumns":{
         "jobName": "Job name",
