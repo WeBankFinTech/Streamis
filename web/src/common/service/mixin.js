@@ -112,5 +112,21 @@ export default {
     getUserName() {
       return  storage.get("baseInfo") ? storage.get("baseInfo").username : null;
     },
+    // 获取工作空间名称
+    getCurrentWorkspaceName() {
+      const workspaceData = storage.get("currentWorkspace");
+      if (this.$route.query.workspaceName){
+        return this.$route.query.workspaceName
+      }
+      return workspaceData ? workspaceData.name : ''
+    },
+    // 获取工作空间Id
+    getCurrentWorkspaceId() {
+      const workspaceData = storage.get("currentWorkspace");
+      if (this.$router.query.workspaceId){
+        return this.$router.query.workspaceId
+      }
+      return workspaceData ? workspaceData.id : ''
+    }
   },
 };

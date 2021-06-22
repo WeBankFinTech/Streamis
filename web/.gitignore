@@ -10,3 +10,4 @@ package-lock.json
 wedatasphere-*.zip
 ./cn.json
 .env.*
+*-dist.zip
