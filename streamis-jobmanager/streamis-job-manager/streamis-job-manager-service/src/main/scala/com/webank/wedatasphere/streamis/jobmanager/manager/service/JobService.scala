@@ -200,6 +200,7 @@ class JobService extends Logging{
       job.setName(publishRequestVO.getStreamisJobName)
       job.setCurrentVersion(publishRequestVO.getVersion)
       job.setCreateBy(publishRequestVO.getCreateBy)
+      job.setSubmitUser(publishRequestVO.getPublishUser)
       streamJobMapper.insertJob(job)
 
       jobVersion.setJobId(job.getId)
