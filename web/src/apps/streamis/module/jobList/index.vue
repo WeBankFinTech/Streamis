@@ -59,13 +59,11 @@
           </Form>
           <Table :columns="columns" :data="tableDatas" :loading="loading">
             <template slot-scope="{ row, index }" slot="jobName">
-              <div class="jobName" v-show="index === 0">
-                <Upload action="/api/rest_j/v1/streamis/streamJobManager/job/upload">
-                  <Icon type="md-add" class="upload" />
-                  <span>{{
-                    $t("message.streamis.jobListTableColumns.upload")
-                  }}</span>
-                </Upload>
+              <div class="jobName" v-show="index === 0" @click="handleUpload()">
+                <Icon type="md-add" class="upload" />
+                <span>{{
+                  $t("message.streamis.jobListTableColumns.upload")
+                }}</span>
               </div>
               <div class="jobName" v-show="index !== 0">
                 <Dropdown transfer @on-click="name => handleRouter(row, name)">
@@ -144,14 +142,20 @@
         </div>
       </div>
     </titleCard>
-    <versionDetail :visible="modalVisible" :datas="versionDatas" />
+    <versionDetail :visible="modalVisible" :datas="versionDatas" @modalCancel="modalCancel"/>
+    <uploadJobJar :visible="uploadVisible" @jarModalCancel="jarModalCancel"/>
   </div>
 </template>
 <script>
 import api from "@/common/service/api";
 import titleCard from "@/apps/streamis/components/titleCard";
 import versionDetail from "@/apps/streamis/module/versionDetail";
+import uploadJobJar from "@/apps/streamis/module/uploadJobJar";
 import { jobStatuses } from "@/apps/streamis/common/common";
+
+/**
+ * 渲染特殊表头
+ */
 function renderSpecialHeader(h, params) {
   return h("div", [
     h("strong", params.column.title),
@@ -168,7 +172,7 @@ function renderSpecialHeader(h, params) {
 }
 
 export default {
-  components: { titleCard, versionDetail },
+  components: { titleCard, versionDetail, uploadJobJar },
   data() {
     return {
       query: {
@@ -269,7 +273,8 @@ export default {
       },
       loading: false,
       modalVisible: false,
-      versionDatas: []
+      versionDatas: [],
+      uploadVisible: false,
     };
   },
   mounted() {
@@ -323,6 +328,9 @@ export default {
       this.pageData.current = 1;
       this.getJobList();
     },
+    handleUpload(){
+      this.uploadVisible = true;
+    },
     handleAction(data) {
       console.log(data);
       const { taskStatus, jobId } = data;
@@ -365,7 +373,8 @@ export default {
             ? moduleMap[moduleName] || moduleName
             : "jobSummary",
           name: rowData.jobName,
-          version: rowData.version
+          version: rowData.version,
+          taskStatus: rowData.taskStatus
         }
       });
     },
@@ -396,13 +405,34 @@ export default {
           if (res) {
             this.loading = false;
             this.modalVisible = true;
+            this.versionDatas = [res.detail];
+            // this.versionDatas = [
+            //   {
+            //     id: 1,
+            //     version: "v00001",
+            //     description: "test",
+            //     releaseTime: "2021-03-01 00:00:00",
+            //     createBy: "johnnwang",
+            //     projectId: 1,
+            //     bmlId: 1111,
+            //     bmlVersion: "v000001",
+            //     dssEnv: ""
+            //   }
+            // ];
           }
         })
         .catch(e => {
           console.log(e);
           this.loading = false;
         });
-    }
+    },
+    modalCancel(){
+      this.modalVisible = false;
+    },
+    jarModalCancel(){
+      this.uploadVisible = false;
+      this.$Message.info("Clicked cancel");
+    },
   }
 };
 </script>
