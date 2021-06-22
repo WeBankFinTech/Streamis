@@ -2,15 +2,15 @@ package com.webank.wedatasphere.streamis.datasource.transfer.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.webank.wedatasphere.linkis.common.exception.ErrorException;
-import com.webank.wedatasphere.linkis.datasource.client.response.QueryDataSourceResult;
-import com.webank.wedatasphere.linkis.manager.label.entity.Label;
 import com.webank.wedatasphere.linkis.manager.label.entity.engine.EngineType;
 import com.webank.wedatasphere.linkis.manager.label.entity.engine.RunType;
+import com.webank.wedatasphere.streamis.datasource.manager.domain.StreamisDatasourceExtraInfo;
 import com.webank.wedatasphere.streamis.datasource.manager.domain.StreamisDatasourceFields;
 import com.webank.wedatasphere.streamis.datasource.manager.domain.StreamisTableMeta;
+import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisDatasourceExtraInfoService;
 import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisDatasourceFieldsService;
 import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisTableMetaService;
-import com.webank.wedatasphere.streamis.datasource.transfer.client.LinkisDataSourceClient;
+import com.webank.wedatasphere.streamis.datasource.manager.client.LinkisDataSourceClient;
 import com.webank.wedatasphere.streamis.datasource.transfer.entity.StreamisDataSourceCode;
 import com.webank.wedatasphere.streamis.datasource.transfer.entity.StreamisTableEntity;
 import com.webank.wedatasphere.streamis.datasource.transfer.service.DataSourceTransfer;
@@ -34,11 +34,15 @@ public class DataSourceTransferImpl implements DataSourceTransfer {
     @Autowired
     StreamisDatasourceFieldsService streamisDatasourceFieldsService;
 
+    @Autowired
+    StreamisDatasourceExtraInfoService streamisDatasourceExtraInfoService;
+
     @Override
     public StreamisDataSourceCode transfer(StreamisTableEntity streamisTableEntity, Map<String, Object> labels, Map<String, Object> params) {
         String runType = (String)params.get("runType");
-        String engineType = (String)params.get("engingType");
+        String engineType = (String)params.get("engineType");
         String version = (String)params.get("version");
+
 
         //获取表名，列名
         StreamisDataSourceCode streamisDataSourceCode = new StreamisDataSourceCode();
@@ -51,10 +55,15 @@ public class DataSourceTransferImpl implements DataSourceTransfer {
 
         if(EngineType.FLINK().equals(engineType) && version.equals("1.12.2") && RunType.SQL().equals(runType)){
             Map<String, Object> linkisDataSourceContent = streamisTableEntity.getLinkisDatasource().getLinkisDataSourceContent();
+
             String dataSourceType = linkisDataSourceContent.get("dataSourceType").toString();
             if(dataSourceType.equals("kafka")){
+                String groupId = getKaflaGroupIdInfo(streamisTableEntity.getTableInfo().getId());
+                linkisDataSourceContent.put("groupId",groupId);
+                linkisDataSourceContent.put("topicName",tableName);
                 streamisDataSourceCode = transferKafkaSql(tableName, cols, labels, linkisDataSourceContent);
             }else if(dataSourceType.equals("mysql")){
+                linkisDataSourceContent.put("dbName",params.get("nodeName"));
                 streamisDataSourceCode = transferMysql(tableName, cols, labels, linkisDataSourceContent);
             }
         }
@@ -62,18 +71,18 @@ public class DataSourceTransferImpl implements DataSourceTransfer {
     }
 
     public StreamisDataSourceCode transferKafkaSql(String tableName, String cols, Map<String, Object> labels, Map<String, Object> linkisDataSourceContent) {
-        String servers = (String)linkisDataSourceContent.get("servers");
+        String servers = (String)linkisDataSourceContent.get("brokers");
         String topicName = (String)linkisDataSourceContent.get("topicName");
         String groupId = (String)linkisDataSourceContent.get("groupId");
         String offsetMode = (String)linkisDataSourceContent.getOrDefault("offsetMode","earliest-offset");
-        String formatMode = (String)linkisDataSourceContent.getOrDefault("formatMode","formatMode");
+        String formatMode = (String)linkisDataSourceContent.getOrDefault("formatMode","json");
         String executionCode = DataSourceTransferFlinksqlUtils.kafkaDataSourceTransfer(tableName , cols , topicName , servers , groupId , offsetMode , formatMode);
         StreamisDataSourceCode streamisDataSourceCode = new StreamisDataSourceCode(executionCode, labels, new HashMap<String, Object>());
         return streamisDataSourceCode;
     }
 
     public StreamisDataSourceCode transferMysql(String tableName, String cols, Map<String, Object> labels, Map<String, Object> linkisDataSourceContent){
-        String serverIp = (String)linkisDataSourceContent.get("serverIp");
+        String serverIp = (String)linkisDataSourceContent.get("host");//serverIp
         String dbName = (String)linkisDataSourceContent.get("dbName");
         String executionCode = DataSourceTransferFlinksqlUtils.mysqlDataSourceTransfer(tableName,cols,serverIp,dbName);
         StreamisDataSourceCode streamisDataSourceCode = new StreamisDataSourceCode(executionCode, labels, new HashMap<String, Object>());
@@ -82,7 +91,7 @@ public class DataSourceTransferImpl implements DataSourceTransfer {
 
 
     @Override
-    public StreamisTableEntity getStreamisTableMetaById(String streamisTableMetaId) throws ErrorException{
+    public StreamisTableEntity getStreamisTableMetaById(String streamisTableMetaId, String userName, Long dataSourceId) throws ErrorException{
         StreamisTableEntity streamisTableEntity = new StreamisTableEntity();
         try {
             //查询表信息
@@ -96,9 +105,10 @@ public class DataSourceTransferImpl implements DataSourceTransfer {
             String workspaceName = tableInfo.getWorkspaceName();
             String linkisDataSourceUniqueId = workspaceName + "_" + linkisDatasourceName;
             //通过linkisDatasourceName查询linkis数据源信息
-            QueryDataSourceResult queryDataSourceResult = LinkisDataSourceClient.queryDataSource(linkisDatasourceName);
+//            QueryDataSourceResult queryDataSourceResult = LinkisDataSourceClient.queryDataSource(linkisDatasourceName);
+            Map<String, Object> linkisDataSourceContent = LinkisDataSourceClient.queryConnectParams(dataSourceId, "system", userName).getConnectParams();
             //拿到linkis数据源里的连接信息
-            Map<String, Object> linkisDataSourceContent = queryDataSourceResult.getQuery_list().get(0).getConnectParams();
+//            Map<String, Object> linkisDataSourceContent = queryDataSourceResult.getQuery_list().get(0);
             LinkisDataSource linkisDatasource = new LinkisDataSource(linkisDataSourceUniqueId, linkisDataSourceContent);
 
             //返回实体
@@ -106,9 +116,18 @@ public class DataSourceTransferImpl implements DataSourceTransfer {
             streamisTableEntity.setFields(fields);
             streamisTableEntity.setLinkisDatasource(linkisDatasource);
         } catch (Exception e) {
-            logger.error("传入streamisTableMetaId {} 查询元数据失败：", streamisTableMetaId, e);
-            throw new ErrorException(30203, "抱歉，后台查询streamis元数据失败");
+            logger.error("the param streamisTableMetaId {} Failed to query metadata(查询元数据失败)：", streamisTableMetaId, e);
+            throw new ErrorException(30203, "Sorry, the background query for streamis metadata failed(抱歉，后台查询streamis元数据失败)");
         }
         return streamisTableEntity;
+    }
+
+
+    public String getKaflaGroupIdInfo(Long streamisTableMetaId){
+        QueryWrapper<StreamisDatasourceExtraInfo> wrapper = new QueryWrapper<>();
+        wrapper.eq("streamis_table_meta_id",streamisTableMetaId);
+        wrapper.eq("key","kafka.group.id");
+        StreamisDatasourceExtraInfo extraInfo = streamisDatasourceExtraInfoService.getOne(wrapper);
+        return extraInfo.getValue();
     }
 }

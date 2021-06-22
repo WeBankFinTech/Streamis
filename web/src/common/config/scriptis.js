@@ -37,6 +37,21 @@ export default Object.freeze([{
   label: 'Hive',
   isCanBeOpen: true,
   flowType: 'hql'
+},{
+  rule: /\.(fql)$/i,
+  lang: 'fql',
+  executable: true,
+  application: 'flink',
+  runType: 'sql',
+  ext: '.fql',
+  scriptType: 'fql',
+  abbr: 'fql',
+  logo: 'fi-hive',
+  color: '#F4CF38',
+  isCanBeNew: true,
+  label: 'Flink',
+  isCanBeOpen: true,
+  flowType: 'fql'
 },
 {
   rule: /\.(out)$/i,
