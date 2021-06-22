@@ -8,11 +8,14 @@ import java.util.Date;
 public class StreamTask {
     private Long id;
     private Long jobVersionId;
-    private String jobName;
+    private Long jobId;
     private String submitUser;
     private String version;
     private Date startTime;
+    private Date lastUpdateTime;
     private Date endTime;
+    private String linkisJobId;
+    private String linkisJobInfo;
     private String errDesc;
     private Integer status;
 
@@ -24,12 +27,12 @@ public class StreamTask {
         this.id = id;
     }
 
-    public String getJobName() {
-        return jobName;
+    public Long getJobId() {
+        return jobId;
     }
 
-    public void setJobName(String jobName) {
-        this.jobName = jobName;
+    public void setJobId(Long jobId) {
+        this.jobId = jobId;
     }
 
     public String getVersion() {
@@ -46,6 +49,14 @@ public class StreamTask {
 
     public void setStartTime(Date startTime) {
         this.startTime = startTime;
+    }
+
+    public Date getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+
+    public void setLastUpdateTime(Date lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
     }
 
     public Date getEndTime() {
@@ -86,5 +97,21 @@ public class StreamTask {
 
     public void setSubmitUser(String submitUser) {
         this.submitUser = submitUser;
+    }
+
+    public String getLinkisJobId() {
+        return linkisJobId;
+    }
+
+    public void setLinkisJobId(String linkisJobId) {
+        this.linkisJobId = linkisJobId;
+    }
+
+    public String getLinkisJobInfo() {
+        return linkisJobInfo;
+    }
+
+    public void setLinkisJobInfo(String linkisJobInfo) {
+        this.linkisJobInfo = linkisJobInfo;
     }
 }
