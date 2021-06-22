@@ -118,7 +118,6 @@ export default {
             .catch(e => {
               console.log(e)
               this.loading = false;
-              this.$emit("jarUploadSuccess");
             })
         }
       })
