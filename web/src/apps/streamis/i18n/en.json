@@ -143,6 +143,16 @@
                 "variable": "Input variable value"
             }
           }
+      },
+      "uploadJar": {
+        "entrypointClass": "Entrypoint Class",
+        "label": "Label",
+        "entrypointMainArgs": "Entrypoint Main Args",
+        "parallelism": "Parallelism",
+        "selectJar": "Please choose Jar",
+        "upload": "Upload",
+        "choosedJar" : "Choosed Jar",
+        "jarError": "File must be Jar"
       }
     }
   }
