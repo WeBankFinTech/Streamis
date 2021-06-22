@@ -143,7 +143,7 @@
       </div>
     </titleCard>
     <versionDetail :visible="modalVisible" :datas="versionDatas" @modalCancel="modalCancel"/>
-    <uploadJobJar :visible="uploadVisible" @jarModalCancel="jarModalCancel"/>
+    <uploadJobJar :visible="uploadVisible" @jarModalCancel="jarModalCancel" @jarUploadSuccess="jarUploadSuccess"/>
   </div>
 </template>
 <script>
@@ -431,8 +431,10 @@ export default {
     },
     jarModalCancel(){
       this.uploadVisible = false;
-      this.$Message.info("Clicked cancel");
     },
+    jarUploadSuccess(){
+      this.getJobList();
+    }
   }
 };
 </script>
