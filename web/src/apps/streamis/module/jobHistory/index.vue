@@ -79,7 +79,7 @@ export default {
   methods: {
     getDatas() {
       const {id, version} = this.$route.params || {};
-      const queries = `?jodId=${id}&version=${version}`
+      const queries = `?jobId=${id}&version=${version}`
       api
         .fetch(
           "streamis/streamJobManager/job/execute/history" + queries,
@@ -88,7 +88,7 @@ export default {
         .then(res => {
           console.log(res);
           if(res && res.details){
-            this.tableDatas = res.details; 
+            this.tableDatas = res.details;
           }
         })
         .catch(e => console.log(e));
