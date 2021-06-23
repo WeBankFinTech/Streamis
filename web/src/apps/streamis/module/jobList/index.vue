@@ -71,7 +71,7 @@
                 }}</span>
               </div>
               <div class="jobName" v-show="index === 0">
-                <Upload action="/api/rest_j/v1/streamis/streamJobManager/job/upload">
+                <Upload action="/api/rest_j/v1/streamis/streamJobManager/job/upload" @on-success="jarUploadSuccess">
                   <Icon type="md-add" class="upload" />
                   <span>{{
                     $t('message.streamis.jobListTableColumns.upload')
