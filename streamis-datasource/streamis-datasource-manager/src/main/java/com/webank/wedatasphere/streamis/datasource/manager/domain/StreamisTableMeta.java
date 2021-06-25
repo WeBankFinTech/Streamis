@@ -2,7 +2,9 @@ package com.webank.wedatasphere.streamis.datasource.manager.domain;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 
@@ -24,6 +26,7 @@ public class StreamisTableMeta extends Model<StreamisTableMeta> {
     /**
      * 自增主键
      */
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     /**
      * 名字，Streamis节点的名字
