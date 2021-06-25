@@ -71,7 +71,10 @@
                 }}</span>
               </div>
               <div class="jobName" v-show="index === 0">
-                <Upload action="/api/rest_j/v1/streamis/streamJobManager/job/upload" @on-success="jarUploadSuccess">
+                <Upload
+                  action="/api/rest_j/v1/streamis/streamJobManager/job/upload"
+                  @on-success="jarUploadSuccess"
+                >
                   <Icon type="md-add" class="upload" />
                   <span>{{
                     $t('message.streamis.jobListTableColumns.upload')
@@ -110,18 +113,28 @@
                 <Button
                   type="primary"
                   v-show="row.taskStatus !== 5"
+                  :loading="buttonLoading"
                   style="width:60px;height:22px;background:#008000;margin-right: 5px"
                   @click="handleAction(row)"
                 >
-                  {{ $t('message.streamis.formItems.startBtn') }}
+                  {{
+                    buttonLoading
+                      ? ''
+                      : $t('message.streamis.formItems.startBtn')
+                  }}
                 </Button>
                 <Button
                   type="primary"
                   v-show="row.taskStatus === 5"
+                  :loading="buttonLoading"
                   style="width:60px;height:22px;background:#ff0000;margin-right: 5px"
                   @click="handleAction(row)"
                 >
-                  {{ $t('message.streamis.formItems.stopBtn') }}
+                  {{
+                    buttonLoading
+                      ? ''
+                      : $t('message.streamis.formItems.stopBtn')
+                  }}
                 </Button>
                 <Button
                   type="primary"
@@ -134,7 +147,6 @@
                 <Button
                   type="primary"
                   v-show="row.taskStatus !== 'running'"
-                  @click="handleAction(row)"
                   style="width:125px;height:24px;background:#008000;margin-right: 5px;margin-top:2px;"
                 >
                   checkpoint
@@ -293,6 +305,7 @@ export default {
         pageSize: 20
       },
       loading: false,
+      buttonLoading: false,
       modalVisible: false,
       versionDatas: [],
       uploadVisible: false
@@ -360,10 +373,12 @@ export default {
           ? 'streamis/streamJobManager/job/stop?jobId=' + jobId
           : 'streamis/streamJobManager/job/execute'
       const second = taskStatus === 5 ? 'get' : { jobId }
+      this.buttonLoading = true
       api
         .fetch(path, second)
         .then(res => {
           console.log(res)
+          this.buttonLoading = false
           if (res) {
             this.loading = false
             this.getJobList()
@@ -372,6 +387,7 @@ export default {
         .catch(e => {
           console.log(e)
           this.loading = false
+          this.buttonLoading = false
         })
     },
     handleConfig(data) {
