@@ -115,26 +115,20 @@
                   v-show="row.taskStatus !== 5"
                   :loading="buttonLoading"
                   style="width:60px;height:22px;background:#008000;margin-right: 5px"
+                  :style="{ fontSize: buttonLoading ? '10px' : '14px' }"
                   @click="handleAction(row)"
                 >
-                  {{
-                    buttonLoading
-                      ? ''
-                      : $t('message.streamis.formItems.startBtn')
-                  }}
+                  {{ $t('message.streamis.formItems.startBtn') }}
                 </Button>
                 <Button
                   type="primary"
                   v-show="row.taskStatus === 5"
                   :loading="buttonLoading"
-                  style="width:60px;height:22px;background:#ff0000;margin-right: 5px"
+                  style="width:60px;height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
+                  :style="{ fontSize: buttonLoading ? '10px' : '14px' }"
                   @click="handleAction(row)"
                 >
-                  {{
-                    buttonLoading
-                      ? ''
-                      : $t('message.streamis.formItems.stopBtn')
-                  }}
+                  {{ $t('message.streamis.formItems.stopBtn') }}
                 </Button>
                 <Button
                   type="primary"
