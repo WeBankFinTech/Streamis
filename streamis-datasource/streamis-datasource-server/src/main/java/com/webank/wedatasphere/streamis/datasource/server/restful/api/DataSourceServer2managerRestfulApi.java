@@ -69,6 +69,12 @@ public class DataSourceServer2managerRestfulApi {
     }
 
     @POST
+    @Path("save")
+    public Response saveStreamisTableMeta( @Context HttpServletRequest req,  JsonNode json) throws ErrorException{
+        return  streamisTableMetaApi.saveStreamisTableMeta(req, json);
+    }
+
+    @POST
     @Path("streamisDataSourceTree")
     public Response getStreamisTableMetaByNodeNames(@Context HttpServletRequest req,JsonNode json
     ) throws ErrorException {
