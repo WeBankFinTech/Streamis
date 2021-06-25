@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * <p>
@@ -159,5 +160,26 @@ public class StreamisDatasourceFields extends Model<StreamisDatasourceFields> {
         ", fieldAlias=" + fieldAlias +
         ", fieldDescription=" + fieldDescription +
         "}";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StreamisDatasourceFields that = (StreamisDatasourceFields) o;
+        return id.equals(that.id) &&
+                streamisTableMetaId.equals(that.streamisTableMetaId) &&
+                fieldName.equals(that.fieldName) &&
+                fieldType.equals(that.fieldType) &&
+                fieldIsPrimary.equals(that.fieldIsPrimary) &&
+                fieldIsPartition.equals(that.fieldIsPartition) &&
+                verifyRule.equals(that.verifyRule) &&
+                fieldAlias.equals(that.fieldAlias) &&
+                fieldDescription.equals(that.fieldDescription);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, streamisTableMetaId, fieldName, fieldType, fieldIsPrimary, fieldIsPartition, verifyRule, fieldAlias, fieldDescription);
     }
 }
