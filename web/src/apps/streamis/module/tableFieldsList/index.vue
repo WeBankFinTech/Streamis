@@ -109,9 +109,10 @@ function renderSpecialHeader(h, params) {
 }
 
 export default {
-  props: ["nodeNameValue"],
+  props: ["nodeId"],
   data() {
     return {
+      deleteNotice: false,
       mapTableList: '',
       //tableInfoFlag: '',
       //保留编辑前的初始值
@@ -183,43 +184,54 @@ export default {
         pageSize: 20
       },
       loading: false,
+      changeFieldList: false
     };
+  },
+  // 监听从父组件传过来的二级菜单的Id
+  watch: {
+    nodeId(){
+      this.getFieldsList();
+    },
+    tableDatas: {
+      handler() {
+        this.$emit('funTableColumn',this.tableDatas)
+      },
+      deep: true,
+    },
   },
   mounted() {
     this.getFieldsList();
-    //this.tableInfoFlag = Boolean(this.fieldsListInfo);
-  },
+  }, 
   methods: {
     funPrimary(params){
-      this.tableColumn.fieldIsPrimary=(params=='是'?1:0)
+      this.tableColumn.fieldIsPrimary = (params=='是'?1:0)
     },
     funPartition(params){
-      this.tableColumn.fieldIsPartition=(params=='是'?1:0)
+      this.tableColumn.fieldIsPartition = (params=='是'?1:0)
     },
     //删除字段
     deleteColumn(row){
-      //发送请求
-      api.fetch("streamis/deleteFields/" + row.id, "get").then((res) => {
-        if(res){
-          let index = this.tableDatas.findIndex(subitem => subitem.id === row.id )
-          this.tableDatas.splice(index, 1)
-          this.$Message.success('删除成功')
-        } else {
-          this.$Message.error('删除失败')
-        }
-      }).catch(() => {
-        this.$Message.error('删除失败')
-      });
+      let index = this.tableDatas.findIndex(subitem => subitem.id === row.id )
+      this.tableDatas.splice(index, 1)
+      // 直接把tableDatas传递过去
+      this.$emit('funTableColumn',this.tableDatas)
+      this.changeFieldList = true
+      this.$emit('funChangeFieldList',this.changeFieldList)
     },
     submit(row, index){
+      // 如果没有任何改变不能点击确定按钮 禁用确定按钮
+      // 只要点击过确定就是有改变
+      this.changeFieldList = true
+      this.$emit('funChangeFieldList',this.changeFieldList)
       const objectKey = {
         fieldName: "字段名称",
         fieldIsPrimary: "是否是主键",
         fieldIsPartition: "是否是分区",
+        fieldType: "是否是字段类型"
       }
       const keys = Object.keys(this.tableColumn)
       const findItem = keys.find(item => this.tableColumn[item] === '')
-      if(findItem&&findItem !== 'fieldDescription'){
+      if(findItem && findItem !== 'fieldDescription' && findItem !== 'fieldAlias' && findItem !== 'verifyRule'){
         this.$Message.error(`请输入${objectKey[findItem]}`)
         return
       }
@@ -231,43 +243,10 @@ export default {
         verifyRule: this.tableColumn.verifyRule,
         fieldAlias: this.tableColumn.fieldAlias,
         fieldDescription: this.tableColumn.fieldDescription,
+        streamisTableMetaId: this.nodeId
       })
-      //存储到一个map里面
-      this.mapTableList = [
-        {
-          key: this.nodeNameValue,
-          value: this.tableDatas
-        }
-      ]
-      //传值的时候把空的过滤掉
-      //this.tableDatas.splice(0,1)
-      this.$emit('funTableColumn',this.tableDatas)
-      //console.log(this.mapTableList[0],"map的值")
-      
-      //发送添加的请求接口
-      const params = {
-        streamisTableFields: {
-          streamisTableMetaId: 13,
-          fieldName: this.tableColumn.fieldName,
-          fieldType: this.tableColumn.fieldType,
-          fieldIsPrimary: this.tableColumn.fieldIsPrimary,
-          fieldIsPartition: this.tableColumn.fieldIsPartition,
-          verifyRule: this.tableColumn.verifyRule,
-          fieldAlias: this.tableColumn.fieldAlias,
-          fieldDescription: this.tableColumn.fieldDescription
-        }
-      }
-      api.fetch("streamis/addFields", params, "post").then(res => {
-        if(res){
-          console.log(res, "增加")
-          this.getFieldsList()
-          this.$Message.info('添加成功')
-        }else{
-          this.$Message.error();('添加失败')
-        }
-      }).catch(() => {
-        this.$Message.error('添加失败')
-      });
+      // 直接把tableDatas传递过去
+      this.$emit('funTableColumn',this.tableDatas) 
     },
     //取消新增字段
     cancelColumn(row, index){
@@ -303,34 +282,30 @@ export default {
     getFieldsList() {
       //有星星的时候删除加的第一行空对象
       //this.tableDatas.splice(0,1)
-      //如果没有id就不要发送请求 查找是否有缓存的值 没有缓存的值表格显示暂无数据
-      if(this.nodeNameValue === 'topic1'){
+      let params = this.nodeId
+      if(this.nodeId){
+        api
+          .fetch("streamis/streamisTableMetaInfo/" + params , "get")
+          .then(res => {
+            if (res) {
+              const datas = res.streamisDatasourceFields || [];
+              datas.unshift({});
+              this.tableDatas = datas;
+              //拿到表信息的字段 传给父组件 然后父组件再传递给子组件 子组件拿到信息直接渲染出来
+              let formData = res.streamisTableMeta
+              this.$emit('tableInfoFun',formData)
+              // 存储streamisExtraInfo 传递给父组件翻译用
+              let streamisExtraInfo = res.streamisExtraInfo
+              this.$emit('extraInfoFun',streamisExtraInfo) 
+            }
+          }).catch(e => console.log(e));
+      }else{
+        // 如果没有id就不要发送请求
         this.tableDatas = []
         this.tableDatas.unshift({})
-        //查找缓存的值
-        //this.mapTableList.forEach(item => {
-        //if(this.nodeNameValue===item.key){
-        //item.value = this.tableDatas
-        //}else{
-        //this.tableDatas = {}
-        //}
-        //});
-        return
+        this.$emit('tableInfoFun',{})
+        this.$emit('extraInfoFun',[]) 
       }
-      let params = 13
-      api
-        .fetch("streamis/streamisTableMetaInfo/" + params , "get")
-        .then(res => {
-          if (res) {
-            const datas = res.streamisDatasourceFields || [];
-            datas.unshift({});
-            this.tableDatas = datas;
-            //拿到表信息的字段 传给父组件 然后父组件再传递给子组件 子组件拿到信息直接渲染出来
-            let formData = res.streamisTableMeta
-            this.$emit('tableInfoFun',formData)
-          }
-        })
-        .catch(e => console.log(e));
     },
     //修改字段
     editColumn(row, index) {
@@ -344,7 +319,8 @@ export default {
       this.tableColumn.fieldAlias = row.fieldAlias
       this.tableColumn.fieldDescription = row.fieldDescription
       //保存修改后的数据
-      this.saveDatas = [row.fieldName, row.fieldIsPrimary,row.fieldIsPartition,row.fieldType,row.verifyRule,row.fieldAlias,row.fieldDescription]
+      this.saveDatas = [row.fieldName, row.fieldIsPrimary, row.fieldIsPartition, row.fieldType, row.verifyRule, row.fieldAlias, row.fieldDescription]
+      console.log(row.fieldIsPrimary,row.fieldIsPrimary,"保存的修改后的值")
     },
   }
 };
