@@ -114,9 +114,9 @@
                 <Button
                   type="primary"
                   v-show="row.taskStatus !== 5"
-                  :loading="buttonLoading"
+                  :loading="buttonLoading && choosedRowId === row.jobId"
                   style="width:60px;height:22px;background:#008000;margin-right: 5px"
-                  :style="{ fontSize: buttonLoading ? '10px' : '14px' }"
+                  :style="{ fontSize: buttonLoading && choosedRowId === row.jobId ? '10px' : '14px' }"
                   @click="handleAction(row)"
                 >
                   {{ $t('message.streamis.formItems.startBtn') }}
@@ -124,9 +124,9 @@
                 <Button
                   type="primary"
                   v-show="row.taskStatus === 5"
-                  :loading="buttonLoading"
+                  :loading="buttonLoading && choosedRowId === row.jobId"
                   style="width:60px;height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
-                  :style="{ fontSize: buttonLoading ? '10px' : '14px' }"
+                  :style="{ fontSize: buttonLoading&& choosedRowId === row.jobId ? '10px' : '14px' }"
                   @click="handleAction(row)"
                 >
                   {{ $t('message.streamis.formItems.stopBtn') }}
@@ -301,6 +301,7 @@ export default {
       },
       loading: false,
       buttonLoading: false,
+      choosedRowId: '',
       modalVisible: false,
       versionDatas: [],
       uploadVisible: false
@@ -369,11 +370,13 @@ export default {
           : 'streamis/streamJobManager/job/execute'
       const second = taskStatus === 5 ? 'get' : { jobId }
       this.buttonLoading = true
+      this.choosedRowId = jobId
       api
         .fetch(path, second)
         .then(res => {
           console.log(res)
           this.buttonLoading = false
+          this.choosedRowId = ''
           if (res) {
             this.loading = false
             this.getJobList()
@@ -383,6 +386,7 @@ export default {
           console.log(e)
           this.loading = false
           this.buttonLoading = false
+          this.choosedRowId = ''
         })
     },
     handleConfig(data) {
