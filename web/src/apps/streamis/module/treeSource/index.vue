@@ -15,16 +15,19 @@
     <!--数据源下拉选择框 -->
     <div class="select">
       <div class="select-type">
-        <Icon custom="iconfont icon-apachekafka" size="30" />
+        <!-- <Icon custom="iconfont icon-apachekafka" size="30" /> -->
+        <img class="dataType-img"  :src="dataTypeIcon"/>
+        <!-- <img class="dataType-img"  :src="require('../../assets/images/u2450.png')"/> -->
+        <!-- <img class="dataType-img" src="../../assets/images/u2450.png"/> -->
         <Select v-model="dataSourceType" style="width: 70px">
-          <Option v-for="(item, index) in typeList" :value="item.name" :key="index">{{ item.name }}</Option>
+          <Option v-for="item in typeList" :value="item.name" :key="item.id">{{ item.name }}</Option>
         </Select>
       </div>
       <!--集群下拉选择框 -->
       <div class="select-colony">
         <Icon custom="iconfont icon-jiqun" size="30" style="color: #3300ff; margin-left:6px"/>
         <Select v-model="colonyType" style="width: 70px; margin-left: 5px">
-          <Option v-for="(item, index) in colonyList" :value="item.value" :key="index">{{ item.label }}</Option>
+          <Option v-for="item in colonyList" :value="item.dataSourceName" :key="item.id">{{ item.dataSourceName }}</Option>
         </Select>
       </div>
     </div>
@@ -38,8 +41,8 @@
               <span>{{ item }}</span>
             </div>
           </template>
-          <template v-for="(item1, index) in secondList">
-            <Submenu :name="item1.tableName" :key="index">
+          <template v-for="item1 in secondList">
+            <Submenu :name="item1.tableName" :key="item1.streamisTableMetaId">
               <template slot="title">
                 <div @click="getThreeList(item1.tableName)">
                   <Icon custom="iconfont icon-table" size="14" style="margin-right: 8px"/>
@@ -67,14 +70,18 @@
 <script>
 import api from "@/common/service/api";
 export default {
+  props: ["saveNotice"],
   data () {
     return {
+      nodeId: '',
+      dataTypeIcon: '',
+      dataSourceTypeId: '',
       search: '',
       firstName: '',
-      colonyId: 'kafka',
+      colonyId: '',
       //默认选中kafka 随着工作流传来的页面而改变
       dataSourceType: 'kafka',
-      colonyType: 'colony1',
+      colonyType: '',
       nodeNameValue: '',
       extraUis: [{
         id: 1,
@@ -106,12 +113,38 @@ export default {
       ],
       colonyList: [
         {
-          value: 'colony1',
-          label: '集群1'
+          // value: 'colony1',
+          // label: '集群1'
+          id: 2,
+          dataSourceName: "kafka1",
+          dataSourceDesc: "测试",
+          dataSourceTypeId: 4,
+          createSystem: "Linkis",
+          createTime: 1620788919000,
+          createUser: "hadoop",
+          versionId: 1,
+          expire: false,
+          dataSourceType: {
+            id: "4",
+            name: "kafka"
+          }
         },
         {
-          value: 'colony2',
-          label: '集群2'
+          // value: 'colony2',
+          // label: '集群2'
+          id: 3,
+          dataSourceName: "kafka2",
+          dataSourceDesc: "测试",
+          dataSourceTypeId: 4,
+          createSystem: "Linkis",
+          createTime: 1620788919000,
+          createUser: "hadoop",
+          versionId: 1,
+          expire: false,
+          dataSourceType: {
+            id: "3",
+            name: "Mysql"
+          }
         }
       ],
       isCollapsed: false,
@@ -160,34 +193,60 @@ export default {
     this.getFirstMenu()
   },
   created(){
-    
   },
   methods: {
     getDataSourceType(){
-      // 向后台发送请求 获取数据源类型无带参
+      // 获取数据类型没有带参数 但是得写死kafka先来固定调试
+      // 获取从工作流传入过来的类型：type: links.fink.kafka id的值：有值/无值(需要我们保存id回溯到工作流页面)
+      // this.dataSourceType = '工作流传过来的类型值'
+
+      //向后台发送请求 获取数据源类型无带参
       api.fetch("streamis/dataSourceType", "post").then(res => {
         console.log(res,"后台返回的数据源类型信息")
         //this.typeList = res.dataSourceTypes 
       })
+      // 根据数据源类型的名字找到对应的id
+      // 需要循环数据源类型数组 是哪一个类型就显示哪一张图片
+      this.typeList.forEach(item => {
+        if(item.name === this.dataSourceType){
+          this.dataSourceTypeId = item.id
+          this.dataTypeIcon = item.icon
+        }
+      });
+      console.log(this.dataSourceTypeId, this.dataTypeIcon, "数据源类型和图片的地址值")
+      // this.dataTypeIcon = '../../assets/images/u2450.png'
+      this.dataTypeIcon = 'img/u2450.d4f726d6.png'
+      // this.dataTypeIcon = '../../assets/images/u2451.png' mysql的图片
+      // 定义一个变量存储数据源类型id
+      // this.dataSourceTypeId = ''
     },
     getColonyType(){
       const params = {
         //数据源类型的id 
-        dataSourceTypeId: "",
+        dataSourceTypeId: this.dataSourceTypeId,
         system: "streamis",
-        name: ""
+        //传空值，不传会报错
+        name: ''
       }
       api.fetch("streamis/dataSourceCluster?", params, "post").then(res => {
         console.log(res,"后台返回的数据源集群信息")
         //this.colonyList = res.dataSourceCluster 
-        //集群的id  选中之后也要随之发生变化
-        this.colonyId = res.dataSourceCluster
       })
+      //通过数据源类型的id去查找对应的集群
+      this.colonyList.forEach(item => {
+        if(item.dataSourceType.id === this.dataSourceTypeId){
+          this.colonyType = item.dataSourceName
+          // 存储集群的id
+          this.colonyId = item.id
+        }
+      });
+      // 把集群id传递给父组件
+      this.$emit('colonyIdFun', this.colonyId)
     },
     getFirstMenu(){
       const params = {
         //集群的id 默认进来选中哪个集群就传哪个集群
-        dataSourceId: "",
+        dataSourceId: this.colonyId,
         system: "streamis"
       }
       api.fetch("streamis/dataBases?", params, "post").then(res => {
@@ -196,6 +255,7 @@ export default {
       })
     },
     getSecondMenu(query){
+      // if(this.secondList.length){return}
       this.firstName = query   
       this.secondList=[
         {
@@ -206,18 +266,28 @@ export default {
         {
           "tableName": "test_table2",
           "isStreamisDataSource": false,
-          "streamisTableMetaId": 2
+          "streamisTableMetaId": 3
         },
         {
           "tableName": "test_table3",
           "isStreamisDataSource": true,
-          "streamisTableMetaId": 3
+          "streamisTableMetaId": 2
+        },
+        {
+          "tableName": "test_table4",
+          "isStreamisDataSource": true,
+          "streamisTableMetaId": 4
+        },
+        {
+          "tableName": "test_table5",
+          "isStreamisDataSource": true,
+          "streamisTableMetaId": ''
         }
       ]
       //发送请求 获取二级菜单
       const params = {
         //集群的id 默认进来选中哪个集群就传哪个集群
-        dataSourceId: "",
+        dataSourceId: this.colonyId,
         system: "streamis",
         dataBase: query
       }
@@ -233,13 +303,24 @@ export default {
         dataSourceType: this.dataSourceType,
         colonyType: this.colonyType,
         tableName: `${this.firstName}.${query}`,
+        // 额外展示的一些信息
         extraUis: this.extraUis
       }
+      // 数据源：传递需要额外展示的值
       this.$emit('dataBaseFun', dataBase)
       //传id
+      // 根据名字查找到id
+      this.secondList.forEach(item => {
+        if(item.tableName === query){
+          // 将要传递的id存储起来
+          this.nodeId = item.streamisTableMetaId
+        }
+      })
+      //现在传递的是二级菜单的名字
       this.nodeNameValue = query
-      this.$emit('goTableFun', this.nodeNameValue)
-      console.log(query,"触发二级菜单")
+      this.$emit('goTableNameFun', this.nodeNameValue)
+      // 现在传递的是二级菜单的id
+      this.$emit('goTableFun', this.nodeId)
       this.threeList = [
         {index: 1, name: "id", type: "BIGINT", primaryKey: true},
         {index: 2, name: "name", type: "VARCHAR", primaryKey: false},
@@ -314,6 +395,14 @@ export default {
       border-radius: 7px;
       display: flex;
       margin-right: 8px;
+      .select-type{
+        width: 10px;
+        height: 10px;
+      }
+      .dataType-img{
+        width: 30px;
+        height: 32px;
+      }
     }
     .select-colony{
       border-radius: 7px;
@@ -363,7 +452,8 @@ export default {
   .ivu-menu-vertical.ivu-menu-light:after{
     display: none;
   }
+  .ivu-select-single .ivu-select-selection .ivu-select-selected-value {
+    padding-left: 0;
+  }
 }
-
-
 </style>
