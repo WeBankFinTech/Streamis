@@ -73,7 +73,8 @@
               <div class="jobName" v-show="index === 0">
                 <Upload
                   action="/api/rest_j/v1/streamis/streamJobManager/job/upload"
-                  @on-success="jarUploadSuccess"
+                  :on-success="jarUploadSuccess"
+                  :on-error="jarUploadError"
                 >
                   <Icon type="md-add" class="upload" />
                   <span>{{
@@ -463,8 +464,16 @@ export default {
     jarModalCancel() {
       this.uploadVisible = false
     },
-    jarUploadSuccess() {
+    jarUploadSuccess(res) {
+      if (res && res.status !== 0 && res.message) {
+        this.$Message.error(res.message)
+      }
       this.getJobList()
+    },
+    jarUploadError(err, res) {
+      if (res && res.status !== 0 && res.message) {
+        this.$Message.error(res.message)
+      }
     }
   }
 }
