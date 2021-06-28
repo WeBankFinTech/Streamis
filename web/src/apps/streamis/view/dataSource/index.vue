@@ -3,7 +3,11 @@
     <div class="container"> 
       <!--左边树 -->
       <div class="leftContainer">
-        <treeSource @goTableFun="getThreeList"  @dataBaseFun="getDataBase"/>
+        <treeSource
+          @goTableFun="getThreeList"  
+          @dataBaseFun="getDataBase" 
+          @goTableNameFun="getNodeId"
+          @colonyIdFun="getColonyId"/>
       </div>
       <div class="rightContainer"> 
         <!--切换sql -->
@@ -18,7 +22,7 @@
             <span>停止</span>
           </div>
           <div class="devider" />
-          <div class="button">
+          <div class="button" @click="addStreamis">
             <svg
               class="icon"
               viewBox="0 0 1024 1024"
@@ -31,7 +35,7 @@
                 p-id="4565"
               ></path>
             </svg>
-            <span @click="addStreamis">保存</span>
+            <span>保存</span>
           </div>
           <div class="devider" />
           <!-- 必须要选中一个表才可以切换sql -->
@@ -43,7 +47,7 @@
             <Icon type="md-swap" />
             <span>返回图形界面</span>
           </div>
-          <template v-if="!isShowSql&&nodeNameValue">
+          <template v-if="!isShowSql&&nodeId">
             <textarea class="sqlInput">11111</textarea>
           </template>
         </div>
@@ -71,7 +75,7 @@
                 <span>{{ dataBase.dataSourceType }} - {{ dataBase.colonyType }}：</span>
                 <span>{{ dataBase.tableName }}</span>
               </div>
-              <div class="data-text">
+              <div class="data-text" v-if="showInput">
                 <span style="margin-right: 4px">{{ extraUisLable }}:</span>
                 <Input v-model="extraUisName" placeholder="请输入消费组名" style="width: 200px" />
               </div>
@@ -86,11 +90,14 @@
               </div>
               <div class="panel-pg"></div>
             </div>
+            <!-- 把二级菜单的id值传入给表格去发送请求 -->
             <tableFieldsList 
-              :nodeNameValue="nodeNameValue" 
-              @tableInfoFun="tableInfoList"
+              :nodeId="nodeId" 
               @funTableColumn="tableColumnObject"
-              ref="mychild"/>
+              @tableInfoFun="tableInfoList"
+              @extraInfoFun="getStreamisExtraInfo"
+              @funChangeFieldList="getChangeFieldList"
+              ref="mychildTable"/>
             <div class="panel-table-data">
               <div class="panel-color">
                 <img class="icon" src="../../assets/images/u2618.png" />
@@ -101,11 +108,16 @@
               </div>
               <div class="panel-pg"></div>
             </div>
-            <tableInfo v-bind:formData="formData"/>
+            <tableInfo
+              :formData.sync="formData"
+              @funFlagTableInfo="getFlagTableInfo"/>
           </div>
         </template>
       </div>
     </div>
+    <Modal v-model="saveNotice" title="提示" @on-ok="addStreamis(saveNotice)">
+      <p>请点击保存按钮，否则会清空您记录哦！！！</p>
+    </Modal>
   </div>
 </template>
 <script>
@@ -123,6 +135,18 @@ export default {
   },
   data() {
     return {
+      streamisExtraInfo: '',
+      changeExtraUisName: false,
+      changeTableInfo: false,
+      changeFieldList: false,
+      showInput: '',
+      colonyId: '',
+      returnId: '',
+      extraUis: '', 
+      labelWidth: 80,
+      saveNotice: false,
+      // 根据二级菜单的名字来判断是否显示右侧动态面板
+      nodeNameValue: '',
       // 用户自己填的东西
       extraUisName: '',
       extraUisLable: '',
@@ -130,41 +154,108 @@ export default {
       fieldsList: '',
       changeStatus: true,
       isShowSql: true,
-      nodeNameValue: '',
-      formData: {},
+      nodeId: '',
+      formData: {
+        tableName: '',
+        alias: '',
+        tags: '',
+        scope: '',
+        layer: '',
+        description: '',
+        id: ''
+      },
       navHeight: 0,
-      dataBase: ''
+      dataBase: '',
+      goSaveButton: false,
     };
   },
   mounted() {
   },
   watch: {
+    // 监听消费组名的变化 如果有变化 要走保存
+    extraUisName: {
+      handler(newValue,oldValue) {
+        if(newValue !== oldValue && oldValue != '' && newValue){
+          // 说明已经修改了 如果没有走保存按钮 就要弹出提示框
+          this.changeExtraUisName = true
+        }
+      }
+    },
   },
   methods: {
     //保存表信息和字段信息
-    addStreamis(){
+    addStreamis(query){
+      // 如果走过保存就会变为true
+      this.goSaveButton = true
       //拿到子组件的字段信息
-      //拿到子组件的表信息
-      //拿到修改过的字段信息和表信息
-      //一次性拿到
-      let params = ''
-      api.fetch("streamis/addStreamisTableMeta" , params, "post").then(res => {
-        console.log(res,"保存拿到的信息传给后台")
+      //拿到表信息
+      // 如果三个值没有一个改变的同时禁用保存按钮
+      // if(!this.changeFieldList && !this.changeTableInfo && !this.changeExtraUisName){
+      //   console.log(this.changeFieldList,this.changeTableInfo,this.changeExtraUisName,"三个值")
+      //   this.$Message.warning('无任何修改，禁止保存')
+      //   return
+      // } 
+      // 发送保存请求的时候一定要把消费组名传过去
+      if(!this.extraUisName){
+        this.$Message.warning('请输入消费组名')
+        this.goSaveButton = false
+        return
+      }
+      // 如果没有表信息id 提示无表信息  streamisTableMeta的id是后台返回的
+      // 在没有id的情况下 只能先添加表信息再添加表的字段
+      if(this.formData.id === undefined && this.changeFieldList){
+        this.$Message.warning('没有表信息，请先添加表信息再添加字段信息')
+        this.goSaveButton = false
+        return
+      }
+      if(!this.formData.tableName || !this.formData.scope || !this.formData.layer){
+        this.$Message.warning('表名、作用域、所属分层不能为空')
+        this.goSaveButton = false
+        return
+      }
+      if(this.fieldsList){
+        this.fieldsList = this.fieldsList.filter(item => item.fieldName)
+      }
+      this.formData.name  = this.nodeNameValue
+      let params = {
+        authorityId: '',
+        streamisTableMeta: this.formData,
+        streamisTableFields: this.fieldsList,
+        streamisExtraInfo: [{
+          key: this.extraUis.key,
+          value: this.extraUisName,
+          streamisTableMetaId: this.nodeId
+        }]
+      }
+      api.fetch("streamis/save" , params, "post").then(res => {
+        if(res){
+          // 再去触发一下子组件tableFieldsList的方法
+          this.$Message.success('保存成功')
+          this.$refs.mychildTable.getFieldsList();
+          // 保存后台返回的id 到时候回调到工作流界面
+          // this.returnId = res.streamisTableMetaId
+          // 将这个id给子组件treeSource
+        }else{
+          this.$Message.error();('保存失败')
+        }
       })
+      if(query === false){
+        this.goSaveButton = false
+      }
     },
     changSql(){
-      if(!this.nodeNameValue){
+      if(!this.nodeId){
         return     
-      }else{
+      } else {
         this.changeStatus =! this.changeStatus
         this.isShowSql =! this.isShowSql
       }
       //像后端发送请求 翻译成sql
-      //streamis/transfer?streamisTableMetaId=""&dataSourceId=""&nodeName=""&labels=
       const params = {
-        dataSourceTypeId: "",
-        nodeName: "",
-        labels: ""
+        streamisTableMetaId: this.nodeId,
+        dataSourceId: this.colonyId,
+        nodeName: this.nodeNameValue,
+        streamisExtraInfo: this.streamisExtraInfo
       }
       api.fetch("streamis/transfer" , params, "post").then(res => {
         console.log(res,"后台返回的翻译的信息")
@@ -174,18 +265,57 @@ export default {
       this.changeStatus = !this.changeStatus
       this.isShowSql = !this.isShowSql
     },
-    getThreeList(nodeNameValue) {
-      this.nodeNameValue = nodeNameValue
+    getThreeList(nodeId) {
+      this.nodeId = nodeId
+      if(this.changeFieldList || this.changeTableInfo || this.changeExtraUisName){
+        // 告诉三个其中一个有改变 但是没有走保存按钮 提示框就会出现
+        if(this.goSaveButton === false){
+          // 弹出提示框
+          this.saveNotice = true
+          // 把这个变化为空 让它下次不要弹出来
+          this.changeTableInfo = false
+        }
+      }
     },
     tableInfoList(formData) {
+      // 子组件tableFieldList传过来的表信息
       this.formData = formData
     },
     tableColumnObject(mapTableList){
+      // 传过来的保存的字段信息的值
       this.fieldsList = mapTableList
     },
     getDataBase(dataBase){
+      // 数据源：得到一些需要额外展示的值
+      // 显示输入框/选择框
+      this.showInput = dataBase.extraUis[0].id
       this.dataBase = dataBase
       this.extraUisLable = dataBase.extraUis[0].lable_name
+      this.extraUis = dataBase.extraUis[0]
+    },
+    getStreamisExtraInfo(streamisExtraInfo){
+      this.streamisExtraInfo = streamisExtraInfo
+      if(streamisExtraInfo.length !== 0){
+        this.extraUisName = streamisExtraInfo[0].value
+      }else{
+        this.extraUisName = ''
+      }
+    },
+    // 获取点击的二级菜单的名字
+    getNodeId(nodeNameValue){
+      this.nodeNameValue = nodeNameValue
+    },
+    // 集群的id
+    getColonyId(colonyId){
+      this.colonyId =colonyId
+    },
+    getChangeFieldList(val){
+      if(val === true){
+        this.changeFieldList = val
+      }
+    },
+    getFlagTableInfo(query){
+      this.changeTableInfo = query
     }
   },
 };
