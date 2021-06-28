@@ -1,9 +1,10 @@
 <template>
   <div class="tableInfo">
-    <Form>
+    <Form ref="formValidate" :model="tableInfo">
       <Row>
         <Col span="12">
-          <FormItem label="表名:" :label-width="labelWidth">
+          <FormItem>
+            <div slot="label" style="margin-left: 34px;"><span style="color: red">*</span>表名</div>
             <Input v-model="tableInfo.tableName" style="width: 300px"/>
           </FormItem>
         </Col>
@@ -20,7 +21,8 @@
           </FormItem>
         </Col>
         <Col span="12">
-          <FormItem label="作用域:" :label-width="labelWidth">
+          <FormItem>
+            <div slot="label" style="margin-left: 34px;"><span style="color: red">*</span>作用域</div>
             <Select v-model="tableInfo.scope" style="width:300px">
               <Option v-for="item in scopeList" :value="item.value" :key="item.value">{{ item.label }}</Option>
             </Select>
@@ -34,7 +36,8 @@
       </Row>
       <Row>
         <Col span="12">
-          <FormItem label="所属分层:" :label-width="labelWidth">
+          <FormItem>
+            <div slot="label" style="margin-left: 34px;"><span style="color: red">*</span>所属分层</div>
             <Select v-model="tableInfo.layer" style="width:300px">
               <Option v-for="item in layerList" :value="item.value" :key="item.value">{{ item.label }}</Option>
             </Select>
@@ -65,11 +68,9 @@ export default {
   props: {
     formData: {
       type: Object,
-      default () {
-        return {}
-      }
     }
   },
+  // props: ['formData'],
   data(){
     return{
       labelWidth: 80,
@@ -80,6 +81,7 @@ export default {
         scope: '',
         layer: '',
         description: '',
+        id: ''
       },
       scopeList: [
         {
@@ -109,24 +111,68 @@ export default {
           label: 'DWS'
         }
       ],
+      flagChange: {}
     }
   },
   watch: {
-    formData(){
-      this.tableInfo.tableName = this.formData.tableName
-      this.tableInfo.alias = this.formData.alias
-      this.tableInfo.tags = this.formData.tags
-      this.tableInfo.layer = this.formData.layer
-      this.tableInfo.description = this.formData.description
-      if(this.formData.scope === "task"){
-        this.tableInfo.scope = '任务级'
-      }else if(this.formData.scope === "project"){
-        this.tableInfo.scope = '工程级'
+    formData: {
+      handler() {
+        this.getTableInfo()
+      },
+    },
+    'tableInfo.id'(newVal,oldVal){
+      if(newVal != oldVal && oldVal != ""){
+        this.$emit('funFlagTableInfo',false)
       }
     },
+    'tableInfo.tableName'(newVal,oldVal){
+      oldVal = this.flagChange.tableName
+      console.log(oldVal,newVal,"旧值和新值")
+      if(newVal != oldVal && oldVal != undefined){
+        console.log("发送弹框信息")
+        this.$emit('funFlagTableInfo',true)
+      }
+    },
+    'tableInfo.alias'(newVal,oldVal){
+      oldVal = this.flagChange.alias
+      if(newVal != oldVal && oldVal != undefined){
+        this.$emit('funFlagTableInfo',true)
+      }
+    },
+    'tableInfo.tags'(newVal,oldVal){
+      oldVal = this.flagChange.tags
+      if(newVal != oldVal && oldVal != undefined){
+        this.$emit('funFlagTableInfo',true)
+      }
+    },
+    'tableInfo.layer'(newVal,oldVal){
+      oldVal = this.flagChange.layer
+      if(newVal != oldVal && oldVal != undefined){
+        this.$emit('funFlagTableInfo',true)
+      }
+    },
+    'tableInfo.scope'(newVal,oldVal){
+      oldVal = this.flagChange.scope
+      if(newVal != oldVal && oldVal != undefined){
+        this.$emit('funFlagTableInfo',true)
+      }
+    },
+    'tableInfo.description'(newVal,oldVal){
+      oldVal = this.flagChange.description
+      if(newVal != oldVal && oldVal != undefined){
+        this.$emit('funFlagTableInfo',true)
+      }
+    }
   },
-  mounted() {
+  mounted () {
+    this.getTableInfo()
   },
+  methods: {
+    getTableInfo(){
+      this.flagChange = JSON.parse(JSON.stringify(this.formData))
+      this.tableInfo = this.formData
+    }
+  }
 }
 </script>
 
