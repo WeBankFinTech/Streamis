@@ -328,7 +328,8 @@ function resetFormValue(vueThis, dataName, configs) {
     const { key, value, valueLists, name } = item
     const temp = (key && key.replace(/\./g, '').toLowerCase()) || ''
     const hit = keys.find(i => temp.endsWith(i.toLowerCase()))
-    let finalValue = value || value === 0 ? value : ''
+    let finalValue =
+      name === '告警规则' ? [] : value || value === 0 ? value : ''
     if (valueLists) {
       const ar = []
       valueLists.forEach(option => {
@@ -336,9 +337,6 @@ function resetFormValue(vueThis, dataName, configs) {
           value: option.value,
           title: option.value
         })
-        if (name === '告警规则') {
-          finalValue = []
-        }
         if (option.selected) {
           if (name === '告警规则') {
             finalValue.push(option.value)
@@ -353,6 +351,7 @@ function resetFormValue(vueThis, dataName, configs) {
   })
 
   vueThis[dataName] = newValues
+  console.log(vueThis[dataName])
   Object.assign(vueThis, options)
 }
 export default {
@@ -484,7 +483,9 @@ export default {
           const temp = (key && key.replace(/\./g, '').toLowerCase()) || ''
           const hit = keys.find(i => temp.endsWith(i.toLowerCase()))
           const finalValue = values[hit]
-          item.value = finalValue
+          item.value = Array.isArray(finalValue)
+            ? finalValue.join(',')
+            : finalValue
           if (valueLists) {
             valueLists.forEach(vl => {
               if (Array.isArray(finalValue)) {
