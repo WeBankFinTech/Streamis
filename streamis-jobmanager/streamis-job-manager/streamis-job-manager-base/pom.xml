@@ -23,6 +23,10 @@
             <groupId>com.webank.wedatasphere.linkis</groupId>
             <artifactId>linkis-mybatis</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.webank.wedatasphere.linkis</groupId>
+            <artifactId>linkis-common</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
