@@ -5,7 +5,7 @@ import com.webank.wedatasphere.linkis.common.utils.Logging
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamBmlMapper, StreamJobMapper, StreamProjectMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobRunRelation, StreamJobSqlResource, StreamJobVersion, StreamProject}
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobFlowVO, JobProgressVO, PublishRequestVO, QueryJobListVO, TaskCoreNumVO}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobFlowVO, PublishRequestVO, QueryJobListVO, TaskCoreNumVO}
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.DateUtils
 import org.apache.commons.lang.StringUtils
 import org.springframework.beans.BeanUtils
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
+import scala.tools.nsc.interpreter.InputStream
 /**
  * @author limeng
  */
@@ -23,7 +24,7 @@ class JobService extends Logging{
   @Autowired private var streamJobMapper:StreamJobMapper=_
   @Autowired private var streamBmlMapper:StreamBmlMapper=_
   @Autowired private var streamProjectMapper:StreamProjectMapper=_
-
+  @Autowired private var bmlService:BMLService=_
 
   def getByProList(projectId:Long,jobName:String,jobStatus:Integer,jobCreator:String):java.util.List[QueryJobListVO] = {
     val jobLists = streamJobMapper.getJobLists(projectId, jobName, jobStatus, jobCreator).asScala
@@ -237,6 +238,11 @@ class JobService extends Logging{
     }
   }
 
+  def addJarBml(userName:String,inputStream:InputStream,resourceId:String): Unit ={
+      info("add jar resource")
 
+
+
+  }
 
 }
