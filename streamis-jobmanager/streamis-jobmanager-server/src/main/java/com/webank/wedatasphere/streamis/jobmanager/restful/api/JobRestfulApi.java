@@ -75,13 +75,8 @@ public class JobRestfulApi {
     @POST
     @Path("/upload")
     public Response uploadJar(@Context HttpServletRequest req,
-                           @FormDataParam("jobName") String jobName,
-                           @FormDataParam("entrypointClass") String entrypointClass,
-                           @FormDataParam("label") String label,
-                           @FormDataParam("entrypointMainArgs") String entrypointMainArgs,
-                           @FormDataParam("parallelism") Integer parallelism,
-                           @FormDataParam("workspaceId") Long workspaceId,
-                           @FormDataParam("projectId") Long projectId,
+                            @FormDataParam("projectName") String projectName,
+                           @FormDataParam("resourceId") String resourceId,
                            @FormDataParam("path") String path,
                            FormDataMultiPart form) throws IOException, JobException {
 
