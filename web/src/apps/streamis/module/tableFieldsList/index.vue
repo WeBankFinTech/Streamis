@@ -178,11 +178,6 @@ export default {
         "runningHistory",
         "runningLogs"
       ],
-      pageData: {
-        total: 0,
-        current: 1,
-        pageSize: 20
-      },
       loading: false,
       changeFieldList: false
     };
