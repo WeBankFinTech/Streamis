@@ -19,7 +19,7 @@
         <img class="dataType-img"  :src="dataTypeIcon"/>
         <!-- <img class="dataType-img"  :src="require('../../assets/images/u2450.png')"/> -->
         <!-- <img class="dataType-img" src="../../assets/images/u2450.png"/> -->
-        <Select v-model="dataSourceType" style="width: 70px">
+        <Select v-model="dataSourceType" style="width: 70px" @on-change="changeSecList">
           <Option v-for="item in typeList" :value="item.name" :key="item.id">{{ item.name }}</Option>
         </Select>
       </div>
@@ -133,7 +133,7 @@ export default {
           // value: 'colony2',
           // label: '集群2'
           id: 3,
-          dataSourceName: "kafka2",
+          dataSourceName: "mysql1",
           dataSourceDesc: "测试",
           dataSourceTypeId: 4,
           createSystem: "Linkis",
@@ -142,8 +142,8 @@ export default {
           versionId: 1,
           expire: false,
           dataSourceType: {
-            id: "3",
-            name: "Mysql"
+            id: "1",
+            name: "mysql"
           }
         }
       ],
@@ -203,7 +203,7 @@ export default {
       //向后台发送请求 获取数据源类型无带参
       api.fetch("streamis/dataSourceType", "post").then(res => {
         console.log(res,"后台返回的数据源类型信息")
-        //this.typeList = res.dataSourceTypes 
+        this.typeList = res.dataSourceTypes 
       })
       // 根据数据源类型的名字找到对应的id
       // 需要循环数据源类型数组 是哪一个类型就显示哪一张图片
@@ -217,6 +217,7 @@ export default {
       // this.dataTypeIcon = '../../assets/images/u2450.png'
       this.dataTypeIcon = 'img/u2450.d4f726d6.png'
       // this.dataTypeIcon = '../../assets/images/u2451.png' mysql的图片
+      // 返回一个svg图片
       // 定义一个变量存储数据源类型id
       // this.dataSourceTypeId = ''
     },
@@ -230,7 +231,7 @@ export default {
       }
       api.fetch("streamis/dataSourceCluster?", params, "post").then(res => {
         console.log(res,"后台返回的数据源集群信息")
-        //this.colonyList = res.dataSourceCluster 
+        this.colonyList = res.dataSourceCluster 
       })
       //通过数据源类型的id去查找对应的集群
       this.colonyList.forEach(item => {
@@ -251,11 +252,10 @@ export default {
       }
       api.fetch("streamis/dataBases?", params, "post").then(res => {
         console.log(res,"后台返回的获取一级菜单(库名)")
-        //this.firstList = res.dataBases
+        this.firstList = res.dataBases
       })
     },
     getSecondMenu(query){
-      // if(this.secondList.length){return}
       this.firstName = query   
       this.secondList=[
         {
@@ -293,11 +293,12 @@ export default {
       }
       api.fetch("streamis/tables?", params, "post").then(res => {
         console.log(res,"后台返回的获取二级菜单(表名)")
-        //this.secondList = res.tables
+        this.secondList = res.tables
       })
     },
     // 三级菜单
     getThreeList(query){
+      if(this.threeList.length != 0)return
       //把类型、集群、表名传递给父组件 传一个对象过去 然后取值
       let dataBase = {
         dataSourceType: this.dataSourceType,
@@ -346,11 +347,18 @@ export default {
       }
       api.fetch("streamis/columns?", params, "post").then(res => {
         console.log(res,"后台返回的获取二级菜单(表名)")
-        //this.threeList = res.columns
+        this.threeList = res.columns
         //还有额外的数据需要存储起来
-        //this.extraUis = res.extraUis
+        this.extraUis = res.extraUis
       })
     },
+    changeSecList(val){
+      this.colonyList.forEach(item => {
+        if(item.dataSourceType.name === val){
+          this.colonyType = item.dataSourceName
+        }
+      });
+    }
   }
 }
 </script>
