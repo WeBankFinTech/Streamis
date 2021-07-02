@@ -28,24 +28,6 @@
                 </Option>
               </Select>
             </FormItem>
-            <FormItem
-              :label="$t('message.streamis.formItems.jobCreator')"
-              :label-width="120"
-            >
-              <Select v-model="query.jobCreator" class="select">
-                <Option
-                  v-for="(item, index) in jobCreatorOptions"
-                  :value="item"
-                  :key="index"
-                >
-                  {{
-                    item === 'all'
-                      ? $t('message.streamis.jobStatus.' + item)
-                      : item
-                  }}
-                </Option>
-              </Select>
-            </FormItem>
 
             <FormItem>
               <Button
@@ -206,10 +188,8 @@ export default {
       query: {
         jobName: '',
         jobStatus: 'all',
-        jobCreator: 'all'
       },
       jobStatus: ['all'].concat(jobStatuses.map(item => item.name)),
-      jobCreatorOptions: ['all'],
 
       tableDatas: [{}],
       columns: [
@@ -297,7 +277,7 @@ export default {
       pageData: {
         total: 0,
         current: 1,
-        pageSize: 20
+        pageSize: 10
       },
       loading: false,
       buttonLoading: false,
@@ -318,16 +298,13 @@ export default {
       this.loading = true
       const { current, pageSize } = this.pageData
       const params = { projectId: 1, pageNow: current, pageSize }
-      const { jobName, jobStatus, jobCreator } = this.query
+      const { jobName, jobStatus } = this.query
       if (jobName) {
         params.jobName = jobName
       }
       if (jobStatus !== 'all') {
         const hitStatus = jobStatuses.find(item => item.name === jobStatus)
         params.jobStatus = hitStatus.code
-      }
-      if (jobCreator !== 'all') {
-        params.jobCreator = jobCreator
       }
 
       const queries = Object.entries(params)
