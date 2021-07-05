@@ -131,15 +131,23 @@ public class StreamisTableMetaApi {
             List<StreamisTableMeta> list = streamisTableMetaService.list(wrapper);
 
             for (String table : tables) {
-                for (StreamisTableMeta streamisTableMeta : list) {
+                if(CollectionUtils.isNotEmpty(list)){
+                    for (StreamisTableMeta streamisTableMeta : list) {
+                        tableVO = new StreamisDataSourceTableVO();
+                        tableVO.setTableName(table);
+                        if(table.equals(streamisTableMeta.getTableName())){
+                            tableVO.setStreamisTableMetaId(streamisTableMeta.getId());
+                        }
+                        tableVO.setStreamisDataSource(table.equals(streamisTableMeta.getTableName()));
+                        tableList.add(tableVO);
+                    }
+                }else {
                     tableVO = new StreamisDataSourceTableVO();
                     tableVO.setTableName(table);
-                    if(table.equals(streamisTableMeta.getTableName())){
-                        tableVO.setStreamisTableMetaId(streamisTableMeta.getId());
-                    }
-                    tableVO.setStreamisDataSource(table.equals(streamisTableMeta.getTableName()));
+                    tableVO.setStreamisDataSource(false);
                     tableList.add(tableVO);
                 }
+
 
             }
             message = Message.ok().data("tables",tableList);
