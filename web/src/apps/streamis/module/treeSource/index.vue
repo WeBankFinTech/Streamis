@@ -15,17 +15,18 @@
     <!--数据源下拉选择框 -->
     <div class="select">
       <div class="select-type">
-        <!-- <Icon custom="iconfont icon-apachekafka" size="30" /> -->
-        <img class="dataType-img"  :src="dataTypeIcon"/>
+        <!-- <SvgIcon class="nav-icon" :icon-class="item.icon"/> -->
+        <!-- <SvgIcon  class="streamis-icon" icon-class="apachekafka"/> -->
+        <SvgIcon  class="dataSourceType-icon" :icon-class="dataTypeIcon"/>
         <!-- <img class="dataType-img"  :src="require('../../assets/images/u2450.png')"/> -->
-        <!-- <img class="dataType-img" src="../../assets/images/u2450.png"/> -->
         <Select v-model="dataSourceType" style="width: 70px" @on-change="changeSecList">
           <Option v-for="item in typeList" :value="item.name" :key="item.id">{{ item.name }}</Option>
         </Select>
       </div>
       <!--集群下拉选择框 -->
       <div class="select-colony">
-        <Icon custom="iconfont icon-jiqun" size="30" style="color: #3300ff; margin-left:6px"/>
+        <!-- <Icon custom="iconfont icon-jiqun" size="30" style="color: #3300ff; margin-left:6px"/> -->
+        <SvgIcon  class="colony-icon" icon-class="colony"/>
         <Select v-model="colonyType" style="width: 70px; margin-left: 5px">
           <Option v-for="item in colonyList" :value="item.dataSourceName" :key="item.id">{{ item.dataSourceName }}</Option>
         </Select>
@@ -70,7 +71,11 @@
 <script>
 import api from "@/common/service/api";
 export default {
-  props: ["saveNotice"],
+  props: {
+    node: {
+      type: Object,
+    }
+  },
   data () {
     return {
       nodeId: '',
@@ -83,123 +88,122 @@ export default {
       dataSourceType: 'kafka',
       colonyType: '',
       nodeNameValue: '',
-      extraUis: [{
-        id: 1,
-        datasource_type: "kafka",
-        key: "kafka.group.id",
-        description: "消费者组，默认为空。",
-        lable_name: "消费组名",
-        lable_name_en: "consumer group",
-        ui_type: "input",
-        condition: "[a-zA-Z0-9_]+"
-      }],
-      typeList: [
-        {
-          id: "1",
-          name: "mysql",
-          description: "mysql数据库",
-          option: "mysql数据库",
-          classifier: "关系型数据库",
-          icon: "https://img.alicdn.com/imgextra/i4/O1CN01uLYwgg1zS93Aq9W8C_!!6000000006712-2-tps-280-176.png"
-        },
-        { 
-          id: "4",
-          name: "kafka",
-          description: "kafka",
-          option: "kafka",
-          classifier: "消息队列",
-          icon: "https://img.alicdn.com/imgextra/i4/O1CN01uLYwgg1zS93Aq9W8C_!!6000000006712-2-tps-280-176.png"
-        }
-      ],
-      colonyList: [
-        {
-          // value: 'colony1',
-          // label: '集群1'
-          id: 2,
-          dataSourceName: "kafka1",
-          dataSourceDesc: "测试",
-          dataSourceTypeId: 4,
-          createSystem: "Linkis",
-          createTime: 1620788919000,
-          createUser: "hadoop",
-          versionId: 1,
-          expire: false,
-          dataSourceType: {
-            id: "4",
-            name: "kafka"
-          }
-        },
-        {
-          // value: 'colony2',
-          // label: '集群2'
-          id: 3,
-          dataSourceName: "mysql1",
-          dataSourceDesc: "测试",
-          dataSourceTypeId: 4,
-          createSystem: "Linkis",
-          createTime: 1620788919000,
-          createUser: "hadoop",
-          versionId: 1,
-          expire: false,
-          dataSourceType: {
-            id: "1",
-            name: "mysql"
-          }
-        }
-      ],
+      // extraUis: [{
+      //   id: 1,
+      //   datasource_type: "kafka",
+      //   key: "kafka.group.id",
+      //   description: "消费者组，默认为空。",
+      //   lable_name: "消费组名",
+      //   lable_name_en: "consumer group",
+      //   ui_type: "input",
+      //   condition: "[a-zA-Z0-9_]+"
+      // }],
+      // typeList: [
+      //   {
+      //     id: "1",
+      //     name: "mysql",
+      //     description: "mysql数据库",
+      //     option: "mysql数据库",
+      //     classifier: "关系型数据库",
+      //     icon: "https://img.alicdn.com/imgextra/i4/O1CN01uLYwgg1zS93Aq9W8C_!!6000000006712-2-tps-280-176.png"
+      //   },
+      //   { 
+      //     id: "4",
+      //     name: "kafka",
+      //     description: "kafka",
+      //     option: "kafka",
+      //     classifier: "消息队列",
+      //     icon: "https://img.alicdn.com/imgextra/i4/O1CN01uLYwgg1zS93Aq9W8C_!!6000000006712-2-tps-280-176.png"
+      //   }
+      // ],
+      // colonyList: [
+      //   {
+      //     // value: 'colony1',
+      //     // label: '集群1'
+      //     id: 2,
+      //     dataSourceName: "kafka1",
+      //     dataSourceDesc: "测试",
+      //     dataSourceTypeId: 4,
+      //     createSystem: "Linkis",
+      //     createTime: 1620788919000,
+      //     createUser: "hadoop",
+      //     versionId: 1,
+      //     expire: false,
+      //     dataSourceType: {
+      //       id: "4",
+      //       name: "kafka"
+      //     }
+      //   },
+      //   {
+      //     // value: 'colony2',
+      //     // label: '集群2'
+      //     id: 3,
+      //     dataSourceName: "mysql1",
+      //     dataSourceDesc: "测试",
+      //     dataSourceTypeId: 4,
+      //     createSystem: "Linkis",
+      //     createTime: 1620788919000,
+      //     createUser: "hadoop",
+      //     versionId: 1,
+      //     expire: false,
+      //     dataSourceType: {
+      //       id: "1",
+      //       name: "mysql"
+      //     }
+      //   }
+      // ],
       isCollapsed: false,
-      //一级菜单
-      firstList: [
-        "information_schema",
-        "drelephant",
-        "dss_ah3_prod",
-        "dss_dev",
-        "dss_prod",
-        "dss_prod_test",
-        "dss_test",
-        "hive","luban",
-        "metastore","mysql",
-        "op_user","opuser_old",
-        "performance_schema",
-        "skywalking","sys"
-      ],
+      // 一级菜单
+      // firstList: [
+      //   "information_schema",
+      //   "drelephant",
+      //   "dss_ah3_prod",
+      //   "dss_dev",
+      //   "dss_prod",
+      //   "dss_prod_test",
+      //   "dss_test",
+      //   "hive","luban",
+      //   "metastore","mysql",
+      //   "op_user","opuser_old",
+      //   "performance_schema",
+      //   "performance_schema1",
+      //   "performance_schema2",
+      //   "performance_schema3",
+      //   "performance_schema4",
+      //   "performance_schema5",
+      //   "performance_schema6",
+      //   "performance_schema7",
+      //   "performance_schema8",
+      //   "performance_schema9",
+      //   "skywalking","sys"
+      // ],
       secondList: '',
       //三级菜单
       threeList: '',
-      data1: [
-        {
-          title: 'parent 1',
-          expand: true,
-          children: [
-            {
-              title: 'parent 1-1',
-              expand: true,
-            },
-            {
-              title: 'parent 1-2',
-              expand: true,
-            }
-          ]
-        }, {}, {}
-      ]
     }
   },
   mounted () {
     //获取数据源类型
     this.getDataSourceType()
-    //获取集群信息
-    this.getColonyType()
-    //获取一级菜单(库名)
-    this.getFirstMenu()
   },
   created(){
+  },
+  watch: {
+    colonyId: {
+      handler(newValue,oldValue) {
+        if(oldValue != ''){
+          this.getFirstMenu()
+        }
+      }
+    },
   },
   methods: {
     getDataSourceType(){
       // 获取数据类型没有带参数 但是得写死kafka先来固定调试
       // 获取从工作流传入过来的类型：type: links.fink.kafka id的值：有值/无值(需要我们保存id回溯到工作流页面)
       // this.dataSourceType = '工作流传过来的类型值'
-
+      this.dataSourceType = this.node.type
+      console.log(this.node.type,"工作流传入过来的类型")
       //向后台发送请求 获取数据源类型无带参
       api.fetch("streamis/dataSourceType", "post").then(res => {
         console.log(res,"后台返回的数据源类型信息")
@@ -207,19 +211,18 @@ export default {
       })
       // 根据数据源类型的名字找到对应的id
       // 需要循环数据源类型数组 是哪一个类型就显示哪一张图片
+      if(this.dataSourceType === 'kafka'){
+        this.dataTypeIcon = 'apachekafka'
+      }else if(this.dataSourceType === 'mysql'){
+        this.dataTypeIcon = 'mysql'
+      }
       this.typeList.forEach(item => {
         if(item.name === this.dataSourceType){
           this.dataSourceTypeId = item.id
-          this.dataTypeIcon = item.icon
+          //获取集群信息
+          this.getColonyType()
         }
       });
-      console.log(this.dataSourceTypeId, this.dataTypeIcon, "数据源类型和图片的地址值")
-      // this.dataTypeIcon = '../../assets/images/u2450.png'
-      this.dataTypeIcon = 'img/u2450.d4f726d6.png'
-      // this.dataTypeIcon = '../../assets/images/u2451.png' mysql的图片
-      // 返回一个svg图片
-      // 定义一个变量存储数据源类型id
-      // this.dataSourceTypeId = ''
     },
     getColonyType(){
       const params = {
@@ -239,10 +242,12 @@ export default {
           this.colonyType = item.dataSourceName
           // 存储集群的id
           this.colonyId = item.id
+          // 把集群id传递给父组件
+          //获取一级菜单(库名)
+          this.$emit('colonyIdFun', this.colonyId)
+          this.getFirstMenu()
         }
       });
-      // 把集群id传递给父组件
-      this.$emit('colonyIdFun', this.colonyId)
     },
     getFirstMenu(){
       const params = {
@@ -257,33 +262,33 @@ export default {
     },
     getSecondMenu(query){
       this.firstName = query   
-      this.secondList=[
-        {
-          "tableName": "test_table1",
-          "isStreamisDataSource": true,
-          "streamisTableMetaId": 1
-        },
-        {
-          "tableName": "test_table2",
-          "isStreamisDataSource": false,
-          "streamisTableMetaId": 3
-        },
-        {
-          "tableName": "test_table3",
-          "isStreamisDataSource": true,
-          "streamisTableMetaId": 2
-        },
-        {
-          "tableName": "test_table4",
-          "isStreamisDataSource": true,
-          "streamisTableMetaId": 4
-        },
-        {
-          "tableName": "test_table5",
-          "isStreamisDataSource": true,
-          "streamisTableMetaId": ''
-        }
-      ]
+      // this.secondList=[
+      //   {
+      //     "tableName": "test_table1",
+      //     "isStreamisDataSource": true,
+      //     "streamisTableMetaId": 1
+      //   },
+      //   {
+      //     "tableName": "test_table2",
+      //     "isStreamisDataSource": false,
+      //     "streamisTableMetaId": 3
+      //   },
+      //   {
+      //     "tableName": "test_table3",
+      //     "isStreamisDataSource": true,
+      //     "streamisTableMetaId": 2
+      //   },
+      //   {
+      //     "tableName": "test_table4",
+      //     "isStreamisDataSource": true,
+      //     "streamisTableMetaId": 4
+      //   },
+      //   {
+      //     "tableName": "test_table5",
+      //     "isStreamisDataSource": true,
+      //     "streamisTableMetaId": ''
+      //   }
+      // ]
       //发送请求 获取二级菜单
       const params = {
         //集群的id 默认进来选中哪个集群就传哪个集群
@@ -322,28 +327,28 @@ export default {
       this.$emit('goTableNameFun', this.nodeNameValue)
       // 现在传递的是二级菜单的id
       this.$emit('goTableFun', this.nodeId)
-      this.threeList = [
-        {index: 1, name: "id", type: "BIGINT", primaryKey: true},
-        {index: 2, name: "name", type: "VARCHAR", primaryKey: false},
-        {index: 3, name: "project_id", type: "BIGINT", primaryKey: false},
-        {index: 4, name: "job_type", type: "VARCHAR", primaryKey: false},
-        {index: 5, name: "job_status", type: "VARCHAR", primaryKey: false},
-        {index: 6, name: "cron_expression", type: "VARCHAR", primaryKey: false},
-        {index: 7, name: "start_date", type: "DATETIME", primaryKey: false},
-        {index: 8, name: "end_date", type: "DATETIME", primaryKey: false},
-        {index: 9, name: "config", type: "VARCHAR", primaryKey: false},
-        {index: 10, name: "description", type: "VARCHAR", primaryKey: false},
-        {index: 11, name: "exec_log", type: "VARCHAR", primaryKey: false},
-        {index: 12, name: "create_by", type: "BIGINT", primaryKey: false},
-        {index: 13, name: "create_time", type: "TIMESTAMP", primaryKey: false},
-        {index: 14, name: "update_time", type: "TIMESTAMP", primaryKey: false}
-      ]
+      // this.threeList = [
+      //   {index: 1, name: "id", type: "BIGINT", primaryKey: true},
+      //   {index: 2, name: "name", type: "VARCHAR", primaryKey: false},
+      //   {index: 3, name: "project_id", type: "BIGINT", primaryKey: false},
+      //   {index: 4, name: "job_type", type: "VARCHAR", primaryKey: false},
+      //   {index: 5, name: "job_status", type: "VARCHAR", primaryKey: false},
+      //   {index: 6, name: "cron_expression", type: "VARCHAR", primaryKey: false},
+      //   {index: 7, name: "start_date", type: "DATETIME", primaryKey: false},
+      //   {index: 8, name: "end_date", type: "DATETIME", primaryKey: false},
+      //   {index: 9, name: "config", type: "VARCHAR", primaryKey: false},
+      //   {index: 10, name: "description", type: "VARCHAR", primaryKey: false},
+      //   {index: 11, name: "exec_log", type: "VARCHAR", primaryKey: false},
+      //   {index: 12, name: "create_by", type: "BIGINT", primaryKey: false},
+      //   {index: 13, name: "create_time", type: "TIMESTAMP", primaryKey: false},
+      //   {index: 14, name: "update_time", type: "TIMESTAMP", primaryKey: false}
+      // ]
       const params = {
-        dataSourceId: "",
+        dataSourceId: this.colonyId,
         system: "streamis",
-        dataBase: "",
-        table: "",
-        dataSourceType: ""
+        dataBase: this.firstName,
+        table: query,
+        dataSourceType: this.dataSourceType
       }
       api.fetch("streamis/columns?", params, "post").then(res => {
         console.log(res,"后台返回的获取二级菜单(表名)")
@@ -356,8 +361,17 @@ export default {
       this.colonyList.forEach(item => {
         if(item.dataSourceType.name === val){
           this.colonyType = item.dataSourceName
+          // 判断会不会重新发送请求
+          this.colonyId = item.id
+          // 把集群id传递给父组件
+          this.$emit('colonyIdFun', this.colonyId)
         }
       });
+      if(val === 'kafka'){
+        this.dataTypeIcon = 'apachekafka'
+      }else if(val === 'mysql'){
+        this.dataTypeIcon = 'mysql'
+      }
     }
   }
 }
@@ -366,13 +380,13 @@ export default {
 <style lang="scss">
 .left-container{
   border-width: 0px;
-  overflow-y: hidden;
   background-color: rgba(255, 255, 255, 1);
   background-image: none;
   font-family: 'Arial Normal', 'Arial';
   font-weight: 400;
   font-style: normal;
   margin-left: 5px;
+  height: 100%;
   .search{
     display: flex;
     line-height: 40px;
@@ -411,6 +425,9 @@ export default {
         width: 30px;
         height: 32px;
       }
+      .dataSourceType-icon{
+        font-size: 22px;
+      }
     }
     .select-colony{
       border-radius: 7px;
@@ -420,6 +437,10 @@ export default {
         width: 28px;
         height: 26px;
         margin-right: 2px;
+      }
+      .colony-icon{
+        font-size: 22px;
+        margin-left:6px
       }
     }
     .ivu-select-single .ivu-select-selection .ivu-select-placeholder {
@@ -434,11 +455,11 @@ export default {
       border: 0px;
     }
   }
-
   .libtable{
-    margin-top: 30px;
+    margin-top: 20px;
     width: 228px;
-    height: 464px;
+    // height: 464px;
+    height: 100%;
     overflow: auto;
     .ivu-icon-ios-arrow-down:before {
       content: "";
