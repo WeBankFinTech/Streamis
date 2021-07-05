@@ -203,26 +203,26 @@ export default {
       // 获取从工作流传入过来的类型：type: links.fink.kafka id的值：有值/无值(需要我们保存id回溯到工作流页面)
       // this.dataSourceType = '工作流传过来的类型值'
       this.dataSourceType = this.node.type
-      console.log(this.node.type,"工作流传入过来的类型")
+      // console.log(this.node.type,"工作流传入过来的类型")
       //向后台发送请求 获取数据源类型无带参
       api.fetch("streamis/dataSourceType", "post").then(res => {
         console.log(res,"后台返回的数据源类型信息")
         this.typeList = res.dataSourceTypes 
+        this.typeList.forEach(item => {
+          if(item.name === this.dataSourceType){
+            this.dataSourceTypeId = item.id
+            //获取集群信息
+            this.getColonyType()
+          }
+        });
       })
       // 根据数据源类型的名字找到对应的id
       // 需要循环数据源类型数组 是哪一个类型就显示哪一张图片
-      if(this.dataSourceType === 'kafka'){
+      if(this.dataSourceType === 'linkis.flink.kafka'){
         this.dataTypeIcon = 'apachekafka'
-      }else if(this.dataSourceType === 'mysql'){
+      }else if(this.dataSourceType === 'linkis.flink.mysql'){
         this.dataTypeIcon = 'mysql'
       }
-      this.typeList.forEach(item => {
-        if(item.name === this.dataSourceType){
-          this.dataSourceTypeId = item.id
-          //获取集群信息
-          this.getColonyType()
-        }
-      });
     },
     getColonyType(){
       const params = {
@@ -234,20 +234,20 @@ export default {
       }
       api.fetch("streamis/dataSourceCluster?", params, "post").then(res => {
         console.log(res,"后台返回的数据源集群信息")
-        this.colonyList = res.dataSourceCluster 
+        this.colonyList = res.dataSourceCluster
+        //通过数据源类型的id去查找对应的集群
+        this.colonyList.forEach(item => {
+          if(item.dataSourceType.id === this.dataSourceTypeId){
+            this.colonyType = item.dataSourceName
+            // 存储集群的id
+            this.colonyId = item.id
+            // 把集群id传递给父组件
+            //获取一级菜单(库名)
+            this.$emit('colonyIdFun', this.colonyId)
+            this.getFirstMenu()
+          }
+        });
       })
-      //通过数据源类型的id去查找对应的集群
-      this.colonyList.forEach(item => {
-        if(item.dataSourceType.id === this.dataSourceTypeId){
-          this.colonyType = item.dataSourceName
-          // 存储集群的id
-          this.colonyId = item.id
-          // 把集群id传递给父组件
-          //获取一级菜单(库名)
-          this.$emit('colonyIdFun', this.colonyId)
-          this.getFirstMenu()
-        }
-      });
     },
     getFirstMenu(){
       const params = {
