@@ -57,6 +57,7 @@
                   action="/api/rest_j/v1/streamis/streamJobManager/job/upload"
                   :on-success="jarUploadSuccess"
                   :on-error="jarUploadError"
+                  :show-upload-list="false"
                 >
                   <Icon type="md-add" class="upload" />
                   <span>{{
