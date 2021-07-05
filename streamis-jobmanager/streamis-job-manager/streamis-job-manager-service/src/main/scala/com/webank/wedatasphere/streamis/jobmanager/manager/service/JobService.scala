@@ -3,7 +3,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import com.webank.wedatasphere.linkis.common.utils.Logging
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
-import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamBmlMapper, StreamJobMapper, StreamProjectMapper}
+import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamJobRunRelationMapper, StreamProjectMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobRunRelation, StreamJobSqlResource, StreamJobVersion, StreamProject}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobFlowVO, PublishRequestVO, QueryJobListVO, TaskCoreNumVO}
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.DateUtils
@@ -12,9 +12,9 @@ import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
+import java.util.UUID
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
-import scala.tools.nsc.interpreter.InputStream
 /**
  * @author limeng
  */
@@ -22,9 +22,8 @@ import scala.tools.nsc.interpreter.InputStream
 class JobService extends Logging{
 
   @Autowired private var streamJobMapper:StreamJobMapper=_
-  @Autowired private var streamBmlMapper:StreamBmlMapper=_
   @Autowired private var streamProjectMapper:StreamProjectMapper=_
-  @Autowired private var bmlService:BMLService=_
+  @Autowired private var streamJobRunRelationMapper:StreamJobRunRelationMapper=_
 
   def getByProList(projectId:Long,jobName:String,jobStatus:Integer,jobCreator:String):java.util.List[QueryJobListVO] = {
     val jobLists = streamJobMapper.getJobLists(projectId, jobName, jobStatus, jobCreator).asScala
@@ -144,7 +143,7 @@ class JobService extends Logging{
     }
   }
 
-  def addPublishJob(publishRequestVO:PublishRequestVO): Unit ={
+  private def addPublishJob(publishRequestVO:PublishRequestVO): Unit ={
     val jobName = publishRequestVO.getStreamisJobName
     val jobLists = streamJobMapper.getJobLists(null, jobName, null, null)
     val job = new StreamJob()
@@ -221,28 +220,22 @@ class JobService extends Logging{
   }
 
   def addJobRunRelation(status:Int,jobRunRelation:StreamJobRunRelation): Unit ={
-    val relations = streamJobMapper.getJobRunRelationList(jobRunRelation.getJobId)
+    val relations = streamJobRunRelationMapper.getJobRunRelationList(jobRunRelation.getJobId)
     if(relations == null || relations.isEmpty){
       jobRunRelation.setParentId(null)
     }
     status match {
       case JobConf.JOBMANAGER_FLINK_JOB_STATUS_TWO.getValue => {
-        streamJobMapper.insertJobRunRelation(jobRunRelation)
+        streamJobRunRelationMapper.insertJobRunRelation(jobRunRelation)
       }
       case JobConf.JOBMANAGER_FLINK_JOB_STATUS_THREE.getValue => {
-        streamJobMapper.insertJobRunRelation(jobRunRelation)
+        streamJobRunRelationMapper.insertJobRunRelation(jobRunRelation)
       }
       case JobConf.JOBMANAGER_FLINK_JOB_STATUS_FOUR.getValue => {
-        streamJobMapper.insertJobRunRelation(jobRunRelation)
+        streamJobRunRelationMapper.insertJobRunRelation(jobRunRelation)
       }
     }
   }
 
-  def addJarBml(userName:String,inputStream:InputStream,resourceId:String): Unit ={
-      info("add jar resource")
-
-
-
-  }
 
 }
