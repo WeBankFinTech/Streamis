@@ -42,10 +42,10 @@ object JobConf {
 
   val TASK_MONITOR_INTERVAL = CommonVars("wds.streamis.task.monitor.interval", new TimeType("1m"))
 
-  val JOBMANAGER_EXPORT_URL = CommonVars("wds.streamis.job.export.url","/opt/tmp/streamis")
+  val JOBMANAGER_EXPORT_URL = CommonVars("wds.streamis.job.export.url","/opt/tmp/streamis/job")
 
   val JOBJAR_MAIN_JARS =  CommonVars("wds.streamis.job.jar.main", "mainJars")
-  val JOBJAR_PROGRAM_ARGUEMENT =  CommonVars("wds.streamis.job.jar.program.arguement", "programArguement")
+  val JOBJAR_PROGRAM_ARGUEMENT =  CommonVars("wds.streamis.job.jar.program.arguement", "linkis.properties")
   val JOBJAR_DEPEND_JARS =  CommonVars("wds.streamis.job.jar.depend.jars", "dependJars")
   val JOBJAR_USER_RESOURCES =  CommonVars("wds.streamis.job.jar.user.resources", "userResources")
 

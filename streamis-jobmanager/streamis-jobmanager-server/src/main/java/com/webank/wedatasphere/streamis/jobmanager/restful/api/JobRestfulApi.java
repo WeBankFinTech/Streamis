@@ -6,10 +6,12 @@ import com.webank.wedatasphere.linkis.server.Message;
 import com.webank.wedatasphere.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamProject;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.*;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.ProjectService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.TaskService;
+import org.apache.commons.collections.CollectionUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -75,14 +77,19 @@ public class JobRestfulApi {
     @POST
     @Path("/upload")
     public Response uploadJar(@Context HttpServletRequest req,
-                            @FormDataParam("projectName") String projectName,
-                           @FormDataParam("resourceId") String resourceId,
-                           @FormDataParam("path") String path,
+                              @FormDataParam("projectName") String projectName,
+                              @QueryParam("jobId") Long jobId,
+                              @QueryParam("version") String version,
                            FormDataMultiPart form) throws IOException, JobException {
-
-        if (StringUtils.isEmpty(path)) {
-            JobExceptionManager.createException(30300,path);
+        if(org.apache.commons.lang.StringUtils.isBlank(projectName)){
+            JobExceptionManager.createException(30301,"projectName");
         }
+        List<StreamProject> projects = projectService.getProjects(projectName);
+        if(CollectionUtils.isEmpty(projects)){
+            JobExceptionManager.createException(30301,"projectName");
+        }
+
+        //todo 上传zip
 
         return Message.messageToResponse(Message.ok());
     }
