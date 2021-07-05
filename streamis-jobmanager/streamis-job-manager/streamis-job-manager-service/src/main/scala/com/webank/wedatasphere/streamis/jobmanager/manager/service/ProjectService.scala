@@ -11,6 +11,14 @@ import org.springframework.stereotype.Service
 @Service
 class ProjectService extends Logging{
 
+  @Autowired private var streamProjectMapper:StreamProjectMapper=_
 
+  def getProjects(projectId:Long,workspaceId:Long,projectName:String) ={
+    streamProjectMapper.getByProjects(projectId,workspaceId,projectName)
+  }
+
+  def getProjects(projectName:String) ={
+    streamProjectMapper.getByProjects(null,null,projectName)
+  }
 
 }
