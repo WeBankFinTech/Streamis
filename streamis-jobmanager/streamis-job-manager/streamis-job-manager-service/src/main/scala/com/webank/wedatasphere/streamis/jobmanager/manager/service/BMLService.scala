@@ -75,6 +75,14 @@ class BMLService extends JavaLog{
     path
   }
 
+  def getFiles(path:String,fileName:String): List[String] ={
+    import scala.io.Source
+    val source = Source.fromFile(path+fileName,"UTF-8")
+    val list = source.getLines().toList
+    source.close()
+    list
+  }
+
   private def inputstremToString(inputStream: InputStream): String = {
     scala.io.Source.fromInputStream(inputStream).mkString
   }
