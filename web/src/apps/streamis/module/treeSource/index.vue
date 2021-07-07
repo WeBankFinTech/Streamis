@@ -19,7 +19,7 @@
         <!-- <SvgIcon  class="streamis-icon" icon-class="apachekafka"/> -->
         <SvgIcon  class="dataSourceType-icon" :icon-class="dataTypeIcon"/>
         <!-- <img class="dataType-img"  :src="require('../../assets/images/u2450.png')"/> -->
-        <Select v-model="dataSourceType" style="width: 70px" @on-change="changeSecList">
+        <Select v-model="dataSourceType" style="width: 70px" :disabled="flagSelect">
           <Option v-for="item in typeList" :value="item.name" :key="item.id">{{ item.name }}</Option>
         </Select>
       </div>
@@ -27,7 +27,7 @@
       <div class="select-colony">
         <!-- <Icon custom="iconfont icon-jiqun" size="30" style="color: #3300ff; margin-left:6px"/> -->
         <SvgIcon  class="colony-icon" icon-class="colony"/>
-        <Select v-model="colonyType" style="width: 70px; margin-left: 5px">
+        <Select v-model="colonyType" style="width: 70px; margin-left: 5px" @on-change="changeSecList">
           <Option v-for="item in clusterList" :value="item.dataSourceName" :key="item.id">{{ item.dataSourceName }}</Option>
         </Select>
       </div>
@@ -78,6 +78,7 @@ export default {
   },
   data () {
     return {
+      flagSelect: true,
       nodeId: '',
       dataTypeIcon: '',
       dataSourceTypeId: '',
@@ -85,7 +86,7 @@ export default {
       firstName: '',
       colonyId: '',
       //默认选中kafka 随着工作流传来的页面而改变
-      dataSourceType: 'kafka',
+      dataSourceType: '',
       colonyType: '',
       nodeNameValue: '',
       // extraUis: [{
@@ -140,7 +141,7 @@ export default {
       //     id: 3,
       //     dataSourceName: "mysql1",
       //     dataSourceDesc: "测试",
-      //     dataSourceTypeId: 4,
+      //     dataSourceTypeId: 1,
       //     createSystem: "Linkis",
       //     createTime: 1620788919000,
       //     createUser: "hadoop",
@@ -155,7 +156,7 @@ export default {
       isCollapsed: false,
       // 一级菜单
       // firstList: [
-      //   "information_schema",
+      //   "default",
       //   "drelephant",
       //   "dss_ah3_prod",
       //   "dss_dev",
@@ -202,6 +203,7 @@ export default {
       // 获取数据类型没有带参数 但是得写死kafka先来固定调试
       // 获取从工作流传入过来的类型：type: links.fink.kafka id的值：有值/无值(需要我们保存id回溯到工作流页面)
       // this.dataSourceType = '工作流传过来的类型值'
+      // this.dataSourceType = 'kafka'
       this.dataSourceType = this.node.type.split('.')[2]
       // console.log(this.node.type,"工作流传入过来的类型")
       //向后台发送请求 获取数据源类型无带参
@@ -235,14 +237,14 @@ export default {
         this.clusterList = res.dataSourceCluster
         //通过数据源类型的id去查找对应的集群
         this.clusterList.forEach(item => {
-          if(item.dataSourceType.id === this.dataSourceTypeId){
+          if(item.dataSourceTypeId == this.dataSourceTypeId){
             this.colonyType = item.dataSourceName
             // 存储集群的id
             this.colonyId = item.id
-            // 把集群id传递给父组件
             //获取一级菜单(库名)
-            this.$emit('colonyIdFun', this.colonyId)
             this.getFirstMenu()
+            // 把集群id传递给父组件
+            this.$emit('colonyIdFun', this.colonyId)
           }
         });
       })
@@ -357,19 +359,18 @@ export default {
     },
     changeSecList(val){
       this.clusterList.forEach(item => {
-        if(item.dataSourceType.name === val){
+        if(item.dataSourceName === val){
           this.colonyType = item.dataSourceName
-          // 判断会不会重新发送请求
           this.colonyId = item.id
           // 把集群id传递给父组件
           this.$emit('colonyIdFun', this.colonyId)
         }
       });
-      if(val === 'kafka'){
-        this.dataTypeIcon = 'apachekafka'
-      }else if(val === 'mysql'){
-        this.dataTypeIcon = 'mysql'
-      }
+      // if(val === 'kafka'){
+      //   this.dataTypeIcon = 'apachekafka'
+      // }else if(val === 'mysql'){
+      //   this.dataTypeIcon = 'mysql'
+      // }
     }
   }
 }
@@ -481,6 +482,7 @@ export default {
   }
   .ivu-select-single .ivu-select-selection .ivu-select-selected-value {
     padding-left: 0;
+    color: #6B6B6B;
   }
 }
 </style>
