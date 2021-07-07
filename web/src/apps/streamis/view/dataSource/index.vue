@@ -1,16 +1,16 @@
 <template>
   <div class="dataSource">
-    <div class="container"> 
+    <div class="container">
       <!--左边树 -->
       <div class="leftContainer">
         <treeSource
           :node="node"
-          @goTableFun="getThreeList"  
-          @dataBaseFun="getDataBase" 
+          @goTableFun="getThreeList"
+          @dataBaseFun="getDataBase"
           @goTableNameFun="getNodeId"
           @colonyIdFun="getColonyId"/>
       </div>
-      <div class="rightContainer"> 
+      <div class="rightContainer">
         <!--切换sql -->
         <div class="designer-toolbar">
           <div class="button">
@@ -92,8 +92,8 @@
               <div class="panel-pg"></div>
             </div>
             <!-- 把二级菜单的id值传入给表格去发送请求 -->
-            <tableFieldsList 
-              :nodeId="nodeId" 
+            <tableFieldsList
+              :nodeId="nodeId"
               @funTableColumn="tableColumnObject"
               @tableInfoFun="tableInfoList"
               @extraInfoFun="getStreamisExtraInfo"
@@ -145,7 +145,7 @@ export default {
       showInput: '',
       colonyId: '',
       returnId: '',
-      extraUis: '', 
+      extraUis: '',
       labelWidth: 80,
       saveNotice: false,
       // 根据二级菜单的名字来判断是否显示右侧动态面板
@@ -197,7 +197,7 @@ export default {
       //   console.log(this.changeFieldList,this.changeTableInfo,this.changeExtraUisName,"三个值")
       //   this.$Message.warning('无任何修改，禁止保存')
       //   return
-      // } 
+      // }
       // 发送保存请求的时候一定要把消费组名传过去
       if(!this.extraUisName){
         this.$Message.warning('请输入消费组名')
@@ -248,7 +248,7 @@ export default {
     },
     changSql(){
       if(!this.nodeId){
-        return     
+        return
       } else {
         this.changeStatus =! this.changeStatus
         this.isShowSql =! this.isShowSql
@@ -288,13 +288,15 @@ export default {
       // 传过来的保存的字段信息的值
       this.fieldsList = mapTableList
     },
-    getDataBase(dataBase){
+    getDataBase(dataBase = {}){
       // 数据源：得到一些需要额外展示的值
       // 显示输入框/选择框
-      this.showInput = dataBase.extraUis[0].id
-      this.dataBase = dataBase
-      this.extraUisLable = dataBase.extraUis[0].lable_name
-      this.extraUis = dataBase.extraUis[0]
+      if(Array.isArray(dataBase.extraUis) && dataBase.extraUis.length){
+        this.showInput = dataBase.extraUis[0].id
+        this.dataBase = dataBase
+        this.extraUisLable = dataBase.extraUis[0].lable_name
+        this.extraUis = dataBase.extraUis[0]
+      }
     },
     getStreamisExtraInfo(streamisExtraInfo){
       this.streamisExtraInfo = streamisExtraInfo
