@@ -1,6 +1,6 @@
 <template>
   <div class="page-process" ref="page_process">
-    <Card v-if="!checkEditable(query) && showTip" shadow class="process-readonly-tip-card">
+    <Card v-if="!checkEditable(processData) && showTip" shadow class="process-readonly-tip-card">
       <div>
         {{$t("message.workflow.workflowItem.readonlyTip")}}
       </div>
@@ -14,24 +14,24 @@
             <img class="tab-icon" :class="nodeImg[item.node.type] ? nodeImg[item.node.type].class : ''"
               :src="nodeImg[item.node.type] ? nodeImg[item.node.type].icon: ''" alt />
             <div :title="item.title" class="process-tab-name">{{ item.title }}</div>
-            <SvgIcon v-show="!item.isHover && item.node && item.node.isChange && checkEditable(query)"
+            <SvgIcon v-show="!item.isHover && item.node && item.node.isChange && checkEditable(processData)"
               class="process-tab-unsave-icon" icon-class="fi-radio-on2" />
-            <Icon v-if="item.isHover && (item.close || query.product)" type="md-close" @click.stop="remove(index)" />
+            <Icon v-if="item.isHover && (item.close || processData.product)" type="md-close" @click.stop="remove(index)" />
           </div>
         </div>
       </div>
       <div class="process-container">
         <template v-for="(item, index) in tabs">
           <Process ref="process" v-if="item.type === 'Process'" v-show="index===active" :key="item.key"
-            :import-replace="false" :flow-id="item.data.appId" :version="item.data.version" :product="query.product"
-            :readonly="!checkEditable(query)" :isLatest="query.isLatest === 'true'" :tabs="tabs" :open-files="openFiles"
+            :import-replace="false" :flow-id="item.data.appId" :version="item.data.version" :product="processData.product"
+            :readonly="!checkEditable(processData)" :isLatest="processData.isLatest === 'true'" :tabs="tabs" :open-files="openFiles"
             :orchestratorId="item.data.id" :orchestratorVersionId="item.data.orchestratorVersionId"
             @changeMap="changeTitle" @node-dblclick="dblclickNode(index, arguments)"
             @isChange="isChange(index, arguments)" @save-node="saveNode" @check-opened="checkOpened"
             @deleteNode="deleteNode" @saveBaseInfo="saveBaseInfo" @updateWorkflowList="$emit('updateWorkflowList')">
           </Process>
           <Ide v-if="item.type === 'IDE'" v-show="index===active" :key="item.title" :parameters="item.data"
-            :node="item.node" :in-flows-index="index" :readonly="!checkEditable(query)"
+            :node="item.node" :in-flows-index="index" :readonly="!checkEditable(processData)"
             @save="saveIDE(index, arguments)"></Ide>
           <commonIframe v-if="item.type === 'Iframe'" v-show="index===active" :key="item.title" :parametes="item.data"
             :node="item.node" @save="saveNode"></commonIframe>
@@ -50,6 +50,7 @@ import {
 import api from "@/common/service/api";
 import util from "@/common/util";
 import Process from "./module.vue";
+import qs from 'qs';
 import Ide from "@/apps/workflows/module/ide";
 import Datasource from "@/apps/streamis/view/dataSource/index";
 import commonModule from "@/apps/workflows/module/common";
@@ -71,12 +72,15 @@ export default {
     }
   },
   data() {
+    let processData = this.query || qs.parse(location.search)
+    processData.priv = processData.priv - 0
     return {
+      processData,
       tabs: [{
         title: this.$t("message.workflow.process.index.BJMS"),
         type: "Process",
         close: false,
-        data: this.query,
+        data: processData,
         node: {
           isChange: false,
           type: "workflow.subflow"
@@ -106,7 +110,7 @@ export default {
     // 没有权限的和历史的都不可编辑
     checkEditable(item) {
       // 编排权限由后台的priv字段判断，1-查看， 2-编辑， 3-发布
-      if ([2, 3].includes(item.priv) && this.query.readonly !== 'true') {
+      if ([2, 3].includes(item.priv) && this.processData.readonly !== 'true') {
         return true
       } else {
         return false
@@ -221,17 +225,17 @@ export default {
           let config = {
             method: "get"
           };
-          if (this.query.product) {
+          if (this.processData.product) {
             config.headers = {
               "Token-User": this.getUserName()
             };
           }
-          api.fetch(this.query.product ? "/filesystem/product/openScriptFromBML" : "/filesystem/openScriptFromBML", {
+          api.fetch(this.processData.product ? "/filesystem/product/openScriptFromBML" : "/filesystem/openScriptFromBML", {
             fileName,
             resourceId,
             version,
             creator: node.creator || "",
-            projectName: this.$route.query.projectName || ""
+            projectName: this.$route.processData.projectName || ""
           }, config).then(res => {
             let content = res.scriptContent;
             let params = {};
@@ -290,7 +294,7 @@ export default {
           orchestratorVersionId,
           id
         } = {
-          ...this.query
+          ...this.processData
         }
         this.getTabsAndChoose({
           type: "Process",
@@ -460,26 +464,26 @@ export default {
     },
     updateProjectCacheByTab() {
       this.dispatch("workflowIndexedDB:updateProjectCache", {
-        projectID: this.$route.query.projectID,
+        projectID: this.$route.processData.projectID,
         key: "tabList",
         value: {
           tab: this.tabs,
           token: "flowId",
           sKey: "tab",
-          sValue: this.query.flowId
+          sValue: this.processData.flowId
         },
         isDeep: true
       });
     },
     updateProjectCacheByActive() {
       this.dispatch("workflowIndexedDB:updateProjectCache", {
-        projectID: this.$route.query.projectID,
+        projectID: this.$route.processData.projectID,
         key: "tabList",
         value: {
           active: this.active,
           token: "flowId",
           sKey: "active",
-          sValue: this.query.flowId
+          sValue: this.processData.flowId
         },
         isDeep: true
       });
@@ -487,12 +491,12 @@ export default {
     getCache() {
       return new Promise(resolve => {
         this.dispatch("workflowIndexedDB:getProjectCache", {
-          projectID: this.$route.query.projectID,
+          projectID: this.$route.processData.projectID,
           cb: cache => {
             const list = (cache && cache.tabList) || [];
             let tabs = null;
             list.forEach(item => {
-              if (+item.flowId === +this.query.flowId) {
+              if (+item.flowId === +this.processData.flowId) {
                 tabs = item.tab;
                 this.active = item.active || 0;
               }
@@ -507,7 +511,7 @@ export default {
       if (val) {
         this.tabs[0].title = this.$t("message.workflow.process.index.DTMS");
       } else {
-        if (this.query.readonly === "true") {
+        if (this.processData.readonly === "true") {
           this.tabs[0].title = this.$t("message.workflow.process.index.ZDMS");
         } else {
           this.tabs[0].title = this.$t("message.workflow.process.index.BJMS");
