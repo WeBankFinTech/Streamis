@@ -39,14 +39,20 @@ object JobConf {
     .getOrElse(throw new JobExecuteFailedErrorException(30351, s"Unknown status $status."))
 
   val JOBMANAGER_FLINK_SQL = CommonVars("wds.streamis.job.type.sql", 1,"flink type sql")
+  val JOBMANAGER_FLINK_JAR = CommonVars("wds.streamis.job.type.jar", 2,"flink type jar")
 
   val TASK_MONITOR_INTERVAL = CommonVars("wds.streamis.task.monitor.interval", new TimeType("1m"))
 
-  val JOBMANAGER_EXPORT_URL = CommonVars("wds.streamis.job.export.url","/opt/tmp/streamis/job")
+  val JOBJAR_EXPORT_URL = CommonVars("wds.streamis.job.export.url","/opt/tmp/streamis/job")
 
-  val JOBJAR_MAIN_JARS =  CommonVars("wds.streamis.job.jar.main", "mainJars")
-  val JOBJAR_PROGRAM_ARGUEMENT =  CommonVars("wds.streamis.job.jar.program.arguement", "linkis.properties")
-  val JOBJAR_DEPEND_JARS =  CommonVars("wds.streamis.job.jar.depend.jars", "dependJars")
-  val JOBJAR_USER_RESOURCES =  CommonVars("wds.streamis.job.jar.user.resources", "userResources")
+  val JOBJAR_EXPORT_FILE_CONF = CommonVars("wds.streamis.job.export.conf","conf")
+  val JOBJAR_EXPORT_FILE_LIB = CommonVars("wds.streamis.job.export.lib","lib")
+
+
+  val JOBJAR_RESOURCE_FILENAME = CommonVars("wds.streamis.job.jar.resource.conf.name", "linkis.properties")
+  val JOBJAR_MAIN_JARS =  CommonVars("wds.streamis.job.jar.main", "wds.streamis.job.jar.main")
+  val JOBJAR_PROGRAM_ARGUEMENT =  CommonVars("wds.streamis.job.jar.program.arguement", "wds.streamis.job.jar.program.arguement")
+  val JOBJAR_DEPEND_JARS =  CommonVars("wds.streamis.job.jar.depend", "wds.streamis.job.jar.depend")
+  val JOBJAR_USER_RESOURCES =  CommonVars("wds.streamis.job.jar.user.resources", "wds.streamis.job.jar.user.resources")
 
 }
