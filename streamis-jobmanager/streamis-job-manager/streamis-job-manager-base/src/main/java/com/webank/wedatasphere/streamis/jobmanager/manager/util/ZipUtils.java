@@ -12,8 +12,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ZipHelper {
-    private static final Logger logger = LoggerFactory.getLogger(ZipHelper.class);
+public class ZipUtils {
+    private static final Logger logger = LoggerFactory.getLogger(ZipUtils.class);
 
     private static final String ZIP_CMD = "zip";
     private static final String UN_ZIP_CMD = "unzip";
@@ -25,7 +25,7 @@ public class ZipHelper {
      * @return 打包之后的zip包全路径
      */
     public static String zip(String dirPath)throws JobManagerErrorException {
-        if(!FileHelper.checkDirExists(dirPath)){
+        if(!FileUtils.checkDirExists(dirPath)){
             logger.error("{} 不存在, 不能创建zip文件", dirPath);
             throw new JobManagerErrorException(30502,dirPath + " does not exist, can not zip");
         }
@@ -141,7 +141,7 @@ public class ZipHelper {
         return longZipFilePath;
     }
 
-    private static boolean deleteDir(File dir) {
+    public static boolean deleteDir(File dir) {
         if (dir.isDirectory()) {
             String[] children = dir.list();
             if (children != null && children.length > 0){
@@ -161,6 +161,6 @@ public class ZipHelper {
         if(projectPath.endsWith(File.separator)) {
             projectPath = projectPath.substring(0, projectPath.lastIndexOf(File.separator));
         }
-        return ZipHelper.zip(projectPath);
+        return ZipUtils.zip(projectPath);
     }
 }
