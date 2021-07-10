@@ -22,13 +22,13 @@
     <resultMap id="StreamJobCodeResourceMap" type="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobCodeResource">
         <id column="id" property="id" jdbcType="BIGINT"/>
         <result column="job_version_id" property="jobVersionId" jdbcType="BIGINT"/>
-        <result column="bml_version_id" property="bmlVersionId" jdbcType="BIGINT"/>
+        <result column="bml_id" property="bmlId" jdbcType="BIGINT"/>
     </resultMap>
 
 
 
     <sql id="Job_Column">
-        `id`,`job_version_id`,`bml_version_id`
+        `id`,`job_version_id`,`bml_id`
     </sql>
 
     <select id="getJobCodeList" resultMap="StreamJobCodeResourceMap">
@@ -36,12 +36,12 @@
         <where>
             1=1
             <if test="jobVersionId != null"> AND job_version_id=#{jobVersionId}</if>
-            <if test="bmlVersionId != null"> AND bml_version_id=#{bmlVersionId}</if>
+            <if test="bmlId != null"> AND bml_id=#{bmlId}</if>
         </where>
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobCodeResource">
-        insert into linkis_stream_job_code_resource(`job_version_id`,`bml_version_id`) values(#{jobVersionId},#{bmlVersionId})
+        insert into linkis_stream_job_code_resource(`job_version_id`,`bml_id`) values(#{jobVersionId},#{bmlId})
     </insert>
 
     <update id="update" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobCodeResource">
@@ -50,8 +50,8 @@
             <if test="jobVersionId != null">
                 job_version_id=#{jobVersionId},
             </if>
-            <if test="bmlVersionId != null">
-                bml_version_id=#{bmlVersionId},
+            <if test="bmlId != null">
+                bml_id=#{bmlId},
             </if>
         </trim>
         WHERE id=#{id}
