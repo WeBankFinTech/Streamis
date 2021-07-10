@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface StreamJobCodeResourceMapper {
 
-    List<StreamJobCodeResource> getJobCodeList(@Param("jobVersionId") Long jobVersionId,@Param("bmlVersionId") Long bmlVersionId);
+    List<StreamJobCodeResource> getJobCodeList(@Param("jobVersionId") Long jobVersionId,@Param("bmlId") Long bmlVersionId);
 
     void insert(StreamJobCodeResource streamJobCodeResource);
 

@@ -3,7 +3,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.entity;
 public class StreamJobCodeResource {
     private Long id;
     private Long jobVersionId;
-    private Long bmlVersionId;
+    private Long bmlId;
 
     public Long getId() {
         return id;
@@ -21,11 +21,12 @@ public class StreamJobCodeResource {
         this.jobVersionId = jobVersionId;
     }
 
-    public Long getBmlVersionId() {
-        return bmlVersionId;
+
+    public Long getBmlId() {
+        return bmlId;
     }
 
-    public void setBmlVersionId(Long bmlVersionId) {
-        this.bmlVersionId = bmlVersionId;
+    public void setBmlId(Long bmlId) {
+        this.bmlId = bmlId;
     }
 }

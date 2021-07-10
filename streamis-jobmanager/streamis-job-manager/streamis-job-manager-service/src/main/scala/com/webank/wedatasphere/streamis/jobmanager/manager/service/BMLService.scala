@@ -8,7 +8,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils
 import org.apache.commons.io.IOUtils
 import org.springframework.stereotype.Service
 
-import java.io.{ByteArrayInputStream, InputStream}
+import java.io.{ByteArrayInputStream, File, InputStream}
 import java.util
 import java.util.UUID
 import scala.collection.JavaConversions._
@@ -47,7 +47,7 @@ class BMLService extends JavaLog{
     if (!resource.isSuccess) throw new JobManagerErrorException(30506, "下载失败")
     val map = new util.HashMap[String, Object]
     map += "path" -> resource.fullFilePath
-    map += "string" -> inputstremToString(resource.inputStream)
+    map += "fileName" -> pathToName(resource.fullFilePath)
   }
 
   def download(userName: String, resourceId: String, version: String): util.Map[String, Object] = {
@@ -86,4 +86,5 @@ class BMLService extends JavaLog{
   private def inputstremToString(inputStream: InputStream): String = {
     scala.io.Source.fromInputStream(inputStream).mkString
   }
+  private def pathToName(filePath:String):String = new File(filePath).getName
 }
