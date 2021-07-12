@@ -226,34 +226,16 @@ public class JobRestfulApi {
 
     @GET
     @Path("/upload/details")
-    public Response uploadDetailsJob(@Context HttpServletRequest req,@QueryParam("jobId") Long jobId) throws IOException, JobException{
+    public Response uploadDetailsJob(@Context HttpServletRequest req,@QueryParam("jobId") Long jobId,@QueryParam("version") String version) throws IOException, JobException{
+        if(jobId == null){
+            JobExceptionManager.createException(30301,"jobId");
+        }
+        if(StringUtils.isBlank(version)){
+            JobExceptionManager.createException(30301,"version");
+        }
+        CodeResourceDetailsVO codeDetails = jobCodeService.getCodeDetails(jobId, version);
 
-        JobUploadDetailsVO jobUploadDetailsVO = new JobUploadDetailsVO();
-        List<JobUploadDetailsVO.JarDependentDTO> mainJars = new ArrayList<>();
-        List<JobUploadDetailsVO.JarDependentDTO> dependentList = new ArrayList<>();
-        List<JobUploadDetailsVO.JarDependentDTO> userList = new ArrayList<>();
-        JobUploadDetailsVO.JarDependentDTO jarDependentDTO = new JobUploadDetailsVO.JarDependentDTO();
-        jarDependentDTO.setId(1L);
-        jarDependentDTO.setName("main jar");
-
-        mainJars.add(jarDependentDTO);
-
-        jarDependentDTO = new JobUploadDetailsVO.JarDependentDTO();
-        jarDependentDTO.setId(1L);
-        jarDependentDTO.setName("jar 依赖");
-        dependentList.add(jarDependentDTO);
-
-        jarDependentDTO = new JobUploadDetailsVO.JarDependentDTO();
-        jarDependentDTO.setId(1L);
-        jarDependentDTO.setName("user 资源");
-        userList.add(jarDependentDTO);
-
-        jobUploadDetailsVO.setProgramArguement("--hostname localhost  --port 12345");
-        jobUploadDetailsVO.setMainJars(mainJars);
-        jobUploadDetailsVO.setDependentList(dependentList);
-        jobUploadDetailsVO.setUserList(userList);
-
-        return Message.messageToResponse(Message.ok().data("details",jobUploadDetailsVO));
+        return Message.messageToResponse(Message.ok().data("details",codeDetails));
     }
 
 }
