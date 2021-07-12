@@ -36,7 +36,7 @@
           <commonIframe v-if="item.type === 'Iframe'" v-show="index===active" :key="item.title" :parametes="item.data"
             :node="item.node" @save="saveNode"></commonIframe>
           <Datasource v-if="item.type === 'Datasource'" v-show="index===active" :key="item.title" :node="item.node"
-            :data="item.data" style="width:100%; height:100%"></Datasource>
+            :data="item.data" @save="saveNode" style="width:100%; height:100%"></Datasource>
         </template>
       </div>
     </div>
