@@ -270,41 +270,45 @@ export default {
       })
     },
     // 三级菜单
-    async getThreeList(query){
+    getThreeList(query){
       if(this.threeList.length != 0)return
-      const params = {
-        dataSourceId: this.colonyId,
-        system: "streamis",
-        dataBase: this.firstName,
-        table: query,
-        dataSourceType: this.dataSourceType
-      }
-      const res = await api.fetch("streamis/columns?", params, "post")
-      console.log(res,"后台返回的获取二级菜单(表名)")
-      this.threeList = res.columns
-      //把类型、集群、表名传递给父组件 传一个对象过去 然后取值
-      let dataBase = {
-        dataSourceType: this.dataSourceType,
-        colonyType: this.colonyType,
-        tableName: `${this.firstName}.${query}`,
-        // 额外展示的一些信息
-        extraUis: res.extraUis || []
-      }
-      // 数据源：传递需要额外展示的值
-      this.$emit('dataBaseFun', dataBase)
-      //传id
-      // 根据名字查找到id
-      this.secondList.forEach(item => {
-        if(item.tableName === query){
-          // 将要传递的id存储起来
-          this.nodeId = item.streamisTableMetaId
-        }
-      })
-      //现在传递的是二级菜单的名字
-      this.nodeNameValue = query
-      this.$emit('goTableNameFun', this.nodeNameValue)
       // 现在传递的是二级菜单的id
-      this.$emit('goTableFun', this.nodeId)
+      this.$emit('goTableFun', this.nodeId, async () => {
+        const params = {
+          dataSourceId: this.colonyId,
+          system: "streamis",
+          dataBase: this.firstName,
+          table: query,
+          dataSourceType: this.dataSourceType
+        }
+        const res = await api.fetch("streamis/columns?", params, "post")
+        console.log(res,"后台返回的获取二级菜单(表名)")
+        this.threeList = res.columns
+        //把类型、集群、表名传递给父组件 传一个对象过去 然后取值
+        let dataBase = {
+          dataSourceType: this.dataSourceType,
+          colonyType: this.colonyType,
+          tableName: query,
+          dataBase: this.firstName,
+          // 额外展示的一些信息
+          extraUis: res.extraUis || []
+        }
+        // 数据源：传递需要额外展示的值
+        this.$emit('dataBaseFun', dataBase)
+        //传id
+        // 根据名字查找到id
+        this.secondList.forEach(item => {
+          if(item.tableName === query){
+            // 将要传递的id存储起来
+            this.nodeId = item.streamisTableMetaId
+          }
+        })
+        //现在传递的是二级菜单的名字
+        this.nodeNameValue = query
+        this.$emit('goTableNameFun', this.nodeNameValue)
+      })
+
+
       // this.threeList = [
       //   {index: 1, name: "id", type: "BIGINT", primaryKey: true},
       //   {index: 2, name: "name", type: "VARCHAR", primaryKey: false},
