@@ -43,6 +43,18 @@ object JobConf {
 
   val TASK_MONITOR_INTERVAL = CommonVars("wds.streamis.task.monitor.interval", new TimeType("1m"))
 
+  /**
+   * zip template
+   *      ->conf->linkis.properties
+   * zip->
+   *      ->lib->
+   *
+   * wds.streamis.job.jar.program.arguement=--hostname localhost  --port 12345
+   * wds.streamis.job.jar.main=[{"id":"1","codeName":"flink-mian.jar","codeVersion":"v1","description":"测试","entryClass":"main","versionTime":"2020"},{"id":"2","codeName":"flink-mian2.jar","codeVersion":"v1","description":"测试2","entryClass":"main2","versionTime":"2020"}]
+   * wds.streamis.job.jar.depend=[{"id":"1","codeName":"flink-mian.jar","codeVersion":"v1","description":"测试","entryClass":"main","versionTime":"2020"},{"id":"2","codeName":"flink-mian2.jar","codeVersion":"v1","description":"测试2","entryClass":"main2","versionTime":"2020"}]
+   * wds.streamis.job.jar.user.resources=[{"id":"1","codeName":"flink-mian.jar","codeVersion":"v1","description":"测试","entryClass":"main","versionTime":"2020"},{"id":"2","codeName":"flink-mian2.jar","codeVersion":"v1","description":"测试2","entryClass":"main2","versionTime":"2020"}]
+   *
+   */
   val JOBJAR_EXPORT_URL = CommonVars("wds.streamis.job.export.url","/opt/tmp/streamis/job")
 
   val JOBJAR_EXPORT_FILE_CONF = CommonVars("wds.streamis.job.export.conf","conf")
