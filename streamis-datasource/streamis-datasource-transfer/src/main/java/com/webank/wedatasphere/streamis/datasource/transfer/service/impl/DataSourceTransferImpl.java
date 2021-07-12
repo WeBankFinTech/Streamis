@@ -16,6 +16,7 @@ import com.webank.wedatasphere.streamis.datasource.transfer.entity.StreamisTable
 import com.webank.wedatasphere.streamis.datasource.transfer.service.DataSourceTransfer;
 import com.webank.wedatasphere.streamis.datasource.transfer.service.LinkisDataSource;
 import com.webank.wedatasphere.streamis.datasource.transfer.util.DataSourceTransferFlinksqlUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +43,7 @@ public class DataSourceTransferImpl implements DataSourceTransfer {
         String runType = (String)params.get("runType");
         String engineType = (String)params.get("engineType");
         String version = (String)params.get("version");
-
-
+        List<StreamisDatasourceExtraInfo> extraInfo = (List<StreamisDatasourceExtraInfo>) params.get("extraInfo");
         //获取表名，列名
         StreamisDataSourceCode streamisDataSourceCode = new StreamisDataSourceCode();
         String tableName = streamisTableEntity.getTableInfo().getTableName();
@@ -58,7 +58,8 @@ public class DataSourceTransferImpl implements DataSourceTransfer {
 
             String dataSourceType = linkisDataSourceContent.get("dataSourceType").toString();
             if(dataSourceType.equals("kafka")){
-                String groupId = getKaflaGroupIdInfo(streamisTableEntity.getTableInfo().getId());
+//                String groupId = getKaflaGroupIdInfo(streamisTableEntity.getTableInfo().getId());
+                String groupId = getKaflaGroupIdInfo(extraInfo, "kafka.group.id");
                 linkisDataSourceContent.put("groupId",groupId);
                 linkisDataSourceContent.put("topicName",tableName);
                 streamisDataSourceCode = transferKafkaSql(tableName, cols, labels, linkisDataSourceContent);
@@ -123,11 +124,16 @@ public class DataSourceTransferImpl implements DataSourceTransfer {
     }
 
 
-    public String getKaflaGroupIdInfo(Long streamisTableMetaId){
-        QueryWrapper<StreamisDatasourceExtraInfo> wrapper = new QueryWrapper<>();
-        wrapper.eq("streamis_table_meta_id",streamisTableMetaId);
-        wrapper.eq("key","kafka.group.id");
-        StreamisDatasourceExtraInfo extraInfo = streamisDatasourceExtraInfoService.getOne(wrapper);
-        return extraInfo.getValue();
+    public String getKaflaGroupIdInfo(List<StreamisDatasourceExtraInfo> list ,String key){
+        String value ="";
+        if(CollectionUtils.isNotEmpty(list)){
+            for (StreamisDatasourceExtraInfo extraInfo : list) {
+                if(key.equals(extraInfo.getKey())){
+                    value = extraInfo.getValue();
+                    break;
+                }
+            }
+        }
+        return  value;
     }
 }
