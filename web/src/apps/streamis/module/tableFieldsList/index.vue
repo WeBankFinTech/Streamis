@@ -23,7 +23,7 @@
           <Radio label="是"></Radio>
           <Radio label="否"></Radio>
         </RadioGroup>
-      </template> 
+      </template>
       <template slot-scope="{ row, index }" slot="fieldIsPartition">
         <div v-if="!row.edit && index!=0" style="margin-left: 5px">
           <Radio label="是"  :value="true"  v-if="row.fieldIsPartition===1"></Radio>
@@ -91,7 +91,7 @@
 <script>
 import api from "@/common/service/api";
 /**
- * 
+ *
  */
 function renderSpecialHeader(h, params) {
   return h("div", [
@@ -196,7 +196,7 @@ export default {
   },
   mounted() {
     this.getFieldsList();
-  }, 
+  },
   methods: {
     funPrimary(params){
       this.tableColumn.fieldIsPrimary = (params=='是'?1:0)
@@ -241,7 +241,7 @@ export default {
         streamisTableMetaId: this.nodeId
       })
       // 直接把tableDatas传递过去
-      this.$emit('funTableColumn',this.tableDatas) 
+      this.$emit('funTableColumn',this.tableDatas)
     },
     //取消新增字段
     cancelColumn(row, index){
@@ -291,15 +291,13 @@ export default {
               this.$emit('tableInfoFun',formData)
               // 存储streamisExtraInfo 传递给父组件翻译用
               let streamisExtraInfo = res.streamisExtraInfo
-              this.$emit('extraInfoFun',streamisExtraInfo) 
+              this.$emit('extraInfoFun',streamisExtraInfo)
             }
           }).catch(e => console.log(e));
       }else{
         // 如果没有id就不要发送请求
         this.tableDatas = []
         this.tableDatas.unshift({})
-        this.$emit('tableInfoFun',{})
-        this.$emit('extraInfoFun',[]) 
       }
     },
     //修改字段
