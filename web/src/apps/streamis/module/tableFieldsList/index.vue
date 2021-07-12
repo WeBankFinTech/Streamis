@@ -290,7 +290,7 @@ export default {
               let formData = res.streamisTableMeta
               this.$emit('tableInfoFun',formData)
               // 存储streamisExtraInfo 传递给父组件翻译用
-              let streamisExtraInfo = res.streamisExtraInfo
+              let streamisExtraInfo = res.streamisExtraInfo || []
               this.$emit('extraInfoFun',streamisExtraInfo)
             }
           }).catch(e => console.log(e));
