@@ -132,15 +132,18 @@ public class StreamisTableMetaApi {
 
             for (String table : tables) {
                 if(CollectionUtils.isNotEmpty(list)){
+                    tableVO = new StreamisDataSourceTableVO();
+                    tableVO.setTableName(table);
                     for (StreamisTableMeta streamisTableMeta : list) {
-                        tableVO = new StreamisDataSourceTableVO();
-                        tableVO.setTableName(table);
                         if(table.equals(streamisTableMeta.getTableName())){
                             tableVO.setStreamisTableMetaId(streamisTableMeta.getId());
+                            tableVO.setStreamisDataSource(true);
+//                            tableList.add(tableVO);
+                            break;
                         }
-                        tableVO.setStreamisDataSource(table.equals(streamisTableMeta.getTableName()));
-                        tableList.add(tableVO);
                     }
+                    tableList.add(tableVO);
+
                 }else {
                     tableVO = new StreamisDataSourceTableVO();
                     tableVO.setTableName(table);
@@ -436,6 +439,7 @@ public class StreamisTableMetaApi {
                 UpdateWrapper<StreamisDatasourceExtraInfo> wrapper = null;
                 boolean result ;
                 for (StreamisDatasourceExtraInfo extraInfo : extraInfoList) {
+                    wrapper = new UpdateWrapper<>();
                     wrapper.eq("key",extraInfo.getKey()).eq("streamis_table_meta_id",streamisTableMetaId).set("value",extraInfo.getValue());
                     result = streamisDatasourceExtraInfoService.update(null, wrapper);
                     if(!result){
