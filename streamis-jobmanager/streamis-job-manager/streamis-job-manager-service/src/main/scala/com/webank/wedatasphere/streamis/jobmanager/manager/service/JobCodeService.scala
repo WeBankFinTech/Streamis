@@ -33,7 +33,7 @@ class JobCodeService extends Logging{
   val mapper = new ObjectMapper()
 
   def addJarBml(userName:String,fileName:String,inputStream:InputStream,projectName:String,jobId:Long,version:String): Unit ={
-    info("add zip resource")
+    info("msg:[add zip resource]")
 
     val project = streamProjectMapper.getByProjects(null, null, projectName).asScala.head
 
@@ -138,7 +138,7 @@ class JobCodeService extends Logging{
   }
   @Transactional(rollbackFor = Array(classOf[Exception]))
   private def analyzeResource(userName: String, resourceId: String, version: String,path:String,fileName:String): CodeResourceDetailsVO ={
-    info(s"start analyze zip resource resourceId:${resourceId} version:${version}")
+    info(s"resourceId:${resourceId},version:${version},msg:[start analyze zip resource]")
 
     val localPath = bmlService.downloadToLocalPath(userName,resourceId,version,path)
     val fullPath = s"$localPath/$fileName"
@@ -177,7 +177,7 @@ class JobCodeService extends Logging{
     ZipUtils.deleteDir(new File(fullPath))
     ZipUtils.deleteDir(new File(fullPath+".zip"))
 
-    info("end analyze zip resource")
+    info("msg:[end analyze zip resource]")
     codeResourceDetailsVO
   }
 
@@ -195,6 +195,29 @@ class JobCodeService extends Logging{
 
     bmlVersion.setAttribute(codeResourceJson)
     streamBmlMapper.insertBmlVersion(bmlVersion)
+  }
+
+  def getCodeDetails(jobId:Long,version:String): CodeResourceDetailsVO ={
+    val jobVersionList = streamJobMapper.getJobVersionsById(jobId,version)
+    if(jobVersionList == null || jobVersionList.isEmpty){
+      info(s"jobId:${jobId},version:${version},msg:[jobVersion is null]")
+      return null
+    }
+
+    val jobVersion = jobVersionList.asScala.head
+    val jobCodeList = streamJobCodeResourceMapper.getJobCodeList(jobVersion.getId,null)
+    if(jobVersionList == null || jobVersionList.isEmpty){
+      info(s"jobVersionId:${jobVersion.getId},msg:[jobVersion is null]")
+      return null
+    }
+
+    val jobCode = jobCodeList.asScala.head
+    val bml = streamBmlMapper.getStreamBmlById(jobCode.getBmlId).asScala.head
+    val bmlVersion = streamBmlMapper.getStreamBmlVersionById(bml.getId,bml.getLatestVersion).asScala.head
+    val codeResourceJson = bmlVersion.getAttribute
+
+    val result: CodeResourceDetailsVO = mapper.readValue(codeResourceJson, classOf[CodeResourceDetailsVO])
+    result
   }
 
 }
