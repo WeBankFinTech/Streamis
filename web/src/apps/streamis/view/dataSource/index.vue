@@ -13,7 +13,7 @@
       <div class="rightContainer">
         <!--切换sql -->
         <div class="designer-toolbar">
-          <div class="button">
+          <!-- <div class="button">
             <Icon type="md-settings" />
             <span>配置</span>
           </div>
@@ -21,7 +21,7 @@
           <div class="button">
             <Icon type="md-play" />
             <span>停止</span>
-          </div>
+          </div> -->
           <div class="devider" />
           <div class="button" @click="addStreamis">
             <svg
@@ -49,7 +49,7 @@
             <span>返回图形界面</span>
           </div>
           <template v-if="!isShowSql&&nodeId">
-            <textarea class="sqlInput">11111</textarea>
+            <Input class='sqlInput' :rows="5" :autosize="{maxRows:50, minRows: 5}" v-model="sqltext" type="textarea" />
           </template>
         </div>
         <template v-if="!nodeNameValue">
@@ -169,7 +169,7 @@ export default {
       },
       navHeight: 0,
       dataBase: '',
-      goSaveButton: false,
+      sqltext: ''
     };
   },
   mounted() {
@@ -187,39 +187,23 @@ export default {
   },
   methods: {
     //保存表信息和字段信息
-    addStreamis(query){
-      // 如果走过保存就会变为true
-      this.goSaveButton = true
-      //拿到子组件的字段信息
-      //拿到表信息
-      // 如果三个值没有一个改变的同时禁用保存按钮
-      // if(!this.changeFieldList && !this.changeTableInfo && !this.changeExtraUisName){
-      //   console.log(this.changeFieldList,this.changeTableInfo,this.changeExtraUisName,"三个值")
-      //   this.$Message.warning('无任何修改，禁止保存')
-      //   return
-      // }
-      // 发送保存请求的时候一定要把消费组名传过去
+    addStreamis(){
       if(!this.extraUisName){
         this.$Message.warning('请输入消费组名')
-        this.goSaveButton = false
         return
       }
-      // 如果没有表信息id 提示无表信息  streamisTableMeta的id是后台返回的
-      // 在没有id的情况下 只能先添加表信息再添加表的字段
-      if(this.formData.id === undefined && this.changeFieldList){
-        this.$Message.warning('没有表信息，请先添加表信息再添加字段信息')
-        this.goSaveButton = false
+      if(!this.changeFieldList){
         return
       }
       if(!this.formData.tableName || !this.formData.scope || !this.formData.layer){
         this.$Message.warning('表名、作用域、所属分层不能为空')
-        this.goSaveButton = false
         return
       }
       if(this.fieldsList){
         this.fieldsList = this.fieldsList.filter(item => item.fieldName)
       }
       this.formData.name  = this.nodeNameValue
+      this.formData.tags = this.formData.tags || ''
       let params = {
         authorityId: '',
         streamisTableMeta: this.formData,
@@ -235,24 +219,19 @@ export default {
           // 再去触发一下子组件tableFieldsList的方法
           this.$Message.success('保存成功')
           this.$refs.mychildTable.getFieldsList();
-          // 保存后台返回的id 到时候回调到工作流界面
-          // this.returnId = res.streamisTableMetaId
-          // 将这个id给子组件treeSource
+          this.nodeId = res.streamisTableMetaId;
+          this.node.jobContent.datasourceId = res.streamisTableMetaId
+          this.$emit('save', {}, {...this.node } )
         }else{
           this.$Message.error();('保存失败')
         }
       })
-      if(query === false){
-        this.goSaveButton = false
-      }
     },
     changSql(){
-      if(!this.nodeId){
-        return
-      } else {
-        this.changeStatus =! this.changeStatus
-        this.isShowSql =! this.isShowSql
-      }
+
+      this.changeStatus = !this.changeStatus
+      this.isShowSql = !this.isShowSql
+
       //像后端发送请求 翻译成sql
       const params = {
         streamisTableMetaId: this.nodeId,
@@ -261,7 +240,7 @@ export default {
         streamisExtraInfo: this.streamisExtraInfo
       }
       api.fetch("streamis/transfer" , params, "post").then(res => {
-        console.log(res,"后台返回的翻译的信息")
+        this.sqltext = res.sqlText
       })
     },
     backGraph(){
@@ -312,7 +291,7 @@ export default {
     },
     // 集群的id
     getColonyId(colonyId){
-      this.colonyId =colonyId
+      this.colonyId = colonyId
     },
     getChangeFieldList(val){
       if(val === true){
