@@ -235,7 +235,7 @@ export default {
             resourceId,
             version,
             creator: node.creator || "",
-            projectName: this.$route.processData.projectName || ""
+            projectName: this.processData.projectName || ""
           }, config).then(res => {
             let content = res.scriptContent;
             let params = {};
@@ -464,7 +464,7 @@ export default {
     },
     updateProjectCacheByTab() {
       this.dispatch("workflowIndexedDB:updateProjectCache", {
-        projectID: this.$route.processData.projectID,
+        projectID: this.processData.projectID,
         key: "tabList",
         value: {
           tab: this.tabs,
@@ -477,7 +477,7 @@ export default {
     },
     updateProjectCacheByActive() {
       this.dispatch("workflowIndexedDB:updateProjectCache", {
-        projectID: this.$route.processData.projectID,
+        projectID: this.processData.projectID,
         key: "tabList",
         value: {
           active: this.active,
@@ -491,7 +491,7 @@ export default {
     getCache() {
       return new Promise(resolve => {
         this.dispatch("workflowIndexedDB:getProjectCache", {
-          projectID: this.$route.processData.projectID,
+          projectID: this.processData.projectID,
           cb: cache => {
             const list = (cache && cache.tabList) || [];
             let tabs = null;
