@@ -11,8 +11,6 @@ import org.apache.commons.lang.StringUtils
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-
-import java.util.UUID
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 /**
@@ -20,7 +18,6 @@ import scala.collection.mutable.ListBuffer
  */
 @Service
 class JobService extends Logging{
-
   @Autowired private var streamJobMapper:StreamJobMapper=_
   @Autowired private var streamProjectMapper:StreamProjectMapper=_
   @Autowired private var streamJobRunRelationMapper:StreamJobRunRelationMapper=_
