@@ -205,9 +205,11 @@ export default {
           this.$emit('save', {}, {
             ...this.node
           })
+          this.changeFieldList = false
+          this.changeTableInfo = false
+          this.changeExtraUisName = false
         } else {
-          this.$Message.error();
-          ('保存失败')
+          this.$Message.error('保存失败')
         }
       })
     },
@@ -235,17 +237,20 @@ export default {
       if (this.changeFieldList || this.changeTableInfo || this.changeExtraUisName) {
         this.$Modal.confirm({
           title: '提示',
-          content: '修改暂未保存，是否保存?',
+          content: '修改暂未保存，请确认是否保存?',
           okText: '保存',
           cancelText: '不保存',
           onOk: () => {
+            this.addStreamis()
+          },
+          onCancel: () => {
             this.nodeId = nodeId
             if (cb) {
               cb()
             }
-          },
-          onCancel: () => {
-
+            this.changeFieldList = false
+            this.changeTableInfo = false
+            this.changeExtraUisName = false
           }
         })
       } else {
