@@ -323,7 +323,7 @@ export default {
             type: node.jumpUrl,
             node,
             data: {
-              //
+              processData: this.processData
             }
           });
         }

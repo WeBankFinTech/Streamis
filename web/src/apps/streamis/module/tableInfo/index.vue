@@ -70,7 +70,6 @@ export default {
       type: Object,
     }
   },
-  // props: ['formData'],
   data(){
     return{
       labelWidth: 80,
@@ -78,8 +77,6 @@ export default {
         tableName: '',
         alias: '',
         tags: '',
-        scope: '',
-        layer: '',
         description: '',
         id: ''
       },
@@ -110,68 +107,26 @@ export default {
           value: 'DWS',
           label: 'DWS'
         }
-      ],
-      flagChange: {}
+      ]
     }
   },
   watch: {
     formData: {
       handler() {
-        this.getTableInfo()
+        this.tableInfo = this.formData
       },
     },
-    'tableInfo.id'(newVal,oldVal){
-      if(newVal != oldVal && oldVal != ""){
-        this.$emit('funFlagTableInfo',false)
-      }
-    },
-    'tableInfo.tableName'(newVal,oldVal){
-      oldVal = this.flagChange.tableName
-      console.log(oldVal,newVal,"旧值和新值")
-      if(newVal != oldVal && oldVal != undefined){
-        console.log("发送弹框信息")
-        this.$emit('funFlagTableInfo',true)
-      }
-    },
-    'tableInfo.alias'(newVal,oldVal){
-      oldVal = this.flagChange.alias
-      if(newVal != oldVal && oldVal != undefined){
-        this.$emit('funFlagTableInfo',true)
-      }
-    },
-    'tableInfo.tags'(newVal,oldVal){
-      oldVal = this.flagChange.tags
-      if(newVal != oldVal && oldVal != undefined){
-        this.$emit('funFlagTableInfo',true)
-      }
-    },
-    'tableInfo.layer'(newVal,oldVal){
-      oldVal = this.flagChange.layer
-      if(newVal != oldVal && oldVal != undefined){
-        this.$emit('funFlagTableInfo',true)
-      }
-    },
-    'tableInfo.scope'(newVal,oldVal){
-      oldVal = this.flagChange.scope
-      if(newVal != oldVal && oldVal != undefined){
-        this.$emit('funFlagTableInfo',true)
-      }
-    },
-    'tableInfo.description'(newVal,oldVal){
-      oldVal = this.flagChange.description
-      if(newVal != oldVal && oldVal != undefined){
-        this.$emit('funFlagTableInfo',true)
-      }
+    tableInfo: {
+      handler(n) {
+        let a = JSON.stringify(this.formData)
+        let b = JSON.stringify(n)
+        this.$emit('change', a !== b , n)
+        this.$emit('update:formData', n) // 更新
+      },
+      deep: true
     }
-  },
-  mounted () {
-    this.getTableInfo()
   },
   methods: {
-    getTableInfo(){
-      this.flagChange = JSON.parse(JSON.stringify(this.formData))
-      this.tableInfo = this.formData
-    }
   }
 }
 </script>
