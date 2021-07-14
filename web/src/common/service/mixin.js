@@ -123,8 +123,8 @@ export default {
     // 获取工作空间Id
     getCurrentWorkspaceId() {
       const workspaceData = storage.get("currentWorkspace");
-      if (this.$router.query.workspaceId){
-        return this.$router.query.workspaceId
+      if (this.$route.query.workspaceId){
+        return this.$route.query.workspaceId
       }
       return workspaceData ? workspaceData.id : ''
     }
