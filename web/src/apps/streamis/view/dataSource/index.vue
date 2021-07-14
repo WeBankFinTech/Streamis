@@ -3,12 +3,16 @@
     <div class="container">
       <!--左边树 -->
       <div class="leftContainer">
-        <treeSource :node="node" @goTableFun="getThreeList" @dataBaseFun="getDataBase" @goTableNameFun="getNodeId"
-          @colonyIdFun="getColonyId" />
+        <treeSource
+          :node="node"
+          :checkChange="checkChange"
+          @sourceConfig="getDataSourceConfig"
+          @currentTable="currentTableChange"
+        />
       </div>
       <div class="rightContainer">
         <!--切换sql -->
-        <div class="designer-toolbar">
+        <div class="designer-toolbar"  v-if="currentTable.name">
           <!-- <div class="button">
             <Icon type="md-settings" />
             <span>配置</span>
@@ -19,17 +23,24 @@
             <span>停止</span>
           </div>
           <div class="devider" />-->
-          <div class="button" @click="addStreamis" v-if="changeStatus">
-            <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4564">
+          <div class="button" @click="addStreamis" v-if="!isShowSql">
+            <svg
+              class="icon"
+              viewBox="0 0 1024 1024"
+              version="1.1"
+              xmlns="http://www.w3.org/2000/svg"
+              p-id="4564"
+            >
               <path
                 d="M176.64 1024c-97.28 0-176.64-80.384-176.64-178.688V178.688c0-98.816 79.36-178.688 176.64-178.688h670.72c97.28 0 176.64 80.384 176.64 178.688V845.312c0 98.816-79.36 178.688-176.64 178.688h-670.72z m0-936.96c-50.688 0-91.648 41.472-91.648 92.16V845.312c0 50.688 40.96 92.16 91.648 92.16h670.72c50.688 0 91.648-41.472 91.648-92.16V178.688c0-50.688-40.96-92.16-91.648-92.16h-3.584v437.248h-663.04v-437.248h-4.096z m581.632 350.208v-350.208h-492.544v350.208h492.544z m-160.768-35.328v-240.128h84.992v240.128h-84.992z"
-                p-id="4565"></path>
+                p-id="4565"
+              />
             </svg>
             <span>保存</span>
           </div>
           <div class="devider" />
           <!-- 必须要选中一个表才可以切换sql -->
-          <div class="button" @click="changSql" v-if="changeStatus">
+          <div class="button" @click="changSql" v-if="!isShowSql">
             <Icon type="md-swap" />
             <span>切换SQL</span>
           </div>
@@ -37,14 +48,20 @@
             <Icon type="md-swap" />
             <span>返回图形界面</span>
           </div>
-          <template v-if="!isShowSql&&nodeId">
-            <Input class='sqlInput' :rows="5" :autosize="{maxRows:50, minRows: 5}" v-model="sqltext" type="textarea" />
+          <template v-if="isShowSql">
+            <Input
+              class="sqlInput"
+              :rows="5"
+              :autosize="{maxRows:50, minRows: 5}"
+              v-model="sqltext"
+              type="textarea"
+            />
           </template>
         </div>
-        <template v-if="!nodeNameValue">
+        <template v-if="!currentTable.name">
           <dataSourceInit />
         </template>
-        <template v-if="nodeNameValue && isShowSql">
+        <template v-if="currentTable.name && !isShowSql">
           <div class="right-container">
             <div class="panel-table-data">
               <div class="panel-color">
@@ -67,7 +84,7 @@
               </div>
               <div class="data-text" v-if="showInput">
                 <span style="margin-right: 4px">{{ extraUisLable }}:</span>
-                <Input v-model="extraUisName" placeholder="请输入消费组名" style="width: 200px" />
+                <Input v-model="extraUisName" @on-change="changeExtraUI" placeholder="请输入消费组名" style="width: 200px" />
               </div>
             </div>
             <div class="panel-table-data">
@@ -81,8 +98,7 @@
               <div class="panel-pg"></div>
             </div>
             <!-- 把二级菜单的id值传入给表格去发送请求 -->
-            <tableFieldsList :nodeId="nodeId" @funTableColumn="tableColumnObject" @tableInfoFun="tableInfoList"
-              @extraInfoFun="getStreamisExtraInfo" @funChangeFieldList="getChangeFieldList" ref="mychildTable" />
+            <tableFieldsList :data="tableDatas" :tableMetaId="currentTable.streamisTableMetaId" @change="onModifyFields" />
             <div class="panel-table-data">
               <div class="panel-color">
                 <img class="icon" src="../../assets/images/u2618.png" />
@@ -93,76 +109,56 @@
               </div>
               <div class="panel-pg"></div>
             </div>
-            <tableInfo :formData.sync="formData" @funFlagTableInfo="getFlagTableInfo" />
+            <tableInfo :formData.sync="formData" @change="onChangeInfo" />
           </div>
         </template>
       </div>
     </div>
-
   </div>
 </template>
 <script>
-import api from "@/common/service/api";
-import treeSource from '@/apps/streamis/module/treeSource';
-import dataSourceInit from '@/apps/streamis/module/dataSourceInit';
-import tableFieldsList from '@/apps/streamis/module/tableFieldsList';
-import tableInfo from '@/apps/streamis/module/tableInfo';
+import api from '@/common/service/api'
+import treeSource from '@/apps/streamis/module/treeSource/treeIndex'
+import dataSourceInit from '@/apps/streamis/module/dataSourceInit'
+import tableFieldsList from '@/apps/streamis/module/tableFieldsList'
+import tableInfo from '@/apps/streamis/module/tableInfo'
 export default {
-  // 接收工作流传来的node 数据源类型
-  props: ["node"],
+  // 接收工作流传来的节点数据
+  props: ['node','data'],
   components: {
     tableFieldsList: tableFieldsList.component,
     tableInfo: tableInfo,
     treeSource: treeSource,
-    dataSourceInit: dataSourceInit,
+    dataSourceInit: dataSourceInit
   },
   data() {
     return {
-      streamisExtraInfo: '',
       changeExtraUisName: false,
       changeTableInfo: false,
       changeFieldList: false,
       showInput: '',
-      colonyId: '',
-      returnId: '',
-      extraUis: '',
-      labelWidth: 80,
-      // 根据二级菜单的名字来判断是否显示右侧动态面板
-      nodeNameValue: '',
+      currentTable: {},
       // 用户自己填的东西
       extraUisName: '',
       extraUisLable: '',
       // 字段信息的值
-      fieldsList: '',
-      changeStatus: true,
-      isShowSql: true,
-      nodeId: '',
+      fieldsList: [],
+      tableDatas: [],
+      isShowSql: false,
       formData: {
         nodeName: '',
         tableName: '',
         alias: '',
         tags: '',
-        scope: '',
-        layer: '',
         description: '',
         id: ''
       },
-      navHeight: 0,
       dataBase: '',
       sqltext: ''
-    };
+    }
   },
   mounted() {},
   watch: {
-    // 监听消费组名的变化 如果有变化 要走保存
-    extraUisName: {
-      handler(newValue, oldValue) {
-        if (newValue !== oldValue && oldValue != '' && newValue) {
-          // 说明已经修改了 如果没有走保存按钮 就要弹出提示框
-          this.changeExtraUisName = true
-        }
-      }
-    },
   },
   methods: {
     //保存表信息和字段信息
@@ -172,81 +168,104 @@ export default {
         return
       }
       // 未更改
-      if (!this.changeFieldList && !this.changeExtraUisName && !this.changeTableInfo) {
+      if (
+        !this.changeFieldList &&
+        !this.changeExtraUisName &&
+        !this.changeTableInfo
+      ) {
         return
       }
-      if (!this.formData.tableName || !this.formData.scope || !this.formData.layer) {
+      if (
+        !this.formData.tableName ||
+        !this.formData.scope ||
+        !this.formData.layer
+      ) {
         this.$Message.warning('表名、作用域、所属分层不能为空')
         return
       }
       if (this.fieldsList) {
         this.fieldsList = this.fieldsList.filter(item => item.fieldName)
       }
-      this.formData.nodeName = this.dataBase.dataBase;
-      this.formData.name = this.nodeNameValue
+      this.formData.nodeName = this.dataBase.dataBase
+      this.formData.name = this.currentTable.name
       this.formData.tags = this.formData.tags || ''
+      this.formData.linkisDatasourceName = this.dataBase.dataBase+'.'+this.dataBase.tableName
+      if (this.data.processData){
+        this.formData.workspaceName = this.data.processData.workspaceName
+        this.formData.workspaceId = this.data.processData.workspaceId
+      }
       let params = {
-        authorityId: '',
         streamisTableMeta: this.formData,
         streamisTableFields: this.fieldsList,
-        streamisExtraInfo: [{
-          key: this.extraUis.key,
-          value: this.extraUisName,
-          streamisTableMetaId: this.nodeId
-        }]
+        streamisExtraInfo: [
+          {
+            key: this.extraUis.key,
+            value: this.extraUisName,
+            streamisTableMetaId: this.currentTable.streamisTableMetaId
+          }
+        ]
       }
-      api.fetch("streamis/save", params, "post").then(res => {
+      api.fetch('streamis/save', params, 'post').then(res => {
         if (res) {
-          // 再去触发一下子组件tableFieldsList的方法
-          this.$Message.success('保存成功')
-          this.$refs.mychildTable.getFieldsList();
-          this.nodeId = res.streamisTableMetaId;
-          this.node.jobContent.datasourceId = res.streamisTableMetaId
-          this.$emit('save', {}, {
-            ...this.node
-          })
+          if(this.node) {
+            this.node.jobContent = {...this.node.jobContent, datasourceId: res.streamisTableMetaId}
+          }
+          this.$emit(
+            'save',
+            {},
+            {
+              ...this.node
+            }
+          )
           this.changeFieldList = false
           this.changeTableInfo = false
           this.changeExtraUisName = false
+          this.$Message.success('保存成功')
+          this.currentTable.streamisDataSource = true
+          this.currentTable.streamisTableMetaId = res.streamisTableMetaId
         } else {
           this.$Message.error('保存失败')
         }
       })
     },
     changSql() {
-
-      this.changeStatus = !this.changeStatus
-      this.isShowSql = !this.isShowSql
-
+      this.isShowSql = true
       //像后端发送请求 翻译成sql
       const params = {
-        streamisTableMetaId: this.nodeId,
-        dataSourceId: this.colonyId,
-        nodeName: this.nodeNameValue,
+        streamisTableMetaId: this.currentTable.streamisTableMetaId,
+        dataSourceId: this.dataBase.colonyId,
+        nodeName: this.currentTable.name,
         streamisExtraInfo: this.streamisExtraInfo
       }
-      api.fetch("streamis/transfer", params, "post").then(res => {
-        this.sqltext = res.sqlText
+      api.fetch('streamis/transfer', params, 'post').then(res => {
+        if (res.streamisDataSourceCode) {
+          this.sqltext = res.streamisDataSourceCode.executionCode
+        }
       })
     },
     backGraph() {
-      this.changeStatus = !this.changeStatus
-      this.isShowSql = !this.isShowSql
+      this.isShowSql = false
     },
-    getThreeList(nodeId, cb) {
-      if (this.changeFieldList || this.changeTableInfo || this.changeExtraUisName) {
+    /**
+     * 检查是否修改了当前表数据源信息未保存,如不保存则继续切换表，所填信息丢弃
+     */
+    checkChange(tableNode, cb) {
+      if (
+        this.changeFieldList ||
+        this.changeTableInfo ||
+        this.changeExtraUisName
+      ) {
         this.$Modal.confirm({
           title: '提示',
-          content: '修改暂未保存，请确认是否保存?',
+          content: '修改暂未保存，是否保存?',
           okText: '保存',
           cancelText: '不保存',
           onOk: () => {
             this.addStreamis()
           },
           onCancel: () => {
-            this.nodeId = nodeId
             if (cb) {
-              cb()
+              cb(tableNode)
             }
             this.changeFieldList = false
             this.changeTableInfo = false
@@ -254,216 +273,242 @@ export default {
           }
         })
       } else {
-        this.nodeId = nodeId
         if (cb) {
-          cb()
+          cb(tableNode)
         }
       }
     },
-    tableInfoList(formData) {
-      // 子组件tableFieldList传过来的表信息
-      this.formData = formData
+    currentTableChange(tableNode) {
+      // 切换表，重置初始值
+      this.currentTable = tableNode
+      this.extraUisName = ''
+      this.formData = {
+        nodeName: '',
+        tableName: '',
+        alias: '',
+        tags: '',
+        description: '',
+        id: ''
+      }
+      this.fieldsList = []
+      this.tableDatas = [{}]
+      this.changeFieldList = false
+      this.changeTableInfo = false
+      this.changeExtraUisName = false
+      this.getFieldsList()
+      this.isShowSql = false
     },
-    tableColumnObject(mapTableList) {
-      // 传过来的保存的字段信息的值
-      this.fieldsList = mapTableList
-    },
-    getDataBase(dataBase = {}) {
-      // 数据源：得到一些需要额外展示的值
-      // 显示输入框/选择框
+
+    getDataSourceConfig(dataBase = {}) {
       if (Array.isArray(dataBase.extraUis) && dataBase.extraUis.length) {
         this.showInput = dataBase.extraUis[0].id
         this.dataBase = dataBase
-        this.extraUisLable = dataBase.extraUis[0].lable_name
+        this.extraUisLable = dataBase.extraUis[0].lableName
         this.extraUis = dataBase.extraUis[0]
       }
     },
-    getStreamisExtraInfo(streamisExtraInfo) {
-      this.streamisExtraInfo = streamisExtraInfo
-      if (streamisExtraInfo.length !== 0) {
-        this.extraUisName = streamisExtraInfo[0].value
-      } else {
-        this.extraUisName = ''
-      }
+    onModifyFields(change, list) {
+      this.changeFieldList = change
+      this.fieldsList = list
     },
-    // 获取点击的二级菜单的名字
-    getNodeId(nodeNameValue) {
-      this.nodeNameValue = nodeNameValue
-    },
-    // 集群的id
-    getColonyId(colonyId) {
-      this.colonyId = colonyId
+    changeExtraUI() {
+      this.changeExtraUisName = this.extraUisName !== this.getExtraUiName();
     },
     getChangeFieldList(val) {
       if (val === true) {
         this.changeFieldList = val
       }
     },
-    getFlagTableInfo(query) {
-      this.changeTableInfo = query
+    onChangeInfo(hasChange) {
+      this.changeTableInfo = hasChange
+    },
+    getFieldsList() {
+      if (this.currentTable.streamisDataSource && this.currentTable.streamisTableMetaId) {
+        api
+          .fetch('streamis/streamisTableMetaInfo/' + this.currentTable.streamisTableMetaId, 'get')
+          .then(res => {
+            if (res) {
+              const datas = res.streamisDatasourceFields || []
+              this.fieldsList = datas
+              this.tableDatas = [{}, ...datas]
+              this.formData = res.streamisTableMeta
+              this.changeTableInfo = false
+              let streamisExtraInfo = res.streamisExtraInfo || []
+              this.streamisExtraInfo = streamisExtraInfo
+              this.extraUisName = this.getExtraUiName()
+            }
+          })
+          .catch(e => console.log(e))
+      } else {
+        this.tableDatas = [{}]
+      }
+    },
+    getExtraUiName() {
+      if (this.streamisExtraInfo && this.streamisExtraInfo.length !== 0) {
+        return this.streamisExtraInfo[0].value
+      } else {
+        return ''
+      }
     }
-  },
-};
-
+  }
+}
 </script>
 <style lang="scss" scoped>
-  .dataSource {
-    .container {
-      display: flex;
+.dataSource {
+  .container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+
+    .leftContainer {
+      flex-shrink: 1;
+      height: 100%;
+    }
+
+    .rightContainer {
+      flex-shrink: 1;
       width: 100%;
       height: 100%;
 
-      .leftContainer {
-        flex-shrink: 1;
-        height: 100%;
+      .designer-toolbar {
+        height: 40px;
+        padding-left: 10px;
+        background: #f7f7f7;
+        color: #000;
+        border: 1px solid #d7dde4;
+
+        .button {
+          float: left;
+          margin: 6px 5px 6px 0;
+          padding: 0;
+          height: 18px;
+          text-align: left;
+          border: 1px solid transparent;
+          border-radius: 2px;
+          cursor: pointer;
+
+          svg {
+            margin-right: 5px;
+            color: #666;
+          }
+
+          span {
+            vertical-align: middle;
+            color: #666;
+          }
+
+          .icon {
+            display: inline-block;
+            vertical-align: text-top;
+            width: 18px;
+            height: 18px;
+            color: #333;
+            text-align: center;
+          }
+        }
+
+        .devider {
+          float: left;
+          border-left: 1px solid #e3e8ee;
+          height: 18px;
+          margin: 8px 5px;
+        }
       }
 
-      .rightContainer {
-        flex-shrink: 1;
+      .sqlInput {
         width: 100%;
+        height: 329px;
+        font-family: 'Arial Normal', 'Arial';
+        font-weight: 400;
+        font-style: normal;
+        font-size: 13px;
+        text-decoration: none;
+        color: #000000;
+        text-align: left;
+        margin-left: -11px;
+        margin-top: 5px;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+
+      .right-container {
+        border-width: 0px;
+        border-left: 1px solid #aeaeae;
         height: 100%;
 
-        .designer-toolbar {
-          height: 40px;
-          padding-left: 10px;
-          background: #f7f7f7;
-          color: #000;
-          border: 1px solid #d7dde4;
+        .panel-table-data {
+          display: flex;
 
-          .button {
-            float: left;
-            margin: 6px 5px 6px 0;
-            padding: 0;
-            height: 18px;
-            text-align: left;
-            border: 1px solid transparent;
-            border-radius: 2px;
-            cursor: pointer;
+          .panel-pg {
+            width: calc(100vw - 230px);
+            height: 33px;
+            background-color: rgba(107, 107, 107, 1);
+            margin-left: -16px;
+          }
 
-            svg {
-              margin-right: 5px;
-              color: #666;
-            }
-
-            span {
-              vertical-align: middle;
-              color: #666;
-            }
+          .panel-color {
+            position: relative;
+            width: 123px;
+            height: 33px;
+            z-index: 1;
 
             .icon {
-              display: inline-block;
-              vertical-align: text-top;
-              width: 18px;
-              height: 18px;
-              color: #333;
-              text-align: center;
+              position: absolute;
+              top: 4px;
+              left: 18px;
+              width: 25px;
+              height: 25px;
             }
-          }
 
-          .devider {
-            float: left;
-            border-left: 1px solid #e3e8ee;
-            height: 18px;
-            margin: 8px 5px;
+            .text {
+              position: absolute;
+              left: 49px;
+              top: 5px;
+              margin-left: 7px;
+
+              span {
+                font-weight: 700;
+                font-style: normal;
+                font-size: 16px;
+                color: #ffffff;
+              }
+            }
           }
         }
 
-        .sqlInput {
-          width: 100%;
-          height: 329px;
-          font-family: 'Arial Normal', 'Arial';
-          font-weight: 400;
-          font-style: normal;
-          font-size: 13px;
-          text-decoration: none;
-          color: #000000;
-          text-align: left;
-          margin-left: -11px;
-          margin-top: 5px;
-          padding: 20px;
-          box-sizing: border-box;
-        }
+        .datasource {
+          display: flex;
+          padding: 18px 0px 25px 48px;
 
-        .right-container {
-          border-width: 0px;
-          border-left: 1px solid #AEAEAE;
-          height: 100%;
-
-          .panel-table-data {
-            display: flex;
-
-            .panel-pg {
-
-              width: calc(100vw - 230px);
-              height: 33px;
-              background-color: rgba(107, 107, 107, 1);
-              margin-left: -16px;
-            }
-
-            .panel-color {
-              position: relative;
-              width: 123px;
-              height: 33px;
-              z-index: 1;
-
-              .icon {
-                position: absolute;
-                top: 4px;
-                left: 18px;
-                width: 25px;
-                height: 25px;
-              }
-
-              .text {
-                position: absolute;
-                left: 49px;
-                top: 5px;
-                margin-left: 7px;
-
-                span {
-                  font-weight: 700;
-                  font-style: normal;
-                  font-size: 16px;
-                  color: #FFFFFF;
-                }
-              }
-            }
+          .data-title {
+            width: 48px;
+            white-space: nowrap;
+            line-height: 38px;
           }
 
-          .datasource {
-            display: flex;
-            padding: 18px 0px 25px 48px;
+          .data-text {
+            width: auto;
+            height: 41px;
+            background: inherit;
+            background-color: rgba(204, 204, 255, 1);
+            border: none;
+            border-radius: 5px;
+            box-shadow: none;
+            padding-left: 4px;
+            padding-right: 4px;
+            margin-left: 84px;
+            font-size: 13px;
+            color: #0033cc;
+            line-height: 41px;
+            text-align: center;
 
-            .data-title {
-              width: 48px;
-              white-space: nowrap;
-              line-height: 38px;
-            }
-
-            .data-text {
-              width: auto;
-              height: 41px;
-              background: inherit;
-              background-color: rgba(204, 204, 255, 1);
-              border: none;
-              border-radius: 5px;
-              box-shadow: none;
-              padding-left: 4px;
-              padding-right: 4px;
-              margin-left: 84px;
-              font-size: 13px;
-              color: #0033CC;
-              line-height: 41px;
-              text-align: center;
-
-              span:nth-child(2) {
-                margin-left: 9px;
-              }
+            span:nth-child(2) {
+              margin-left: 9px;
             }
           }
         }
       }
     }
   }
-
+}
 </style>
