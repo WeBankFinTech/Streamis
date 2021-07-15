@@ -190,10 +190,6 @@ export default {
       this.formData.name = this.currentTable.name
       this.formData.tags = this.formData.tags || ''
       this.formData.linkisDatasourceName = this.dataBase.dataBase+'.'+this.dataBase.tableName
-      if (this.data.processData){
-        this.formData.workspaceName = this.data.processData.workspaceName
-        this.formData.workspaceId = this.data.processData.workspaceId
-      }
       let params = {
         streamisTableMeta: this.formData,
         streamisTableFields: this.fieldsList,
@@ -204,6 +200,11 @@ export default {
             streamisTableMetaId: this.currentTable.streamisTableMetaId
           }
         ]
+      }
+      if (this.data.processData){
+        this.formData.workspaceName = this.data.processData.workspaceName
+        params.workspaceId = this.data.processData.workspaceId
+        params.projectID = this.data.processData.projectID
       }
       api.fetch('streamis/save', params, 'post').then(res => {
         if (res) {
