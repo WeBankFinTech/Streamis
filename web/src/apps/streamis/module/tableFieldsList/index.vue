@@ -112,12 +112,6 @@ export default {
       saveDatas: '',
       tableDatas: this.data.slice(0),
       tableColumn: {},
-      query: {
-        jobName: '',
-        jobStatus: 'all',
-        submitter: 'all'
-      },
-      jobStatus: ['all', 'running', 'failture', 'uploaded'],
       submitterOptions: ['all'],
       columns: [
         {
