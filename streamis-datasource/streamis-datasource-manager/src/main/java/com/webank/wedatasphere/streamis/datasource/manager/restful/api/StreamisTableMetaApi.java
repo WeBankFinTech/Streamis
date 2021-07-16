@@ -28,6 +28,7 @@ import com.webank.wedatasphere.linkis.server.Message;
 import com.webank.wedatasphere.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.streamis.datasource.manager.client.LinkisDataSourceClient;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -201,7 +202,12 @@ public class StreamisTableMetaApi {
 
             List<StreamisDatasourceExtraInfo> streamisExtraInfo = streamisDatasourceExtraInfoService.list(datasourceExtraInfoQueryWrapper);
 
-            message=Message.ok().data("streamisTableMeta",streamisTableMeta).data("streamisDatasourceFields",streamisDatasourceFields).data("streamisExtraInfo",streamisExtraInfo);
+            QueryWrapper<StreamisDatasourceAuthority> streamisDatasourceAuthorityQueryWrapper = new QueryWrapper<>();
+            streamisDatasourceAuthorityQueryWrapper.eq("streamis_table_meta_id",streamisTableMetaId);
+
+            StreamisDatasourceAuthority streamisDatasourceAuthorityInfo = streamisDatasourceAuthorityService.getOne(streamisDatasourceAuthorityQueryWrapper);
+
+            message=Message.ok().data("streamisTableMeta",streamisTableMeta).data("streamisDatasourceFields",streamisDatasourceFields).data("streamisExtraInfo",streamisExtraInfo).data("streamisDatasourceAuthorityInfo",streamisDatasourceAuthorityInfo);
 
         }catch (Throwable e){
             logger.error("Failed to get streamisTableMetaInfo",e);
@@ -307,8 +313,8 @@ public class StreamisTableMetaApi {
         Message message;
         try {
             String userName = SecurityFilter.getLoginUsername(req);
-            String authorityId = json.get("authorityId").asText();
-
+//            String authorityId = json.get("authorityId").asText();
+            StreamisDatasourceAuthority streamisDatasourceAuthority = mapper.readValue(json.get("streamisDatasourceAuthority"), StreamisDatasourceAuthority.class);
             StreamisTableMeta streamisTableMeta = mapper.readValue(json.get("streamisTableMeta"), StreamisTableMeta.class);
             List<StreamisDatasourceFields> fieldsList = mapper.readValue(json.get("streamisTableFields"), new TypeReference<List<StreamisDatasourceFields>>() {
             });
@@ -335,11 +341,14 @@ public class StreamisTableMetaApi {
                         throw new ErrorException(30013, "Sorry, failed to add StreamisTableFields table field information(抱歉，添加StreamisTableFields表字段信息失败)");
                     }
                 }
-                StreamisDatasourceAuthority streamisDatasourceAuthority = new StreamisDatasourceAuthority();
+
                 streamisDatasourceAuthority.setAuthorityScope(streamisTableMeta.getScope());
                 streamisDatasourceAuthority.setStreamisTableMetaId(streamisTableMetaId);
-                streamisDatasourceAuthority.setAuthorityId(authorityId);
-                streamisDatasourceAuthority.setGrantUser("*");
+                if(StringUtils.isBlank(streamisDatasourceAuthority.getGrantUser())){
+                    streamisDatasourceAuthority.setGrantUser("*");
+                }
+//                streamisDatasourceAuthority.setAuthorityId(authorityId);
+//                streamisDatasourceAuthority.setGrantUser("*");
                 result = streamisDatasourceAuthorityService.save(streamisDatasourceAuthority);
                 if(!result){
                     throw new ErrorException(30014, " sorry, add streamisDatasourceAuthority information failure (抱歉，添加streamisDatasourceAuthority信息失败)");
