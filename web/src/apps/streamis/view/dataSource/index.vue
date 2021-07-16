@@ -199,7 +199,11 @@ export default {
             value: this.extraUisName,
             streamisTableMetaId: this.currentTable.streamisTableMetaId
           }
-        ]
+        ],
+        streamisDatasourceAuthority: {
+          authorityId: 11,//(工程id/任务id)
+          grantUser: ''
+        }
       }
       if (this.data.processData){
         this.formData.workspaceName = this.data.processData.workspaceName
