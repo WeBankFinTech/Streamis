@@ -203,7 +203,11 @@ export default {
             value: this.extraUisName,
             streamisTableMetaId: this.currentTable.streamisTableMetaId
           }
-        ]
+        ],
+        streamisDatasourceAuthority: {
+          authorityId: 11,//(工程id/任务id)
+          grantUser: ''
+        }
       }
       api.fetch('streamis/save', params, 'post').then(res => {
         if (res) {
