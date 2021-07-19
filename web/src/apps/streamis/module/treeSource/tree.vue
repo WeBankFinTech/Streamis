@@ -16,7 +16,6 @@
   </div>
 </template>
 <script>
-import storage from '@/common/helper/storage';
 import VirtualTree from '@/components/virtualTree';
 export default {
   name: 'DataSoureceTree',
@@ -25,6 +24,7 @@ export default {
   },
   props: {
     data: Array,
+    openNode: Object,
     filterText: {
       type: String,
       default: '',
@@ -35,10 +35,8 @@ export default {
     },
   },
   data() {
-    let openNode = storage.get('tree-open-node') || {}
     return {
       treeData: [],
-      openNode,
       height: 0,
       currentActive: null
     }
@@ -82,9 +80,7 @@ export default {
         }
       });
     },
-    openNodeChange(data) {
-      this.openNode = data || {}
-      storage.set('tree-open-node', this.openNode)
+    openNodeChange() {
     },
     onClick({item}) {
       let node = this.nodeItem(item._id, this.treeData)
@@ -135,8 +131,12 @@ export default {
      */
     renderNode(h, params) {
       let item = params.item
-      // let isOpen = this.openNode[item._id]
-      const activeNode = this.currentActive && this.currentActive._id === item._id ? 'active-node' : ''
+      let activeNode = ''
+      if (this.currentActive) {
+        activeNode = this.currentActive._id === item._id ? 'active-node' : ''
+      } else if(item.active) {
+        activeNode = 'active-node'
+      }
       if (item.dataType === 'field') { // 表字段
         return h('span', {
           class: `node-name ${activeNode}`
