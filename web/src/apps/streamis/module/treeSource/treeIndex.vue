@@ -43,6 +43,7 @@
         class="we-side-bar-content v-hivedb-list"
         :data="tableList"
         :filter-text="search"
+        :open-node="openNode"
         :loading="isPending"
         @we-click="onClick"
       />
@@ -57,6 +58,9 @@ import api from '@/common/service/api'
 export default {
   props: {
     node: {
+      type: Object
+    },
+    expands: {
       type: Object
     },
     checkChange: Function
@@ -75,7 +79,8 @@ export default {
       clusterList: [],
       typeList: [],
       tableList: [],
-      isPending: false
+      isPending: false,
+      openNode: {}
     }
   },
   mounted() {
@@ -150,12 +155,19 @@ export default {
               children: []
             })
           })
-          // 切换DB，重置
-          this.$emit('currentTable', {})
+          if (this.expands) {
+            let dbnode = this.tableList.find(item => item.name === this.expands.db)
+            if (dbnode) {
+              this.loadDBTable(dbnode, dbnode)
+            }
+          } else {
+            // 切换DB，重置
+            this.$emit('currentTable', {})
+          }
         }
       })
     },
-    loadDBTable(item) {
+    loadDBTable(item, db) {
       //发送请求 获取二级菜单
       const params = {
         //集群的id 默认进来选中哪个集群就传哪个集群
@@ -185,6 +197,14 @@ export default {
             ...table
           }
         })
+        if (db) {
+          let tb = temArray.find(item => item.name === this.expands.table)
+          if (tb) {
+            this.toggleTB(tb, true)
+            tb.active = true
+          }
+          this.openNode[db._id] = true
+        }
         this.$set(item, 'children', temArray)
         this.tableList = [...this.tableList]
       })
@@ -229,8 +249,8 @@ export default {
       this.tableList = [...this.tableList]
       this.$emit('sourceConfig', dataBase)
     },
-    toggleTB(node) {
-      if (this.checkChange) {
+    toggleTB(node, load = false) {
+      if (this.checkChange && !load) {
         this.checkChange(node, this.loadTableColumns)
       } else {
         this.loadTableColumns(node)
