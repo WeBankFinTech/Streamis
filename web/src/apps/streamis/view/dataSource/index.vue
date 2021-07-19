@@ -5,6 +5,7 @@
       <div class="leftContainer">
         <treeSource
           :node="node"
+          :expands="expandNode"
           :checkChange="checkChange"
           @sourceConfig="getDataSourceConfig"
           @currentTable="currentTableChange"
@@ -109,7 +110,7 @@
               </div>
               <div class="panel-pg"></div>
             </div>
-            <tableInfo :formData.sync="formData" @change="onChangeInfo" />
+            <tableInfo :formData.sync="formData" />
           </div>
         </template>
       </div>
@@ -134,7 +135,6 @@ export default {
   data() {
     return {
       changeExtraUisName: false,
-      changeTableInfo: false,
       changeFieldList: false,
       showInput: '',
       currentTable: {},
@@ -145,20 +145,25 @@ export default {
       fieldsList: [],
       tableDatas: [],
       isShowSql: false,
-      formData: {
-        nodeName: '',
-        tableName: '',
-        alias: '',
-        tags: '',
-        description: '',
-        id: ''
-      },
+      formData: {},
+      backData: null,
       dataBase: '',
-      sqltext: ''
+      sqltext: '',
+      expandNode: null
     }
   },
-  mounted() {},
-  watch: {
+  mounted() {
+    if (this.node && this.node.jobContent && this.node.jobContent.dataBase) {
+      this.expandNode = {
+        db: this.node.jobContent.dataBase,
+        table: this.node.jobContent.table
+      }
+    }
+  },
+  computed: {
+    changeTableInfo() {
+      return this.backData ? this.backData !== JSON.stringify(this.formData) : JSON.stringify(this.formData) !=="{}"
+    }
   },
   methods: {
     //保存表信息和字段信息
@@ -189,27 +194,38 @@ export default {
       this.formData.nodeName = this.dataBase.dataBase
       this.formData.name = this.currentTable.name
       this.formData.tags = this.formData.tags || ''
-      this.formData.linkisDatasourceName = this.dataBase.dataBase+'.'+this.dataBase.tableName
-      if (this.data.processData){
-        this.formData.workspaceName = this.data.processData.workspaceName
-        this.formData.workspaceId = this.data.processData.workspaceId
+      this.formData.linkisDatasourceName = this.node ? this.node.type : ''
+      let extraInfo = []
+      if (this.streamisExtraInfo[0] && this.streamisExtraInfo[0].id) {
+        extraInfo = [{
+          id: this.streamisExtraInfo[0].id,
+          key: this.extraUis.key,
+          value: this.extraUisName,
+          streamisTableMetaId: this.currentTable.streamisTableMetaId
+        }]                        
+      } else {
+        extraInfo = [{
+          key: this.extraUis.key,
+          value: this.extraUisName,
+          streamisTableMetaId: this.currentTable.streamisTableMetaId
+        }]
       }
       let params = {
         streamisTableMeta: this.formData,
         streamisTableFields: this.fieldsList,
-        streamisExtraInfo: [
-          {
-            key: this.extraUis.key,
-            value: this.extraUisName,
-            streamisTableMetaId: this.currentTable.streamisTableMetaId
-          }
-        ]
+        streamisExtraInfo: extraInfo
+      }
+      if (this.data.processData){
+        this.formData.workspaceName = this.data.processData.workspaceName
+        params.workspaceId = this.data.processData.workspaceId
+        params.projectID = this.data.processData.projectID
       }
       api.fetch('streamis/save', params, 'post').then(res => {
         if (res) {
           if(this.node) {
-            this.node.jobContent = {...this.node.jobContent, datasourceId: res.streamisTableMetaId}
+            this.node.jobContent = {...this.node.jobContent, datasourceId: res.streamisTableMetaId, dataBase: this.dataBase.dataBase, table: this.currentTable.name}
           }
+          this.getFieldsList()
           this.$emit(
             'save',
             {},
@@ -218,7 +234,6 @@ export default {
             }
           )
           this.changeFieldList = false
-          this.changeTableInfo = false
           this.changeExtraUisName = false
           this.$Message.success('保存成功')
           this.currentTable.streamisDataSource = true
@@ -232,10 +247,7 @@ export default {
       this.isShowSql = true
       //像后端发送请求 翻译成sql
       const params = {
-        streamisTableMetaId: this.currentTable.streamisTableMetaId,
-        dataSourceId: this.dataBase.colonyId,
-        nodeName: this.currentTable.name,
-        streamisExtraInfo: this.streamisExtraInfo
+        streamisTableMetaId: this.currentTable.streamisTableMetaId
       }
       api.fetch('streamis/transfer', params, 'post').then(res => {
         if (res.streamisDataSourceCode) {
@@ -268,7 +280,6 @@ export default {
               cb(tableNode)
             }
             this.changeFieldList = false
-            this.changeTableInfo = false
             this.changeExtraUisName = false
           }
         })
@@ -282,18 +293,11 @@ export default {
       // 切换表，重置初始值
       this.currentTable = tableNode
       this.extraUisName = ''
-      this.formData = {
-        nodeName: '',
-        tableName: '',
-        alias: '',
-        tags: '',
-        description: '',
-        id: ''
-      }
+      this.backData = null
+      this.formData = {}
       this.fieldsList = []
       this.tableDatas = [{}]
       this.changeFieldList = false
-      this.changeTableInfo = false
       this.changeExtraUisName = false
       this.getFieldsList()
       this.isShowSql = false
@@ -319,9 +323,6 @@ export default {
         this.changeFieldList = val
       }
     },
-    onChangeInfo(hasChange) {
-      this.changeTableInfo = hasChange
-    },
     getFieldsList() {
       if (this.currentTable.streamisDataSource && this.currentTable.streamisTableMetaId) {
         api
@@ -332,7 +333,7 @@ export default {
               this.fieldsList = datas
               this.tableDatas = [{}, ...datas]
               this.formData = res.streamisTableMeta
-              this.changeTableInfo = false
+              this.backData = JSON.stringify(res.streamisTableMeta)
               let streamisExtraInfo = res.streamisExtraInfo || []
               this.streamisExtraInfo = streamisExtraInfo
               this.extraUisName = this.getExtraUiName()

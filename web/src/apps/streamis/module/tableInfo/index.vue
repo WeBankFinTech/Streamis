@@ -113,14 +113,13 @@ export default {
   watch: {
     formData: {
       handler() {
-        this.tableInfo = this.formData
+        if (this.formData) {
+          this.tableInfo = this.formData
+        }
       },
     },
     tableInfo: {
       handler(n) {
-        let a = JSON.stringify(this.formData)
-        let b = JSON.stringify(n)
-        this.$emit('change', a !== b , n)
         this.$emit('update:formData', n) // 更新
       },
       deep: true
