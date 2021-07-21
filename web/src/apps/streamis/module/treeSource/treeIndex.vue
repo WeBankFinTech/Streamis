@@ -158,7 +158,7 @@ export default {
           if (this.expands) {
             let dbnode = this.tableList.find(item => item.name === this.expands.db)
             if (dbnode) {
-              this.loadDBTable(dbnode, dbnode)
+              this.loadDBTable(dbnode, true)
             }
           } else {
             // 切换DB，重置
@@ -167,7 +167,7 @@ export default {
         }
       })
     },
-    loadDBTable(item, db) {
+    loadDBTable(item, open) {
       //发送请求 获取二级菜单
       const params = {
         //集群的id 默认进来选中哪个集群就传哪个集群
@@ -175,6 +175,7 @@ export default {
         system: 'streamis',
         dataBase: item.name
       }
+      this.openNode[item._id] = !this.openNode[item._id]
       if (item.children && item.children.length) return
       if (this.isPending) {
         return this.$Message.warning(
@@ -197,13 +198,13 @@ export default {
             ...table
           }
         })
-        if (db) {
+        if (open) {
           let tb = temArray.find(item => item.name === this.expands.table)
           if (tb) {
             this.toggleTB(tb, true)
             tb.active = true
           }
-          this.openNode[db._id] = true
+          this.openNode[item._id] = true
         }
         this.$set(item, 'children', temArray)
         this.tableList = [...this.tableList]
