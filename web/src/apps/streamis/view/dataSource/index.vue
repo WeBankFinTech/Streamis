@@ -194,7 +194,7 @@ export default {
       this.formData.nodeName = this.dataBase.dataBase
       this.formData.name = this.currentTable.name
       this.formData.tags = this.formData.tags || ''
-      this.formData.linkisDatasourceName = this.node ? this.node.type : ''
+      this.formData.linkisDatasourceName = this.node ? this.node.type.split('.').pop() : ''
       let extraInfo = []
       if (this.streamisExtraInfo[0] && this.streamisExtraInfo[0].id) {
         extraInfo = [{
@@ -202,7 +202,7 @@ export default {
           key: this.extraUis.key,
           value: this.extraUisName,
           streamisTableMetaId: this.currentTable.streamisTableMetaId
-        }]                        
+        }]
       } else {
         extraInfo = [{
           key: this.extraUis.key,
