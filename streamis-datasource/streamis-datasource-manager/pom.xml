@@ -24,7 +24,13 @@
         <dependency>
             <groupId>com.webank.wedatasphere.linkis</groupId>
             <artifactId>linkis-datasource-client</artifactId>
-            <version>1.0.0-RC1</version>
+            <version>${linkis.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.webank.wedatasphere.linkis</groupId>
+                    <artifactId>linkis-rpc</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
