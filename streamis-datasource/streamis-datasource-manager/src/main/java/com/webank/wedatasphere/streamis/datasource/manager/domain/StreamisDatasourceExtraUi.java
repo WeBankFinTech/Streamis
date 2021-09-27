@@ -24,6 +24,8 @@ public class StreamisDatasourceExtraUi extends Model<StreamisDatasourceExtraUi> 
     private Integer id;
     @TableField("datasource_type")
     private String datasourceType;
+
+    @TableField(value="`key`")
     private String key;
     private String description;
     @TableField("description_en")

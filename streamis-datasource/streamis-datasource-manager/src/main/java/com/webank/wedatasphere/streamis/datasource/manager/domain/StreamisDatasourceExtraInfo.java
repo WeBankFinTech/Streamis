@@ -23,6 +23,8 @@ public class StreamisDatasourceExtraInfo extends Model<StreamisDatasourceExtraIn
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
+
+    @TableField(value="`key`")
     private String key;
     private String value;
     @TableField("streamis_table_meta_id")
@@ -65,6 +67,7 @@ public class StreamisDatasourceExtraInfo extends Model<StreamisDatasourceExtraIn
     protected Serializable pkVal() {
         return this.id;
     }
+
 
     @Override
     public String toString() {

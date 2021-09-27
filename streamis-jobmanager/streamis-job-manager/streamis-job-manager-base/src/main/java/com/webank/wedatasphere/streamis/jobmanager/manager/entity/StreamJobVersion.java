@@ -9,7 +9,7 @@ public class StreamJobVersion {
     private String version;
     private String programArguments;
     private String bmlVersion;
-    private Long bmlId;
+    private String bmlId;
 
     public Long getId() {
         return id;
@@ -51,11 +51,11 @@ public class StreamJobVersion {
         this.bmlVersion = bmlVersion;
     }
 
-    public Long getBmlId() {
+    public String getBmlId() {
         return bmlId;
     }
 
-    public void setBmlId(Long bmlId) {
+    public void setBmlId(String bmlId) {
         this.bmlId = bmlId;
     }
 }
