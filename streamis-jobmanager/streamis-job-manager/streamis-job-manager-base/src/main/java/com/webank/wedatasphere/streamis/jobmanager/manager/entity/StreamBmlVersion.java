@@ -9,6 +9,7 @@ public class StreamBmlVersion {
     private String version;
     private String storagePath;
     private String attribute;
+    private String resourceId;
 
     public Long getId() {
         return id;
@@ -49,4 +50,13 @@ public class StreamBmlVersion {
     public void setAttribute(String attribute) {
         this.attribute = attribute;
     }
+
+    public String getResourceId() {
+        return resourceId;
+    }
+
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
+    }
+
 }
