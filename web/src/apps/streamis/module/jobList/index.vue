@@ -24,25 +24,7 @@
                   :value="item"
                   :key="index"
                 >
-                  {{ $t("message.streamis.jobStatus." + item) }}
-                </Option>
-              </Select>
-            </FormItem>
-            <FormItem
-              :label="$t('message.streamis.formItems.jobCreator')"
-              :label-width="120"
-            >
-              <Select v-model="query.jobCreator" class="select">
-                <Option
-                  v-for="(item, index) in jobCreatorOptions"
-                  :value="item"
-                  :key="index"
-                >
-                  {{
-                    item === "all"
-                      ? $t("message.streamis.jobStatus." + item)
-                      : item
-                  }}
+                  {{ $t('message.streamis.jobStatus.' + item) }}
                 </Option>
               </Select>
             </FormItem>
@@ -53,19 +35,35 @@
                 @click="handleQuery()"
                 style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;"
               >
-                {{ $t("message.streamis.formItems.queryBtn") }}
+                {{ $t('message.streamis.formItems.queryBtn') }}
               </Button>
             </FormItem>
           </Form>
           <Table :columns="columns" :data="tableDatas" :loading="loading">
             <template slot-scope="{ row, index }" slot="jobName">
+              <div
+                class="jobName"
+                v-show="index === 0"
+                @click="handleUpload()"
+                v-if="false"
+              >
+                <Icon type="md-add" class="upload" />
+                <span>{{
+                  $t('message.streamis.jobListTableColumns.upload')
+                }}</span>
+              </div>
               <div class="jobName" v-show="index === 0">
-                <Upload action="/api/rest_j/v1/streamis/streamJobManager/job/upload">
+                <Upload
+                  action="/api/rest_j/v1/streamis/streamJobManager/job/upload"
+                  :on-success="jarUploadSuccess"
+                  :on-error="jarUploadError"
+                  :show-upload-list="false"
+                >
                   <Icon type="md-add" class="upload" />
                   <span>{{
-                    $t("message.streamis.jobListTableColumns.upload")
-                  }}</span>
-                </Upload>
+                    $t('message.streamis.jobListTableColumns.upload')
+                  }}</span></Upload
+                >
               </div>
               <div class="jobName" v-show="index !== 0">
                 <Dropdown transfer @on-click="name => handleRouter(row, name)">
@@ -76,7 +74,7 @@
                       :name="item"
                       :key="index"
                     >
-                      {{ $t("message.streamis.jobMoudleRouter." + item) }}
+                      {{ $t('message.streamis.jobMoudleRouter.' + item) }}
                     </DropdownItem>
                   </DropdownMenu>
                 </Dropdown>
@@ -99,31 +97,34 @@
                 <Button
                   type="primary"
                   v-show="row.taskStatus !== 5"
+                  :loading="buttonLoading && choosedRowId === row.jobId"
                   style="width:60px;height:22px;background:#008000;margin-right: 5px"
+                  :style="{ fontSize: buttonLoading && choosedRowId === row.jobId ? '10px' : '14px' }"
                   @click="handleAction(row)"
                 >
-                  {{ $t("message.streamis.formItems.startBtn") }}
+                  {{ $t('message.streamis.formItems.startBtn') }}
                 </Button>
                 <Button
                   type="primary"
                   v-show="row.taskStatus === 5"
-                  style="width:60px;height:22px;background:#ff0000;margin-right: 5px"
+                  :loading="buttonLoading && choosedRowId === row.jobId"
+                  style="width:60px;height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
+                  :style="{ fontSize: buttonLoading&& choosedRowId === row.jobId ? '10px' : '14px' }"
                   @click="handleAction(row)"
                 >
-                  {{ $t("message.streamis.formItems.stopBtn") }}
+                  {{ $t('message.streamis.formItems.stopBtn') }}
                 </Button>
                 <Button
                   type="primary"
                   @click="handleRouter(row, 'jobConfig')"
                   style="width:60px;height:22px;background:rgba(22, 155, 213, 1);margin-right: 5px;"
                 >
-                  {{ $t("message.streamis.formItems.configBtn") }}
+                  {{ $t('message.streamis.formItems.configBtn') }}
                 </Button>
                 <br />
                 <Button
                   type="primary"
                   v-show="row.taskStatus !== 'running'"
-                  @click="handleAction(row)"
                   style="width:125px;height:24px;background:#008000;margin-right: 5px;margin-top:2px;"
                 >
                   checkpoint
@@ -144,267 +145,320 @@
         </div>
       </div>
     </titleCard>
-    <versionDetail :visible="modalVisible" :datas="versionDatas" />
+    <versionDetail
+      :visible="modalVisible"
+      :datas="versionDatas"
+      @modalCancel="modalCancel"
+    />
+    <uploadJobJar
+      :visible="uploadVisible"
+      @jarModalCancel="jarModalCancel"
+      @jarUploadSuccess="jarUploadSuccess"
+    />
   </div>
 </template>
 <script>
-import api from "@/common/service/api";
-import titleCard from "@/apps/streamis/components/titleCard";
-import versionDetail from "@/apps/streamis/module/versionDetail";
-import { jobStatuses } from "@/apps/streamis/common/common";
+import api from '@/common/service/api'
+import titleCard from '@/apps/streamis/components/titleCard'
+import versionDetail from '@/apps/streamis/module/versionDetail'
+import uploadJobJar from '@/apps/streamis/module/uploadJobJar'
+import { jobStatuses } from '@/apps/streamis/common/common'
+
+/**
+ * 渲染特殊表头
+ */
 function renderSpecialHeader(h, params) {
-  return h("div", [
-    h("strong", params.column.title),
+  return h('div', [
+    h('strong', params.column.title),
     h(
-      "span",
+      'span',
       {
         style: {
-          color: "red"
+          color: 'red'
         }
       },
-      "*"
+      '*'
     )
-  ]);
+  ])
 }
 
 export default {
-  components: { titleCard, versionDetail },
+  components: { titleCard, versionDetail, uploadJobJar },
   data() {
     return {
       query: {
-        jobName: "",
-        jobStatus: "all",
-        jobCreator: "all"
+        jobName: '',
+        jobStatus: 'all',
       },
-      jobStatus: ["all"].concat(jobStatuses.map(item => item.name)),
-      jobCreatorOptions: ["all"],
+      jobStatus: ['all'].concat(jobStatuses.map(item => item.name)),
 
       tableDatas: [{}],
       columns: [
         {
-          title: this.$t("message.streamis.jobListTableColumns.jobName"),
-          key: "jobName",
+          title: this.$t('message.streamis.jobListTableColumns.jobName'),
+          key: 'jobName',
           renderHeader: renderSpecialHeader,
-          slot: "jobName"
+          slot: 'jobName'
         },
         {
-          title: this.$t("message.streamis.jobListTableColumns.taskStatus"),
-          key: "taskStatus",
+          title: this.$t('message.streamis.jobListTableColumns.taskStatus'),
+          key: 'taskStatus',
           renderHeader: renderSpecialHeader,
           render: (h, params) => {
             const hitStatus = jobStatuses.find(
               item => item.code === params.row.taskStatus
-            );
+            )
             if (hitStatus) {
-              return h("div", [
+              return h('div', [
                 h(
-                  "strong",
+                  'strong',
                   {
                     style: {
                       color: hitStatus.color
                     }
                   },
-                  this.$t("message.streamis.jobStatus." + hitStatus.name)
+                  this.$t('message.streamis.jobStatus.' + hitStatus.name)
                 )
-              ]);
+              ])
             }
           }
         },
         {
           title: this.$t(
-            "message.streamis.jobListTableColumns.lastReleaseTime"
+            'message.streamis.jobListTableColumns.lastReleaseTime'
           ),
-          key: "lastReleaseTime",
+          key: 'lastReleaseTime',
           renderHeader: renderSpecialHeader
         },
         {
-          title: this.$t("message.streamis.jobListTableColumns.label"),
-          key: "label",
+          title: this.$t('message.streamis.jobListTableColumns.label'),
+          key: 'label',
           renderHeader: renderSpecialHeader,
           render: (h, params) => {
             return h(
-              "span",
+              'span',
               {
                 style: {
                   background:
-                    params.index === 0 ? "fff" : "rgba(204, 204, 255, 1)",
-                  display: "inline-block",
-                  padding: "2px"
+                    params.index === 0 ? 'fff' : 'rgba(204, 204, 255, 1)',
+                  display: 'inline-block',
+                  padding: '2px'
                 }
               },
               params.row.label
-            );
+            )
           }
         },
         {
-          title: this.$t("message.streamis.jobListTableColumns.version"),
-          key: "version",
-          slot: "version"
+          title: this.$t('message.streamis.jobListTableColumns.version'),
+          key: 'version',
+          slot: 'version'
         },
         {
-          title: this.$t("message.streamis.jobListTableColumns.lastRelease"),
-          key: "lastRelease",
+          title: this.$t('message.streamis.jobListTableColumns.lastRelease'),
+          key: 'lastRelease',
           renderHeader: renderSpecialHeader
         },
         {
-          title: this.$t("message.streamis.jobListTableColumns.description"),
-          key: "description"
+          title: this.$t('message.streamis.jobListTableColumns.description'),
+          key: 'description'
         },
         {
-          title: this.$t("message.streamis.jobListTableColumns.operation"),
-          key: "operation",
-          slot: "operation"
+          title: this.$t('message.streamis.jobListTableColumns.operation'),
+          key: 'operation',
+          slot: 'operation'
         }
       ],
       jobMoudleRouter: [
-        "paramsConfiguration",
-        "alertConfiguration",
-        "runningHistory",
-        "runningLogs"
+        'paramsConfiguration',
+        'alertConfiguration',
+        'runningHistory',
+        'runningLogs'
       ],
       pageData: {
         total: 0,
         current: 1,
-        pageSize: 20
+        pageSize: 10
       },
       loading: false,
+      buttonLoading: false,
+      choosedRowId: '',
       modalVisible: false,
-      versionDatas: []
-    };
+      versionDatas: [],
+      uploadVisible: false
+    }
   },
   mounted() {
-    this.getJobList();
+    this.getJobList()
   },
   methods: {
     getJobList() {
       if (this.loading) {
-        return;
+        return
       }
-      this.loading = true;
-      const { current, pageSize } = this.pageData;
-      const params = { projectId: 1, pageNow: current, pageSize };
-      const { jobName, jobStatus, jobCreator } = this.query;
+      this.loading = true
+      const { current, pageSize } = this.pageData
+      const params = { projectId: 1, pageNow: current, pageSize }
+      const { jobName, jobStatus } = this.query
       if (jobName) {
-        params.jobName = jobName;
+        params.jobName = jobName
       }
-      if (jobStatus !== "all") {
-        const hitStatus = jobStatuses.find(item => item.name === jobStatus);
-        params.jobStatus = hitStatus.code;
-      }
-      if (jobCreator !== "all") {
-        params.jobCreator = jobCreator;
+      if (jobStatus !== 'all') {
+        const hitStatus = jobStatuses.find(item => item.name === jobStatus)
+        params.jobStatus = hitStatus.code
       }
 
       const queries = Object.entries(params)
         .filter(item => !!item[1])
-        .map(item => item.join("="))
-        .join("&");
+        .map(item => item.join('='))
+        .join('&')
       api
-        .fetch("streamis/streamJobManager/job/list?" + queries, "get")
+        .fetch('streamis/streamJobManager/job/list?' + queries, 'get')
         .then(res => {
-          console.log(res);
+          console.log(res)
           if (res) {
-            const datas = res.tasks || [];
-            datas.unshift({});
-            this.tableDatas = datas;
-            this.pageData.total = parseInt(res.totalPage);
-            this.loading = false;
+            const datas = res.tasks || []
+            datas.unshift({})
+            this.tableDatas = datas
+            this.pageData.total = parseInt(res.totalPage)
+            this.loading = false
           }
         })
         .catch(e => {
-          console.log(e);
-          this.loading = false;
-        });
+          console.log(e)
+          this.loading = false
+        })
     },
     handleNameQuery() {
-      console.log(this.query.jobName);
+      console.log(this.query.jobName)
     },
     handleQuery() {
-      this.pageData.current = 1;
-      this.getJobList();
+      this.pageData.current = 1
+      this.getJobList()
+    },
+    handleUpload() {
+      this.uploadVisible = true
     },
     handleAction(data) {
-      console.log(data);
-      const { taskStatus, jobId } = data;
+      console.log(data)
+      const { taskStatus, jobId } = data
       const path =
         taskStatus === 5
-          ? "streamis/streamJobManager/job/stop?jobId=" + jobId
-          : "streamis/streamJobManager/job/execute";
-      const second = taskStatus === 5 ? "get" : { jobId };
+          ? 'streamis/streamJobManager/job/stop?jobId=' + jobId
+          : 'streamis/streamJobManager/job/execute'
+      const second = taskStatus === 5 ? 'get' : { jobId }
+      this.buttonLoading = true
+      this.choosedRowId = jobId
       api
         .fetch(path, second)
         .then(res => {
-          console.log(res);
+          console.log(res)
+          this.buttonLoading = false
+          this.choosedRowId = ''
           if (res) {
-            this.loading = false;
-            this.getJobList();
+            this.loading = false
+            this.getJobList()
           }
         })
         .catch(e => {
-          console.log(e);
-          this.loading = false;
-        });
+          console.log(e)
+          this.loading = false
+          this.buttonLoading = false
+          this.choosedRowId = ''
+        })
     },
     handleConfig(data) {
-      console.log(data);
+      console.log(data)
     },
     handleRouter(rowData, moduleName) {
-      console.log(rowData);
-      console.log(moduleName);
+      console.log(rowData)
+      console.log(moduleName)
       const moduleMap = {
-        paramsConfiguration: "jobConfig",
-        alertConfiguration: "jobConfig",
-        runningHistory: "jobHistory",
-        runningLogs: "jobHistory"
-      };
+        paramsConfiguration: 'jobConfig',
+        alertConfiguration: 'jobConfig',
+        runningHistory: 'jobHistory',
+        runningLogs: 'jobHistory'
+      }
       this.$router.push({
-        name: "JobDetail",
+        name: 'JobDetail',
         params: {
           id: rowData.jobId,
           module: moduleName
             ? moduleMap[moduleName] || moduleName
-            : "jobSummary",
+            : 'jobSummary',
           name: rowData.jobName,
-          version: rowData.version
+          version: rowData.version,
+          taskStatus: rowData.taskStatus
         }
-      });
+      })
     },
     handlePageChange(page) {
-      console.log(page);
-      this.pageData.current = page;
-      this.getJobList();
+      console.log(page)
+      this.pageData.current = page
+      this.getJobList()
     },
     handlePageSizeChange(pageSize) {
-      console.log(pageSize);
-      this.pageData.pageSize = pageSize;
-      this.pageData.current = 1;
-      this.getJobList();
+      console.log(pageSize)
+      this.pageData.pageSize = pageSize
+      this.pageData.current = 1
+      this.getJobList()
     },
     versionDetail(data) {
-      console.log(data);
-      this.loading = true;
+      console.log(data)
+      this.loading = true
       api
         .fetch(
-          "streamis/streamJobManager/job/version?jobId=" +
+          'streamis/streamJobManager/job/version?jobId=' +
             data.jobId +
-            "&version=" +
+            '&version=' +
             data.version,
-          "get"
+          'get'
         )
         .then(res => {
-          console.log(res);
+          console.log(res)
           if (res) {
-            this.loading = false;
-            this.modalVisible = true;
+            this.loading = false
+            this.modalVisible = true
+            this.versionDatas = [res.detail]
+            // this.versionDatas = [
+            //   {
+            //     id: 1,
+            //     version: "v00001",
+            //     description: "test",
+            //     releaseTime: "2021-03-01 00:00:00",
+            //     createBy: "johnnwang",
+            //     projectId: 1,
+            //     bmlId: 1111,
+            //     bmlVersion: "v000001",
+            //     dssEnv: ""
+            //   }
+            // ];
           }
         })
         .catch(e => {
-          console.log(e);
-          this.loading = false;
-        });
+          console.log(e)
+          this.loading = false
+        })
+    },
+    modalCancel() {
+      this.modalVisible = false
+    },
+    jarModalCancel() {
+      this.uploadVisible = false
+    },
+    jarUploadSuccess(res) {
+      if (res && res.status !== 0 && res.message) {
+        this.$Message.error(res.message)
+      }
+      this.getJobList()
+    },
+    jarUploadError(err, res) {
+      if (res && res.status !== 0 && res.message) {
+        this.$Message.error(res.message)
+      }
     }
   }
-};
+}
 </script>
 <style lang="scss" scoped>
 .select {

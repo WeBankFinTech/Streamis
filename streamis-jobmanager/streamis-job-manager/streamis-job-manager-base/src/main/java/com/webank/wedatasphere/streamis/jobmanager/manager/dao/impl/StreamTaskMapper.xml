@@ -31,7 +31,7 @@
         <result column="err_desc" property="errDesc" jdbcType="VARCHAR"/>
         <result column="submit_user" property="submitUser" jdbcType="VARCHAR"/>
         <result column="linkis_job_id" property="linkisJobId" jdbcType="VARCHAR"/>
-        <result column="linkis_job_info" property="linkisJobInfo" jdbcType="TEXT"/>
+        <result column="linkis_job_info" property="linkisJobInfo" jdbcType="LONGVARCHAR"/>
     </resultMap>
 
     <sql id="StreamTask_Column">
