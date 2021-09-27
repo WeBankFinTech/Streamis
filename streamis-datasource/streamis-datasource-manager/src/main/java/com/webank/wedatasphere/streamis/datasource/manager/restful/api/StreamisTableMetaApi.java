@@ -21,12 +21,14 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.webank.wedatasphere.linkis.common.exception.ErrorException;
 import com.webank.wedatasphere.linkis.datasourcemanager.common.domain.DataSource;
 import com.webank.wedatasphere.linkis.datasourcemanager.common.domain.DataSourceType;
+import com.webank.wedatasphere.linkis.metadatamanager.common.domain.MetaColumnInfo;
 import com.webank.wedatasphere.streamis.datasource.manager.domain.*;
 import com.webank.wedatasphere.streamis.datasource.manager.service.*;
 import com.webank.wedatasphere.linkis.server.Message;
 import com.webank.wedatasphere.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.streamis.datasource.manager.client.LinkisDataSourceClient;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -38,6 +40,9 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 @Service
 public class StreamisTableMetaApi {
 
@@ -127,15 +132,26 @@ public class StreamisTableMetaApi {
             List<StreamisTableMeta> list = streamisTableMetaService.list(wrapper);
 
             for (String table : tables) {
-                for (StreamisTableMeta streamisTableMeta : list) {
+                if(CollectionUtils.isNotEmpty(list)){
                     tableVO = new StreamisDataSourceTableVO();
                     tableVO.setTableName(table);
-                    if(table.equals(streamisTableMeta.getTableName())){
-                        tableVO.setStreamisTableMetaId(streamisTableMeta.getId());
+                    for (StreamisTableMeta streamisTableMeta : list) {
+                        if(table.equals(streamisTableMeta.getTableName())){
+                            tableVO.setStreamisTableMetaId(streamisTableMeta.getId());
+                            tableVO.setStreamisDataSource(true);
+//                            tableList.add(tableVO);
+                            break;
+                        }
                     }
-                    tableVO.setStreamisDataSource(table.equals(streamisTableMeta.getTableName()));
+                    tableList.add(tableVO);
+
+                }else {
+                    tableVO = new StreamisDataSourceTableVO();
+                    tableVO.setTableName(table);
+                    tableVO.setStreamisDataSource(false);
                     tableList.add(tableVO);
                 }
+
 
             }
             message = Message.ok().data("tables",tableList);
@@ -156,7 +172,7 @@ public class StreamisTableMetaApi {
             String dataBase = json.get("dataBase");
             String table = json.get("table");
             String dataSourceType = json.get("dataSourceType");
-            List<Map<String, Object>> columns =null;
+            List<MetaColumnInfo> columns =null;
             if(!"kafka".equalsIgnoreCase(dataSourceType)){
                 columns = queryColumnsByTable(system, dataSourceTypeId, dataBase, table, userName);
             }
@@ -180,8 +196,18 @@ public class StreamisTableMetaApi {
             streamisDatasourceFieldsWrapper.eq("streamis_table_meta_id",streamisTableMetaId);
             List<StreamisDatasourceFields> streamisDatasourceFields = streamisDatasourceFieldsService.list(streamisDatasourceFieldsWrapper);
 
-            //查询一下
-            message=Message.ok().data("streamisTableMeta",streamisTableMeta).data("streamisDatasourceFields",streamisDatasourceFields);
+            QueryWrapper<StreamisDatasourceExtraInfo> datasourceExtraInfoQueryWrapper = new QueryWrapper<>();
+
+            datasourceExtraInfoQueryWrapper.eq("streamis_table_meta_id",streamisTableMetaId);
+
+            List<StreamisDatasourceExtraInfo> streamisExtraInfo = streamisDatasourceExtraInfoService.list(datasourceExtraInfoQueryWrapper);
+
+            QueryWrapper<StreamisDatasourceAuthority> streamisDatasourceAuthorityQueryWrapper = new QueryWrapper<>();
+            streamisDatasourceAuthorityQueryWrapper.eq("streamis_table_meta_id",streamisTableMetaId);
+
+            StreamisDatasourceAuthority streamisDatasourceAuthorityInfo = streamisDatasourceAuthorityService.getOne(streamisDatasourceAuthorityQueryWrapper);
+
+            message=Message.ok().data("streamisTableMeta",streamisTableMeta).data("streamisDatasourceFields",streamisDatasourceFields).data("streamisExtraInfo",streamisExtraInfo).data("streamisDatasourceAuthorityInfo",streamisDatasourceAuthorityInfo);
 
         }catch (Throwable e){
             logger.error("Failed to get streamisTableMetaInfo",e);
@@ -276,6 +302,118 @@ public class StreamisTableMetaApi {
     }
 
 
+    /**
+     *  保存数据源，新增，修改，删除字段等
+     * @param req
+     * @param json
+     * @return
+     * @throws ErrorException
+     */
+    public Response saveStreamisTableMeta( HttpServletRequest req,  JsonNode json) throws ErrorException {
+        Message message;
+        try {
+            String userName = SecurityFilter.getLoginUsername(req);
+//            String authorityId = json.get("authorityId").asText();
+            StreamisDatasourceAuthority streamisDatasourceAuthority = mapper.readValue(json.get("streamisDatasourceAuthority"), StreamisDatasourceAuthority.class);
+            StreamisTableMeta streamisTableMeta = mapper.readValue(json.get("streamisTableMeta"), StreamisTableMeta.class);
+            List<StreamisDatasourceFields> fieldsList = mapper.readValue(json.get("streamisTableFields"), new TypeReference<List<StreamisDatasourceFields>>() {
+            });
+            List<StreamisDatasourceExtraInfo> extraInfoList = mapper.readValue(json.get("streamisExtraInfo"), new TypeReference<List<StreamisDatasourceExtraInfo>>() {
+            });
+
+            Long streamisTableMetaId =0L;
+            // add streamisTableMeta
+            if(null == streamisTableMeta.getId()){
+                //第一次保存linkisDataSource数据源
+                streamisTableMeta.setCreateBy(userName);
+                boolean result = streamisTableMetaService.save(streamisTableMeta);
+                if(!result){
+                    throw new ErrorException(30003, "Sorry, failed to add streamis data source(抱歉，添加streamis数据源失败_");
+                }
+                streamisTableMetaId = streamisTableMeta.getId();
+
+                //add StreamisDatasourceFields
+
+                if(CollectionUtils.isNotEmpty(fieldsList)){
+                    fieldsList.forEach(obj ->obj.setStreamisTableMetaId(streamisTableMeta.getId()));
+                    result = streamisDatasourceFieldsService.saveBatch(fieldsList);
+                    if(!result){
+                        throw new ErrorException(30013, "Sorry, failed to add StreamisTableFields table field information(抱歉，添加StreamisTableFields表字段信息失败)");
+                    }
+                }
+
+                streamisDatasourceAuthority.setAuthorityScope(streamisTableMeta.getScope());
+                streamisDatasourceAuthority.setStreamisTableMetaId(streamisTableMetaId);
+                if(StringUtils.isBlank(streamisDatasourceAuthority.getGrantUser())){
+                    streamisDatasourceAuthority.setGrantUser("*");
+                }
+//                streamisDatasourceAuthority.setAuthorityId(authorityId);
+//                streamisDatasourceAuthority.setGrantUser("*");
+                result = streamisDatasourceAuthorityService.save(streamisDatasourceAuthority);
+                if(!result){
+                    throw new ErrorException(30014, " sorry, add streamisDatasourceAuthority information failure (抱歉，添加streamisDatasourceAuthority信息失败)");
+                }
+
+                List<StreamisDatasourceExtraInfo> insertList = extraInfoList.stream().filter(obj -> obj.getId() == null).collect(Collectors.toList());
+
+                if(CollectionUtils.isNotEmpty(insertList)){
+                    extraInfoList.forEach(obj-> obj.setStreamisTableMetaId(streamisTableMeta.getId()));
+                    result = streamisDatasourceExtraInfoService.saveBatch(extraInfoList);
+                    if(!result){
+                        throw new ErrorException(30019, " sorry, add extraInfo information failure");
+                    }
+                }
+
+            }else { //update steamisTableMeta Info
+                boolean b = streamisTableMetaService.updateById(streamisTableMeta);
+                streamisTableMetaId = streamisTableMeta.getId();
+                if(!b){
+                    throw new ErrorException(30004, "sorry，Failed to update streamis data source information(更新streamis数据源信息失败)");
+                }
+
+                //delete streamis fields
+                List<Long> deleteFields = deleteStreamisFields(fieldsList, streamisTableMetaId);
+                if(CollectionUtils.isNotEmpty(deleteFields)){
+                    b = streamisDatasourceFieldsService.removeByIds(deleteFields);
+                    if(!b){
+                        throw new ErrorException(30007, "sorry，Failed to delete StreamisTableFields information(删除StreamisTableFields表字段信息失败)");
+                    }
+                }
+                //update streamis fields
+                List<StreamisDatasourceFields> streamisDatasourceFields = updateStreamisFields(fieldsList, streamisTableMetaId);
+                if(CollectionUtils.isNotEmpty(streamisDatasourceFields)){
+                    b = streamisDatasourceFieldsService.updateBatchById(streamisDatasourceFields);
+                    if(!b){
+                        throw new ErrorException(30006, "Failed to update StreamisTableFields information(抱歉，更新StreamisTableFields表字段信息失败)");
+                    }
+                }
+                //insert streamis fields
+                List<StreamisDatasourceFields> insertStreamisFields = insertStreamisFields(fieldsList,streamisTableMetaId);
+                if(CollectionUtils.isNotEmpty(insertStreamisFields)){
+                    b = streamisDatasourceFieldsService.saveBatch(insertStreamisFields);
+                    if(!b){
+                        throw new ErrorException(30005, "Failed to add StreamisTableFields information(添加StreamisTableFields表字段信息失败)");
+                    }
+                }
+                List<StreamisDatasourceExtraInfo> updateExtraInfoList = updateExtraInfo(extraInfoList, streamisTableMetaId);
+                if(CollectionUtils.isNotEmpty(updateExtraInfoList)){
+                    b = streamisDatasourceExtraInfoService.updateBatchById(updateExtraInfoList);
+                    if(!b){
+                        throw new ErrorException(30021, "sorry,failed to update streamisExtraInfo");
+                    }
+                }
+
+            }
+            //add to StreamisDatasourceAuthority
+            message = Message.ok().data("streamisTableMetaId",streamisTableMetaId);
+        } catch (Exception e) {
+            logger.error("Failed to add StreamisTableMeta: ", e);
+            throw new ErrorException(30003, e.getMessage());
+        }
+        return  Message.messageToResponse(message);
+    }
+
+
     public Response updateStreamisTableMeta( HttpServletRequest req,  JsonNode json) throws ErrorException {
         Message message;
         try {
@@ -310,6 +448,7 @@ public class StreamisTableMetaApi {
                 UpdateWrapper<StreamisDatasourceExtraInfo> wrapper = null;
                 boolean result ;
                 for (StreamisDatasourceExtraInfo extraInfo : extraInfoList) {
+                    wrapper = new UpdateWrapper<>();
                     wrapper.eq("key",extraInfo.getKey()).eq("streamis_table_meta_id",streamisTableMetaId).set("value",extraInfo.getValue());
                     result = streamisDatasourceExtraInfoService.update(null, wrapper);
                     if(!result){
@@ -446,11 +585,68 @@ public class StreamisTableMetaApi {
         return LinkisDataSourceClient.queryTablesByDataBase(system,dataSourceId,dataBase ,user).tables();
     }
 
-    public List<Map<String, Object>> queryColumnsByTable(String system, Long dataSourceId , String dataBase,String table,String user){
-        return  LinkisDataSourceClient.queryColumnsByTable(system, dataSourceId, dataBase, table, user).columns();
+    public List<MetaColumnInfo> queryColumnsByTable(String system, Long dataSourceId , String dataBase, String table, String user){
+        return  LinkisDataSourceClient.queryColumnsByTable(system, dataSourceId, dataBase, table, user).getAllColumns();
     }
 
 
+
+    public List<Long> deleteStreamisFields(List<StreamisDatasourceFields> fieldsList,Long streamisTableMetaId){
+        QueryWrapper<StreamisDatasourceFields> streamisDatasourceFieldsWrapper = new QueryWrapper<>();
+        streamisDatasourceFieldsWrapper.eq("streamis_table_meta_id",streamisTableMetaId);
+        List<StreamisDatasourceFields> streamisDatasourceFields = streamisDatasourceFieldsService.list(streamisDatasourceFieldsWrapper);
+        List<Long> existsFields = streamisDatasourceFields.stream().map(StreamisDatasourceFields::getId).collect(Collectors.toList());
+        List<Long> targetFileds = fieldsList.stream().filter(obj -> obj.getId() != null).map(StreamisDatasourceFields::getId).collect(Collectors.toList());
+        //筛选出需要删除的字段id
+         existsFields.removeAll(targetFileds);
+         return existsFields;
+    }
+    public List<StreamisDatasourceFields> updateStreamisFields(List<StreamisDatasourceFields> fieldsList,Long streamisTableMetaId){
+        List<StreamisDatasourceFields> updateList = new ArrayList<>();
+        QueryWrapper<StreamisDatasourceFields> streamisDatasourceFieldsWrapper = new QueryWrapper<>();
+        streamisDatasourceFieldsWrapper.eq("streamis_table_meta_id",streamisTableMetaId);
+        List<StreamisDatasourceFields> streamisDatasourceFields = streamisDatasourceFieldsService.list(streamisDatasourceFieldsWrapper);
+        //过滤新增的记录
+        List<StreamisDatasourceFields> filterList = fieldsList.stream().filter(obj -> obj.getId() != null).collect(Collectors.toList());
+        //与数据库中字段信息比对，如果存在值不相等，则页面有过修改，保存
+        for (StreamisDatasourceFields targetField : filterList) {
+            for (StreamisDatasourceFields savedField : streamisDatasourceFields) {
+                if(targetField.getId().equals(savedField.getId())){
+                    if(!targetField.equals(savedField)){
+                        updateList.add(targetField);
+                    }
+                }
+            }
+        }
+        return updateList;
+    }
+    public List<StreamisDatasourceFields> insertStreamisFields(List<StreamisDatasourceFields> fieldsList,Long streamisTableMetaId){
+
+        List<StreamisDatasourceFields> collect = fieldsList.stream().filter(obj -> obj.getId() == null).collect(Collectors.toList());
+        collect.forEach(obj->obj.setStreamisTableMetaId(streamisTableMetaId));
+        return  collect;
+    }
+
+    public List<StreamisDatasourceExtraInfo> updateExtraInfo(List<StreamisDatasourceExtraInfo> extraInfoList,Long streamisTableMetaId){
+        List<StreamisDatasourceExtraInfo> updateList = new ArrayList<>();
+        QueryWrapper<StreamisDatasourceExtraInfo> wrapper = new QueryWrapper<>();
+        wrapper.eq("streamis_table_meta_id",streamisTableMetaId);
+        List<StreamisDatasourceExtraInfo> targetExtraInfoList = streamisDatasourceExtraInfoService.list(wrapper);
+        //过滤新增的记录
+        List<StreamisDatasourceExtraInfo> filterList = extraInfoList.stream().filter(obj -> obj.getId() != null).collect(Collectors.toList());
+        //与数据库中字段信息比对，如果存在值不相等，则页面有过修改，保存
+        for (StreamisDatasourceExtraInfo extraInfo : filterList) {
+            for (StreamisDatasourceExtraInfo targetExtraInfo : targetExtraInfoList) {
+                if(extraInfo.getId().equals(targetExtraInfo.getId())){
+                    if(!targetExtraInfo.equals(extraInfo)){
+                        updateList.add(extraInfo);
+                    }
+                }
+            }
+        }
+
+        return updateList;
+    }
 
 
 }

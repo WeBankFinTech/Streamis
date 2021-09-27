@@ -14,7 +14,8 @@ export default {
 
 <style lang="scss">
   .right-panel{
-      height: 532px;
+      // height: 532px;
+      height: 100%;
       border-left: 1px solid #AEAEAE;
       position: relative;
     .panel-content{
