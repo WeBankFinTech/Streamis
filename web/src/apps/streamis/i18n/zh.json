@@ -1,8 +1,10 @@
 {
   "message": {
     "streamis": {
+      "enterLinkis": "进入Linkis查看",
+      "operationSuccess": "操作成功",
       "routerName": {
-        "realTimeJobCenter": "实时应用中心",
+        "realTimeJobCenter": "实时生产中心",
         "scriptisRealTimeJob": "Scriptis实时任务",
         "VisualisRealTimeJob": "Visualis实时任务"
       },
@@ -33,7 +35,8 @@
         "stopBtn": "停止",
         "startBtn": "启动",
         "configBtn": "配置",
-        "saveBtn": "保存"
+        "saveBtn": "保存",
+        "updateBtn": "更新"
       },
       "jobListTableColumns":{
         "jobName": "作业名称",
@@ -139,6 +142,18 @@
                 "variable": "输入参数值"
             }
           }
+      },
+      "uploadJar": {
+        "entrypointClass": "主类",
+        "label": "标签",
+        "entrypointMainArgs": "参数",
+        "parallelism": "并行度",
+        "selectJar": "请选择Jar包",
+        "upload": "上传",
+        "choosedJar" : "选中的Jar包",
+        "jarError": "文件必须是Jar包",
+        "jarEmpty": "必须选择Jar包",
+        "jobNameEmpty": "作业名称不能为空"
       }
     }
   }

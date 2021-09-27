@@ -3,7 +3,7 @@
     <Row :gutter="80">
       <Col span="14">
         <div class="itemWrap">
-          <p>{{ $t("message.streamis.jobConfig.resourceConfig") }}</p>
+          <p>{{ $t('message.streamis.jobConfig.resourceConfig') }}</p>
           <div>
             <Form ref="resourceConfig">
               <Row :gutter="60">
@@ -78,7 +78,7 @@
           </div>
         </div>
         <div class="itemWrap">
-          <p>{{ $t("message.streamis.jobConfig.productionConfig") }}</p>
+          <p>{{ $t('message.streamis.jobConfig.productionConfig') }}</p>
           <div>
             <Form ref="productionConfig">
               <Row :gutter="60">
@@ -124,7 +124,7 @@
           </div>
         </div>
         <div class="itemWrap">
-          <p>{{ $t("message.streamis.jobConfig.flinkParameters") }}</p>
+          <p>{{ $t('message.streamis.jobConfig.flinkParameters') }}</p>
           <div>
             <Form ref="alertSetForm">
               <Row v-for="(item, index) in flinkParameters" :key="index">
@@ -181,7 +181,7 @@
       </Col>
       <Col span="10">
         <div class="itemWrap">
-          <p>{{ $t("message.streamis.jobConfig.alertSet") }}</p>
+          <p>{{ $t('message.streamis.jobConfig.alertSet') }}</p>
           <div>
             <Form ref="alertSetForm">
               <FormItem
@@ -254,7 +254,7 @@
           </div>
         </div>
         <div class="itemWrap">
-          <p>{{ $t("message.streamis.jobConfig.authoritySet") }}</p>
+          <p>{{ $t('message.streamis.jobConfig.authoritySet') }}</p>
           <div>
             <Form ref="authorityForm">
               <FormItem
@@ -303,50 +303,56 @@
         :loading="saveLoading"
         style="width:100px;height:40px;background:rgba(22, 155, 213, 1);"
       >
-        {{ $t("message.streamis.formItems.saveBtn") }}
+        {{
+          !hadSaved
+            ? $t('message.streamis.formItems.saveBtn')
+            : $t('message.streamis.formItems.updateBtn')
+        }}
       </Button>
     </div>
   </div>
 </template>
 <script>
-import api from "@/common/service/api";
+import api from '@/common/service/api'
+/**
+ * 重置表单数据
+ */
 function resetFormValue(vueThis, dataName, configs) {
   if (!configs) {
-    return;
+    return
   }
-  const newValues = {};
-  const keys = Object.keys(vueThis[dataName]);
-  const options = {};
+  const newValues = {}
+  const keys = Object.keys(vueThis[dataName])
+  const options = {}
   configs.forEach(item => {
-    const { key, value, valueLists, name } = item;
-    const temp = (key && key.replace(/\./g, "").toLowerCase()) || "";
-    const hit = keys.find(i => temp.endsWith(i.toLowerCase()));
-    let finalValue = value || value === 0 ? value : "";
+    const { key, value, valueLists, name } = item
+    const temp = (key && key.replace(/\./g, '').toLowerCase()) || ''
+    const hit = keys.find(i => temp.endsWith(i.toLowerCase()))
+    let finalValue =
+      name === '告警规则' ? [] : value || value === 0 ? value : ''
     if (valueLists) {
-      const ar = [];
+      const ar = []
       valueLists.forEach(option => {
         ar.push({
           value: option.value,
           title: option.value
-        });
-        if (name === "告警规则") {
-          finalValue = [];
-        }
+        })
         if (option.selected) {
-          if (name === "告警规则") {
-            finalValue.push(option.value);
+          if (name === '告警规则') {
+            finalValue.push(option.value)
           } else {
-            finalValue = option.value;
+            finalValue = option.value
           }
         }
-      });
-      options[hit + "Options"] = ar;
+      })
+      options[hit + 'Options'] = ar
     }
-    newValues[hit] = finalValue;
-  });
+    newValues[hit] = finalValue
+  })
 
-  vueThis[dataName] = newValues;
-  Object.assign(vueThis, options);
+  vueThis[dataName] = newValues
+  console.log(vueThis[dataName])
+  Object.assign(vueThis, options)
 }
 export default {
   data() {
@@ -354,153 +360,171 @@ export default {
       labelWidth: 80,
       labelWidth2: 140,
       resourceConfig: {
-        taskManagerNum: "",
-        jobManagerCPUs: "",
-        jobManagerMemory: "",
-        taskManagerCPUs: "",
-        taskManagerMemory: ""
+        taskManagerNum: '',
+        jobManagerCPUs: '',
+        jobManagerMemory: '',
+        taskManagerCPUs: '',
+        taskManagerMemory: ''
       },
       productionConfig: {
-        checkpointInterval: "",
-        rebootStrategy: ""
+        checkpointInterval: '',
+        rebootStrategy: ''
       },
       rebootStrategyOptions: [],
       flinkParameters: [[]],
       alertSet: {
         alertRule: [],
-        alertLeve: "",
-        alertUser: "",
-        alertFailureLevel: "",
-        alertFailureUser: ""
+        alertLeve: '',
+        alertUser: '',
+        alertFailureLevel: '',
+        alertFailureUser: ''
       },
       alertLeveOptions: [],
       alertFailureLevelOptions: [],
       alertRuleOptions: [],
       authoritySet: {
-        authorityAuthor: "",
-        authorityVisible: ""
+        authorityAuthor: '',
+        authorityVisible: ''
       },
       authorityVisibleOptions: [],
       authorityAuthorOptions: [],
       saveLoading: false,
-      fullTree: {}
-    };
+      fullTree: {},
+      hadSaved: false
+    }
   },
   mounted() {
-    this.getConfigs();
+    this.getConfigs()
   },
   methods: {
     getConfigs() {
       api
         .fetch(
-          "streamis/streamJobManager/config/view?jobId=" +
+          'streamis/streamJobManager/config/view?jobId=' +
             this.$route.params.id,
-          "get"
+          'get'
         )
         .then(res => {
-          console.log(res);
+          console.log(res)
           if (res && res.fullTree) {
-            const { fullTree } = res;
+            const { fullTree } = res
             const {
               resourceConfig,
               produceConfig,
               parameterConfig,
               alarmConfig,
               permissionConfig
-            } = fullTree;
-            this.fullTree = fullTree;
-            resetFormValue(this, "resourceConfig", resourceConfig);
-            resetFormValue(this, "productionConfig", produceConfig);
-            resetFormValue(this, "alertSet", alarmConfig);
-            resetFormValue(this, "authoritySet", permissionConfig);
+            } = fullTree
+            this.fullTree = fullTree
+            resetFormValue(this, 'resourceConfig', resourceConfig)
+            resetFormValue(this, 'productionConfig', produceConfig)
+            resetFormValue(this, 'alertSet', alarmConfig)
+            resetFormValue(this, 'authoritySet', permissionConfig)
             if (parameterConfig) {
-              const parameters = [];
+              const parameters = []
               parameterConfig.forEach(item => {
-                const { key, vlaue } = item;
-                parameters.push([key, vlaue]);
-              });
-              this.flinkParameters = parameters;
+                const { key, vlaue } = item
+                parameters.push([key, vlaue])
+              })
+              this.flinkParameters = parameters
             }
           }
         })
-        .catch(e => console.log(e));
+        .catch(e => console.log(e))
     },
     removeFlinkParameter(index) {
-      console.log(index);
-      const newParams = [...this.flinkParameters];
-      newParams.splice(index, 1);
-      this.flinkParameters = newParams;
+      console.log(index)
+      const newParams = [...this.flinkParameters]
+      newParams.splice(index, 1)
+      this.flinkParameters = newParams
     },
     addFlinkParameter() {
-      console.log("add");
-      const newParams = [...this.flinkParameters];
-      newParams.push([]);
-      this.flinkParameters = newParams;
+      console.log('add')
+      const newParams = [...this.flinkParameters]
+      newParams.push([])
+      this.flinkParameters = newParams
     },
     handleSaveConfig() {
       const map = {
-        resourceConfig: "resourceConfig",
-        productionConfig: "produceConfig",
-        flinkParameters: "parameterConfig",
-        alertSet: "alarmConfig",
-        authoritySet: "permissionConfig"
-      };
-      [
-        "resourceConfig",
-        "productionConfig",
-        "flinkParameters",
-        "alertSet",
-        "authoritySet"
+        resourceConfig: 'resourceConfig',
+        productionConfig: 'produceConfig',
+        flinkParameters: 'parameterConfig',
+        alertSet: 'alarmConfig',
+        authoritySet: 'permissionConfig'
+      }
+      ;[
+        'resourceConfig',
+        'productionConfig',
+        'flinkParameters',
+        'alertSet',
+        'authoritySet'
       ].forEach(name => {
-        const obj = this.fullTree[map[name]];
-        const values = this[name];
-        if (name === "flinkParameters") {
+        const obj = this.fullTree[map[name]]
+        const values = this[name]
+        if (name === 'flinkParameters') {
           if (values[0][0]) {
-            const params = [];
+            const params = []
             values.forEach(ar => {
               params.push({
                 key: ar[0],
                 name: ar[0],
                 value: ar[1]
-              });
-            });
-            this.fullTree.parameterConfig = params;
+              })
+            })
+            this.fullTree.parameterConfig = params
           } else {
-            this.fullTree.parameterConfig = null;
+            this.fullTree.parameterConfig = null
           }
-          return;
+          return
         }
-        const keys = Object.keys(values);
+        const keys = Object.keys(values)
         obj.forEach(item => {
-          const { key, valueLists } = item;
-          const temp = (key && key.replace(/\./g, "").toLowerCase()) || "";
-          const hit = keys.find(i => temp.endsWith(i.toLowerCase()));
-          const finalValue = values[hit];
-          item.value = Array.isArray(finalValue)? finalValue[0] : finalValue;
+          const { key, valueLists } = item
+          const temp = (key && key.replace(/\./g, '').toLowerCase()) || ''
+          const hit = keys.find(i => temp.endsWith(i.toLowerCase()))
+          const finalValue = values[hit]
+          item.value = Array.isArray(finalValue)
+            ? finalValue.join(',')
+            : finalValue
           if (valueLists) {
             valueLists.forEach(vl => {
               if (Array.isArray(finalValue)) {
-                vl.selected = finalValue.includes(vl.value);
+                vl.selected = finalValue.includes(vl.value)
               } else {
-                vl.selected = vl.value === finalValue;
+                vl.selected = vl.value === finalValue
               }
-            });
+            })
           }
-        });
-      });
-      console.log(this.fullTree);
+        })
+      })
+      console.log(this.fullTree)
+      this.saveLoading = true
       api
-        .fetch("streamis/streamJobManager/config/add", {
-          jobId: this.$route.params.id,
-          fullTree: this.fullTree
-        })
+        .fetch(
+          'streamis/streamJobManager/config/' +
+            (this.hadSaved ? 'update' : 'add'),
+          {
+            jobId: this.$route.params.id,
+            fullTree: this.fullTree
+          }
+        )
         .then(res => {
-          console.log(res);
+          this.saveLoading = false
+          console.log(res)
+          if (res.errorMsg) {
+            this.$Message.error(res.errorMsg.desc)
+          } else {
+            this.$Message.success(this.$t('message.streamis.operationSuccess'))
+            this.hadSaved = true
+          }
         })
-        .catch(e => console.log(e));
+        .catch(e => {
+          console.log(e)
+          this.saveLoading = false
+        })
     }
   }
-};
+}
 </script>
 <style lang="scss" scoped>
 .inputWrap {

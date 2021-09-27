@@ -33,6 +33,7 @@
         <result column="version" property="version" jdbcType="VARCHAR" />
         <result column="storage_path" property="storagePath" jdbcType="VARCHAR" />
         <result column="attribute" property="attribute" jdbcType="VARCHAR" />
+        <result column="resource_id" property="resourceId" jdbcType="VARCHAR" />
     </resultMap>
 
     <sql id="StreamBml_Column">
@@ -40,7 +41,7 @@
     </sql>
 
     <sql id="StreamBmlVersion_Column">
-        `id`,`bml_id`,`version`,`storage_path`,`attribute`
+        `id`,`bml_id`,`version`,`storage_path`,`attribute`,`resource_id`
     </sql>
 
     <insert id="insertBml" useGeneratedKeys="true" keyProperty="id" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamBml">
@@ -73,7 +74,7 @@
     </select>
 
     <insert id="insertBmlVersion" useGeneratedKeys="true" keyProperty="id" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamBmlVersion">
-        INSERT INTO linkis_stream_bml_version(<include refid="StreamBmlVersion_Column" />) VALUES(#{id},#{bmlId},#{version},#{storagePath},#{attribute})
+        INSERT INTO linkis_stream_bml_version(`bml_id`,`version`,`storage_path`,`attribute`,`resource_id`) VALUES(#{id},#{bmlId},#{version},#{storagePath},#{attribute},#{resourceId})
     </insert>
 
     <update id="updateBmlVersion" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamBmlVersion">
@@ -84,6 +85,9 @@
             </if>
             <if test="attribute != null">
                 `attribute`=#{attribute},
+            </if>
+            <if test="resourceId != null and resourceId !=''">
+                `resource_=id`=#{resourceId},
             </if>
         </trim>
             WHERE id=#{id}

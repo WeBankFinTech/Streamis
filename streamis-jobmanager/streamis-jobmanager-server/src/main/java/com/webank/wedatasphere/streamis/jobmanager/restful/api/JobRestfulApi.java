@@ -6,22 +6,29 @@ import com.webank.wedatasphere.linkis.server.Message;
 import com.webank.wedatasphere.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamProject;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.*;
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobCodeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.ProjectService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.TaskService;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.Consts;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +44,8 @@ public class JobRestfulApi {
     TaskService taskService;
     @Autowired
     ProjectService projectService;
-
+    @Autowired
+    JobCodeService jobCodeService;
     ObjectMapper mapper = new ObjectMapper();
 
     @GET
@@ -50,10 +58,10 @@ public class JobRestfulApi {
                                @QueryParam("jobName") String jobName,
                                @QueryParam("jobStatus") Integer jobStatus,
                                @QueryParam("jobCreator") String jobCreator) throws IOException, JobException {
-        if (StringUtils.isEmpty(pageNow)) {
+        if (pageNow==null) {
             pageNow = 1;
         }
-        if (StringUtils.isEmpty(pageSize)) {
+        if (pageSize==null) {
             pageSize = 20;
         }
         if(projectId == null){
@@ -75,20 +83,28 @@ public class JobRestfulApi {
     @POST
     @Path("/upload")
     public Response uploadJar(@Context HttpServletRequest req,
-                           @FormDataParam("jobName") String jobName,
-                           @FormDataParam("entrypointClass") String entrypointClass,
-                           @FormDataParam("label") String label,
-                           @FormDataParam("entrypointMainArgs") String entrypointMainArgs,
-                           @FormDataParam("parallelism") Integer parallelism,
-                           @FormDataParam("workspaceId") Long workspaceId,
-                           @FormDataParam("projectId") Long projectId,
-                           @FormDataParam("path") String path,
+                              @FormDataParam("projectName") String projectName,
+                              @QueryParam("jobId") Long jobId,
+                              @QueryParam("version") String version,
                            FormDataMultiPart form) throws IOException, JobException {
-
-        if (StringUtils.isEmpty(path)) {
-            JobExceptionManager.createException(30300,path);
+        String userName = SecurityFilter.getLoginUsername(req);
+        if(StringUtils.isBlank(userName)){
+            JobExceptionManager.createException(30301,"userName");
         }
-
+        if(org.apache.commons.lang.StringUtils.isBlank(projectName)){
+            JobExceptionManager.createException(30301,"projectName");
+        }
+        List<StreamProject> projects = projectService.getProjects(projectName);
+        if(CollectionUtils.isEmpty(projects)){
+            JobExceptionManager.createException(30301,"projectName");
+        }
+        List<FormDataBodyPart> files = form.getFields("file");
+        for (FormDataBodyPart p : files) {
+            FormDataContentDisposition fileDetail = p.getFormDataContentDisposition();
+            String fileName = new String(fileDetail.getFileName().getBytes(Consts.ISO_8859_1), Consts.UTF_8);
+            InputStream inputStream = p.getValueAs(InputStream.class);
+            jobCodeService.addJarBml(userName,fileName,inputStream,projectName,jobId,version);
+        }
         return Message.messageToResponse(Message.ok());
     }
 
@@ -210,34 +226,16 @@ public class JobRestfulApi {
 
     @GET
     @Path("/upload/details")
-    public Response uploadDetailsJob(@Context HttpServletRequest req,@QueryParam("jobId") Long jobId) throws IOException, JobException{
+    public Response uploadDetailsJob(@Context HttpServletRequest req,@QueryParam("jobId") Long jobId,@QueryParam("version") String version) throws IOException, JobException{
+        if(jobId == null){
+            JobExceptionManager.createException(30301,"jobId");
+        }
+        if(StringUtils.isBlank(version)){
+            JobExceptionManager.createException(30301,"version");
+        }
+        CodeResourceDetailsVO codeDetails = jobCodeService.getCodeDetails(jobId, version);
 
-        JobUploadDetailsVO jobUploadDetailsVO = new JobUploadDetailsVO();
-        List<JobUploadDetailsVO.JarDependentDTO> mainJars = new ArrayList<>();
-        List<JobUploadDetailsVO.JarDependentDTO> dependentList = new ArrayList<>();
-        List<JobUploadDetailsVO.JarDependentDTO> userList = new ArrayList<>();
-        JobUploadDetailsVO.JarDependentDTO jarDependentDTO = new JobUploadDetailsVO.JarDependentDTO();
-        jarDependentDTO.setId(1L);
-        jarDependentDTO.setName("main jar");
-
-        mainJars.add(jarDependentDTO);
-
-        jarDependentDTO = new JobUploadDetailsVO.JarDependentDTO();
-        jarDependentDTO.setId(1L);
-        jarDependentDTO.setName("jar 依赖");
-        dependentList.add(jarDependentDTO);
-
-        jarDependentDTO = new JobUploadDetailsVO.JarDependentDTO();
-        jarDependentDTO.setId(1L);
-        jarDependentDTO.setName("user 资源");
-        userList.add(jarDependentDTO);
-
-        jobUploadDetailsVO.setProgramArguement("--hostname localhost  --port 12345");
-        jobUploadDetailsVO.setMainJars(mainJars);
-        jobUploadDetailsVO.setDependentList(dependentList);
-        jobUploadDetailsVO.setUserList(userList);
-
-        return Message.messageToResponse(Message.ok().data("details",jobUploadDetailsVO));
+        return Message.messageToResponse(Message.ok().data("details",codeDetails));
     }
 
 }
