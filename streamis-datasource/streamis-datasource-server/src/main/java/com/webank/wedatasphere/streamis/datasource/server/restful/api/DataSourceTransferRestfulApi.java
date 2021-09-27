@@ -17,6 +17,7 @@ import com.webank.wedatasphere.linkis.common.io.FsPath;
 import com.webank.wedatasphere.linkis.server.Message;
 import com.webank.wedatasphere.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.linkis.storage.FSFactory;
+import com.webank.wedatasphere.streamis.datasource.manager.domain.StreamisDatasourceExtraInfo;
 import com.webank.wedatasphere.streamis.datasource.manager.domain.StreamisDatasourceFields;
 import com.webank.wedatasphere.streamis.datasource.manager.domain.StreamisTableMeta;
 import com.webank.wedatasphere.streamis.datasource.manager.service.StreamisDatasourceFieldsService;
@@ -72,7 +73,13 @@ public class DataSourceTransferRestfulApi {
         String streamisTableMetaId =json.get("streamisTableMetaId").asText();
         String dataSource =json.get("dataSourceId").asText();
         String nodeName =json.get("nodeName").asText();
-        Map<String, Object> labels = mapper.readValue(json.get("streamisExtraInfo"), new TypeReference<Map<String, Object>>() {
+//        Map<String, Object> labels = mapper.readValue(json.get("streamisExtraInfo"), new TypeReference<Map<String, Object>>() {
+//        });
+        List<StreamisDatasourceExtraInfo> extraInfoList = mapper.readValue(json.get("labels"), new TypeReference<List<StreamisDatasourceExtraInfo>>() {
+        });
+
+        //预留参数
+        Map<String, Object> labels = mapper.readValue(json.get("labels"), new TypeReference<Map<String, Object>>() {
         });
         if(StringUtils.isBlank(streamisTableMetaId)){
             throw new ErrorException(30201,"streamisTableMetaId is null.");
@@ -87,6 +94,7 @@ public class DataSourceTransferRestfulApi {
             params.put("runType","sql");
             params.put("engineType","flink");
             params.put("version","1.12.2");
+            params.put("extraInfo",extraInfoList);
             Long dataSourceId = Long.parseLong(dataSource);
             //通过streamisTableMetaId拿到StreamisTableMeta实体
             StreamisTableEntity streamisTableEntity = dataSourceTransfer.getStreamisTableMetaById(streamisTableMetaId,userName,dataSourceId);
