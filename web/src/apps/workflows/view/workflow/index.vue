@@ -248,7 +248,6 @@ export default {
      */
     openWorkflow(params) {
       if(this.loading) return;
-      console.log(params, this.tabList, 'params')
       // 判断是否为相同编排的不同版本，不是则将信息新增tab列表
       const isIn = this.tabList.find(item => item.id === params.id && item.version === params.version);
       if (!isIn || isIn === -1) {
@@ -287,6 +286,8 @@ export default {
 
     },
     openItemAction(params) {
+      params.workspaceId = this.getCurrentWorkspaceId()
+      params.workspaceName = this.getCurrentWorkspaceName()
       this.current = {
         version: params.version,// 编排版本
         id: params.id,// 编排id
