@@ -3,31 +3,35 @@
     <div class="itemWrap">
       <p>{{ $t("message.streamis.jobDetail.flinkJarPac") }}</p>
       <div>
-        <Table :columns="columns" :data="jarData.mainJars" border>
+        <Table :columns="columns" :data="jarData.mainClassJar" border>
           <template slot-scope="{ row }" slot="operation">
             <div>{{ row.id }}</div>
           </template>
         </Table>
       </div>
     </div>
-    <div class="itemWrap">
-      <p>Program Arguement</p>
-      <div class="programArguement">{{jarData.programArguement}}</div>
+    <div class="itemWrap" v-if="isSql">
+      <p>SQL</p>
+      <div class="programArguement">{{jarData.sql}}</div>
     </div>
-    <div class="itemWrap">
+    <div class="itemWrap" v-if="!isSql">
+      <p>Program Arguement</p>
+      <div class="programArguement">{{jarData.args}}</div>
+    </div>
+    <div class="itemWrap" v-if="!isSql">
       <p>{{ $t("message.streamis.jobDetail.dependJarPac") }}</p>
       <div>
-        <Table :columns="columns.filter(item => item.key !== 'entryClass')" :data="jarData.dependentList" border>
+        <Table :columns="columns.filter(item => item.key !== 'entryClass')" :data="jarData.dependencyJars" border>
           <template slot-scope="{ row }" slot="operation">
             <div>{{ row.id }}</div>
           </template>
         </Table>
       </div>
     </div>
-    <div class="itemWrap">
+    <div class="itemWrap" v-if="!isSql">
       <p>{{ $t("message.streamis.jobDetail.userResource") }}</p>
       <div>
-        <Table :columns="columns.filter(item => item.key !== 'entryClass')" :data="jarData.userList" border>
+        <Table :columns="columns.filter(item => item.key !== 'entryClass')" :data="jarData.resources" border>
           <template slot-scope="{ row }" slot="operation">
             <div>{{ row.id }}</div>
           </template>
@@ -39,7 +43,8 @@
 <script>
 export default {
   props: {
-    jarData: Object
+    jarData: Object,
+    isSql: Boolean
   },
   data() {
     return {
@@ -50,7 +55,7 @@ export default {
         },
         {
           title: this.$t("message.streamis.jobDetail.columns.name"),
-          key: "name"
+          key: "fileName"
         },
         {
           title: this.$t("message.streamis.jobDetail.columns.version"),
@@ -63,14 +68,14 @@ export default {
           key: "description"
         },
         {
-          title: "Entry Class",
-          key: "entryClass"
+          title: "Main Class",
+          key: "mainClass"
         },
         {
           title: this.$t(
             "message.streamis.jobDetail.columns.versionUploadTime"
           ),
-          key: "updateTime"
+          key: "createTime"
         },
         {
           title: this.$t("message.streamis.jobDetail.columns.operation"),
