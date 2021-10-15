@@ -86,7 +86,6 @@ export default {
           "get"
         )
         .then(res => {
-          console.log(res);
           if(res && res.details){
             this.tableDatas = res.details;
           }
