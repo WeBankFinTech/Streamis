@@ -55,7 +55,7 @@ import jobSummary from "@/apps/streamis/module/jobSummary";
 import jobHistory from "@/apps/streamis/module/jobHistory";
 import jobConfig from "@/apps/streamis/module/jobConfig";
 import jobDetail from "@/apps/streamis/module/jobDetail";
-import { jobStatuses } from "@/apps/streamis/common/common";
+import { allJobStatuses } from "@/apps/streamis/common/common";
 export default {
   components: {
     jobSummary: jobSummary.component,
@@ -64,19 +64,15 @@ export default {
     jobConfig: jobConfig.component
   },
   data() {
+    const status = allJobStatuses.find(item => item.code === this.$route.params.status);
+    console.log(this.$route.params);
     return {
       choosedModule: this.$route.params.module || "jobSummary",
       tabs: ["jobSummary", "jobHistory", "jobConfig", "jobDetail"],
       name: this.$route.params.name,
       version: this.$route.params.version,
-      status: this.$route.params.taskStatus
-        ? jobStatuses.find(item => item.code === this.$route.params.taskStatus)
-        : {}
+      status: status || {}
     };
-  },
-  mounted() {
-    // this.init();
-    console.log(this.$route.params);
   },
   methods: {
     resize(height) {

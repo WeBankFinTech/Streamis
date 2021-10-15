@@ -49,7 +49,7 @@ export default {
     getIndexData() {
       api
         .fetch(
-          "streamis/streamJobManager/project/core/target?projectId=1",
+          "streamis/streamJobManager/project/core/target?projectName=flinkJarTest3",
           "get"
         )
         .then(res => {
