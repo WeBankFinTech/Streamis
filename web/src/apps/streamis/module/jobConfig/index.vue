@@ -351,7 +351,6 @@ function resetFormValue(vueThis, dataName, configs) {
   })
 
   vueThis[dataName] = newValues
-  console.log(vueThis[dataName])
   Object.assign(vueThis, options)
 }
 export default {
@@ -497,7 +496,6 @@ export default {
           }
         })
       })
-      console.log(this.fullTree)
       this.saveLoading = true
       api
         .fetch(
