@@ -26,7 +26,8 @@
         "success": "Success",
         "uploaded" : "Uploaded",
         "all": "All",
-        "stoped": "Stoped"
+        "stoped": "Stoped",
+        "unstarted": "Unstarted"
       },
       "formItems": {
         "queryBtn": "Query",
