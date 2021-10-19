@@ -42,6 +42,7 @@
       },
       "jobListTableColumns":{
         "jobName": "Job name",
+        "jobType": "Job type",
         "taskStatus": "Task status",
         "lastReleaseTime": "Last release time",
         "label": "Label",
@@ -104,6 +105,7 @@
         "flinkJarPac": "Flink main Jar package",
         "dependJarPac": "depend Jar package",
         "userResource": "User resource",
+        "sqlContent": "SQL content",
         "columns": {
             "name": "Name",
             "version": "Version",
