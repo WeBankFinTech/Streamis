@@ -222,7 +222,15 @@
                 "
                 :label-width="labelWidth"
               >
-                <Input v-model="alertSet.alertUser" />
+                <Select v-model="alertSet.alertUser" class="select">
+                  <Option
+                    v-for="(item, index) in users"
+                    :value="item"
+                    :key="index"
+                  >
+                    {{ item }}
+                  </Option>
+                </Select>
               </FormItem>
               <FormItem
                 :label="
@@ -248,7 +256,15 @@
                 "
                 :label-width="labelWidth"
               >
-                <Input v-model="alertSet.alertFailureUser" />
+                <Select v-model="alertSet.alertFailureUser" class="select">
+                  <Option
+                    v-for="(item, index) in users"
+                    :value="item"
+                    :key="index"
+                  >
+                    {{ item }}
+                  </Option>
+                </Select>
               </FormItem>
             </Form>
           </div>
@@ -283,11 +299,11 @@
               >
                 <Select v-model="authoritySet.authorityVisible" class="select">
                   <Option
-                    v-for="(item, index) in authorityVisibleOptions"
-                    :value="item.value"
+                    v-for="(item, index) in users"
+                    :value="item"
                     :key="index"
                   >
-                    {{ item.title }}
+                    {{ item }}
                   </Option>
                 </Select>
               </FormItem>
@@ -389,13 +405,26 @@ export default {
       authorityAuthorOptions: [],
       saveLoading: false,
       fullTree: {},
-      hadSaved: false
+      hadSaved: false,
+      users: []
     }
   },
   mounted() {
+    this.getUsers()
     this.getConfigs()
   },
   methods: {
+    getUsers() {
+      api
+        .fetch('streamis/streamJobManager/config/getWorkspaceUsers', 'get')
+        .then(res => {
+          console.log(res)
+          if (res && res.users) {
+            this.users = res.users
+          }
+        })
+        .catch(e => console.log(e))
+    },
     getConfigs() {
       api
         .fetch(
