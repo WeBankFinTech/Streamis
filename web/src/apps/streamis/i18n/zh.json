@@ -41,6 +41,7 @@
       },
       "jobListTableColumns":{
         "jobName": "作业名称",
+        "jobType": "作业类型",
         "taskStatus": "运行状态",
         "lastReleaseTime": "最近发布时间",
         "label": "标签",
@@ -103,6 +104,7 @@
         "flinkJarPac": "Flink主Jar包",
         "dependJarPac": "依赖Jar包",
         "userResource": "用户资源",
+        "sqlContent": "SQL内容",
         "columns": {
             "name": "名称",
             "version": "版本",
