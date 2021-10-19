@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="itemWrap">
+    <div class="itemWrap" v-if="!isSql">
       <p>{{ $t("message.streamis.jobDetail.flinkJarPac") }}</p>
       <div>
         <Table :columns="columns" :data="jarData.mainClassJar" border>
@@ -11,8 +11,8 @@
       </div>
     </div>
     <div class="itemWrap" v-if="isSql">
-      <p>SQL</p>
-      <div class="programArguement">{{jarData.sql}}</div>
+      <p>{{ $t("message.streamis.jobDetail.sqlContent") }}</p>
+      <div class="sql">{{jarData.sql}}</div>
     </div>
     <div class="itemWrap" v-if="!isSql">
       <p>Program Arguement</p>
@@ -101,6 +101,11 @@ export default {
 .programArguement{
   background: rgba(94, 94, 94, 1);
   color: #fff;
+  padding: 10px 20px;
+  min-height: 64px;;
+}
+.sql{
+  background: #f8f8f9;
   padding: 10px 20px;
   min-height: 64px;;
 }

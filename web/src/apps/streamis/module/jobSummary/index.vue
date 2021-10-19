@@ -1,7 +1,13 @@
 <template>
   <div>
     <div class="itemWrap">
-      <p>{{ $t("message.streamis.jobSummary.realTimeTraffic") }}:</p>
+      <p>{{ $t('message.streamis.jobListTableColumns.jobType') }}:</p>
+      <div>
+        {{jobType}}
+      </div>
+    </div>
+    <div class="itemWrap">
+      <p>{{ $t('message.streamis.jobSummary.realTimeTraffic') }}:</p>
       <div class="realTimeTraffic">
         <div
           class="trafficItem"
@@ -33,7 +39,7 @@
       </div>
     </div>
     <div class="itemWrap">
-      <p>{{ $t("message.streamis.jobSummary.dataNumber") }}:</p>
+      <p>{{ $t('message.streamis.jobSummary.dataNumber') }}:</p>
       <div class="dataNumber">
         <div class="dataWrap">
           <div
@@ -60,13 +66,13 @@
             :key="index"
             :style="{ 'margin-top': index > 0 ? '5px' : 0 }"
           >
-            {{ $t("message.streamis.jobSummary.unit") }}
+            {{ $t('message.streamis.jobSummary.unit') }}
           </div>
         </div>
       </div>
     </div>
     <div class="itemWrap">
-      <p>{{ $t("message.streamis.jobSummary.loadCondition") }}:</p>
+      <p>{{ $t('message.streamis.jobSummary.loadCondition') }}:</p>
       <Table :columns="loadColumns" :data="loadCondition" border>
         <template slot-scope="{ row }" slot="memoryUse">
           <div class="memory">
@@ -88,85 +94,86 @@
   </div>
 </template>
 <script>
-import api from "@/common/service/api";
+import api from '@/common/service/api'
 export default {
   data() {
     return {
       loadColumns: [
         {
-          title: this.$t("message.streamis.jobSummary.loadColumns.type"),
-          key: "type"
+          title: this.$t('message.streamis.jobSummary.loadColumns.type'),
+          key: 'type'
         },
         {
-          title: this.$t("message.streamis.jobSummary.loadColumns.host"),
-          key: "host"
+          title: this.$t('message.streamis.jobSummary.loadColumns.host'),
+          key: 'host'
         },
         {
-          title: this.$t("message.streamis.jobSummary.loadColumns.memoryUse"),
-          key: "memoryUse",
-          slot: "memoryUse",
+          title: this.$t('message.streamis.jobSummary.loadColumns.memoryUse'),
+          key: 'memoryUse',
+          slot: 'memoryUse',
           minWidth: 160
         },
         {
-          title: this.$t("message.streamis.jobSummary.loadColumns.gcTotalTime"),
-          key: "gcTotalTime"
+          title: this.$t('message.streamis.jobSummary.loadColumns.gcTotalTime'),
+          key: 'gcTotalTime'
         },
         {
           title: this.$t(
-            "message.streamis.jobSummary.loadColumns.gcLastConsume"
+            'message.streamis.jobSummary.loadColumns.gcLastConsume'
           ),
-          key: "gcLastConsume"
+          key: 'gcLastConsume'
         },
         {
-          title: this.$t("message.streamis.jobSummary.loadColumns.gcLastTime"),
-          key: "gcLastTime"
+          title: this.$t('message.streamis.jobSummary.loadColumns.gcLastTime'),
+          key: 'gcLastTime'
         }
       ],
       loadCondition: [],
       dataNumber: [],
-      realTimeTraffic: []
-    };
+      realTimeTraffic: [],
+      jobType: this.$route.params.jobType
+    }
   },
   mounted() {
-    console.log(this.$route.params);
-    this.getDatas();
+    console.log(this.$route.params)
+    this.getDatas()
   },
   methods: {
     getDatas() {
       api
         .fetch(
-          "streamis/streamJobManager/job/details?jobId=" +
+          'streamis/streamJobManager/job/details?jobId=' +
             this.$route.params.id,
-          "get"
+          'get'
         )
         .then(res => {
-          console.log(res);
+          console.log(res)
           if (res && res.details) {
-            const conditions = res.details.loadCondition || [];
+            const conditions = res.details.loadCondition || []
             this.loadCondition = conditions.map(item => {
-              item.memoryUse = item.memory + " / " + item.totalMemory + " G";
+              item.memoryUse = item.memory + ' / ' + item.totalMemory + ' G'
               item.memoryPercent = Math.ceil(
                 (item.memory * 100) / item.totalMemory
-              );
-              return item;
-            });
-            this.dataNumber = res.details.dataNumber;
-            this.realTimeTraffic = [...res.details.realTimeTraffic];
+              )
+              return item
+            })
+            this.dataNumber = res.details.dataNumber
+            this.realTimeTraffic = [...res.details.realTimeTraffic]
           }
         })
-        .catch(e => console.log(e));
+        .catch(e => console.log(e))
     },
     showVersionInfo(row) {
-      console.log(row);
+      console.log(row)
     },
     showDetail(row) {
-      console.log(row);
+      console.log(row)
     },
     showLogs(row) {
-      console.log(row);
+      console.log(row)
     }
   }
-};
+}
 </script>
 <style lang="scss" scoped>
 .itemWrap {
@@ -234,13 +241,13 @@ export default {
 .trafficSpeed {
   position: absolute;
   top: 0;
-  & img{
+  & img {
     margin-top: 5px;
   }
-  & p{
+  & p {
     position: absolute;
-    top:0px;
-    width: calc( 100% - 15px );
+    top: 0px;
+    width: calc(100% - 15px);
     display: flex;
     justify-content: center;
     align-items: center;
