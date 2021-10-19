@@ -99,7 +99,10 @@
                   v-show="row.taskStatus !== 5"
                   :loading="buttonLoading && choosedRowId === row.id"
                   style="width:55px;height:22px;background:#008000;margin-right: 5px"
-                  :style="{ fontSize: buttonLoading && choosedRowId === row.id ? '10px' : '14px' }"
+                  :style="{
+                    fontSize:
+                      buttonLoading && choosedRowId === row.id ? '10px' : '14px'
+                  }"
                   @click="handleAction(row)"
                 >
                   {{ $t('message.streamis.formItems.startBtn') }}
@@ -109,7 +112,10 @@
                   v-show="row.taskStatus === 5"
                   :loading="buttonLoading && choosedRowId === row.id"
                   style="width:55px;height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
-                  :style="{ fontSize: buttonLoading&& choosedRowId === row.id ? '10px' : '14px' }"
+                  :style="{
+                    fontSize:
+                      buttonLoading && choosedRowId === row.id ? '10px' : '14px'
+                  }"
                   @click="handleAction(row)"
                 >
                   {{ $t('message.streamis.formItems.stopBtn') }}
@@ -189,7 +195,7 @@ export default {
     return {
       query: {
         jobName: '',
-        jobStatus: 'all',
+        jobStatus: 'all'
       },
       jobStatus: ['all'].concat(allJobStatuses.map(item => item.name)),
 
@@ -225,12 +231,11 @@ export default {
           }
         },
         {
-          title: this.$t(
-            'message.streamis.jobListTableColumns.lastReleaseTime'
-          ),
-          key: 'lastVersionTime',
+          title: this.$t('message.streamis.jobListTableColumns.jobType'),
+          key: 'jobType',
           renderHeader: renderSpecialHeader
         },
+
         {
           title: this.$t('message.streamis.jobListTableColumns.label'),
           key: 'label',
@@ -258,6 +263,13 @@ export default {
         {
           title: this.$t('message.streamis.jobListTableColumns.lastRelease'),
           key: 'createBy',
+          renderHeader: renderSpecialHeader
+        },
+        {
+          title: this.$t(
+            'message.streamis.jobListTableColumns.lastReleaseTime'
+          ),
+          key: 'lastVersionTime',
           renderHeader: renderSpecialHeader
         },
         {
@@ -299,7 +311,11 @@ export default {
       }
       this.loading = true
       const { current, pageSize } = this.pageData
-      const params = { projectId: 1, pageNow: current, pageSize }
+      const params = {
+        pageNow: current,
+        pageSize,
+        projectName: 'flinkJarTest3'
+      }
       const { jobName, jobStatus } = this.query
       if (jobName) {
         params.jobName = jobName
@@ -320,12 +336,13 @@ export default {
           if (res) {
             const datas = res.tasks || []
             datas.forEach(item => {
-              if(item.lastVersionTime){
-                const newDate = moment(new Date(item.lastVersionTime)).format("YYYY-MM-DD HH:mm:ss");
-                item.lastVersionTime = newDate;
+              if (item.lastVersionTime) {
+                const newDate = moment(new Date(item.lastVersionTime)).format(
+                  'YYYY-MM-DD HH:mm:ss'
+                )
+                item.lastVersionTime = newDate
               }
-              
-            });
+            })
             datas.unshift({})
             this.tableDatas = datas
             this.pageData.total = parseInt(res.totalPage)
@@ -365,7 +382,7 @@ export default {
           this.choosedRowId = ''
           if (res) {
             this.loading = false
-            this.getJobList();
+            this.getJobList()
           }
         })
         .catch(e => {
@@ -396,7 +413,8 @@ export default {
             : 'jobSummary',
           name: rowData.name,
           version: rowData.version,
-          status: rowData.status
+          status: rowData.status,
+          jobType: rowData.jobType
         }
       })
     },
