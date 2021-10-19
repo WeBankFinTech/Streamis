@@ -43,22 +43,22 @@ export default {
           key: "createBy"
         },
 
-        {
-          title: this.$t("message.streamis.versionDetail.projectID"),
-          key: "projectId"
-        },
-        {
-          title: this.$t("message.streamis.versionDetail.dssLabels"),
-          key: "dssEnv"
-        },
-        {
-          title: this.$t("message.streamis.versionDetail.resourceId"),
-          key: "bmlId"
-        },
-        {
-          title: this.$t("message.streamis.versionDetail.bmlVersion"),
-          key: "bmlVersion"
-        }
+        // {
+        //   title: this.$t("message.streamis.versionDetail.projectID"),
+        //   key: "projectId"
+        // },
+        // {
+        //   title: this.$t("message.streamis.versionDetail.dssLabels"),
+        //   key: "dssEnv"
+        // },
+        // {
+        //   title: this.$t("message.streamis.versionDetail.resourceId"),
+        //   key: "bmlId"
+        // },
+        // {
+        //   title: this.$t("message.streamis.versionDetail.bmlVersion"),
+        //   key: "bmlVersion"
+        // }
       ],
     };
   },
