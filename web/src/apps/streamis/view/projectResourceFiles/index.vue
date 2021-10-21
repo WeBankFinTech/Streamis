@@ -1,0 +1,389 @@
+<template>
+  <div class="container">
+    <div class="navWrap">
+      <div @click="jumpToCenter()" class="center">
+        <Icon type="ios-home" size="20" />
+        <span>{{ $t('message.streamis.routerName.realTimeJobCenter') }}</span>
+      </div>
+      <div class="slash">/</div>
+      <div class="name">
+        {{ $t('message.streamis.routerName.projectResourceFiles') }}
+      </div>
+    </div>
+    <titleCard :title="$t('message.streamis.projectFile.fileList')">
+      <div style="padding-bottom: 30px;">
+        <div>
+          <Form ref="queryForm" inline>
+            <FormItem>
+              <Input
+                search
+                v-model="query.fileName"
+                :placeholder="$t('message.streamis.projectFile.fileName')"
+                @on-click="handleNameQuery"
+                @on-enter="handleNameQuery"
+              >
+              </Input>
+            </FormItem>
+            <FormItem
+              :label="$t('message.streamis.projectFile.createBy')"
+              :label-width="120"
+            >
+              <Select v-model="query.createBy" class="select">
+                <Option
+                  v-for="(item, index) in createBys"
+                  :value="item"
+                  :key="index"
+                >
+                  {{
+                    item === 'all'
+                      ? $t('message.streamis.jobStatus.' + item)
+                      : item
+                  }}
+                </Option>
+              </Select>
+            </FormItem>
+
+            <FormItem>
+              <Button
+                type="primary"
+                @click="handleQuery()"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;"
+              >
+                {{ $t('message.streamis.formItems.queryBtn') }}
+              </Button>
+            </FormItem>
+          </Form>
+          <Table :columns="columns" :data="tableDatas" :loading="loading">
+            <template slot-scope="{ row, index }" slot="fileName">
+              <div class="jobName" v-show="index === 0" @click="handleUpload()">
+                <Icon type="md-add" class="upload" />
+                <span>{{
+                  $t('message.streamis.jobListTableColumns.upload')
+                }}</span>
+              </div>
+              <div style="margin-left: 5px" v-show="index !== 0">
+                {{ row.fileName }}
+              </div>
+            </template>
+            <template slot-scope="{ row, index }" slot="version">
+              <div
+                class="version"
+                v-show="index !== 0"
+                @click="versionDetail(row)"
+              >
+                {{ row.version }}
+              </div>
+            </template>
+            <template slot-scope="{ row, index }" slot="operation">
+              <div v-show="index !== 0">
+                <a
+                  :href="
+                    `/streamis/streamProjectManager/project/files/download?id=${row.id}`
+                  "
+                  download
+                >
+                  <Button
+                    type="primary"
+                    :loading="buttonLoading && choosedRowId === row.id"
+                    style="width:55px;height:22px;background:rgba(22, 155, 213, 1);margin-right: 5px"
+                  >
+                    {{ $t('message.streamis.projectFile.download') }}
+                  </Button>
+                </a>
+                <Poptip
+                  confirm
+                  transfer
+                  :title="$t('message.streamis.projectFile.delelteConfirm')"
+                  @on-ok="() => handleAction(row, 'delete')"
+                >
+                  <Button
+                    type="primary"
+                    :loading="buttonLoading && choosedRowId === row.id"
+                    style="width:55px;height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
+                  >
+                    {{ $t('message.streamis.projectFile.delete') }}
+                  </Button></Poptip
+                >
+              </div>
+            </template>
+          </Table>
+        </div>
+      </div>
+    </titleCard>
+    <uploadFile
+      :visible="uploadVisible"
+      @fileModalCancel="fileModalCancel"
+      @fileUploadSuccess="fileUploadSuccess"
+    />
+    <fileVersionDetail
+      :visible="versionVisible"
+      :datas="versionDatas"
+      @modalCancel="modalCancel"
+    />
+  </div>
+</template>
+<script>
+import api from '@/common/service/api'
+import titleCard from '@/apps/streamis/components/titleCard'
+import fileVersionDetail from '@/apps/streamis/module/fileVersionDetail'
+import uploadFile from '@/apps/streamis/module/uploadFile'
+import moment from 'moment'
+
+/**
+ * 渲染特殊表头
+ */
+function renderSpecialHeader(h, params) {
+  return h('div', [
+    h('strong', params.column.title),
+    h(
+      'span',
+      {
+        style: {
+          color: 'red'
+        }
+      },
+      '*'
+    )
+  ])
+}
+export default {
+  components: { titleCard, uploadFile, fileVersionDetail },
+  data() {
+    console.log(this.$route.params)
+    return {
+      query: {
+        fileName: '',
+        creatyBy: 'all'
+      },
+      createBys: ['all'],
+
+      tableDatas: [{}],
+      columns: [
+        {
+          title: this.$t('message.streamis.projectFile.fileName'),
+          key: 'fileName',
+          slot: 'fileName'
+        },
+        {
+          title: this.$t('message.streamis.jobListTableColumns.version'),
+          key: 'version',
+          slot: 'version'
+        },
+        {
+          title: this.$t('message.streamis.jobListTableColumns.lastRelease'),
+          key: 'createBy',
+          renderHeader: renderSpecialHeader
+        },
+        {
+          title: this.$t(
+            'message.streamis.jobListTableColumns.lastReleaseTime'
+          ),
+          key: 'createTime',
+          renderHeader: renderSpecialHeader
+        },
+        {
+          title: this.$t('message.streamis.jobListTableColumns.description'),
+          key: 'description'
+        },
+        {
+          title: this.$t('message.streamis.jobListTableColumns.operation'),
+          key: 'operation',
+          slot: 'operation'
+        }
+      ],
+      jobMoudleRouter: [
+        'paramsConfiguration',
+        'alertConfiguration',
+        'runningHistory',
+        'runningLogs'
+      ],
+      loading: false,
+      buttonLoading: false,
+      choosedRowId: '',
+      versionVisible: false,
+      versionDatas: [],
+      uploadVisible: false
+    }
+  },
+  mounted() {
+    this.getJobList()
+  },
+  methods: {
+    getJobList() {
+      if (this.loading) {
+        return
+      }
+      this.loading = true
+      let queries = '?projectName=flinkJarTest3'
+      api
+        .fetch(
+          'streamis/streamProjectManager/project/files/list' + queries,
+          'get'
+        )
+        .then(res => {
+          console.log(res)
+          this.loading = false
+          if (res) {
+            const datas = (res.files || []).filter(item => !!item)
+            datas.forEach(item => {
+              if (item && item.createTime) {
+                const newDate = moment(new Date(item.createTime)).format(
+                  'YYYY-MM-DD HH:mm:ss'
+                )
+                item.createTime = newDate
+              }
+            })
+            datas.unshift({})
+            this.tableDatas = datas
+            this.loading = false
+          }
+        })
+        .catch(e => {
+          console.log(e)
+          this.loading = false
+        })
+    },
+    jumpToCenter() {
+      this.$router.push({
+        name: 'RealTimeJobCenter'
+      })
+    },
+
+    handleUpload() {
+      console.log(1234444)
+      this.uploadVisible = true
+    },
+    fileModalCancel() {
+      this.uploadVisible = false
+    },
+    fileUploadSuccess(res) {
+      if (res && res.status !== 0 && res.message) {
+        this.$Message.error(res.message)
+      }
+      this.getJobList()
+    },
+    jarUploadError(err, res) {
+      if (res && res.status !== 0 && res.message) {
+        this.$Message.error(res.message)
+      }
+    },
+    versionDetail(data) {
+      console.log(data)
+      this.loading = true
+      api
+        .fetch(
+          'streamis/streamProjectManager/project/files/version/list?fileName=' +
+            data.fileName +
+            '&projectName=' +
+            data.projectName,
+          'get'
+        )
+        .then(res => {
+          console.log(res)
+          this.loading = false
+          if (res) {
+            this.versionVisible = true
+            const datas = (res.files || []).filter(item => !!item)
+            datas.forEach(item => {
+              if (item && item.createTime) {
+                const newDate = moment(new Date(item.createTime)).format(
+                  'YYYY-MM-DD HH:mm:ss'
+                )
+                item.createTime = newDate
+              }
+            })
+            this.versionDatas = datas
+          }
+        })
+        .catch(e => {
+          console.log(e)
+          this.loading = false
+        })
+    },
+    handleAction(rowData, action) {
+      console.log(rowData)
+      if (action === 'delete') {
+        this.loading = true
+        api
+          .fetch(
+            'streamis/streamProjectManager/project/files/delete?ids=' +
+              rowData.id,
+            'get'
+          )
+          .then(res => {
+            console.log(res)
+            this.loading = false
+            this.getJobList()
+          })
+          .catch(e => {
+            console.log(e)
+            this.loading = false
+          })
+      }
+    }
+  }
+}
+</script>
+<style lang="scss" scoped>
+.container {
+  padding: 10px 30px 0;
+}
+.divider {
+  height: 30px;
+}
+.version {
+  cursor: pointer;
+  background: rgba(22, 155, 213, 1);
+  color: #fff;
+}
+.version {
+  background-color: rgba(22, 155, 213, 1);
+  width: 40px;
+  text-align: center;
+  color: #ffffff;
+  cursor: pointer;
+}
+.navWrap {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: 14px;
+  height: 60px;
+  .center {
+    cursor: pointer;
+  }
+  .slash {
+    padding: 0 10px;
+  }
+  .name {
+    font-weight: 700;
+  }
+  .statusWrap {
+    display: flex;
+    font-size: 12px;
+    margin-left: 120px;
+    .circle {
+      width: 10px;
+      height: 10px;
+      border: 2px solid #000;
+      border-radius: 5px;
+      box-sizing: border-box;
+      margin-top: 3px;
+      margin-right: 3px;
+    }
+  }
+}
+.jobName {
+  display: flex;
+  cursor: pointer;
+}
+.more {
+  font-size: 20px;
+}
+.upload {
+  font-size: 24px;
+}
+.page {
+  margin-top: 20px;
+}
+</style>

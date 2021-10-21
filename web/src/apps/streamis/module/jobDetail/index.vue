@@ -1,6 +1,11 @@
 <template>
   <div>
-    <jarDetail v-if="detailName === 'jarDetail'" :isSql='isSql' :jarData="data" key="jar" />
+    <jarDetail
+      v-if="detailName === 'jarDetail'"
+      :isSql="isSql"
+      :jarData="data"
+      key="jar"
+    />
     <workflow v-if="detailName === 'workflow'" key="workflow" />
   </div>
 </template>
@@ -37,7 +42,13 @@ export default {
           if (res && res.jobContent) {
             this.detailName = 'jarDetail'
             this.data = res.jobContent
-            const {sql, mainClassJar, mainClass} = res.jobContent;
+            const {
+              sql,
+              mainClassJar,
+              mainClass,
+              dependencyJars,
+              resources
+            } = res.jobContent
             if (mainClassJar) {
               if (mainClassJar.createTime) {
                 const newDate = moment(
@@ -45,10 +56,28 @@ export default {
                 ).format('YYYY-MM-DD HH:mm:ss')
                 this.data.mainClassJar.createTime = newDate
               }
-              this.data.mainClassJar.mainClass = mainClass;
+              this.data.mainClassJar.mainClass = mainClass
               this.data.mainClassJar = [this.data.mainClassJar]
             }
-            this.isSql = !!sql;
+            if (resources) {
+              this.data.resources = resources.map(item => {
+                const newItem = { ...item }
+                newItem.createTime = moment(
+                  new Date(newItem.createTime)
+                ).format('YYYY-MM-DD HH:mm:ss')
+                return newItem
+              })
+            }
+            if (dependencyJars) {
+              this.data.dependencyJars = dependencyJars.map(item => {
+                const newItem = { ...item }
+                newItem.createTime = moment(
+                  new Date(newItem.createTime)
+                ).format('YYYY-MM-DD HH:mm:ss')
+                return newItem
+              })
+            }
+            this.isSql = !!sql
           }
         })
         .catch(e => console.log(e))
