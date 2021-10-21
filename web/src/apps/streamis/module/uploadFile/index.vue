@@ -5,17 +5,17 @@
       v-model="visible"
       @on-cancel="cancel"
       footer-hide
-      width="800"
+      width="400"
     >
       <Form
         ref="uploadForm"
         :model="uploadForm"
         :rules="ruleValidate"
-        :label-width="120"
+        :label-width="100"
       >
         <FormItem :label="$t('message.streamis.projectFile.file')">
           <Upload :before-upload="handleUpload">
-            <Button icon="ios-cloud-upload-outline">{{
+            <Button icon="ios-cloud-upload-outline" style="width:270px">{{
               $t('message.streamis.projectFile.chooseUploadFile')
             }}</Button>
           </Upload>
