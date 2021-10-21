@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="coreWrap">
     <titleCard :title="$t('message.streamis.moduleName.coreIndex')">
       <div class="cardWrap">
         <Card
@@ -29,46 +29,72 @@
         </Card>
       </div>
     </titleCard>
+    <div class="projectFile" @click="gotoProjectFiles()">
+      <Icon type="md-folder-open" size="18" />
+      <p>{{ $t('message.streamis.routerName.projectResourceFiles') }}</p>
+    </div>
   </div>
 </template>
 <script>
-import api from "@/common/service/api";
-import titleCard from "@/apps/streamis/components/titleCard";
-import {jobStatuses} from "@/apps/streamis/common/common";
+import api from '@/common/service/api'
+import titleCard from '@/apps/streamis/components/titleCard'
+import { jobStatuses } from '@/apps/streamis/common/common'
 export default {
   components: { titleCard },
   data() {
     return {
       indexItems: [...jobStatuses]
-    };
+    }
   },
   mounted() {
-    this.getIndexData();
+    this.getIndexData()
   },
   methods: {
     getIndexData() {
       api
         .fetch(
-          "streamis/streamJobManager/project/core/target?projectName=flinkJarTest3",
-          "get"
+          'streamis/streamJobManager/project/core/target?projectName=flinkJarTest3',
+          'get'
         )
         .then(res => {
           if (res && res.taskCore) {
-            const newDatas = [];
+            const newDatas = []
             this.indexItems.forEach(item => {
-              const newItem = { ...item };
-              newItem.num = res.taskCore[`${newItem.name}Num`] || 0;
-              newDatas.push(newItem);
-            });
-            this.indexItems = newDatas;
+              const newItem = { ...item }
+              newItem.num = res.taskCore[`${newItem.name}Num`] || 0
+              newDatas.push(newItem)
+            })
+            this.indexItems = newDatas
           }
         })
-        .catch(e => console.log(e));
+        .catch(e => console.log(e))
+    },
+    gotoProjectFiles() {
+      this.$router.push({
+        name: 'ProjectResourceFiles',
+        params: {
+          name: '123'
+        }
+      })
     }
   }
-};
+}
 </script>
 <style lang="scss" scoped>
+.coreWrap {
+  position: relative;
+}
+.projectFile {
+  position: absolute;
+  top: 16px;
+  right: 25px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 12px;
+  color: #2d8cf0;
+  cursor: pointer;
+}
 .cardWrap {
   display: flex;
   flex-wrap: wrap;
@@ -83,9 +109,9 @@ export default {
     text-align: center;
   }
 }
-.img{
+.img {
   width: 20px;
-  & img{
+  & img {
     width: 100%;
   }
 }
