@@ -17,7 +17,7 @@
             <FormItem>
               <Input
                 search
-                v-model="query.fileName"
+                v-model="query.filename"
                 :placeholder="$t('message.streamis.projectFile.fileName')"
                 @on-click="handleNameQuery"
                 @on-enter="handleNameQuery"
@@ -28,7 +28,11 @@
               :label="$t('message.streamis.projectFile.createBy')"
               :label-width="120"
             >
-              <Select v-model="query.createBy" class="select">
+              <Select
+                v-model="query.username"
+                class="select"
+                style="width:120px"
+              >
                 <Option
                   v-for="(item, index) in createBys"
                   :value="item"
@@ -152,8 +156,8 @@ export default {
     console.log(this.$route.params)
     return {
       query: {
-        fileName: '',
-        creatyBy: 'all'
+        filename: '',
+        username: 'all'
       },
       createBys: ['all'],
 
@@ -162,12 +166,14 @@ export default {
         {
           title: this.$t('message.streamis.projectFile.fileName'),
           key: 'fileName',
-          slot: 'fileName'
+          slot: 'fileName',
+          renderHeader: renderSpecialHeader
         },
         {
           title: this.$t('message.streamis.jobListTableColumns.version'),
           key: 'version',
-          slot: 'version'
+          slot: 'version',
+          renderHeader: renderSpecialHeader
         },
         {
           title: this.$t('message.streamis.jobListTableColumns.lastRelease'),
@@ -178,8 +184,7 @@ export default {
           title: this.$t(
             'message.streamis.jobListTableColumns.lastReleaseTime'
           ),
-          key: 'createTime',
-          renderHeader: renderSpecialHeader
+          key: 'createTime'
         },
         {
           title: this.$t('message.streamis.jobListTableColumns.description'),
@@ -207,14 +212,39 @@ export default {
   },
   mounted() {
     this.getJobList()
+    this.getUsers()
   },
   methods: {
-    getJobList() {
+    getJobList(isQuery) {
       if (this.loading) {
         return
       }
       this.loading = true
       let queries = '?projectName=flinkJarTest3'
+      if (isQuery) {
+        const temp = []
+        Object.keys(this.query).forEach(key => {
+          const value = this.query[key]
+          const query = key + '=' + value
+          if (value) {
+            if (key === 'username') {
+              if (value !== 'all') {
+                temp.push(query)
+              }
+            } else {
+              temp.push(query)
+            }
+          }
+        })
+        if (temp.length > 0) {
+          queries = queries + '&' + temp.join('&')
+        }
+      } else {
+        this.query = {
+          filename: '',
+          username: 'all'
+        }
+      }
       api
         .fetch(
           'streamis/streamProjectManager/project/files/list' + queries,
@@ -242,6 +272,20 @@ export default {
           console.log(e)
           this.loading = false
         })
+    },
+    handleQuery() {
+      this.getJobList(true)
+    },
+    getUsers() {
+      api
+        .fetch('streamis/streamJobManager/config/getWorkspaceUsers', 'get')
+        .then(res => {
+          console.log(res)
+          if (res && res.users) {
+            this.createBys = ['all', ...res.users]
+          }
+        })
+        .catch(e => console.log(e))
     },
     jumpToCenter() {
       this.$router.push({
