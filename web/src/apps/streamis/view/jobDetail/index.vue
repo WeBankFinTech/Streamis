@@ -75,9 +75,6 @@ export default {
     };
   },
   methods: {
-    resize(height) {
-      this.navHeight = height;
-    },
     jumpToLinkis() {
       this.$router.push({
         name: "RealTimeJobCenter"
