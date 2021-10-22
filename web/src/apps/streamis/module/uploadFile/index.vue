@@ -27,7 +27,16 @@
           :label="$t('message.streamis.projectFile.specifyVersion')"
           prop="version"
         >
-          <Input v-model="uploadForm.version" :placeholder="$t('message.streamis.projectFile.versionPlaceholder')"></Input>
+          <Input
+            v-model="uploadForm.version"
+            :placeholder="$t('message.streamis.projectFile.versionPlaceholder')"
+          ></Input>
+        </FormItem>
+        <FormItem
+          :label="$t('message.streamis.projectFile.versionDescription')"
+          prop="comment"
+        >
+          <Input type="textarea" v-model="uploadForm.comment"></Input>
         </FormItem>
         <FormItem
           :label="$t('message.streamis.projectFile.overrideImport')"
@@ -55,6 +64,7 @@ export default {
       uploadForm: {
         version: '',
         updateWhenExists: false,
+        comment: ''
       },
       file: '',
       ruleValidate: {
@@ -80,15 +90,17 @@ export default {
           const formData = new FormData()
           formData.append('file', this.file)
           formData.append('fileName', this.file.name)
-          formData.append('projectName', "flinkJarTest3")
+          formData.append('projectName', 'flinkJarTest3')
           Object.keys(this.uploadForm).forEach(key => {
             const value = this.uploadForm[key]
             formData.append(key, value)
-    
           })
           this.loading = true
           api
-            .fetch('streamis/streamProjectManager/project/files/upload', formData)
+            .fetch(
+              'streamis/streamProjectManager/project/files/upload',
+              formData
+            )
             .then(res => {
               this.loading = false
               this.$t('message.streamis.operationSuccess')
