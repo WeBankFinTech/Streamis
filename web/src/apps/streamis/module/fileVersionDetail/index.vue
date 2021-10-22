@@ -12,7 +12,7 @@
           <div>
             <a
               :href="
-                `/streamis/streamProjectManager/project/files/download?id=${row.id}`
+                `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}`
               "
               download
             >
@@ -50,7 +50,7 @@ export default {
         },
         {
           title: this.$t('message.streamis.projectFile.versionDescription'),
-          key: 'description'
+          key: 'comment'
         },
         {
           title: this.$t('message.streamis.projectFile.createTime'),
