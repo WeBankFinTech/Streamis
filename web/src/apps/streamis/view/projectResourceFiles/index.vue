@@ -82,7 +82,7 @@
               <div v-show="index !== 0">
                 <a
                   :href="
-                    `/streamis/streamProjectManager/project/files/download?id=${row.id}`
+                    `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}`
                   "
                   download
                 >
@@ -188,7 +188,7 @@ export default {
         },
         {
           title: this.$t('message.streamis.jobListTableColumns.description'),
-          key: 'description'
+          key: 'comment'
         },
         {
           title: this.$t('message.streamis.jobListTableColumns.operation'),
@@ -299,6 +299,9 @@ export default {
     },
     fileModalCancel() {
       this.uploadVisible = false
+    },
+    modalCancel() {
+      this.versionVisible = false
     },
     fileUploadSuccess(res) {
       if (res && res.status !== 0 && res.message) {
