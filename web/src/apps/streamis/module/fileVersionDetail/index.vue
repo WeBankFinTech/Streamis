@@ -7,7 +7,7 @@
       width="1200"
       @on-cancel="cancel"
     >
-      <Table :columns="columns" :data="datas" border>
+      <Table :columns="columns" :data="datas" :loading="versionLoading" border>
         <template slot-scope="{ row }" slot="operation">
           <div>
             <a
@@ -23,19 +23,45 @@
                 {{ $t('message.streamis.projectFile.download') }}
               </Button>
             </a>
+            <Poptip
+              confirm
+              transfer
+              :title="$t('message.streamis.projectFile.delelteConfirm')"
+              @on-ok="() => handleDelete(row)"
+            >
+              <Button
+                style="width:55px;height:22px;background:#ff0000;margin-right: 5px; font-size:14px;color: #fff;"
+              >
+                {{ $t('message.streamis.projectFile.delete') }}
+              </Button></Poptip
+            >
           </div>
         </template>
       </Table>
+      <Page
+        :total="total"
+        class="page"
+        :page-size="pageData.pageSize"
+        :current="pageData.pageNow"
+        show-total
+        show-elevator
+        show-sizer
+        @on-change="handlePageChange"
+        @on-page-size-change="handlePageSizeChange"
+      />
     </Modal>
   </div>
 </template>
 <script>
 import table from '../../../../components/table/table.vue'
+import api from '@/common/service/api'
 export default {
   components: { table },
   props: {
     visible: Boolean,
-    datas: Array
+    datas: Array,
+    versionLoading: Boolean,
+    total: Number
   },
   data() {
     return {
@@ -61,10 +87,28 @@ export default {
           key: 'operation',
           slot: 'operation'
         }
-      ]
+      ],
+      loading: false,
+      choosedRowId: '',
+      pageData: {
+        total: 0,
+        pageNow: 1,
+        pageSize: 10
+      }
     }
   },
   methods: {
+    handlePageChange(page) {
+      console.log(page)
+      this.pageData.pageNow = page
+      this.$emit('refreshVersionDatas', this.pageData)
+    },
+    handlePageSizeChange(pageSize) {
+      console.log(pageSize)
+      this.pageData.pageSize = pageSize
+      this.pageData.pageNow = 1
+      this.$emit('refreshVersionDatas', this.pageData)
+    },
     showVersionInfo(row) {
       console.log(row)
     },
@@ -79,8 +123,27 @@ export default {
     },
     cancel() {
       this.$emit('modalCancel')
+    },
+    handleDelete(rowData) {
+      api
+        .fetch(
+          'streamis/streamProjectManager/project/files/version/delete?ids=' +
+            rowData.id,
+          'get'
+        )
+        .then(res => {
+          console.log(res)
+          this.handlePageSizeChange(this.pageData.pageSize);
+        })
+        .catch(e => {
+          console.log(e)
+        })
     }
   }
 }
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.page {
+  margin-top: 20px;
+}
+</style>

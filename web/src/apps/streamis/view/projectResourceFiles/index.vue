@@ -94,23 +94,20 @@
                     {{ $t('message.streamis.projectFile.download') }}
                   </Button>
                 </a>
-                <Poptip
-                  confirm
-                  transfer
-                  :title="$t('message.streamis.projectFile.delelteConfirm')"
-                  @on-ok="() => handleAction(row, 'delete')"
-                >
-                  <Button
-                    type="primary"
-                    :loading="buttonLoading && choosedRowId === row.id"
-                    style="width:55px;height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
-                  >
-                    {{ $t('message.streamis.projectFile.delete') }}
-                  </Button></Poptip
-                >
               </div>
             </template>
           </Table>
+          <Page
+            :total="pageData.total"
+            class="page"
+            :page-size="pageData.pageSize"
+            :current="pageData.pageNow"
+            show-total
+            show-elevator
+            show-sizer
+            @on-change="handlePageChange"
+            @on-page-size-change="handlePageSizeChange"
+          />
         </div>
       </div>
     </titleCard>
@@ -122,7 +119,10 @@
     <fileVersionDetail
       :visible="versionVisible"
       :datas="versionDatas"
+      :total="versionTotal"
+      :loading="versionLoading"
       @modalCancel="modalCancel"
+      @refreshVersionDatas="refreshVersionDatas"
     />
   </div>
 </template>
@@ -207,7 +207,15 @@ export default {
       choosedRowId: '',
       versionVisible: false,
       versionDatas: [],
-      uploadVisible: false
+      uploadVisible: false,
+      versionTotal: 0,
+      versionLoading: false,
+      versionData: {},
+      pageData: {
+        total: 0,
+        pageNow: 1,
+        pageSize: 10
+      }
     }
   },
   mounted() {
@@ -220,7 +228,14 @@ export default {
         return
       }
       this.loading = true
-      let queries = '?projectName=flinkJarTest3'
+      const params = {
+        projectName: 'flinkJarTest3',
+        pageNow: this.pageData.pageNow,
+        pageSize: this.pageData.pageSize
+      }
+      let queries = Object.entries(params)
+        .map(entry => entry.join('='))
+        .join('&')
       if (isQuery) {
         const temp = []
         Object.keys(this.query).forEach(key => {
@@ -247,7 +262,7 @@ export default {
       }
       api
         .fetch(
-          'streamis/streamProjectManager/project/files/list' + queries,
+          'streamis/streamProjectManager/project/files/list?' + queries,
           'get'
         )
         .then(res => {
@@ -266,6 +281,7 @@ export default {
             datas.unshift({})
             this.tableDatas = datas
             this.loading = false
+            this.pageData.total = res.totalPage
           }
         })
         .catch(e => {
@@ -274,6 +290,7 @@ export default {
         })
     },
     handleQuery() {
+      this.pageData.pageNow = 1
       this.getJobList(true)
     },
     getUsers() {
@@ -314,20 +331,32 @@ export default {
         this.$Message.error(res.message)
       }
     },
-    versionDetail(data) {
+    versionDetail(data, pageData) {
       console.log(data)
-      this.loading = true
+      this.loading = this.versionVisible ? false : true
+      this.versionLoading = true
+      if (!pageData) {
+        this.versionData = data
+      }
+      pageData = pageData || {}
+      const params = {
+        fileName: data.fileName,
+        projectName: data.projectName,
+        pageNow: pageData.pageNow || 1,
+        pageSize: pageData.pageSize || 10
+      }
+      const queries = Object.entries(params)
+        .map(entry => entry.join('='))
+        .join('&')
       api
         .fetch(
-          'streamis/streamProjectManager/project/files/version/list?fileName=' +
-            data.fileName +
-            '&projectName=' +
-            data.projectName,
+          'streamis/streamProjectManager/project/files/version/list?' + queries,
           'get'
         )
         .then(res => {
           console.log(res)
           this.loading = false
+          this.versionLoading = false
           if (res) {
             this.versionVisible = true
             const datas = (res.files || []).filter(item => !!item)
@@ -340,33 +369,28 @@ export default {
               }
             })
             this.versionDatas = datas
+            this.versionTotal = res.totalPage
           }
         })
         .catch(e => {
           console.log(e)
           this.loading = false
+          this.versionLoading = false
         })
     },
-    handleAction(rowData, action) {
-      console.log(rowData)
-      if (action === 'delete') {
-        this.loading = true
-        api
-          .fetch(
-            'streamis/streamProjectManager/project/files/delete?ids=' +
-              rowData.id,
-            'get'
-          )
-          .then(res => {
-            console.log(res)
-            this.loading = false
-            this.getJobList()
-          })
-          .catch(e => {
-            console.log(e)
-            this.loading = false
-          })
-      }
+    refreshVersionDatas(pageData) {
+      this.versionDetail(this.versionData, pageData)
+    },
+    handlePageChange(page) {
+      console.log(page)
+      this.pageData.pageNow = page
+      this.getJobList(true)
+    },
+    handlePageSizeChange(pageSize) {
+      console.log(pageSize)
+      this.pageData.pageSize = pageSize
+      this.pageData.pageNow = 1
+      this.getJobList(true)
     }
   }
 }
