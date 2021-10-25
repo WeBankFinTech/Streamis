@@ -135,6 +135,7 @@
       :loading="versionLoading"
       @modalCancel="modalCancel"
       @refreshVersionDatas="refreshVersionDatas"
+      @delelteSuccess="delelteSuccess"
     />
   </div>
 </template>
@@ -420,6 +421,9 @@ export default {
           this.loading = false
           console.log(e)
         })
+    },
+    delelteSuccess(){
+      this.getJobList(true);
     }
   }
 }
