@@ -94,6 +94,18 @@
                     {{ $t('message.streamis.projectFile.download') }}
                   </Button>
                 </a>
+                <Poptip
+                  confirm
+                  transfer
+                  :title="$t('message.streamis.projectFile.delelteConfirm')"
+                  @on-ok="() => handleDelete(row)"
+                >
+                  <Button
+                    style="width:55px;height:22px;background:#ff0000;margin-right: 5px; font-size:14px;color: #fff;"
+                  >
+                    {{ $t('message.streamis.projectFile.delete') }}
+                  </Button></Poptip
+                >
               </div>
             </template>
           </Table>
@@ -391,6 +403,23 @@ export default {
       this.pageData.pageSize = pageSize
       this.pageData.pageNow = 1
       this.getJobList(true)
+    },
+    handleDelete(rowData) {
+      this.loading = true
+      api
+        .fetch(
+          `streamis/streamProjectManager/project/files/delete?fileName=${rowData.fileName}&projectName=${rowData.projectName}`,
+          'get'
+        )
+        .then(res => {
+          console.log(res)
+          this.loading = false
+          this.handlePageSizeChange(this.pageData.pageSize)
+        })
+        .catch(e => {
+          this.loading = false
+          console.log(e)
+        })
     }
   }
 }
