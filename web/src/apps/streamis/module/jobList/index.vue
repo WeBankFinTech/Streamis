@@ -446,19 +446,6 @@ export default {
             this.loading = false
             this.modalVisible = true
             this.versionDatas = [res.detail]
-            // this.versionDatas = [
-            //   {
-            //     id: 1,
-            //     version: "v00001",
-            //     description: "test",
-            //     releaseTime: "2021-03-01 00:00:00",
-            //     createBy: "johnnwang",
-            //     projectId: 1,
-            //     bmlId: 1111,
-            //     bmlVersion: "v000001",
-            //     dssEnv: ""
-            //   }
-            // ];
           }
         })
         .catch(e => {
