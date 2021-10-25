@@ -133,7 +133,8 @@ export default {
         )
         .then(res => {
           console.log(res)
-          this.handlePageSizeChange(this.pageData.pageSize);
+          this.handlePageSizeChange(this.pageData.pageSize)
+          this.$emit('delelteSuccess')
         })
         .catch(e => {
           console.log(e)
