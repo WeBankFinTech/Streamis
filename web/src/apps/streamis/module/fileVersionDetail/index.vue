@@ -12,7 +12,7 @@
           <div>
             <a
               :href="
-                `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}`
+                `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?storePath=${row.storePath}`
               "
               download
             >

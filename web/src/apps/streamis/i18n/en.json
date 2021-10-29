@@ -64,7 +64,8 @@
         "projectID":"Project id",
         "dssLabels":"Dss labels",
         "resourceId":"Resource id",
-        "bmlVersion":"Bml version"
+        "bmlVersion":"Bml version",
+        "showDetail": "Open"
       },
       "jobMoudleRouter": {
         "paramsConfiguration": "Params configuration",
