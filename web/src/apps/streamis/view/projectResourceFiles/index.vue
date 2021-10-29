@@ -70,19 +70,17 @@
               </div>
             </template>
             <template slot-scope="{ row, index }" slot="version">
-              <div
-                class="version"
-                v-show="index !== 0"
-                @click="versionDetail(row)"
-              >
-                {{ row.version }}
+              <div v-show="index !== 0" class="versionWrap">
+                <div class="version" @click="versionDetail(row)">
+                  {{ row.version }}
+                </div>
               </div>
             </template>
             <template slot-scope="{ row, index }" slot="operation">
               <div v-show="index !== 0">
                 <a
                   :href="
-                    `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}`
+                    `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?storePath=${row.storePath}`
                   "
                   download
                 >
@@ -422,8 +420,8 @@ export default {
           console.log(e)
         })
     },
-    delelteSuccess(){
-      this.getJobList(true);
+    delelteSuccess() {
+      this.getJobList(true)
     }
   }
 }
@@ -435,17 +433,18 @@ export default {
 .divider {
   height: 30px;
 }
-.version {
-  cursor: pointer;
-  background: rgba(22, 155, 213, 1);
-  color: #fff;
+.versionWrap {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
 }
 .version {
-  background-color: rgba(22, 155, 213, 1);
-  width: 40px;
+  background-color: #008000;
   text-align: center;
   color: #ffffff;
+  font-size: 16px;
   cursor: pointer;
+  padding: 0px 3px;
 }
 .navWrap {
   display: flex;
