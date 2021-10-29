@@ -63,7 +63,8 @@
         "projectID":"项目id",
         "dssLabels":"dss环境",
         "resourceId":"bml id",
-        "bmlVersion":"bml版本"
+        "bmlVersion":"bml版本",
+        "showDetail": "打开"
       },
       "jobMoudleRouter": {
         "paramsConfiguration": "参数配置",
