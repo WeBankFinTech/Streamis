@@ -222,7 +222,7 @@
                 "
                 :label-width="labelWidth"
               >
-                <Select v-model="alertSet.alertUser" class="select">
+                <Select v-model="alertSet.alertUser" multiple class="select">
                   <Option
                     v-for="(item, index) in users"
                     :value="item"
@@ -256,7 +256,11 @@
                 "
                 :label-width="labelWidth"
               >
-                <Select v-model="alertSet.alertFailureUser" class="select">
+                <Select
+                  v-model="alertSet.alertFailureUser"
+                  multiple
+                  class="select"
+                >
                   <Option
                     v-for="(item, index) in users"
                     :value="item"
@@ -297,7 +301,11 @@
                 "
                 :label-width="labelWidth"
               >
-                <Select v-model="authoritySet.authorityVisible" class="select">
+                <Select
+                  v-model="authoritySet.authorityVisible"
+                  multiple
+                  class="select"
+                >
                   <Option
                     v-for="(item, index) in users"
                     :value="item"
@@ -344,9 +352,13 @@ function resetFormValue(vueThis, dataName, configs) {
     const { key, value, valueLists, name } = item
     const temp = (key && key.replace(/\./g, '').toLowerCase()) || ''
     const hit = keys.find(i => temp.endsWith(i.toLowerCase()))
+    const isUser = ['告警用户', '失败时告警用户', '可见人员'].includes(name)
     let finalValue =
       name === '告警规则' ? [] : value || value === 0 ? value : ''
-    if (valueLists) {
+    if (isUser && finalValue) {
+      finalValue = finalValue.split(',')
+    }
+    if (valueLists && !isUser) {
       const ar = []
       valueLists.forEach(option => {
         ar.push({
@@ -390,23 +402,24 @@ export default {
       alertSet: {
         alertRule: [],
         alertLeve: '',
-        alertUser: '',
+        alertUser: [],
         alertFailureLevel: '',
-        alertFailureUser: ''
+        alertFailureUser: []
       },
       alertLeveOptions: [],
       alertFailureLevelOptions: [],
       alertRuleOptions: [],
       authoritySet: {
         authorityAuthor: '',
-        authorityVisible: ''
+        authorityVisible: []
       },
       authorityVisibleOptions: [],
       authorityAuthorOptions: [],
       saveLoading: false,
       fullTree: {},
       hadSaved: false,
-      users: []
+      users: [],
+      originFullTree: {}
     }
   },
   mounted() {
@@ -444,6 +457,7 @@ export default {
               permissionConfig
             } = fullTree
             this.fullTree = fullTree
+            this.originFullTree = { ...fullTree }
             resetFormValue(this, 'resourceConfig', resourceConfig)
             resetFormValue(this, 'productionConfig', produceConfig)
             resetFormValue(this, 'alertSet', alarmConfig)
@@ -451,8 +465,8 @@ export default {
             if (parameterConfig) {
               const parameters = []
               parameterConfig.forEach(item => {
-                const { key, vlaue } = item
-                parameters.push([key, vlaue])
+                const { key, value, configkeyId } = item
+                parameters.push([key, value, configkeyId])
               })
               this.flinkParameters = parameters
             }
@@ -490,13 +504,17 @@ export default {
         const obj = this.fullTree[map[name]]
         const values = this[name]
         if (name === 'flinkParameters') {
+          const temp = this.originFullTree.parameterConfig || []
+          const hit = temp.find(item => !!item.configkeyId)
+          const configkeyId = hit ? hit.configkeyId : 7
           if (values[0][0]) {
             const params = []
             values.forEach(ar => {
               params.push({
-                key: ar[0],
                 name: ar[0],
-                value: ar[1]
+                key: ar[0],
+                value: ar[1],
+                configkeyId: ar[2] || configkeyId
               })
             })
             this.fullTree.parameterConfig = params
