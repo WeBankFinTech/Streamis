@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright 2019 WeBank
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+
+<mapper namespace="com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper">
+    <resultMap id="StreamJobMap" type="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="project_id" property="projectId" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="current_task_id" property="currentTaskId" jdbcType="BIGINT"/>
+        <result column="current_version" property="currentVersion" jdbcType="VARCHAR"/>
+        <result column="current_release_time" property="currentReleaseTime" jdbcType="DATE"/>
+        <result column="status" property="status" jdbcType="INTEGER"/>
+        <result column="org_identification" property="orgIdentification" jdbcType="BIGINT"/>
+        <result column="create_by" property="createBy" jdbcType="VARCHAR"/>
+        <result column="label" property="label" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="submit_user" property="submitUser" jdbcType="VARCHAR"/>
+        <result column="job_type" property="jobType" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap id="StreamJobVersionMap" type="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="job_id" property="jobId" jdbcType="BIGINT"/>
+        <result column="version" property="version" jdbcType="VARCHAR"/>
+        <result column="program_arguments" property="programArguments" jdbcType="VARCHAR"/>
+        <result column="bml_version" property="bmlVersion" jdbcType="VARCHAR"/>
+        <result column="bml_id" property="bmlId" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="StreamJobSqlResourceMap" type="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobSqlResource">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <id column="job_version_id" property="jobVersionId" jdbcType="BIGINT"/>
+        <id column="execute_sql" property="executeSql" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Job_Column">
+        `id`,`project_id`,`name`,`current_task_id`,`current_version`,`current_release_time`,`status`,`org_identification`,`create_by`,`label`,`description`,`submit_user`,`job_type`
+    </sql>
+
+    <sql id="JobVersion_Column">
+        `id`,`job_id`,`version`,`program_arguments`,`bml_version`,`bml_id`
+    </sql>
+
+    <sql id="JobSqlResource_Column">
+        `id`,`job_version_id`,`execute_sql`
+    </sql>
+
+    <select id="getJobById" resultMap="StreamJobMap">
+        SELECT <include refid="Job_Column" /> FROM `linkis_stream_job` WHERE id=#{jobId}
+    </select>
+
+    <select id="getJobLists" resultMap="StreamJobMap">
+        select j.`id`,j.`project_id`,j.`name`,j.`job_type`,j.`current_task_id`,j.`current_version`,j.`current_release_time`,l.`status`,j.`org_identification`,j.`label`,j.`description` from `linkis_stream_job` j left join `linkis_stream_task`  l on j.`current_task_id`=l.id
+        <where>
+            1=1
+            <if test="projectId != null"> AND j.project_id=#{projectId} </if>
+            <if test="name != null and name!=''">
+                AND j.`name` like concat('%', #{name}, '%')
+            </if>
+            <if test="status != null">
+                AND l.`status`=#{status}
+            </if>
+            <if test="createBy != null and createBy != ''">
+                AND j.`create_by` like concat('%', #{createBy}, '%')
+            </if>
+        </where>
+    </select>
+
+
+    <select id="getByJobCount" resultMap="StreamJobMap">
+        select j.`id`,l.`status` from `linkis_stream_job` j  join `linkis_stream_task`  l on j.`current_task_id`=l.id where project_id=#{projectId}
+    </select>
+
+    <select id="getJobSQLResourcesByJobId" resultMap="StreamJobSqlResourceMap">
+        select <include refid="JobSqlResource_Column" /> from linkis_stream_job_sql_resource
+        <where>
+            <if test="jobVersionId !=null"> job_version_id=#{jobVersionId}</if>
+        </where>
+    </select>
+
+    <select id="getJobVersionsById" resultMap="StreamJobVersionMap">
+        select <include refid="JobVersion_Column" /> from linkis_stream_job_version
+        <where>
+            <if test="jobId != null"> job_id=#{jobId} </if>
+            <if test="version != null"> AND version=#{version}</if>
+        </where>
+    </select>
+
+
+    <insert id="insertJob" useGeneratedKeys="true" keyProperty="id" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
+        INSERT INTO linkis_stream_job(`project_id`,`name`,`current_task_id`,`current_version`,`current_release_time`,`org_identification`,`create_by`,`label`,`description`,`job_type`,`submit_user`,`status`) VALUES(#{projectId},#{name},#{currentTaskId},#{currentVersion},#{currentReleaseTime},#{orgIdentification},#{createBy},#{label},#{description},#{jobType},#{submitUser},#{status})
+    </insert>
+
+    <insert id="insertJobVersion" useGeneratedKeys="true" keyProperty="id" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion">
+        INSERT INTO linkis_stream_job_version(`job_id`,`version`,`program_arguments`,`bml_version`,`bml_id`) VALUES(#{jobId},#{version},#{programArguments},#{bmlVersion},#{bmlId})
+    </insert>
+
+    <insert id="insertJobSqlResource" useGeneratedKeys="true" keyProperty="id" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobSqlResource">
+        INSERT INTO linkis_stream_job_sql_resource(`job_version_id`,`execute_sql`) VALUES(#{jobVersionId},#{executeSql})
+    </insert>
+
+    <update id="updateJob" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
+        UPDATE linkis_stream_job
+        <trim prefix="set" suffixOverrides=",">
+            <if test="name != null and name != ''">
+                name=#{name},
+            </if>
+            <if test="currentTaskId != null">
+                current_task_id=#{currentTaskId},
+            </if>
+            <if test="currentVersion != null">
+                current_version=#{currentVersion},
+            </if>
+            <if test="currentReleaseTime != null">
+                current_release_time=#{currentReleaseTime},
+            </if>
+            <if test="status != null">
+                status=#{status},
+            </if>
+            <if test="label != null">
+                label=#{label},
+            </if>
+            <if test="description != null">
+                description=#{description},
+            </if>
+        </trim>
+         WHERE id=#{id}
+    </update>
+
+    <update id="updateJobVersion" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion">
+        UPDATE linkis_stream_job_version
+        <trim prefix="set" suffixOverrides=",">
+            <if test="programArguments != null">
+                program_arguments={programArguments},
+            </if>
+        </trim>
+            WHERE id=#{id}
+    </update>
+
+    <update id="updateJobSqlResource" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobSqlResource">
+        UPDATE linkis_stream_job_sql_resource 
+        <trim prefix="set" suffixOverrides=",">
+            <if test="executeSql != null">
+                execute_sql=#{executeSql},
+            </if>
+        </trim>
+            WHERE id=#{id}
+    </update>
+
+
+</mapper>
