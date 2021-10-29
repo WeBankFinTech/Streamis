@@ -1,39 +1,89 @@
 <template>
   <div>
     <div class="itemWrap" v-if="!isSql">
-      <p>{{ $t("message.streamis.jobDetail.flinkJarPac") }}</p>
+      <p>{{ $t('message.streamis.jobDetail.flinkJarPac') }}</p>
       <div>
         <Table :columns="columns" :data="jarData.mainClassJar" border>
           <template slot-scope="{ row }" slot="operation">
-            <div>{{ row.id }}</div>
+            <div>
+              <a
+                :href="
+                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?storePath=${row.storePath}`
+                "
+                download
+              >
+                <Button
+                  type="primary"
+                  style="width:55px;height:22px;background:rgba(22, 155, 213, 1);margin-right: 5px"
+                >
+                  {{ $t('message.streamis.projectFile.download') }}
+                </Button>
+              </a>
+            </div>
           </template>
         </Table>
       </div>
     </div>
     <div class="itemWrap" v-if="isSql">
-      <p>{{ $t("message.streamis.jobDetail.sqlContent") }}</p>
-      <div class="sql">{{jarData.sql}}</div>
+      <p>{{ $t('message.streamis.jobDetail.sqlContent') }}</p>
+      <div class="sql">{{ jarData.sql }}</div>
     </div>
     <div class="itemWrap" v-if="!isSql">
       <p>Program Arguement</p>
-      <div class="programArguement">{{jarData.args}}</div>
+      <div class="programArguement">{{ jarData.args }}</div>
     </div>
     <div class="itemWrap" v-if="!isSql">
-      <p>{{ $t("message.streamis.jobDetail.dependJarPac") }}</p>
+      <p>{{ $t('message.streamis.jobDetail.dependJarPac') }}</p>
       <div>
-        <Table :columns="columns.filter(item => item.key !== 'entryClass')" :data="jarData.dependencyJars" border>
+        <Table
+          :columns="columns.filter(item => item.key !== 'entryClass')"
+          :data="jarData.dependencyJars"
+          border
+        >
           <template slot-scope="{ row }" slot="operation">
-            <div>{{ row.id }}</div>
+            <div>
+              <a
+                :href="
+                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?storePath=${row.storePath}`
+                "
+                download
+              >
+                <Button
+                  type="primary"
+                  style="width:55px;height:22px;background:rgba(22, 155, 213, 1);margin-right: 5px"
+                >
+                  {{ $t('message.streamis.projectFile.download') }}
+                </Button>
+              </a>
+            </div>
           </template>
         </Table>
       </div>
     </div>
     <div class="itemWrap" v-if="!isSql">
-      <p>{{ $t("message.streamis.jobDetail.userResource") }}</p>
+      <p>{{ $t('message.streamis.jobDetail.userResource') }}</p>
       <div>
-        <Table :columns="columns.filter(item => item.key !== 'entryClass')" :data="jarData.resources" border>
+        <Table
+          :columns="columns.filter(item => item.key !== 'entryClass')"
+          :data="jarData.resources"
+          border
+        >
           <template slot-scope="{ row }" slot="operation">
-            <div>{{ row.id }}</div>
+            <div>
+              <a
+                :href="
+                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?storePath=${row.storePath}`
+                "
+                download
+              >
+                <Button
+                  type="primary"
+                  style="width:55px;height:22px;background:rgba(22, 155, 213, 1);margin-right: 5px"
+                >
+                  {{ $t('message.streamis.projectFile.download') }}
+                </Button>
+              </a>
+            </div>
           </template>
         </Table>
       </div>
@@ -50,41 +100,42 @@ export default {
     return {
       columns: [
         {
-          title: "id",
-          key: "id"
+          title: 'id',
+          key: 'id'
         },
         {
-          title: this.$t("message.streamis.jobDetail.columns.name"),
-          key: "fileName"
+          title: this.$t('message.streamis.jobDetail.columns.name'),
+          key: 'fileName'
         },
         {
-          title: this.$t("message.streamis.jobDetail.columns.version"),
-          key: "version"
-        },
-        {
-          title: this.$t(
-            "message.streamis.jobDetail.columns.versionDescription"
-          ),
-          key: "description"
-        },
-        {
-          title: "Main Class",
-          key: "mainClass"
+          title: this.$t('message.streamis.jobDetail.columns.version'),
+          key: 'version'
         },
         {
           title: this.$t(
-            "message.streamis.jobDetail.columns.versionUploadTime"
+            'message.streamis.jobDetail.columns.versionDescription'
           ),
-          key: "createTime"
+          key: 'description'
+        },
+        // {
+        //   title: "Main Class",
+        //   key: "mainClass"
+        // },
+        {
+          title: this.$t(
+            'message.streamis.jobDetail.columns.versionUploadTime'
+          ),
+          key: 'createTime'
         },
         {
-          title: this.$t("message.streamis.jobDetail.columns.operation"),
-          key: "operation"
+          title: this.$t('message.streamis.jobDetail.columns.operation'),
+          key: 'operation',
+          slot: 'operation'
         }
-      ],
-    };
+      ]
+    }
   }
-};
+}
 </script>
 <style lang="scss" scoped>
 .itemWrap {
@@ -98,15 +149,15 @@ export default {
     margin-top: 10px;
   }
 }
-.programArguement{
+.programArguement {
   background: rgba(94, 94, 94, 1);
   color: #fff;
   padding: 10px 20px;
-  min-height: 64px;;
+  min-height: 64px;
 }
-.sql{
+.sql {
   background: #f8f8f9;
   padding: 10px 20px;
-  min-height: 64px;;
+  min-height: 64px;
 }
 </style>
