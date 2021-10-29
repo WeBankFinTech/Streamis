@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright 2019 WeBank
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+
+<mapper namespace="com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamProjectMapper">
+    <resultMap id="StreamProjectMap" type="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamProject">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="workspace_id" property="workspaceId" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="create_by" property="createBy" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
+
+    <sql id="Project_Column">
+        `id`,`workspace_id`,`name`,`create_by`
+    </sql>
+
+    <select id="getByProjects" resultMap="StreamProjectMap">
+        select <include refid="Project_Column"/> from linkis_stream_project
+        <where>
+            1=1
+            <if test="id !=null"> AND id=#{id}</if>
+            <if test="workspaceId != null"> AND workspace_id=#{workspaceId}</if>
+            <if test="name != null and name !=''"> AND `name`=#{name}</if>
+        </where>
+    </select>
+
+    <insert id="instertProject" useGeneratedKeys="true" keyProperty="id" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamProject">
+        INSERT INTO linkis_stream_project(<include refid="Project_Column" />) VALUES(#{id},#{workspaceId},#{name},#{createBy})
+    </insert>
+
+    <update id="updateProject" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamProject" >
+        UPDATE linkis_stream_project
+        <trim prefix="set" suffixOverrides=",">
+            <if test="name != null and name != ''">
+                name=#{name},
+            </if>
+            <if test="createBy != null and createBy=!=''">
+                create_by=#{createBy},
+            </if>
+        </trim>
+          WHERE id=#{id}
+    </update>
+
+    <select id="getByProjects" resultMap="StreamProjectMap">
+        select <include refid="Project_Column" /> from linkis_stream_project
+        <where>
+            1=1
+            <if test="id != null">
+                AND id=#{id}
+            </if>
+            <if test="workspaceId != null">
+                AND workspace_id=#{workspaceId}
+            </if>
+            <if test="name != null and name!=''">
+                AND `name`=#{name}
+            </if>
+        </where>
+    </select>
+</mapper>
