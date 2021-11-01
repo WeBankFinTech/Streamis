@@ -355,6 +355,7 @@ function resetFormValue(vueThis, dataName, configs) {
   const newValues = {}
   const keys = Object.keys(vueThis[dataName])
   const options = {}
+  const temp1 = []
   configs.forEach(item => {
     const { key, value, valueLists, name } = item
     const temp = (key && key.replace(/\./g, '').toLowerCase()) || ''
@@ -364,8 +365,9 @@ function resetFormValue(vueThis, dataName, configs) {
     if (isUser && finalValue) {
       finalValue = finalValue.split(',')
     }
-    if (name === '告警规则') {
-      finalValue = finalValue ? finalValue.split(',') : []
+    if (name === '告警规则' && finalValue) {
+      temp1.push(finalValue)
+      finalValue = [...temp1]
     }
     if (valueLists && !isUser) {
       const ar = []
@@ -468,7 +470,7 @@ export default {
             resetFormValue(this, 'productionConfig', produceConfig)
             resetFormValue(this, 'alertSet', alarmConfig)
             resetFormValue(this, 'authoritySet', permissionConfig)
-            console.log(this.alertSet);
+            console.log(this.alertSet)
             if (parameterConfig) {
               const parameters = []
               parameterConfig.forEach(item => {
