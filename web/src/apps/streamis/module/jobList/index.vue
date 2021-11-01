@@ -343,6 +343,7 @@ export default {
             })
             datas.unshift({})
             this.tableDatas = datas
+            console.log(JSON.stringify(datas));
             this.pageData.total = parseInt(res.totalPage)
             this.loading = false
           }
@@ -412,7 +413,8 @@ export default {
           name: rowData.name,
           version: rowData.version,
           status: rowData.status,
-          jobType: rowData.jobType
+          jobType: rowData.jobType,
+          projectName: rowData.projectName
         }
       })
     },

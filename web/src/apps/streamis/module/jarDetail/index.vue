@@ -8,7 +8,7 @@
             <div>
               <a
                 :href="
-                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?storePath=${row.storePath}`
+                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}&projectName=${projectName}`
                 "
                 download
               >
@@ -44,7 +44,7 @@
             <div>
               <a
                 :href="
-                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?storePath=${row.storePath}`
+                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}&projectName=${projectName}`
                 "
                 download
               >
@@ -72,7 +72,7 @@
             <div>
               <a
                 :href="
-                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?storePath=${row.storePath}`
+                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}&projectName=${projectName}`
                 "
                 download
               >
@@ -115,7 +115,7 @@ export default {
           title: this.$t(
             'message.streamis.jobDetail.columns.versionDescription'
           ),
-          key: 'description'
+          key: 'comment'
         },
         // {
         //   title: "Main Class",
@@ -132,7 +132,8 @@ export default {
           key: 'operation',
           slot: 'operation'
         }
-      ]
+      ],
+      projectName: this.$route.params.projectName
     }
   }
 }
