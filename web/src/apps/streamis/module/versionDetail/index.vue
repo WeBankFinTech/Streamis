@@ -8,7 +8,7 @@
       @on-cancel="cancel"
     >
       <Table :columns="columns" :data="datas" border>
-        <template slot-scope="{ row }" slot="operation">
+        <template slot-scope="{ row }" slot="operation" v-if="!fromHistory">
           <div>
             <Button
               @click="showDetail(row)"
@@ -28,7 +28,9 @@ export default {
   components: { table },
   props: {
     visible: Boolean,
-    datas: Array
+    datas: Array,
+    fromHistory: Boolean,
+    projectName: String
   },
   data() {
     return {
@@ -74,6 +76,7 @@ export default {
           status: rowData.status,
           jobType: rowData.jobType,
           isHistory: true,
+          projectName: this.projectName
         }
       })
     },
