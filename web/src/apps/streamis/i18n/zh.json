@@ -100,7 +100,7 @@
         "operation": "操作",
         "showVersionInfo":"查看版本信息",
         "detail":"详情",
-        "logs":"历史版本"
+        "logs":"历史日志"
       },
       "jobDetail": {
         "flinkJarPac": "Flink主Jar包",
