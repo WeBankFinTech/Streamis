@@ -190,13 +190,22 @@
                 "
                 :label-width="labelWidth"
               >
-                <RadioGroup v-model="alertSet.alertRule">
+                <CheckboxGroup v-model="alertSet.alertRule">
+                  <Checkbox
+                    :label="option.value"
+                    v-for="option in alertRuleOptions"
+                    :key="option.value"
+                  >
+                    <span>{{ option.title }}</span>
+                  </Checkbox>
+                </CheckboxGroup>
+                <!-- <RadioGroup v-model="alertSet.alertRule">
                   <Radio
                     :label="option.value"
                     v-for="option in alertRuleOptions"
                     :key="option.value"
                   ></Radio>
-                </RadioGroup>
+                </RadioGroup> -->
               </FormItem>
               <FormItem
                 :label="
@@ -351,10 +360,12 @@ function resetFormValue(vueThis, dataName, configs) {
     const temp = (key && key.replace(/\./g, '').toLowerCase()) || ''
     const hit = keys.find(i => temp.endsWith(i.toLowerCase()))
     const isUser = ['告警用户', '失败时告警用户', '可见人员'].includes(name)
-    let finalValue =
-      name === '告警规则' ? [] : value || value === 0 ? value : ''
+    let finalValue = value || value === 0 ? value : ''
     if (isUser && finalValue) {
       finalValue = finalValue.split(',')
+    }
+    if (name === '告警规则') {
+      finalValue = finalValue ? finalValue.split(',') : []
     }
     if (valueLists && !isUser) {
       const ar = []
@@ -364,11 +375,7 @@ function resetFormValue(vueThis, dataName, configs) {
           title: option.value
         })
         if (option.selected) {
-          if (name === '告警规则') {
-            finalValue.push(option.value)
-          } else {
-            finalValue = option.value
-          }
+          finalValue = option.value
         }
       })
       options[hit + 'Options'] = ar
@@ -398,7 +405,7 @@ export default {
       rebootStrategyOptions: [],
       flinkParameters: [[]],
       alertSet: {
-        alertRule: "",
+        alertRule: [],
         alertLeve: '',
         alertUser: [],
         alertFailureLevel: '',
