@@ -9,7 +9,11 @@
       <div class="name">{{ name }}</div>
       <div class="version">{{ version }}</div>
       <div class="statusWrap">
-        <div class="circle" :style="{ borderColor: status.color }" v-if="!!status.name"></div>
+        <div
+          class="circle"
+          :style="{ borderColor: status.color }"
+          v-if="!!status.name"
+        ></div>
         <p :style="{ color: status.color }" v-if="!!status.name">
           {{ $t(`message.streamis.jobStatus.${status.name}`) }}
         </p>
@@ -49,7 +53,7 @@
         name="jobDetail"
         :label="$t('message.streamis.moduleName.jobDetail')"
       >
-        <jobDetail />
+        <jobDetail/>
       </TabPane>
     </Tabs>
   </div>
@@ -77,6 +81,7 @@ export default {
       tabs: ['jobSummary', 'jobHistory', 'jobConfig', 'jobDetail'],
       name: this.$route.params.name,
       version: this.$route.params.version,
+      projectName: this.$route.params.projectName,
       status: status || {},
       isHistory: !!this.$route.params.isHistory
     }
