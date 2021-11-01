@@ -374,7 +374,7 @@ function resetFormValue(vueThis, dataName, configs) {
           value: option.value,
           title: option.value
         })
-        if (option.selected) {
+        if (option.selected && name !== '告警规则') {
           finalValue = option.value
         }
       })
@@ -452,6 +452,7 @@ export default {
         )
         .then(res => {
           console.log(res)
+
           if (res && res.fullTree) {
             const { fullTree } = res
             const {
@@ -467,6 +468,7 @@ export default {
             resetFormValue(this, 'productionConfig', produceConfig)
             resetFormValue(this, 'alertSet', alarmConfig)
             resetFormValue(this, 'authoritySet', permissionConfig)
+            console.log(this.alertSet);
             if (parameterConfig) {
               const parameters = []
               parameterConfig.forEach(item => {
