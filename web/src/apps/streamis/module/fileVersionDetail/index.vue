@@ -12,7 +12,7 @@
           <div>
             <a
               :href="
-                `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?storePath=${row.storePath}`
+                `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}&projectName=${projectName}`
               "
               download
             >
@@ -61,7 +61,8 @@ export default {
     visible: Boolean,
     datas: Array,
     versionLoading: Boolean,
-    total: Number
+    total: Number,
+    projectName: String
   },
   data() {
     return {
