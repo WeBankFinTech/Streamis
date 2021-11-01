@@ -190,15 +190,13 @@
                 "
                 :label-width="labelWidth"
               >
-                <CheckboxGroup v-model="alertSet.alertRule">
-                  <Checkbox
+                <RadioGroup v-model="alertSet.alertRule">
+                  <Radio
                     :label="option.value"
                     v-for="option in alertRuleOptions"
                     :key="option.value"
-                  >
-                    <span>{{ option.title }}</span>
-                  </Checkbox>
-                </CheckboxGroup>
+                  ></Radio>
+                </RadioGroup>
               </FormItem>
               <FormItem
                 :label="
@@ -400,7 +398,7 @@ export default {
       rebootStrategyOptions: [],
       flinkParameters: [[]],
       alertSet: {
-        alertRule: [],
+        alertRule: "",
         alertLeve: '',
         alertUser: [],
         alertFailureLevel: '',
