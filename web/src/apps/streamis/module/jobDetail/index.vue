@@ -24,7 +24,7 @@ export default {
     return {
       detailName: 'jarDetail',
       isSql: false,
-      data: {}
+      data: {},
     }
   },
   mounted() {
