@@ -152,6 +152,7 @@
     <versionDetail
       :visible="modalVisible"
       :datas="versionDatas"
+      :projectName="projectName"
       @modalCancel="modalCancel"
     />
     <uploadJobJar
@@ -296,7 +297,8 @@ export default {
       choosedRowId: '',
       modalVisible: false,
       versionDatas: [],
-      uploadVisible: false
+      uploadVisible: false,
+      projectName: 'flinkJarTest3'
     }
   },
   mounted() {
@@ -312,7 +314,7 @@ export default {
       const params = {
         pageNow: current,
         pageSize,
-        projectName: 'flinkJarTest3'
+        projectName: this.projectName
       }
       const { jobName, jobStatus } = this.query
       if (jobName) {
