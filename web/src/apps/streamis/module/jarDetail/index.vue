@@ -8,7 +8,7 @@
             <div>
               <a
                 :href="
-                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}&projectName=${projectName}`
+                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}&projectName=${jarData.projectName || ''}`
                 "
                 download
               >
@@ -36,7 +36,7 @@
       <p>{{ $t('message.streamis.jobDetail.dependJarPac') }}</p>
       <div>
         <Table
-          :columns="columns.filter(item => item.key !== 'entryClass')"
+          :columns="columns.filter(item => item.key !== 'mainClass')"
           :data="jarData.dependencyJars"
           border
         >
@@ -44,7 +44,7 @@
             <div>
               <a
                 :href="
-                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}&projectName=${projectName}`
+                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}&projectName=${jarData.projectName || ''}`
                 "
                 download
               >
@@ -64,7 +64,7 @@
       <p>{{ $t('message.streamis.jobDetail.userResource') }}</p>
       <div>
         <Table
-          :columns="columns.filter(item => item.key !== 'entryClass')"
+          :columns="columns.filter(item => item.key !== 'mainClass')"
           :data="jarData.resources"
           border
         >
@@ -72,7 +72,7 @@
             <div>
               <a
                 :href="
-                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}&projectName=${projectName}`
+                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}&projectName=${jarData.projectName || ''}`
                 "
                 download
               >
@@ -117,10 +117,10 @@ export default {
           ),
           key: 'comment'
         },
-        // {
-        //   title: "Main Class",
-        //   key: "mainClass"
-        // },
+        {
+          title: "Main Class",
+          key: "mainClass"
+        },
         {
           title: this.$t(
             'message.streamis.jobDetail.columns.versionUploadTime'
