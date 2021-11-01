@@ -30,6 +30,7 @@
     <versionDetail
       :visible="modalVisible"
       :datas="versionDatas"
+      :fromHistory="fromHistory"
       @modalCancel="modalCancel"
     />
   </div>
@@ -86,7 +87,9 @@ export default {
       ],
       tableDatas: [],
       modalVisible: false,
-      versionDatas: []
+      versionDatas: [],
+      jobId: this.$route.params.id,
+      fromHistory: true
     }
   },
   mounted() {
@@ -97,24 +100,6 @@ export default {
     getDatas() {
       const { id, version } = this.$route.params || {}
       const queries = `?jobId=${id}&version=${version}`
-      // this.tableDatas = [
-      //   {},
-      //   {
-      //     taskId: 2,
-      //     name: 'flinkJarTestc',
-      //     workspaceName: null,
-      //     projectName: 'flinkJarTest3',
-      //     jobType: 'flink.jar',
-      //     label: 'e,t,y,h,g',
-      //     createBy: 'root',
-      //     createTime: 1634092489000,
-      //     status: 0,
-      //     version: 'v00001',
-      //     lastVersionTime: '2021-10-13 10:34:49',
-      //     description: '????FlinkJar??Job3'
-      //   }
-      // ]
-      // return
       api
         .fetch('streamis/streamJobManager/job/execute/history' + queries, 'get')
         .then(res => {
@@ -130,7 +115,7 @@ export default {
       api
         .fetch(
           'streamis/streamJobManager/job/version?jobId=' +
-            data.taskId +
+            this.jobId +
             '&version=' +
             data.version,
           'get'
