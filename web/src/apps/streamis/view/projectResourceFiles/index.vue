@@ -80,7 +80,7 @@
               <div v-show="index !== 0">
                 <a
                   :href="
-                    `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?storePath=${row.storePath}`
+                    `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}&projectName=${projectName}`
                   "
                   download
                 >
@@ -131,6 +131,7 @@
       :datas="versionDatas"
       :total="versionTotal"
       :loading="versionLoading"
+      :projectName="projectName"
       @modalCancel="modalCancel"
       @refreshVersionDatas="refreshVersionDatas"
       @delelteSuccess="delelteSuccess"
@@ -226,7 +227,8 @@ export default {
         total: 0,
         pageNow: 1,
         pageSize: 10
-      }
+      },
+      projectName: 'flinkJarTest3'
     }
   },
   mounted() {
@@ -240,7 +242,7 @@ export default {
       }
       this.loading = true
       const params = {
-        projectName: 'flinkJarTest3',
+        projectName: this.projectName,
         pageNow: this.pageData.pageNow,
         pageSize: this.pageData.pageSize
       }
