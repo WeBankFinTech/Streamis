@@ -4,105 +4,160 @@
       <template slot-scope="{ row }" slot="operation">
         <div style="margin-left: 5px" @click="showVersionInfo(row)">
           <a href="javascript:void(0)">
-            {{ $t("message.streamis.jobHistoryColumns.showVersionInfo") }}
+            {{ $t('message.streamis.jobHistoryColumns.showVersionInfo') }}
           </a>
         </div>
-        <div style="margin-left: 5px" @click="showDetail(row)" v-show="row.status === 'running'">
+        <div
+          style="margin-left: 5px"
+          @click="showDetail(row)"
+          v-show="row.status === 'running'"
+        >
           <a href="javascript:void(0)">
-            {{ $t("message.streamis.jobHistoryColumns.detail") }}
+            {{ $t('message.streamis.jobHistoryColumns.detail') }}
           </a>
         </div>
-        <div style="margin-left: 5px" @click="showLogs(row)" v-show="row.status !== 'running'">
+        <div
+          style="margin-left: 5px"
+          @click="showLogs(row)"
+          v-show="row.status !== 'running'"
+        >
           <a href="javascript:void(0)">
-            {{ $t("message.streamis.jobHistoryColumns.logs") }}
+            {{ $t('message.streamis.jobHistoryColumns.logs') }}
           </a>
         </div>
       </template>
     </Table>
+    <versionDetail
+      :visible="modalVisible"
+      :datas="versionDatas"
+      @modalCancel="modalCancel"
+    />
   </div>
 </template>
 <script>
-import api from "@/common/service/api";
+import api from '@/common/service/api'
+import versionDetail from '@/apps/streamis/module/versionDetail'
 export default {
+  components: { versionDetail },
   data() {
     return {
       columns: [
         {
-          title: this.$t("message.streamis.jobHistoryColumns.taskId"),
-          key: "taskId"
+          title: this.$t('message.streamis.jobHistoryColumns.taskId'),
+          key: 'taskId'
         },
         {
-          title: this.$t("message.streamis.jobHistoryColumns.jobName"),
-          key: "jobName"
+          title: this.$t('message.streamis.jobHistoryColumns.jobName'),
+          key: 'jobName'
         },
         {
-          title: this.$t("message.streamis.jobHistoryColumns.creator"),
-          key: "creator"
+          title: this.$t('message.streamis.jobHistoryColumns.creator'),
+          key: 'creator'
         },
         {
-          title: this.$t("message.streamis.jobHistoryColumns.version"),
-          key: "version"
+          title: this.$t('message.streamis.jobHistoryColumns.version'),
+          key: 'version'
         },
         {
-          title: this.$t("message.streamis.jobHistoryColumns.status"),
-          key: "status"
+          title: this.$t('message.streamis.jobHistoryColumns.status'),
+          key: 'status'
         },
         {
-          title: this.$t("message.streamis.jobHistoryColumns.startTime"),
-          key: "startTime"
+          title: this.$t('message.streamis.jobHistoryColumns.startTime'),
+          key: 'startTime'
         },
         {
-          title: this.$t("message.streamis.jobHistoryColumns.endTime"),
-          key: "endTime"
+          title: this.$t('message.streamis.jobHistoryColumns.endTime'),
+          key: 'endTime'
         },
         {
-          title: this.$t("message.streamis.jobHistoryColumns.runTime"),
-          key: "runTime"
+          title: this.$t('message.streamis.jobHistoryColumns.runTime'),
+          key: 'runTime'
         },
         {
-          title: this.$t("message.streamis.jobHistoryColumns.stopCause"),
-          key: "stopCause"
+          title: this.$t('message.streamis.jobHistoryColumns.stopCause'),
+          key: 'stopCause'
         },
         {
-          title: this.$t("message.streamis.jobHistoryColumns.operation"),
-          key: "operation",
-          slot: "operation"
+          title: this.$t('message.streamis.jobHistoryColumns.operation'),
+          key: 'operation',
+          slot: 'operation'
         }
       ],
-      tableDatas: []
-    };
+      tableDatas: [],
+      modalVisible: false,
+      versionDatas: []
+    }
   },
   mounted() {
-    this.getDatas();
+    this.getDatas()
     console.log(this.$route.params)
   },
   methods: {
     getDatas() {
-      const {id, version} = this.$route.params || {};
+      const { id, version } = this.$route.params || {}
       const queries = `?jobId=${id}&version=${version}`
+      // this.tableDatas = [
+      //   {},
+      //   {
+      //     taskId: 2,
+      //     name: 'flinkJarTestc',
+      //     workspaceName: null,
+      //     projectName: 'flinkJarTest3',
+      //     jobType: 'flink.jar',
+      //     label: 'e,t,y,h,g',
+      //     createBy: 'root',
+      //     createTime: 1634092489000,
+      //     status: 0,
+      //     version: 'v00001',
+      //     lastVersionTime: '2021-10-13 10:34:49',
+      //     description: '????FlinkJar??Job3'
+      //   }
+      // ]
+      // return
       api
-        .fetch(
-          "streamis/streamJobManager/job/execute/history" + queries,
-          "get"
-        )
+        .fetch('streamis/streamJobManager/job/execute/history' + queries, 'get')
         .then(res => {
-          if(res && res.details){
-            this.tableDatas = res.details;
+          if (res && res.details) {
+            this.tableDatas = res.details
           }
         })
-        .catch(e => console.log(e));
+        .catch(e => console.log(e))
     },
-    showVersionInfo(row) {
-      console.log(row);
+    showVersionInfo(data) {
+      console.log(data)
+      this.loading = true
+      api
+        .fetch(
+          'streamis/streamJobManager/job/version?jobId=' +
+            data.taskId +
+            '&version=' +
+            data.version,
+          'get'
+        )
+        .then(res => {
+          console.log(res)
+          if (res) {
+            this.loading = false
+            this.modalVisible = true
+            this.versionDatas = [res.detail]
+          }
+        })
+        .catch(e => {
+          console.log(e)
+          this.loading = false
+        })
     },
     showDetail(row) {
-      console.log(row);
+      console.log(row)
     },
     showLogs(row) {
-      console.log(row);
+      console.log(row)
+    },
+    modalCancel() {
+      this.modalVisible = false
     }
   }
-};
+}
 </script>
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>
