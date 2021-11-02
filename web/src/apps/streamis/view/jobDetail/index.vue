@@ -3,14 +3,20 @@
     <div class="navWrap">
       <div @click="jumpToCenter()" class="center">
         <Icon type="ios-home" size="20" />
-        <span>{{ $t("message.streamis.routerName.realTimeJobCenter") }}</span>
+        <span>{{ $t('message.streamis.routerName.realTimeJobCenter') }}</span>
       </div>
       <div class="slash">/</div>
       <div class="name">{{ name }}</div>
       <div class="version">{{ version }}</div>
       <div class="statusWrap">
-        <div class="circle" :style="{ borderColor: status.color, }"></div>
-        <p :style="{ color: status.color, }">{{ $t(`message.streamis.jobStatus.${status.name}`) }}</p>
+        <div
+          class="circle"
+          :style="{ borderColor: status.color }"
+          v-if="!!status.name"
+        ></div>
+        <p :style="{ color: status.color }" v-if="!!status.name">
+          {{ $t(`message.streamis.jobStatus.${status.name}`) }}
+        </p>
       </div>
       <div class="linkis">
         <Button
@@ -18,7 +24,7 @@
           @click="jumpToLinkis()"
           style="height:24px;background:rgba(22, 155, 213, 1);margin-left: 15px;"
         >
-          {{ $t("message.streamis.enterLinkis") }}
+          {{ $t('message.streamis.enterLinkis') }}
         </Button>
       </div>
     </div>
@@ -26,6 +32,7 @@
       <TabPane
         name="jobSummary"
         :label="$t('message.streamis.moduleName.jobSummary')"
+        v-if="!isHistory"
       >
         <jobSummary />
       </TabPane>
@@ -38,6 +45,7 @@
       <TabPane
         name="jobConfig"
         :label="$t('message.streamis.moduleName.jobConfig')"
+        v-if="!isHistory"
       >
         <jobConfig />
       </TabPane>
@@ -45,17 +53,17 @@
         name="jobDetail"
         :label="$t('message.streamis.moduleName.jobDetail')"
       >
-        <jobDetail />
+        <jobDetail/>
       </TabPane>
     </Tabs>
   </div>
 </template>
 <script>
-import jobSummary from "@/apps/streamis/module/jobSummary";
-import jobHistory from "@/apps/streamis/module/jobHistory";
-import jobConfig from "@/apps/streamis/module/jobConfig";
-import jobDetail from "@/apps/streamis/module/jobDetail";
-import { jobStatuses } from "@/apps/streamis/common/common";
+import jobSummary from '@/apps/streamis/module/jobSummary'
+import jobHistory from '@/apps/streamis/module/jobHistory'
+import jobConfig from '@/apps/streamis/module/jobConfig'
+import jobDetail from '@/apps/streamis/module/jobDetail'
+import { allJobStatuses } from '@/apps/streamis/common/common'
 export default {
   components: {
     jobSummary: jobSummary.component,
@@ -64,36 +72,33 @@ export default {
     jobConfig: jobConfig.component
   },
   data() {
+    const status = allJobStatuses.find(
+      item => item.code === this.$route.params.status
+    )
+    console.log(this.$route.params)
     return {
-      choosedModule: this.$route.params.module || "jobSummary",
-      tabs: ["jobSummary", "jobHistory", "jobConfig", "jobDetail"],
+      choosedModule: this.$route.params.module || 'jobSummary',
+      tabs: ['jobSummary', 'jobHistory', 'jobConfig', 'jobDetail'],
       name: this.$route.params.name,
       version: this.$route.params.version,
-      status: this.$route.params.taskStatus
-        ? jobStatuses.find(item => item.code === this.$route.params.taskStatus)
-        : {}
-    };
-  },
-  mounted() {
-    // this.init();
-    console.log(this.$route.params);
+      projectName: this.$route.params.projectName,
+      status: status || {},
+      isHistory: !!this.$route.params.isHistory
+    }
   },
   methods: {
-    resize(height) {
-      this.navHeight = height;
-    },
     jumpToLinkis() {
       this.$router.push({
-        name: "RealTimeJobCenter"
-      });
+        name: 'RealTimeJobCenter'
+      })
     },
     jumpToCenter() {
       this.$router.push({
-        name: "RealTimeJobCenter"
-      });
+        name: 'RealTimeJobCenter'
+      })
     }
   }
-};
+}
 </script>
 <style lang="scss" scoped>
 .container {
