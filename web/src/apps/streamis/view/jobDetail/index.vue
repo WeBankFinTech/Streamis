@@ -53,7 +53,7 @@
         name="jobDetail"
         :label="$t('message.streamis.moduleName.jobDetail')"
       >
-        <jobDetail/>
+        <jobDetail />
       </TabPane>
     </Tabs>
   </div>
@@ -94,7 +94,8 @@ export default {
     },
     jumpToCenter() {
       this.$router.push({
-        name: 'RealTimeJobCenter'
+        name: 'RealTimeJobCenter',
+        query: { projectName: this.$route.params.projectName }
       })
     }
   }
