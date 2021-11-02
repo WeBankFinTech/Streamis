@@ -6,7 +6,8 @@
       "routerName": {
         "realTimeJobCenter": "Real-time job center",
         "scriptisRealTimeJob": "Scriptis real-time job",
-        "VisualisRealTimeJob": "Visualis real-time job"
+        "VisualisRealTimeJob": "Visualis real-time job",
+        "projectResourceFiles": "Project Resource Files"
       },
       "moduleName": {
         "coreIndex": "Core index",
@@ -26,7 +27,8 @@
         "success": "Success",
         "uploaded" : "Uploaded",
         "all": "All",
-        "stoped": "Stoped"
+        "stoped": "Stoped",
+        "unstarted": "Unstarted"
       },
       "formItems": {
         "queryBtn": "Query",
@@ -41,6 +43,7 @@
       },
       "jobListTableColumns":{
         "jobName": "Job name",
+        "jobType": "Job type",
         "taskStatus": "Task status",
         "lastReleaseTime": "Last release time",
         "label": "Label",
@@ -61,7 +64,8 @@
         "projectID":"Project id",
         "dssLabels":"Dss labels",
         "resourceId":"Resource id",
-        "bmlVersion":"Bml version"
+        "bmlVersion":"Bml version",
+        "showDetail": "Open"
       },
       "jobMoudleRouter": {
         "paramsConfiguration": "Params configuration",
@@ -103,11 +107,12 @@
         "flinkJarPac": "Flink main Jar package",
         "dependJarPac": "depend Jar package",
         "userResource": "User resource",
+        "sqlContent": "SQL content",
         "columns": {
             "name": "Name",
             "version": "Version",
             "versionDescription": "Version description",
-            "versionUploadTime": "Version upload time",
+            "versionUploadTime": "Time",
             "operation": "Operation"
           }
       },
@@ -153,6 +158,23 @@
         "upload": "Upload",
         "choosedJar" : "Choosed Jar",
         "jarError": "File must be Jar"
+      },
+      "projectFile": {
+        "file": "File",
+        "specifyVersion": "Specify version",
+        "overrideImport": "Override import",
+        "chooseUploadFile": "Please choose the import resource file",
+        "versionPlaceholder": "Only number and ., such as 0.1.0",
+        "versionEmpty": "Version Cannot be empty",
+        "fileEmpty": "File cannot be empty",
+        "delete": "Delete",
+        "download": "Download",
+        "fileList": "File List",
+        "fileName":"File name",
+        "createBy": "Createby",
+        "delelteConfirm": "Are you sure you want to delete this file?",
+        "createTime": "Create time",
+        "versionDescription": "Version description"
       }
     }
   }

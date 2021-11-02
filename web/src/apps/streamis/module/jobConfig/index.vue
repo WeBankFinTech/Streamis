@@ -199,6 +199,13 @@
                     <span>{{ option.title }}</span>
                   </Checkbox>
                 </CheckboxGroup>
+                <!-- <RadioGroup v-model="alertSet.alertRule">
+                  <Radio
+                    :label="option.value"
+                    v-for="option in alertRuleOptions"
+                    :key="option.value"
+                  ></Radio>
+                </RadioGroup> -->
               </FormItem>
               <FormItem
                 :label="
@@ -222,7 +229,15 @@
                 "
                 :label-width="labelWidth"
               >
-                <Input v-model="alertSet.alertUser" />
+                <Select v-model="alertSet.alertUser" multiple class="select">
+                  <Option
+                    v-for="(item, index) in users"
+                    :value="item"
+                    :key="index"
+                  >
+                    {{ item }}
+                  </Option>
+                </Select>
               </FormItem>
               <FormItem
                 :label="
@@ -248,7 +263,19 @@
                 "
                 :label-width="labelWidth"
               >
-                <Input v-model="alertSet.alertFailureUser" />
+                <Select
+                  v-model="alertSet.alertFailureUser"
+                  multiple
+                  class="select"
+                >
+                  <Option
+                    v-for="(item, index) in users"
+                    :value="item"
+                    :key="index"
+                  >
+                    {{ item }}
+                  </Option>
+                </Select>
               </FormItem>
             </Form>
           </div>
@@ -281,13 +308,17 @@
                 "
                 :label-width="labelWidth"
               >
-                <Select v-model="authoritySet.authorityVisible" class="select">
+                <Select
+                  v-model="authoritySet.authorityVisible"
+                  multiple
+                  class="select"
+                >
                   <Option
-                    v-for="(item, index) in authorityVisibleOptions"
-                    :value="item.value"
+                    v-for="(item, index) in users"
+                    :value="item"
                     :key="index"
                   >
-                    {{ item.title }}
+                    {{ item }}
                   </Option>
                 </Select>
               </FormItem>
@@ -328,9 +359,15 @@ function resetFormValue(vueThis, dataName, configs) {
     const { key, value, valueLists, name } = item
     const temp = (key && key.replace(/\./g, '').toLowerCase()) || ''
     const hit = keys.find(i => temp.endsWith(i.toLowerCase()))
-    let finalValue =
-      name === '告警规则' ? [] : value || value === 0 ? value : ''
-    if (valueLists) {
+    const isUser = ['告警用户', '失败时告警用户', '可见人员'].includes(name)
+    let finalValue = value || value === 0 ? value : ''
+    if (isUser && finalValue) {
+      finalValue = finalValue.split(',')
+    }
+    if (name === '告警规则') {
+      finalValue = finalValue ? finalValue.split(',') : []
+    }
+    if (valueLists && !isUser) {
       const ar = []
       valueLists.forEach(option => {
         ar.push({
@@ -338,11 +375,7 @@ function resetFormValue(vueThis, dataName, configs) {
           title: option.value
         })
         if (option.selected) {
-          if (name === '告警规则') {
-            finalValue.push(option.value)
-          } else {
-            finalValue = option.value
-          }
+          finalValue = option.value
         }
       })
       options[hit + 'Options'] = ar
@@ -351,7 +384,6 @@ function resetFormValue(vueThis, dataName, configs) {
   })
 
   vueThis[dataName] = newValues
-  console.log(vueThis[dataName])
   Object.assign(vueThis, options)
 }
 export default {
@@ -375,28 +407,42 @@ export default {
       alertSet: {
         alertRule: [],
         alertLeve: '',
-        alertUser: '',
+        alertUser: [],
         alertFailureLevel: '',
-        alertFailureUser: ''
+        alertFailureUser: []
       },
       alertLeveOptions: [],
       alertFailureLevelOptions: [],
       alertRuleOptions: [],
       authoritySet: {
         authorityAuthor: '',
-        authorityVisible: ''
+        authorityVisible: []
       },
       authorityVisibleOptions: [],
       authorityAuthorOptions: [],
       saveLoading: false,
       fullTree: {},
-      hadSaved: false
+      hadSaved: false,
+      users: [],
+      originFullTree: {}
     }
   },
   mounted() {
+    this.getUsers()
     this.getConfigs()
   },
   methods: {
+    getUsers() {
+      api
+        .fetch('streamis/streamJobManager/config/getWorkspaceUsers', 'get')
+        .then(res => {
+          console.log(res)
+          if (res && res.users) {
+            this.users = res.users
+          }
+        })
+        .catch(e => console.log(e))
+    },
     getConfigs() {
       api
         .fetch(
@@ -416,6 +462,7 @@ export default {
               permissionConfig
             } = fullTree
             this.fullTree = fullTree
+            this.originFullTree = { ...fullTree }
             resetFormValue(this, 'resourceConfig', resourceConfig)
             resetFormValue(this, 'productionConfig', produceConfig)
             resetFormValue(this, 'alertSet', alarmConfig)
@@ -423,8 +470,8 @@ export default {
             if (parameterConfig) {
               const parameters = []
               parameterConfig.forEach(item => {
-                const { key, vlaue } = item
-                parameters.push([key, vlaue])
+                const { key, value, configkeyId } = item
+                parameters.push([key, value, configkeyId])
               })
               this.flinkParameters = parameters
             }
@@ -462,13 +509,17 @@ export default {
         const obj = this.fullTree[map[name]]
         const values = this[name]
         if (name === 'flinkParameters') {
+          const temp = this.originFullTree.parameterConfig || []
+          const hit = temp.find(item => !!item.configkeyId)
+          const configkeyId = hit ? hit.configkeyId : 7
           if (values[0][0]) {
             const params = []
             values.forEach(ar => {
               params.push({
-                key: ar[0],
                 name: ar[0],
-                value: ar[1]
+                key: ar[0],
+                value: ar[1],
+                configkeyId: ar[2] || configkeyId
               })
             })
             this.fullTree.parameterConfig = params
@@ -497,7 +548,6 @@ export default {
           }
         })
       })
-      console.log(this.fullTree)
       this.saveLoading = true
       api
         .fetch(
