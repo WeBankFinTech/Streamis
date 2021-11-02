@@ -79,17 +79,15 @@
                   </DropdownMenu>
                 </Dropdown>
                 <div style="margin-left: 5px" @click="handleRouter(row)">
-                  <a href="javascript:void(0)">{{ row.jobName }} </a>
+                  <a href="javascript:void(0)">{{ row.name }} </a>
                 </div>
               </div>
             </template>
             <template slot-scope="{ row, index }" slot="version">
-              <div
-                class="version"
-                v-show="index !== 0"
-                @click="versionDetail(row)"
-              >
-                {{ row.version }}
+              <div v-show="index !== 0" class="versionWrap">
+                <div class="version" @click="versionDetail(row)">
+                  {{ row.version }}
+                </div>
               </div>
             </template>
             <template slot-scope="{ row, index }" slot="operation">
@@ -97,9 +95,12 @@
                 <Button
                   type="primary"
                   v-show="row.taskStatus !== 5"
-                  :loading="buttonLoading && choosedRowId === row.jobId"
-                  style="width:60px;height:22px;background:#008000;margin-right: 5px"
-                  :style="{ fontSize: buttonLoading && choosedRowId === row.jobId ? '10px' : '14px' }"
+                  :loading="buttonLoading && choosedRowId === row.id"
+                  style="width:55px;height:22px;background:#008000;margin-right: 5px"
+                  :style="{
+                    fontSize:
+                      buttonLoading && choosedRowId === row.id ? '10px' : '14px'
+                  }"
                   @click="handleAction(row)"
                 >
                   {{ $t('message.streamis.formItems.startBtn') }}
@@ -107,9 +108,12 @@
                 <Button
                   type="primary"
                   v-show="row.taskStatus === 5"
-                  :loading="buttonLoading && choosedRowId === row.jobId"
-                  style="width:60px;height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
-                  :style="{ fontSize: buttonLoading&& choosedRowId === row.jobId ? '10px' : '14px' }"
+                  :loading="buttonLoading && choosedRowId === row.id"
+                  style="width:55px;height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
+                  :style="{
+                    fontSize:
+                      buttonLoading && choosedRowId === row.id ? '10px' : '14px'
+                  }"
                   @click="handleAction(row)"
                 >
                   {{ $t('message.streamis.formItems.stopBtn') }}
@@ -117,7 +121,7 @@
                 <Button
                   type="primary"
                   @click="handleRouter(row, 'jobConfig')"
-                  style="width:60px;height:22px;background:rgba(22, 155, 213, 1);margin-right: 5px;"
+                  style="width:55px;height:22px;background:rgba(22, 155, 213, 1);margin-right: 5px;"
                 >
                   {{ $t('message.streamis.formItems.configBtn') }}
                 </Button>
@@ -125,7 +129,7 @@
                 <Button
                   type="primary"
                   v-show="row.taskStatus !== 'running'"
-                  style="width:125px;height:24px;background:#008000;margin-right: 5px;margin-top:2px;"
+                  style="width:115px;height:24px;background:#008000;margin-right: 5px;margin-top:2px;"
                 >
                   checkpoint
                 </Button>
@@ -148,6 +152,7 @@
     <versionDetail
       :visible="modalVisible"
       :datas="versionDatas"
+      :projectName="projectName"
       @modalCancel="modalCancel"
     />
     <uploadJobJar
@@ -162,7 +167,8 @@ import api from '@/common/service/api'
 import titleCard from '@/apps/streamis/components/titleCard'
 import versionDetail from '@/apps/streamis/module/versionDetail'
 import uploadJobJar from '@/apps/streamis/module/uploadJobJar'
-import { jobStatuses } from '@/apps/streamis/common/common'
+import { allJobStatuses } from '@/apps/streamis/common/common'
+import moment from 'moment'
 
 /**
  * 渲染特殊表头
@@ -188,25 +194,25 @@ export default {
     return {
       query: {
         jobName: '',
-        jobStatus: 'all',
+        jobStatus: 'all'
       },
-      jobStatus: ['all'].concat(jobStatuses.map(item => item.name)),
+      jobStatus: ['all'].concat(allJobStatuses.map(item => item.name)),
 
       tableDatas: [{}],
       columns: [
         {
           title: this.$t('message.streamis.jobListTableColumns.jobName'),
-          key: 'jobName',
+          key: 'name',
           renderHeader: renderSpecialHeader,
           slot: 'jobName'
         },
         {
           title: this.$t('message.streamis.jobListTableColumns.taskStatus'),
-          key: 'taskStatus',
+          key: 'status',
           renderHeader: renderSpecialHeader,
           render: (h, params) => {
-            const hitStatus = jobStatuses.find(
-              item => item.code === params.row.taskStatus
+            const hitStatus = allJobStatuses.find(
+              item => item.code === params.row.status
             )
             if (hitStatus) {
               return h('div', [
@@ -224,12 +230,11 @@ export default {
           }
         },
         {
-          title: this.$t(
-            'message.streamis.jobListTableColumns.lastReleaseTime'
-          ),
-          key: 'lastReleaseTime',
+          title: this.$t('message.streamis.jobListTableColumns.jobType'),
+          key: 'jobType',
           renderHeader: renderSpecialHeader
         },
+
         {
           title: this.$t('message.streamis.jobListTableColumns.label'),
           key: 'label',
@@ -256,7 +261,14 @@ export default {
         },
         {
           title: this.$t('message.streamis.jobListTableColumns.lastRelease'),
-          key: 'lastRelease',
+          key: 'createBy',
+          renderHeader: renderSpecialHeader
+        },
+        {
+          title: this.$t(
+            'message.streamis.jobListTableColumns.lastReleaseTime'
+          ),
+          key: 'lastVersionTime',
           renderHeader: renderSpecialHeader
         },
         {
@@ -285,7 +297,8 @@ export default {
       choosedRowId: '',
       modalVisible: false,
       versionDatas: [],
-      uploadVisible: false
+      uploadVisible: false,
+      projectName: 'flinkJarTest3'
     }
   },
   mounted() {
@@ -298,13 +311,17 @@ export default {
       }
       this.loading = true
       const { current, pageSize } = this.pageData
-      const params = { projectId: 1, pageNow: current, pageSize }
+      const params = {
+        pageNow: current,
+        pageSize,
+        projectName: this.projectName
+      }
       const { jobName, jobStatus } = this.query
       if (jobName) {
         params.jobName = jobName
       }
       if (jobStatus !== 'all') {
-        const hitStatus = jobStatuses.find(item => item.name === jobStatus)
+        const hitStatus = allJobStatuses.find(item => item.name === jobStatus)
         params.jobStatus = hitStatus.code
       }
 
@@ -318,8 +335,17 @@ export default {
           console.log(res)
           if (res) {
             const datas = res.tasks || []
+            datas.forEach(item => {
+              if (item.lastVersionTime) {
+                const newDate = moment(new Date(item.lastVersionTime)).format(
+                  'YYYY-MM-DD HH:mm:ss'
+                )
+                item.lastVersionTime = newDate
+              }
+            })
             datas.unshift({})
             this.tableDatas = datas
+            console.log(JSON.stringify(datas));
             this.pageData.total = parseInt(res.totalPage)
             this.loading = false
           }
@@ -341,14 +367,14 @@ export default {
     },
     handleAction(data) {
       console.log(data)
-      const { taskStatus, jobId } = data
+      const { taskStatus, id } = data
       const path =
         taskStatus === 5
-          ? 'streamis/streamJobManager/job/stop?jobId=' + jobId
+          ? 'streamis/streamJobManager/job/stop?jobId=' + id
           : 'streamis/streamJobManager/job/execute'
-      const second = taskStatus === 5 ? 'get' : { jobId }
+      const second = taskStatus === 5 ? 'get' : { jobId: id }
       this.buttonLoading = true
-      this.choosedRowId = jobId
+      this.choosedRowId = id
       api
         .fetch(path, second)
         .then(res => {
@@ -361,7 +387,7 @@ export default {
           }
         })
         .catch(e => {
-          console.log(e)
+          console.log(e.message)
           this.loading = false
           this.buttonLoading = false
           this.choosedRowId = ''
@@ -382,13 +408,15 @@ export default {
       this.$router.push({
         name: 'JobDetail',
         params: {
-          id: rowData.jobId,
+          id: rowData.id,
           module: moduleName
             ? moduleMap[moduleName] || moduleName
             : 'jobSummary',
-          name: rowData.jobName,
+          name: rowData.name,
           version: rowData.version,
-          taskStatus: rowData.taskStatus
+          status: rowData.status,
+          jobType: rowData.jobType,
+          projectName: rowData.projectName
         }
       })
     },
@@ -409,7 +437,7 @@ export default {
       api
         .fetch(
           'streamis/streamJobManager/job/version?jobId=' +
-            data.jobId +
+            data.id +
             '&version=' +
             data.version,
           'get'
@@ -420,19 +448,6 @@ export default {
             this.loading = false
             this.modalVisible = true
             this.versionDatas = [res.detail]
-            // this.versionDatas = [
-            //   {
-            //     id: 1,
-            //     version: "v00001",
-            //     description: "test",
-            //     releaseTime: "2021-03-01 00:00:00",
-            //     createBy: "johnnwang",
-            //     projectId: 1,
-            //     bmlId: 1111,
-            //     bmlVersion: "v000001",
-            //     dssEnv: ""
-            //   }
-            // ];
           }
         })
         .catch(e => {
@@ -477,12 +492,17 @@ export default {
 .page {
   margin-top: 20px;
 }
+.versionWrap{
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
 .version {
   background-color: #008000;
-  width: 30px;
   text-align: center;
   color: #ffffff;
   font-size: 16px;
   cursor: pointer;
+  padding: 0px 3px;
 }
 </style>
