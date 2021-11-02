@@ -298,7 +298,7 @@ export default {
       modalVisible: false,
       versionDatas: [],
       uploadVisible: false,
-      projectName: 'flinkJarTest3'
+      projectName: this.$route.query.projectName
     }
   },
   mounted() {
@@ -416,7 +416,7 @@ export default {
           version: rowData.version,
           status: rowData.status,
           jobType: rowData.jobType,
-          projectName: rowData.projectName
+          projectName: rowData.projectName || this.projectName
         }
       })
     },
