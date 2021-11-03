@@ -326,7 +326,7 @@ export default {
       }
 
       const queries = Object.entries(params)
-        .filter(item => !!item[1])
+        .filter(item => !!item[1] || item[1] === 0)
         .map(item => item.join('='))
         .join('&')
       api
