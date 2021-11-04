@@ -1,21 +1,34 @@
+/*
+ * Copyright 2021 WeBank
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo;
 
-import java.util.Date;
 
-/**
- * @author limeng
- */
 public class StreamTaskListVO {
     private Long taskId;
     private Long jobVersionId;
     private String jobName;
     private String creator;
     private String version;
-    private Integer status;
+    private String status;
     private String startTime;
     private String endTime;
     private String runTime;
     private String stopCause;
+
+    private String versionContent;
 
     public Long getTaskId() {
         return taskId;
@@ -57,11 +70,11 @@ public class StreamTaskListVO {
         this.version = version;
     }
 
-    public Integer getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
@@ -95,5 +108,13 @@ public class StreamTaskListVO {
 
     public void setStopCause(String stopCause) {
         this.stopCause = stopCause;
+    }
+
+    public String getVersionContent() {
+        return versionContent;
+    }
+
+    public void setVersionContent(String versionContent) {
+        this.versionContent = versionContent;
     }
 }
