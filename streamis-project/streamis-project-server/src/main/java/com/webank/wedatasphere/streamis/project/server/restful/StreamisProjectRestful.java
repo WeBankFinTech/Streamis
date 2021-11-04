@@ -2,6 +2,8 @@ package com.webank.wedatasphere.streamis.project.server.restful;
 
 
 import com.webank.wedatasphere.linkis.server.security.SecurityFilter;
+import com.webank.wedatasphere.streamis.project.common.DeleteStreamProjectRequest;
+import com.webank.wedatasphere.streamis.project.common.UpdateStreamProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.entity.StreamisProject;
 import com.webank.wedatasphere.streamis.project.server.entity.request.CreateProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.entity.request.DeleteProjectRequest;
@@ -13,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import scala.xml.Null;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -66,14 +69,30 @@ public class StreamisProjectRestful {
     @POST
     @Path("updateProject")
     public Response updateProject(@Context HttpServletRequest request, @Valid UpdateProjectRequest updateProjectRequest){
-        return null;
+        String username = SecurityFilter.getLoginUsername(request);
+        try{
+             projectService.updateProject(new UpdateStreamProjectRequest(updateProjectRequest.getId(),updateProjectRequest.getProjectName(),updateProjectRequest.getDescription(),username));
+            return StreamisProjectRestfulUtils.dealOk("更新工程成功",
+                    new Pair<>("projectName", updateProjectRequest.getProjectName()), new Pair<>("projectId", updateProjectRequest.getId()));
+        }catch(final Throwable t){
+            LOGGER.error("failed to update project for user {}", username, t);
+            return StreamisProjectRestfulUtils.dealError("更新工程失败,原因是:" + t.getMessage());
+        }
     }
 
 
     @POST
     @Path("deleteProject")
     public Response deleteProject(@Context HttpServletRequest request, @Valid DeleteProjectRequest deleteProjectRequest){
-        return null;
+        String username = SecurityFilter.getLoginUsername(request);
+        try{
+            projectService.deleteProject(new DeleteStreamProjectRequest(0L,deleteProjectRequest.getProjectName()));
+            return StreamisProjectRestfulUtils.dealOk("删除工程成功",
+                    new Pair<>("projectName", deleteProjectRequest.getProjectName()));
+        }catch(final Throwable t){
+            LOGGER.error("failed to delete project for user {}", username, t);
+            return StreamisProjectRestfulUtils.dealError("删除工程失败,原因是:" + t.getMessage());
+        }
     }
 
 
