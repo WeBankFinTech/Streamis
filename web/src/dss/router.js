@@ -7,8 +7,7 @@ export default [
       title: 'Log',
       publicPage: true,
     },
-    component: () =>
-      import('./view/logPage/index.vue')
+    component: () => import('./view/logPage/index.vue'),
   },
   {
     path: '/login',
@@ -17,8 +16,7 @@ export default [
       title: 'Login',
       publicPage: true,
     },
-    component: () =>
-      import('./view/login/index.vue'),
+    component: () => import('./view/login/index.vue'),
   },
   // 公用页面，不受权限控制
   {
@@ -28,8 +26,7 @@ export default [
       title: '服务器错误',
       publicPage: true,
     },
-    component: () =>
-      import('./view/500.vue'),
+    component: () => import('./view/500.vue'),
   },
   {
     path: '/404',
@@ -38,8 +35,7 @@ export default [
       title: '404',
       publicPage: true,
     },
-    component: () =>
-      import('./view/404.vue'),
+    component: () => import('./view/404.vue'),
   },
   {
     path: '/403',
@@ -48,8 +44,7 @@ export default [
       title: '403',
       publicPage: true,
     },
-    component: () =>
-      import('./view/403.vue'),
+    component: () => import('./view/403.vue'),
   },
   // svg可用图标预览
   {
@@ -59,8 +54,7 @@ export default [
       title: 'icon',
       publicPage: true,
     },
-    component: () =>
-      import('./view/icon.vue'),
+    component: () => import('./view/icon.vue'),
   },
   {
     path: '*',
@@ -68,7 +62,6 @@ export default [
       title: 'DataSphere Studio',
       publicPage: true,
     },
-    component: () =>
-      import('./view/404.vue'),
-  }
+    component: () => import('./view/404.vue'),
+  },
 ]
