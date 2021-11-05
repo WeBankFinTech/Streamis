@@ -3,7 +3,6 @@ package com.webank.wedatasphere.streamis.project.server.exception;
 import com.webank.wedatasphere.linkis.common.exception.ErrorException;
 
 /**
- * created by yangzhiyue on 2021/4/23
  * Description:
  */
 public class StreamisProjectErrorException extends ErrorException {
