@@ -8,10 +8,6 @@ import org.springframework.stereotype.Component
 
 import javax.annotation.PostConstruct
 
-/**
- * created by yangzhiyue on 2021/4/30
- * Description:
- */
 @Component
 class StreamisProjectServerReceiverChooser extends ReceiverChooser {
 
