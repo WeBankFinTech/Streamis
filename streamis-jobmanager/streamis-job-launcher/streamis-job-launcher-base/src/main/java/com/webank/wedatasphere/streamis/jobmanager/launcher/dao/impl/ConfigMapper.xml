@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-  ~ Copyright 2019 WeBank
-  ~
+  ~ Copyright 2021 WeBank
   ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~  you may not use this file except in compliance with the License.
+  ~ you may not use this file except in compliance with the License.
   ~ You may obtain a copy of the License at
   ~
   ~ http://www.apache.org/licenses/LICENSE-2.0
@@ -73,7 +72,7 @@
 
 
     <select id="getConfigKey"  resultMap="ConfigKeyMap" >
-        SELECT <include refid="Config_Key_Column"/> FROM linkis_stream_configuration_config_key where 1=1
+        SELECT <include refid="Config_Key_Column"/> FROM linkis_stream_configuration_config_key
     </select>
 
 
@@ -96,7 +95,8 @@
 
     <delete id="deleteKeyValue">
         delete from linkis_stream_configuration_config_value
-        <where>
+        where job_id=#{jobId}
+        <!--<where>
             1=1
             <if test="jobId != null">
                 AND job_id=#{jobId}
@@ -107,12 +107,13 @@
             <if test="configkeyId != null">
                 AND configkey_id=#{configkeyId}
             </if>
-        </where>
+        </where>-->
     </delete>
 
 
     <insert id="insertValue" useGeneratedKeys="true" keyProperty="id" parameterType="com.webank.wedatasphere.streamis.jobmanager.launcher.entity.ConfigKeyValue">
-        INSERT INTO linkis_stream_configuration_config_value(`configkey_id`,`config_value`,`type`,`job_id`,`job_name`,`config_key`) VALUES(#{configkeyId},#{configValue},#{type},#{jobId},#{jobName},#{configKey})
+        INSERT INTO linkis_stream_configuration_config_value(`configkey_id`,`config_value`,`type`,`job_id`,`job_name`,`config_key`)
+        VALUES(#{configkeyId},#{configValue},#{type},#{jobId},#{jobName},#{configKey})
     </insert>
 
     <update id="updateUserValue" parameterType="com.webank.wedatasphere.streamis.jobmanager.launcher.entity.ConfigKeyValue">
