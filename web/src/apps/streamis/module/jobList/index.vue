@@ -298,7 +298,7 @@ export default {
       modalVisible: false,
       versionDatas: [],
       uploadVisible: false,
-      projectName: 'flinkJarTest3'
+      projectName: this.$route.query.projectName
     }
   },
   mounted() {
@@ -326,7 +326,7 @@ export default {
       }
 
       const queries = Object.entries(params)
-        .filter(item => !!item[1])
+        .filter(item => !!item[1] || item[1] === 0)
         .map(item => item.join('='))
         .join('&')
       api
@@ -416,7 +416,7 @@ export default {
           version: rowData.version,
           status: rowData.status,
           jobType: rowData.jobType,
-          projectName: rowData.projectName
+          projectName: rowData.projectName || this.projectName
         }
       })
     },
