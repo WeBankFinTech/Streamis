@@ -1,3 +1,18 @@
+/*
+ * Copyright 2021 WeBank
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
 import com.github.pagehelper.PageHelper;
@@ -6,32 +21,34 @@ import com.webank.wedatasphere.linkis.server.Message;
 import com.webank.wedatasphere.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamProject;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.*;
-import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobCodeService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.JobDetailsVO;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.JobProgressVO;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.QueryJobListVO;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.StreamTaskListVO;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.VersionDetailVO;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;
-import com.webank.wedatasphere.streamis.jobmanager.manager.service.ProjectService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.TaskService;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.http.Consts;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Component
 @Path("/streamis/streamJobManager/job")
@@ -42,111 +59,102 @@ public class JobRestfulApi {
     JobService jobService;
     @Autowired
     TaskService taskService;
-    @Autowired
-    ProjectService projectService;
-    @Autowired
-    JobCodeService jobCodeService;
-    ObjectMapper mapper = new ObjectMapper();
 
     @GET
     @Path("/list")
     public Response getJobList(@Context HttpServletRequest req,
-                               @QueryParam("projectId") Long projectId,
-                               @QueryParam("workspaceId") Long workspaceId,
                                @QueryParam("pageNow") Integer pageNow,
                                @QueryParam("pageSize") Integer pageSize,
+                               @QueryParam("projectName") String projectName,
                                @QueryParam("jobName") String jobName,
                                @QueryParam("jobStatus") Integer jobStatus,
-                               @QueryParam("jobCreator") String jobCreator) throws IOException, JobException {
-        if (pageNow==null) {
+                               @QueryParam("jobCreator") String jobCreator) {
+        String username = SecurityFilter.getLoginUsername(req);
+        if (StringUtils.isEmpty(pageNow)) {
             pageNow = 1;
         }
-        if (pageSize==null) {
+        if (StringUtils.isEmpty(pageSize)) {
             pageSize = 20;
         }
-        if(projectId == null){
-            JobExceptionManager.createException(30301,"projectId");
-        }
-        List<QueryJobListVO> jobList = null;
+        PageInfo<QueryJobListVO> pageInfo;
         PageHelper.startPage(pageNow, pageSize);
         try {
-            jobList = jobService.getByProList(projectId,jobName,jobStatus,jobCreator);
-        }finally {
+            pageInfo = jobService.getByProList(projectName, jobName, jobStatus, jobCreator);
+        } finally {
             PageHelper.clearPage();
         }
-        PageInfo<QueryJobListVO> pageInfo = new PageInfo<>(jobList);
-        long total = pageInfo.getTotal();
 
-        return Message.messageToResponse(Message.ok().data("tasks", pageInfo.getList()).data("totalPage", total));
+        return Message.messageToResponse(Message.ok().data("tasks", pageInfo.getList()).data("totalPage", pageInfo.getTotal()));
     }
 
     @POST
-    @Path("/upload")
-    public Response uploadJar(@Context HttpServletRequest req,
-                              @FormDataParam("projectName") String projectName,
-                              @QueryParam("jobId") Long jobId,
-                              @QueryParam("version") String version,
-                           FormDataMultiPart form) throws IOException, JobException {
-        String userName = SecurityFilter.getLoginUsername(req);
-        if(StringUtils.isBlank(userName)){
-            JobExceptionManager.createException(30301,"userName");
+    @Path("/createOrUpdate")
+    public Response createOrUpdate(@Context HttpServletRequest req,@RequestBody MetaJsonInfo metaJsonInfo) throws Exception {
+        String username = SecurityFilter.getLoginUsername(req);
+        if (org.apache.commons.lang.StringUtils.isBlank(metaJsonInfo.getJobName())) {
+            return Message.messageToResponse(Message.error("jobName is null"));
         }
-        if(org.apache.commons.lang.StringUtils.isBlank(projectName)){
-            JobExceptionManager.createException(30301,"projectName");
+        if (org.apache.commons.lang.StringUtils.isBlank(metaJsonInfo.getJobType())) {
+            return Message.messageToResponse(Message.error("jobType is null"));
         }
-        List<StreamProject> projects = projectService.getProjects(projectName);
-        if(CollectionUtils.isEmpty(projects)){
-            JobExceptionManager.createException(30301,"projectName");
+        if (org.apache.commons.lang.StringUtils.isBlank(metaJsonInfo.getProjectName())) {
+            return Message.messageToResponse(Message.error("projectName is null"));
         }
-        List<FormDataBodyPart> files = form.getFields("file");
-        for (FormDataBodyPart p : files) {
-            FormDataContentDisposition fileDetail = p.getFormDataContentDisposition();
-            String fileName = new String(fileDetail.getFileName().getBytes(Consts.ISO_8859_1), Consts.UTF_8);
-            InputStream inputStream = p.getValueAs(InputStream.class);
-            jobCodeService.addJarBml(userName,fileName,inputStream,projectName,jobId,version);
-        }
-        return Message.messageToResponse(Message.ok());
+        StreamJobVersion job = jobService.createOrUpdate(username, metaJsonInfo);
+        return Message.messageToResponse(Message.ok().data("jobId",job.getJobId()));
     }
+
+    @GET
+    @Path("/version")
+    public Response version(@QueryParam("jobId") Long jobId, @QueryParam("version") String version) throws JobException {
+        if (jobId == null) {
+            JobExceptionManager.createException(30301, "jobId");
+        }
+        if (StringUtils.isEmpty(version)) {
+            JobExceptionManager.createException(30301, "version");
+        }
+        VersionDetailVO versionDetailVO = jobService.versionDetail(jobId, version);
+        return Message.messageToResponse(Message.ok().data("detail", versionDetailVO));
+    }
+
 
     @POST
     @Path("/execute")
-    public Response executeJob(@Context HttpServletRequest req, Map<String, Object> json) throws IOException, JobException  {
+    public Response executeJob(@Context HttpServletRequest req, Map<String, Object> json) throws JobException {
         String userName = SecurityFilter.getLoginUsername(req);
-        if(!json.containsKey("jobId") || json.get("jobId")==null){
-            JobExceptionManager.createException(30301,"jobId");
+        if (!json.containsKey("jobId") || json.get("jobId") == null) {
+            JobExceptionManager.createException(30301, "jobId");
         }
         long jobId = Long.parseLong(json.get("jobId").toString());
-        taskService.executeJob(jobId,userName);
-        //todo 缺少linkis
+        taskService.executeJob(jobId, userName);
         return Message.messageToResponse(Message.ok());
     }
 
     @GET
     @Path("/stop")
-    public Response killJob(@Context HttpServletRequest req,@QueryParam("jobId") Long jobId) throws IOException, JobException{
+    public Response killJob(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId) throws JobException {
         String userName = SecurityFilter.getLoginUsername(req);
-        if(jobId == null){
-            JobExceptionManager.createException(30301,"jobId");
+        if (jobId == null) {
+            JobExceptionManager.createException(30301, "jobId");
         }
-        taskService.stopJob(jobId,userName);
-        //todo 缺少linkis
+        taskService.stopJob(jobId, userName);
         return Message.messageToResponse(Message.ok());
     }
 
     @GET
     @Path("/details")
-    public Response detailsJob(@Context HttpServletRequest req,@QueryParam("jobId") Long jobId) throws IOException, JobException{
-        if(jobId == null){
-            JobExceptionManager.createException(30301,"jobId");
+    public Response detailsJob(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId) throws IOException, JobException {
+        if (jobId == null) {
+            JobExceptionManager.createException(30301, "jobId");
         }
         JobDetailsVO jobDetailsVO = new JobDetailsVO();
-        List<JobDetailsVO.DataNumberDTO> dataNumberDTOS =new ArrayList<>();
+        List<JobDetailsVO.DataNumberDTO> dataNumberDTOS = new ArrayList<>();
         JobDetailsVO.DataNumberDTO dataNumberDTO = new JobDetailsVO.DataNumberDTO();
         dataNumberDTO.setDataName("kafka topic");
         dataNumberDTO.setDataNumber(109345);
         dataNumberDTOS.add(dataNumberDTO);
 
-        List<JobDetailsVO.LoadConditionDTO> loadConditionDTOs =new ArrayList<>();
+        List<JobDetailsVO.LoadConditionDTO> loadConditionDTOs = new ArrayList<>();
         JobDetailsVO.LoadConditionDTO loadConditionDTO = new JobDetailsVO.LoadConditionDTO();
         loadConditionDTO.setType("jobManager");
         loadConditionDTO.setHost("localhost");
@@ -170,72 +178,48 @@ public class JobRestfulApi {
         jobDetailsVO.setLoadCondition(loadConditionDTOs);
         jobDetailsVO.setRealTimeTraffic(realTimeTrafficDTOS);
 
-        return Message.messageToResponse(Message.ok().data("details",jobDetailsVO));
+        return Message.messageToResponse(Message.ok().data("details", jobDetailsVO));
     }
+
     @GET
     @Path("/execute/history")
-    public Response executeHistoryJob(@Context HttpServletRequest req,@QueryParam("jobId") Long jobId,@QueryParam("version") String version) throws IOException, JobException{
-        if(jobId == null){
-            JobExceptionManager.createException(30301,"jobId");
+    public Response executeHistoryJob(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId, @QueryParam("version") String version) throws IOException, JobException {
+        if (jobId == null) {
+            JobExceptionManager.createException(30301, "jobId");
         }
-        if(StringUtils.isEmpty(version)){
-            JobExceptionManager.createException(30301,"version");
+        if (StringUtils.isEmpty(version)) {
+            JobExceptionManager.createException(30301, "version");
         }
-        List<StreamTaskListVO> streamTaskListVOS = taskService.executeHistory(jobId, version);
-        return Message.messageToResponse(Message.ok().data("details",streamTaskListVOS));
+        List<StreamTaskListVO> details = taskService.executeHistory(jobId, version);
+        return Message.messageToResponse(Message.ok().data("details", details));
     }
 
-    @POST
-    @Path("/publishToJobManager")
-    public Response publishToJobManager(@Context HttpServletRequest req, Map<String, Object> json) throws IOException, JobException{
-        if(json == null){
-            JobExceptionManager.createException(30301,"version");
-        }
-        PublishRequestVO publishRequestVO = mapper.readValue(mapper.writeValueAsString(json), PublishRequestVO.class);
-        if(publishRequestVO == null){
-            JobExceptionManager.createException(30301,"publishRequestVO");
-        }
-        jobService.publishToJobManager(publishRequestVO);
-        //todo 发布
-        return Message.messageToResponse(Message.ok());
-    }
 
-    @GET
-    @Path("/flow")
-    public Response flowJob(@Context HttpServletRequest req,@QueryParam("jobId") Long jobId,@QueryParam("version") String version) throws IOException, JobException{
-        if(jobId == null){
-            JobExceptionManager.createException(30301,"jobId");
-        }
-        if(StringUtils.isEmpty(version)){
-            JobExceptionManager.createException(30301,"version");
-        }
-
-        JobFlowVO jobFlow = jobService.getJobFlow(jobId, version);
-
-        return Message.messageToResponse(Message.ok().data("flowData",jobFlow));
-    }
     @GET
     @Path("/progress")
-    public Response progressJob(@Context HttpServletRequest req,@QueryParam("jobId") Long jobId) throws IOException, JobException{
-        if(jobId == null){
-            JobExceptionManager.createException(30301,"jobId");
+    public Response progressJob(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId,@QueryParam("version") String version) throws IOException, JobException {
+        if (jobId == null) {
+            JobExceptionManager.createException(30301, "jobId");
         }
-        JobProgressVO jobProgressVO = taskService.getByJobStatus(jobId);
-        return Message.messageToResponse(Message.ok().data("taskId",jobProgressVO.getTaskId()).data("progress",jobProgressVO.getProgress()));
+        JobProgressVO jobProgressVO = taskService.getByJobStatus(jobId,version);
+        return Message.messageToResponse(Message.ok().data("taskId", jobProgressVO.getTaskId()).data("progress", jobProgressVO.getProgress()));
     }
 
     @GET
-    @Path("/upload/details")
-    public Response uploadDetailsJob(@Context HttpServletRequest req,@QueryParam("jobId") Long jobId,@QueryParam("version") String version) throws IOException, JobException{
-        if(jobId == null){
-            JobExceptionManager.createException(30301,"jobId");
-        }
-        if(StringUtils.isBlank(version)){
-            JobExceptionManager.createException(30301,"version");
-        }
-        CodeResourceDetailsVO codeDetails = jobCodeService.getCodeDetails(jobId, version);
-
-        return Message.messageToResponse(Message.ok().data("details",codeDetails));
+    @Path("/jobContent")
+    public Response uploadDetailsJob(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId,
+        @QueryParam("version") String version) {
+        StreamisTransformJobContent jobContent = jobService.getJobContent(jobId, version);
+        return Message.messageToResponse(Message.ok().data("jobContent", jobContent));
     }
 
+    @GET
+    @Path("/back")
+    public Response back(@QueryParam("jobId") Long jobId) throws JobException {
+        if (jobId == null) {
+            JobExceptionManager.createException(30301, "jobId");
+        }
+        String url = "http://bdphdp110002:8088/proxy/application_1623431123087_43873/#/overview";
+        return Message.messageToResponse(Message.ok().data("url", url));
+    }
 }
