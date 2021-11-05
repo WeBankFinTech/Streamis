@@ -1,3 +1,18 @@
+/*
+ * Copyright 2021 WeBank
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager
 
 import java.util
@@ -6,12 +21,7 @@ import com.webank.wedatasphere.linkis.computation.client.once.{OnceJob, Submitta
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{LaunchJob, LinkisJobInfo}
 
-/**
- *
- * @date 2021-06-05
- * @author enjoyyin
- * @since 0.5.0
- */
+
 trait FlinkJobManager extends LinkisJobManager {
 
   protected val onceJobs = new util.HashMap[String, OnceJob]
@@ -22,9 +32,9 @@ trait FlinkJobManager extends LinkisJobManager {
   protected def createSubmittedOnceJob(id: String, user: String): OnceJob
 
   protected def getOnceJob(id: String, user: String): OnceJob = {
-    if(onceJobs.containsKey(id)) return onceJobs.get(id)
+    if (onceJobs.containsKey(id)) return onceJobs.get(id)
     onceJobs synchronized {
-      if(!onceJobs.containsKey(id)) {
+      if (!onceJobs.containsKey(id)) {
         val onceJob = createSubmittedOnceJob(id, user)
         onceJobs.put(id, onceJob)
       }
@@ -46,9 +56,9 @@ trait FlinkJobManager extends LinkisJobManager {
   }
 
   override def getJobInfo(id: String, user: String): LinkisJobInfo = {
-    val jobInfo = if(onceJobIdToJobInfo.containsKey(id)) onceJobIdToJobInfo.get(id)
+    val jobInfo = if (onceJobIdToJobInfo.containsKey(id)) onceJobIdToJobInfo.get(id)
     else onceJobs synchronized {
-      if(!onceJobIdToJobInfo.containsKey(id)) onceJobIdToJobInfo.put(id, createJobInfo(id, user))
+      if (!onceJobIdToJobInfo.containsKey(id)) onceJobIdToJobInfo.put(id, createJobInfo(id, user))
       onceJobIdToJobInfo.get(id)
     }
     jobInfo.setStatus(getStatus(id, user))
