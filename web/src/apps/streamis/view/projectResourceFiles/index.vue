@@ -123,6 +123,7 @@
     </titleCard>
     <uploadFile
       :visible="uploadVisible"
+      :projectName="projectName"
       @fileModalCancel="fileModalCancel"
       @fileUploadSuccess="fileUploadSuccess"
     />
@@ -228,10 +229,11 @@ export default {
         pageNow: 1,
         pageSize: 10
       },
-      projectName: 'flinkJarTest3'
+      projectName: this.$route.params.projectName
     }
   },
   mounted() {
+    console.log(this.$route.params.projectName)
     this.getJobList()
     this.getUsers()
   },
@@ -319,7 +321,10 @@ export default {
     },
     jumpToCenter() {
       this.$router.push({
-        name: 'RealTimeJobCenter'
+        name: 'RealTimeJobCenter',
+        query: {
+          projectName: this.projectName
+        }
       })
     },
 
