@@ -3,10 +3,7 @@ package com.webank.wedatasphere.streamis.project.server.entity.request;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 
-/**
- * created by yangzhiyue on 2021/4/23
- * Description:
- */
+
 @XmlRootElement
 public class DeleteProjectRequest {
 
