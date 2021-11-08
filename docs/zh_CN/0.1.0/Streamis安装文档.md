@@ -91,7 +91,7 @@ sh bin/start-streamis.sh
 
 - 启动验证
 验证方式，因为Streamis和Linkis同用一套Eureka,所以您需要检查Linkis的Eureka页面是否已经包含了Streamis的服务，如图, 
-![components](../images/zh_CN/eureka_streamis.png)
+![components](../../images/zh_CN/eureka_streamis.png)
 
 
 
