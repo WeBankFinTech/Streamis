@@ -1,57 +1,70 @@
-<<<<<<< HEAD
-# dw-streamis
-
-=======
 # Streamis
 
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
-## 引言
+English | [中文](README-ZH.md)
+## Introduction
 
- &nbsp; &nbsp; &nbsp; &nbsp;Streamis 是微众银行联合萨摩耶金服和仙翁科技联合共建的一站式流式应用开发管理系统。
+ &nbsp; &nbsp; &nbsp; &nbsp;Streamis is an associated joint development application management system jointly established by WeBank Samoyed Financial Services and Xian Weng Technology.
 
- &nbsp; &nbsp; &nbsp; &nbsp;基于DataSphere Studio的Orchestrator编排模式、工作流微模块和框架化能力，以及底层对接Linkis的Flink引擎，以工作流式的图形化拖拽开发体验，将实时流式应用以Source节点、
-Dimension节点、Transform节点、Sink节点和Visualis节点串连成一条实时工作流，让用户几乎0学习成本完成流式应用的开发、调试、发布和生产管理。
-
-----
-
-## 核心特点
-
-#### 基于DSS，打造业界领先的工作流式图形化拖拽开发体验。
-
-#### 覆盖流式应用开发全流程。提供Source节点、Dimension节点、Transform节点、Sink节点和Visualis节点，基本满足流式应用的所有使用场景。
-
-#### 强大的调试和数据预览能力。基于DSS的跨系统、跨用户级上下文能力，让流式工作流真正具备“开发即调试”、“调试即预览”的开发能力。
-
-#### 基于Linkis计算中间件，打造金融级高并发、高可用、多租户隔离和资源管控等全生命周期管理与checkpoint能力的实时生产中心。
+ &nbsp; &nbsp; &nbsp; &nbsp;Based on DataSphere Studio’s Orchestrator orchestration mode, workflow micro-modules and framework capabilities, as well as the underlying docking Linkis’s Flink engine, using a workflow-style graphical drag-and-drop development experience, real-time streaming applications are based on Source nodes,
+ The Dimension node, Transform node, Sink node and Visualis node are cascaded into a real-time workflow, allowing users to complete the development, debugging, release and production management of streaming applications with almost zero learning costs.
 
 ----
 
-## 与类似系统对比
+## Core features
 
- &nbsp; &nbsp; &nbsp; &nbsp;Streamis是一个引领流式应用开发方向的开源项目，开源社区目前尚没有同类型产品。
+#### Based on DSS, create a star-like workflow graphical drag-and-drop development experience.
+
+#### Cover the whole process of streaming application development. Provides Source node, Dimension node, Transform node, Sink node and Visualis node, basically satisfying all usage scenarios of streaming applications.
+
+#### Powerful debugging and data preview capabilities. Based on the cross-system and cross-user-level context capabilities of DSS, the flow workflow truly has the development capabilities of "development is debugging" and "debugging is preview".
+
+#### Based on Linkis computing middleware, build a real-time production center with financial-level high concurrency, high availability, multi-tenant isolation, and resource management and control, and other full life cycle management and checkpoint capabilities.
+
+----
+
+## Comparison With Existing Systems
+
+ &nbsp; &nbsp; &nbsp; &nbsp;Streamis is an open source project that leads the direction of streaming application development. There is no similar product in the open source community.
  
+| Function module | describe | Streamis | 
+ | :----: | :----: |-------|
+ | UI | Integrated convenient management interface and monitoring window | Integrated |
+ | Installation and deployment | Ease of deployment and third-party dependence | One-click deployment, relying on Linkis Flink engine |
+ | open your heart | Streaming application editing | Support (not open source), integrated DSS | 
+ |        | Seamlessly connect with DSS and support workflow | Support (not open source) |
+ |production center | Streaming application management operation and maintenance capabilities | support |
+ |       | Reuse Linkis computing governance capabilities | support |
+ |       |Support SQL and jar package release|support |
+ | High service availability | Multiple services, failure does not affect the use | Application high availability | 
+ | System Management | Node and resource management | support |
 ----
 
-## 架构
+## Architecture
 
 ![架构](images/zh_CN/readme/architecture.png)
 
 ----
 
-## 文档列表
+## Compile and install deployment
+Please refer to [Compilation guidelines]() Flink engine compilation/Streamis compilation.
 
-（待补充）
- 
+Please refer to [Install and deploy documentation]() Flink engine installation.
+
+
 ----
+## Examples and usage guidelines
+Please come [User documentation]() ,Learn how to use Streamis quickly.
 
-## 交流贡献
+----
+## Communication contribution
 
-![交流](images/zh_CN/readme/communication.png)
+![comminicate](images/zh_CN/readme/communication.png)
 
 ----
 
 ## License
 
  &nbsp; &nbsp; &nbsp; &nbsp;DSS is under the Apache 2.0 license. See the [License](LICENSE) file for details.
->>>>>>> upstream/dev-0.1.0
+
