@@ -9,7 +9,6 @@ import com.webank.wedatasphere.streamis.project.server.entity.request.CreateProj
 import com.webank.wedatasphere.streamis.project.server.exception.StreamisProjectErrorException;
 
 /**
- * created by yangzhiyue on 2021/4/6
  * Description:
  */
 public interface StreamisProjectService {
