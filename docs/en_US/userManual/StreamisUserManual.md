@@ -10,7 +10,7 @@
 
 The entry path is **Home-DSS component application-Enter Streamis**
 
-![Streamis entrance](../../images/entry.png)
+![Streamis entrance](../../images/entry_en.png)
 <center>Picture 2.1 Streamis entrance]</center>
 
 ## 3. Core indicators
@@ -19,7 +19,7 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The core indicator shows the status summary of the Flink tasks uploaded to the project for execution. There are temporarily 7 states, showing the state name and the number of tasks in that state. The specific content is as shown in the figure below.
 
-![Core indicators](../../images/homePage.png)
+![Core indicators](../../images/homePage_en.png)
 <center>Picture 3.1 Core indicators</center>
 
 # 4. Job management
@@ -94,14 +94,14 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Click **"Version"** of a task in the task list to provide the function of viewing all versions of the task, as shown in the figure below:
 
-![Version details](../../images/versionDetail.png)
+![Version details](../../images/versionDetail_en.png)
 <center>Picture 4.2 Version details</center> 
 
 <br/>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Click "Open" of a certain version in the task list to view the **"Execution History"** and **"Task Details"** of that version, as shown in the figure below:
 
-![Version details](../../images/versionHistory.png)
+![Version details](../../images/versionHistory_en.png)
 <center> Picture 4.3 Version details</center> 
 <br/>
 
@@ -113,24 +113,24 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Click **"job name"** of a task in the task list to provide the function of managing the task, or click **"three dots"** to the left of the name to call up the specific function configuration entry, as shown below:
 
-![Configuration job](../../images/jobNav.png)
+![Configuration job](../../images/jobNav_en.png)
 <center>Picture4.3 Configuration job</center> 
 
 <br/>
 
 &nbsp;&nbsp; The configuration task provides four functions, namely:
 
-- Operating condition
-- Execution history
-- Configuration
-- Job details
+- Job summary
+- Job history
+- Job config
+- Job detail
 
 <br/>
 
-### 4.3.1. Operating condition:
+### 4.3.1. Job summary:
 
-![Operating condition](../../images/statusDetail.png)
-<center> Picture 4.4 Operating condition</center> 
+![Operating condition](../../images/statusDetail_en.png)
+<center> Picture 4.4 Job summary</center> 
 
 <br/>
 
@@ -138,10 +138,10 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 <br/>
 
-### 4.3.2. Execution history:
+### 4.3.2. Job history:
 
-![Execution history](../../images/history.png)
-<center>Picture 4.5 Execution history</center> 
+![Execution history](../../images/history_en.png)
+<center>Picture 4.5 Job history</center> 
 
 <br/>
 
@@ -150,10 +150,10 @@ The entry path is **Home-DSS component application-Enter Streamis**
 <br/>
 
 
-### 4.3.3. Configuration:
+### 4.3.3. Job config:
 
-![Configuration](../../images/config.png)
-<center>Picture 4.6 Configuration</center> 
+![Configuration](../../images/config_en.png)
+<center>Picture 4.6 Job config</center> 
 
 <br/>
 
@@ -177,7 +177,7 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 **Flink Jar Job details**
 
-![Job details](../../images/jarDetail.png)
+![Job details](../../images/jarDetail_en.png)
 <center>Picture 4.7 Flink Jar Job details</center> 
 
 <br/>
@@ -189,7 +189,7 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 **Flink SQL job details**
 
-![Job details](../../images/SQLDetail.png)
+![Job details](../../images/SQLDetail_en.png)
 <center>Picture 4.8 Flink SQL job details</center> 
 
 <br/>
@@ -210,10 +210,10 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 <br/>
 
-![Engineering Documents Home Page](../../images/fileHome.png)
+![Engineering Documents Home Page](../../images/fileHome_en.png)
 <center>Picture 5.1 Engineering Documents Home Page</center>
 
 <br/>
 
-![Upload project file](../../images/fileUpload.png)
+![Upload project file](../../images/fileUpload_en.png)
 <center>Picture 5.2 Upload project file</center>
