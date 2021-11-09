@@ -2,11 +2,11 @@ server:
   port: 9009
 spring:
   application:
-    name: cloud-streammanager
+    name: cloud-streammanager-debug
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://ip:port/eureka/
+      defaultZone: http://localhost:20303/eureka/
   instance:
     metadata-map:
       test: wedatasphere
