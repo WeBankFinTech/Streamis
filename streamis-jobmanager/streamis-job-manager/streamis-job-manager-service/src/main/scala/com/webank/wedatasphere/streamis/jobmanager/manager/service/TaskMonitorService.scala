@@ -1,11 +1,29 @@
+/*
+ * Copyright 2021 WeBank
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import java.util
+import java.util.Date
 import java.util.concurrent.{Future, TimeUnit}
 
+import com.google.common.collect.{Lists, Sets}
 import com.webank.wedatasphere.linkis.common.utils.{Logging, Utils}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LinkisJobInfo
+import com.webank.wedatasphere.streamis.jobmanager.manager.alert.{AlertLevel, Alerter}
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask
@@ -15,17 +33,15 @@ import org.springframework.stereotype.Service
 
 import scala.collection.convert.WrapAsScala._
 
-/**
- *
- * @date 2021-06-06
- * @author enjoyyin
- * @since 0.5.0
- */
+
 @Service
 class TaskMonitorService extends Logging {
 
   @Autowired private var streamTaskMapper:StreamTaskMapper=_
   @Autowired private var streamJobMapper:StreamJobMapper=_
+
+  @Autowired private var alerters:Array[Alerter] = _
+
 
   private var future: Future[_] = _
 
@@ -49,7 +65,28 @@ class TaskMonitorService extends Logging {
     streamTasks.filter(shouldMonitor).foreach { streamTask =>
       val job = streamJobMapper.getJobById(streamTask.getJobId)
       info(s"Try to update status of StreamJob-${job.getName}.")
-      val jobInfo = LinkisJobManager.getLinkisJobManager.getJobInfo(streamTask.getLinkisJobId, streamTask.getSubmitUser)
+      try {
+        val jobInfo = LinkisJobManager.getLinkisJobManager.getJobInfo(streamTask.getLinkisJobId, streamTask.getSubmitUser)
+      } catch {
+        case ex: Exception => {
+          // todo 如果有异常  应该再请求N次 如果都是异常 则不再重试 表示已经死亡
+          Utils.tryCatch{
+            val s = "您的streamis流式应用[%s]进程不存在,请您检查该流式应用的状况".format(job.getName)
+            //todo 先告警给createby 和 updateby 和子系统负责人
+            val set = Sets.newHashSet(job.getCreateBy, job.getSubmitUser, "cooperyang")
+            alerters.foreach(alerter => alerter.alert(AlertLevel.CRITICAL, s, Lists.newArrayList(set)))
+          }{
+            t => logger.error("failed to send ims alert", t)
+              //todo 告警失败一定要再告警
+          }
+          error(s"do not have this job StreamJob-${job.getName}. maybe run failed", ex)
+          streamTask.setLastUpdateTime(new Date())
+          streamTask.setErrDesc(ex.getMessage)
+          streamTask.setStatus(JobConf.JOBMANAGER_FLINK_JOB_STATUS_SIX.getValue)
+          streamTaskMapper.updateTask(streamTask)
+          return
+        }
+      }
       TaskService.updateStreamTaskStatus(streamTask, job.getName, streamTask.getSubmitUser)
       streamTaskMapper.updateTask(streamTask)
     }
