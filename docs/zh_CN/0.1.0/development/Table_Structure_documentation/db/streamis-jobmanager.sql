@@ -141,7 +141,7 @@ CREATE TABLE `linkis_stream_frame_version`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `linkis_stream_job`;
 CREATE TABLE `linkis_stream_job`  (
-  `id` bigint(20) NOT NULL,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `project_id` bigint(20) NULL DEFAULT NULL,
   `name` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `type` tinyint(1) NULL DEFAULT NULL,
@@ -270,12 +270,12 @@ CREATE TABLE `linkis_stream_job_user_role`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `linkis_stream_job_version`;
 CREATE TABLE `linkis_stream_job_version`  (
-  `id` bigint(20) NOT NULL,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   ` job_id` bigint(20) NULL DEFAULT NULL,
   `version` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `program_arguments` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `bml_version` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
-  `resource_id` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `bml_id` bigint(20) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
 
@@ -288,7 +288,7 @@ CREATE TABLE `linkis_stream_job_version`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `linkis_stream_project`;
 CREATE TABLE `linkis_stream_project`  (
-  `id` bigint(20) NOT NULL,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `workspace_id` bigint(20) NULL DEFAULT NULL,
   `name` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `create_by` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
@@ -303,14 +303,21 @@ CREATE TABLE `linkis_stream_project`  (
 -- Table structure for linkis_stream_task
 -- ----------------------------
 DROP TABLE IF EXISTS `linkis_stream_task`;
-CREATE TABLE `linkis_stream_task`  (
-  `id` bigint(20) NOT NULL,
-  `job_version_id` bigint(20) NULL DEFAULT NULL,
-  `version` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
-  `stream_task_identification` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
-  `status` tinyint(10) NULL DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
+CREATE TABLE `linkis_stream_task` (
+   `id` int(11) NOT NULL AUTO_INCREMENT,
+   `job_version_id` bigint(20) NOT NULL,
+   `job_id` varchar(50) DEFAULT NULL,
+   `version` varchar(50) DEFAULT NULL,
+   `status` int(3) DEFAULT NULL,
+   `start_time` datetime DEFAULT NULL,
+   `last_update_time` datetime DEFAULT NULL,
+   `end_time` datetime DEFAULT NULL,
+   `err_desc` varchar(10240) DEFAULT NULL,
+   `submit_user` varchar(50) DEFAULT NULL,
+   `linkis_job_id` varchar(50) DEFAULT NULL,
+   `linkis_job_info` mediumtext,
+   PRIMARY KEY (`id`) USING BTREE
+ ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='任务表'
 
 -- ----------------------------
 -- Records of linkis_stream_task
