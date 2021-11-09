@@ -1,6 +1,19 @@
-package com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo;
+/*
+ * Copyright 2021 WeBank
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import java.util.List;
+package com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo;
 
 public class PublishRequestVO {
 
@@ -8,7 +21,15 @@ public class PublishRequestVO {
     /**
      * sql或者scala等
      */
-    private String type = "sql";
+    private String type;
+
+    private String jobType;
+
+    private String fileName;
+
+    private String storePath;
+
+    private String storeType;
 
     /**
      * 提交到jobmanager的执行代码
@@ -35,11 +56,16 @@ public class PublishRequestVO {
      */
     private String description;
 
+    private String source;
+
+    private String metaInfo;
+
+    private String bmlVersion;
 
     /**
      * 标签
      */
-    private List<String> tags;
+    private String tags;
 
 
     /**
@@ -58,6 +84,62 @@ public class PublishRequestVO {
      * 工程名字，必须是要传到的streamis jobmanager
      */
     private String projectName;
+
+    public String getBmlVersion() {
+        return bmlVersion;
+    }
+
+    public void setBmlVersion(String bmlVersion) {
+        this.bmlVersion = bmlVersion;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public String getStorePath() {
+        return storePath;
+    }
+
+    public void setStorePath(String storePath) {
+        this.storePath = storePath;
+    }
+
+    public String getStoreType() {
+        return storeType;
+    }
+
+    public void setStoreType(String storeType) {
+        this.storeType = storeType;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getMetaInfo() {
+        return metaInfo;
+    }
+
+    public void setMetaInfo(String metaInfo) {
+        this.metaInfo = metaInfo;
+    }
+
+    public String getJobType() {
+        return jobType;
+    }
+
+    public void setJobType(String jobType) {
+        this.jobType = jobType;
+    }
 
     public String getType() {
         return type;
@@ -107,11 +189,11 @@ public class PublishRequestVO {
         this.description = description;
     }
 
-    public List<String> getTags() {
+    public String getTags() {
         return tags;
     }
 
-    public void setTags(List<String> tags) {
+    public void setTags(String tags) {
         this.tags = tags;
     }
 
