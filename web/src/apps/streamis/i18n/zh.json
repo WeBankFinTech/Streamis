@@ -162,7 +162,7 @@
       },
       "projectFile": {
         "file": "文件",
-        "specifyVersion": "制定版本",
+        "specifyVersion": "指定版本",
         "overrideImport": "覆盖式导入",
         "chooseUploadFile": "请选择您要导入的资源文件",
         "versionPlaceholder": "只支持数字和.，例如0.1.0",
