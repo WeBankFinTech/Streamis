@@ -1,13 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2021 WeBank
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
-
-
-
 
 
 <mapper namespace="com.webank.wedatasphere.streamis.project.server.dao.StreamisProjectMapper">
 
 
+    <insert id="createProject" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProject">
+        insert into streamis_stream_project (name,description,create_by,create_time,tags,workspace_name,dss_project_id)
+        values (
+        #{name},#{description},#{createBy},now(),#{tags},#{workspaceName},#{dssProjectId}
+        )
+    </insert>
 
+    <update id="updateProject" parameterType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProject">
+        update streamis_stream_project set
+        <if test="description != null">
+            description = #{description},
+        </if>
+        <if test="lastUpdateBy != null">
+            last_update_by = #{lastUpdateBy},
+        </if>
+        last_update_time = now()
+        where name = #{name}
+    </update>
+
+    <delete id="deleteProjectByName">
+        delete from streamis_stream_project where name = #{projectName}
+    </delete>
+
+
+    <select id="findProjectByName" resultType="java.lang.Long">
+        select id from streamis_stream_project where name = #{projectName}
+    </select>
 </mapper>

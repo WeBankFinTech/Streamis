@@ -3,7 +3,6 @@ package com.webank.wedatasphere.streamis.project.server.entity;
 import java.util.Date;
 
 /**
- * created by yangzhiyue on 2021/4/6
  * Description:
  */
 public class StreamisProject {
