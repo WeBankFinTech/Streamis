@@ -15,7 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.common.protocol
 
-import com.webank.wedatasphere.linkis.protocol.Protocol
+import org.apache.linkis.protocol.Protocol
 
 /**
  * created by yangzhiyue on 2021/4/26
