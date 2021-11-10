@@ -15,7 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.rpc
 
-import com.webank.wedatasphere.linkis.rpc.{RPCMessageEvent, Receiver, ReceiverChooser}
+import org.apache.linkis.rpc.{RPCMessageEvent, Receiver, ReceiverChooser}
 import com.webank.wedatasphere.streamis.jobmanager.common.protocol.StreamJobManagerProtocol
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService
 import javax.annotation.PostConstruct
