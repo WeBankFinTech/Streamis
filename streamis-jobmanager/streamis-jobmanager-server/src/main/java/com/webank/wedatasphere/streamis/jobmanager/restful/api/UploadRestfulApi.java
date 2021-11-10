@@ -15,9 +15,9 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
-import com.webank.wedatasphere.linkis.common.exception.ErrorException;
-import com.webank.wedatasphere.linkis.server.Message;
-import com.webank.wedatasphere.linkis.server.security.SecurityFilter;
+import org.apache.linkis.common.exception.ErrorException;
+import org.apache.linkis.server.Message;
+import org.apache.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
