@@ -20,7 +20,7 @@ import java.util.Date
 import java.util.concurrent.{Future, TimeUnit}
 
 import com.google.common.collect.{Lists, Sets}
-import com.webank.wedatasphere.linkis.common.utils.{Logging, Utils}
+import org.apache.linkis.common.utils.{Logging, Utils}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LinkisJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.{AlertLevel, Alerter}
