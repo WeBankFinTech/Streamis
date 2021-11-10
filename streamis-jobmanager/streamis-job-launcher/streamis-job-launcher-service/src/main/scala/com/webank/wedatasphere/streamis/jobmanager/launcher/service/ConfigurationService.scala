@@ -17,7 +17,7 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.service
 
 import java.util
 
-import com.webank.wedatasphere.linkis.common.utils.Logging
+import org.apache.linkis.common.utils.Logging
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.ConfigConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.ConfigMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.dto.ConfigKeyValueDTO
