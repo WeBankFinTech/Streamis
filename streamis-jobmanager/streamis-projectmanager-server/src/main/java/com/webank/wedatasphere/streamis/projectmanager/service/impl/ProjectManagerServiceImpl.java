@@ -16,7 +16,7 @@
 package com.webank.wedatasphere.streamis.projectmanager.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.webank.wedatasphere.linkis.common.utils.JsonUtils;
+import org.apache.linkis.common.utils.JsonUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.BMLService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamiFileService;

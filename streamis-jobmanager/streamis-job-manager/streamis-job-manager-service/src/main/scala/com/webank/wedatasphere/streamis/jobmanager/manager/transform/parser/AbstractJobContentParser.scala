@@ -18,8 +18,8 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.transform.parser
 import java.io.InputStream
 import java.util
 
-import com.webank.wedatasphere.linkis.common.conf.Configuration
-import com.webank.wedatasphere.linkis.common.utils.{JsonUtils, Logging}
+import org.apache.linkis.common.conf.Configuration
+import org.apache.linkis.common.utils.{JsonUtils, Logging}
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion, StreamisFile}
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteFailedErrorException
