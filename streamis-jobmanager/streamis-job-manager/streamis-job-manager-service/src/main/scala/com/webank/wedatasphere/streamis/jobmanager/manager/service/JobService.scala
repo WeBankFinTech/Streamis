@@ -19,8 +19,8 @@ import java.util
 import java.util.Date
 
 import com.github.pagehelper.PageInfo
-import com.webank.wedatasphere.linkis.common.exception.ErrorException
-import com.webank.wedatasphere.linkis.common.utils.Logging
+import org.apache.linkis.common.exception.ErrorException
+import org.apache.linkis.common.utils.Logging
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{QueryJobListVO, TaskCoreNumVO, VersionDetailVO}

@@ -50,7 +50,7 @@
             <version>${jobmanager.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.webank.wedatasphere.linkis</groupId>
+            <groupId>org.apache.linkis</groupId>
             <artifactId>linkis-module</artifactId>
         </dependency>
 

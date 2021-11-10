@@ -16,8 +16,8 @@
 package com.webank.wedatasphere.streamis.server.boot
 
 
-import com.webank.wedatasphere.linkis.DataWorkCloudApplication
-import com.webank.wedatasphere.linkis.common.utils.{Logging, Utils}
+import org.apache.linkis.DataWorkCloudApplication
+import org.apache.linkis.common.utils.{Logging, Utils}
 
 /**
  * created by yangzhiyue on 2021/4/30
