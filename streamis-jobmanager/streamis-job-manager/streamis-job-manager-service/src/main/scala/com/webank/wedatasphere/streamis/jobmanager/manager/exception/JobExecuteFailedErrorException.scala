@@ -15,7 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.exception
 
-import com.webank.wedatasphere.linkis.common.exception.ErrorException
+import org.apache.linkis.common.exception.ErrorException
 
 
 class JobExecuteFailedErrorException(errorCode: Int, errorMsg: String) extends ErrorException(errorCode, errorMsg)

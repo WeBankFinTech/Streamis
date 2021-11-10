@@ -18,10 +18,10 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 import java.io.{ByteArrayInputStream, File, FileInputStream, InputStream}
 import java.util
 
-import com.webank.wedatasphere.linkis.bml.client.{BmlClient, BmlClientFactory}
-import com.webank.wedatasphere.linkis.bml.protocol.{BmlUpdateResponse, BmlUploadResponse}
-import com.webank.wedatasphere.linkis.common.exception.ErrorException
-import com.webank.wedatasphere.linkis.common.utils.{Logging, Utils}
+import org.apache.linkis.bml.client.{BmlClient, BmlClientFactory}
+import org.apache.linkis.bml.protocol.{BmlUpdateResponse, BmlUploadResponse}
+import org.apache.linkis.common.exception.ErrorException
+import org.apache.linkis.common.utils.{Logging, Utils}
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobCreateFailedErrorException
 import javax.annotation.PreDestroy
 import org.apache.commons.lang.StringUtils
