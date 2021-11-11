@@ -16,9 +16,9 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.parser
 import java.util
 
-import com.webank.wedatasphere.linkis.common.utils.JsonUtils
-import com.webank.wedatasphere.linkis.manager.label.entity.engine.RunType
-import com.webank.wedatasphere.linkis.manager.label.entity.engine.RunType.RunType
+import org.apache.linkis.common.utils.JsonUtils
+import org.apache.linkis.manager.label.entity.engine.RunType
+import org.apache.linkis.manager.label.entity.engine.RunType.RunType
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion, StreamisFile}
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteFailedErrorException
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisJarTransformJobContent, StreamisTransformJobContent}

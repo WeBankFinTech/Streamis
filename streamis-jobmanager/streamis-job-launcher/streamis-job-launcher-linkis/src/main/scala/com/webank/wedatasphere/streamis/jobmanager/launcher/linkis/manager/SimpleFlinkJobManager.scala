@@ -17,9 +17,9 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager
 
 import java.util
 
-import com.webank.wedatasphere.linkis.computation.client.once.simple.SimpleOnceJob
-import com.webank.wedatasphere.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
-import com.webank.wedatasphere.linkis.computation.client.operator.impl.ApplicationInfoOperator
+import org.apache.linkis.computation.client.once.simple.SimpleOnceJob
+import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
+import org.apache.linkis.computation.client.operator.impl.ApplicationInfoOperator
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{FlinkJobInfo, LaunchJob, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
