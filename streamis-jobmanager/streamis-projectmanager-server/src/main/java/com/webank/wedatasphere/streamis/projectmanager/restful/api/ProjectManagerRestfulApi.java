@@ -18,8 +18,6 @@ package com.webank.wedatasphere.streamis.projectmanager.restful.api;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import org.apache.linkis.server.Message;
-import org.apache.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileExceptionManager;
@@ -29,20 +27,22 @@ import com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles;
 import com.webank.wedatasphere.streamis.projectmanager.service.ProjectManagerService;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.apache.linkis.server.Message;
+import org.apache.linkis.server.security.SecurityFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -57,29 +57,24 @@ public class ProjectManagerRestfulApi {
 
     @POST
     @Path("/files/upload")
-    public Response upload(@Context HttpServletRequest req,
-                           @FormDataParam("version") String version,
-                           @FormDataParam("projectName") String projectName,
-                           @FormDataParam("comment") String comment,
-                           @FormDataParam("updateWhenExists") boolean updateWhenExists,
-                           FormDataMultiPart form) throws UnsupportedEncodingException, FileException {
+    public Message upload(@Context HttpServletRequest req,
+                           @RequestParam(name = "version") String version,
+                           @RequestParam(name = "projectName") String projectName,
+                           @RequestParam(name = "comment", required = false) String comment,
+                           @RequestParam(name = "updateWhenExists", required = false) boolean updateWhenExists,
+                           @RequestParam(name = "file") List<MultipartFile> files) throws UnsupportedEncodingException, FileException {
 
 
         String username = SecurityFilter.getLoginUsername(req);
         if (StringUtils.isBlank(version)) {
-            return Message.messageToResponse(Message.error("version is null"));
+            return Message.error("version is null");
         }
         if (StringUtils.isBlank(projectName)) {
-            return Message.messageToResponse(Message.error("projectName is null"));
+            return Message.error("projectName is null");
         }
         //Only uses 1st file(只取第一个文件)
-        List<FormDataBodyPart> files = form.getFields("file");
-        if (files == null || files.size() <= 0) {
-            return Message.messageToResponse(Message.error("file is null"));
-        }
-        FormDataBodyPart p = files.get(0);
-        FormDataContentDisposition fileDetail = p.getFormDataContentDisposition();
-        String fileName = new String(fileDetail.getFileName().getBytes("ISO8859-1"), StandardCharsets.UTF_8);
+        MultipartFile p = files.get(0);
+        String fileName = new String(p.getOriginalFilename().getBytes("ISO8859-1"), StandardCharsets.UTF_8);
         ReaderUtils readerUtils = new ReaderUtils();
         if (!readerUtils.checkName(fileName)) {
             throw FileExceptionManager.createException(30601, fileName);
@@ -87,36 +82,36 @@ public class ProjectManagerRestfulApi {
         if (!updateWhenExists) {
             ProjectFiles projectFiles = projectManagerService.selectFile(fileName, version, projectName);
             if (projectFiles != null) {
-                return Message.messageToResponse(Message.warn("the file:[" + fileName + "]is exist in the project:" + projectName + ",version:" + version));
+                return Message.warn("the file:[" + fileName + "]is exist in the project:" + projectName + ",version:" + version);
             }
         }
         InputStream is = null;
         OutputStream os = null;
         try {
             String inputPath = IoUtils.generateIOPath(username, "streamis", fileName);
-            is = p.getValueAs(InputStream.class);
+            is = p.getInputStream();
             os = IoUtils.generateExportOutputStream(inputPath);
             IOUtils.copy(is, os);
             projectManagerService.upload(username, fileName, version, projectName, inputPath,comment);
         } catch (Exception e) {
             LOG.error("failed to upload zip {} fo user {}", fileName, username, e);
-            return Message.messageToResponse(Message.error(e.getMessage()));
+            return Message.error(e.getMessage());
         } finally {
             IOUtils.closeQuietly(os);
             IOUtils.closeQuietly(is);
         }
-        return Message.messageToResponse(Message.ok());
+        return Message.ok();
     }
 
 
     @GET
     @Path("/files/list")
-    public Response list(@Context HttpServletRequest req,@QueryParam("filename") String filename,
+    public Message list(@Context HttpServletRequest req,@QueryParam("filename") String filename,
                          @QueryParam("projectName") String projectName, @QueryParam("username") String username,
                          @DefaultValue("1") @QueryParam("pageNow") Integer pageNow,
                          @DefaultValue("20") @QueryParam("pageSize") Integer pageSize) {
         if (StringUtils.isBlank(projectName)) {
-            return Message.messageToResponse(Message.error("projectName is null"));
+            return Message.error("projectName is null");
         }
         PageHelper.startPage(pageNow, pageSize);
         List<ProjectFiles> fileList;
@@ -126,21 +121,21 @@ public class ProjectManagerRestfulApi {
             PageHelper.clearPage();
         }
         PageInfo pageInfo = new PageInfo(fileList);
-        return Message.messageToResponse(Message.ok().data("files", fileList).data("totalPage", pageInfo.getTotal()));
+        return Message.ok().data("files", fileList).data("totalPage", pageInfo.getTotal());
     }
 
     @GET
     @Path("/files/version/list")
-    public Response versionList(@Context HttpServletRequest req, @QueryParam("fileName") String fileName,
+    public Message versionList(@Context HttpServletRequest req, @QueryParam("fileName") String fileName,
                                 @QueryParam("projectName") String projectName,
                                 @DefaultValue("1") @QueryParam("pageNow") Integer pageNow,
                                 @DefaultValue("20") @QueryParam("pageSize") Integer pageSize) {
         String username = SecurityFilter.getLoginUsername(req);
         if (StringUtils.isBlank(projectName)) {
-            return Message.messageToResponse(Message.error("projectName is null"));
+            return Message.error("projectName is null");
         }
         if (StringUtils.isBlank(fileName)) {
-            return Message.messageToResponse(Message.error("fileName is null"));
+            return Message.error("fileName is null");
         }
         PageHelper.startPage(pageNow, pageSize);
         List<? extends StreamisFile> fileList;
@@ -150,37 +145,37 @@ public class ProjectManagerRestfulApi {
             PageHelper.clearPage();
         }
         PageInfo pageInfo = new PageInfo(fileList);
-        return Message.messageToResponse(Message.ok().data("files", fileList).data("totalPage", pageInfo.getTotal()));
+        return Message.ok().data("files", fileList).data("totalPage", pageInfo.getTotal());
     }
 
     @GET
     @Path("/files/delete")
-    public Response delete(@Context HttpServletRequest req, @QueryParam("fileName") String fileName,
+    public Message delete(@Context HttpServletRequest req, @QueryParam("fileName") String fileName,
                            @QueryParam("projectName") String projectName) {
         String username = SecurityFilter.getLoginUsername(req);
 
-        return projectManagerService.delete(fileName, projectName, username) ? Message.messageToResponse(Message.ok())
-                : Message.messageToResponse(Message.warn("you have no permission delete some files not belong to you"));
+        return projectManagerService.delete(fileName, projectName, username) ? Message.ok()
+                : Message.warn("you have no permission delete some files not belong to you");
     }
 
     @GET
     @Path("/files/version/delete")
-    public Response deleteVersion(@Context HttpServletRequest req, @QueryParam("ids") String ids) {
+    public Message deleteVersion(@Context HttpServletRequest req, @QueryParam("ids") String ids) {
         String username = SecurityFilter.getLoginUsername(req);
 
-        return projectManagerService.deleteFiles(ids, username) ? Message.messageToResponse(Message.ok())
-                : Message.messageToResponse(Message.warn("you have no permission delete some files not belong to you"));
+        return projectManagerService.deleteFiles(ids, username) ? Message.ok()
+                : Message.warn("you have no permission delete some files not belong to you");
     }
 
     @GET
     @Path("/files/download")
-    public Response download(@Context HttpServletResponse response, @QueryParam("id") Long id,@QueryParam("projectName")String projectName) {
+    public Message download(@Context HttpServletResponse response, @QueryParam("id") Long id,@QueryParam("projectName")String projectName) {
         ProjectFiles projectFiles = projectManagerService.getFile(id, projectName);
         if (projectFiles == null) {
-            return Message.messageToResponse(Message.error("no such file in this project"));
+            return Message.error("no such file in this project");
         }
         if (StringUtils.isBlank(projectFiles.getStorePath())) {
-            return Message.messageToResponse(Message.error("storePath is null"));
+            return Message.error("storePath is null");
         }
         response.setContentType("application/x-download");
         response.setHeader("content-Disposition", "attachment;filename=" + projectFiles.getFileName());
@@ -195,8 +190,8 @@ public class ProjectManagerRestfulApi {
             os.flush();
         } catch (Exception e) {
             LOG.error("download file: {} failed , message is : {}" , projectFiles.getFileName(), e);
-            return Message.messageToResponse(Message.error(e.getMessage()));
+            return Message.error(e.getMessage());
         }
-        return Message.messageToResponse(Message.ok());
+        return Message.ok();
     }
 }
