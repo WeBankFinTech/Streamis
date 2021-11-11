@@ -70,12 +70,18 @@
         FROM linkis_stream_task
         <where>
             <if test="jobId != null">
-                AND job_version_id=#{jobId}
+                AND job_id=#{jobId}
             </if>
             <if test="version != null">
                 AND version=#{version}
             </if>
         </where>
+    </select>
+
+    <select id="getRunningTaskByJobId" resultMap="StreamTaskMap">
+        SELECT <include refid="StreamTask_Column"/>
+        FROM linkis_stream_task
+        WHERE `job_id` = #{jobId} AND `status` <= 5 AND `status` >= 2
     </select>
 
     <select id="getTaskById" resultMap="StreamTaskMap">
