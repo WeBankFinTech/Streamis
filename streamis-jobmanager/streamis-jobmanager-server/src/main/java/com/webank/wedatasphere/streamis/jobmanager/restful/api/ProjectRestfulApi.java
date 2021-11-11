@@ -34,7 +34,7 @@ public class ProjectRestfulApi {
     private JobService jobService;
 
     @RequestMapping(path = "/core/target", method = RequestMethod.GET)
-    public Message getView(@RequestParam(value= "projectName") String projectName) throws ProjectException {
+    public Message getView(@RequestParam(value= "projectName",required = false) String projectName) throws ProjectException {
         if(StringUtils.isBlank(projectName)){
             throw new ProjectException("params cannot be empty!");
         }
