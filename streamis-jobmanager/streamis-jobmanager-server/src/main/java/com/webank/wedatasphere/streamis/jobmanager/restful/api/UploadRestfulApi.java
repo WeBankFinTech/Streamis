@@ -15,9 +15,6 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
-import org.apache.linkis.common.exception.ErrorException;
-import org.apache.linkis.server.Message;
-import org.apache.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
@@ -27,20 +24,20 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.ZipHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.apache.linkis.common.exception.ErrorException;
+import org.apache.linkis.server.Message;
+import org.apache.linkis.server.security.SecurityFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,12 +45,8 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-/**
- * created by cooperyang on 2021/6/17
- * Description:
- */
-@Component
-@Path("/streamis/streamJobManager/job")
+@RequestMapping(path = "/streamis/streamJobManager/job")
+@RestController
 public class UploadRestfulApi {
 
     private static final Logger LOG = LoggerFactory.getLogger(UploadRestfulApi.class);
@@ -66,17 +59,16 @@ public class UploadRestfulApi {
 
     @POST
     @Path("/upload")
-    public Response uploadJar(@Context HttpServletRequest req, FormDataMultiPart form) throws IOException, JobException {
+    public Message uploadJar(HttpServletRequest request,
+                              @RequestParam(name = "file") List<MultipartFile> files) throws IOException, JobException {
 
-        String userName =  SecurityFilter.getLoginUsername(req);
-        List<FormDataBodyPart> files = form.getFields("file");
+        String userName = SecurityFilter.getLoginUsername(request);
         if (files == null || files.size() <= 0) {
             throw JobExceptionManager.createException(30300, "uploaded files");
         }
         //Only uses 1st file(只取第一个文件)
-        FormDataBodyPart p = files.get(0);
-        FormDataContentDisposition fileDetail = p.getFormDataContentDisposition();
-        String fileName = new String(fileDetail.getFileName().getBytes("ISO8859-1"), StandardCharsets.UTF_8);
+        MultipartFile p = files.get(0);
+        String fileName = new String(p.getOriginalFilename().getBytes("ISO8859-1"), StandardCharsets.UTF_8);
         if(!ZipHelper.isZip(fileName)){
             throw JobExceptionManager.createException(30302);
         }
@@ -88,17 +80,17 @@ public class UploadRestfulApi {
             if(file.getParentFile().exists()){
                 FileUtils.deleteDirectory(file.getParentFile());
             }
-            is = p.getValueAs(InputStream.class);
+            is = p.getInputStream();
             os = IoUtils.generateExportOutputStream(inputPath);
             IOUtils.copy(is, os);
             StreamJobVersion job = jobService.uploadJob(userName, inputPath);
-            return Message.messageToResponse(Message.ok().data("jobId",job.getJobId()));
+            return Message.ok().data("jobId",job.getJobId());
         } catch(ErrorException e){
             LOG.error("Failed to upload zip(zip上传失败)", e);
-            return Message.messageToResponse(Message.error(e.getDesc()));
+            return Message.error(e.getDesc());
         } catch (Exception e){
             LOG.error("failed to upload zip {} fo user {}", fileName, userName, e);
-            return Message.messageToResponse(Message.error(e.getMessage()));
+            return Message.error(e.getMessage());
         }
         finally{
             IOUtils.closeQuietly(os);

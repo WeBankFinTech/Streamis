@@ -15,14 +15,14 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
-import org.apache.linkis.server.Message;
-import org.apache.linkis.server.security.SecurityFilter;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.exception.ConfigurationException;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.ConfigKeyVO;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.exception.ConfigurationException;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.ConfigurationService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.CookieUtils;
 import com.webank.wedatasphere.streamis.jobmanager.service.UserService;
 import org.apache.commons.lang.StringUtils;
+import org.apache.linkis.server.Message;
+import org.apache.linkis.server.security.SecurityFilter;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,43 +52,43 @@ public class ConfigurationRestfulApi {
 
     @GET
     @Path("/view")
-    public Response getView(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId) throws IOException, ConfigurationException {
+    public Message getView(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId) throws IOException, ConfigurationException {
         if (jobId == null) {
             throw new ConfigurationException("params cannot be empty!");
         }
         ConfigKeyVO fullTree = configurationService.getFullTree(jobId);
-        return Message.messageToResponse(Message.ok().data("fullTree", fullTree));
+        return Message.ok().data("fullTree", fullTree);
     }
 
     @POST
     @Path("/update")
-    public Response updateFullTree(@Context HttpServletRequest req, JsonNode json) throws IOException {
+    public Message updateFullTree(@Context HttpServletRequest req, JsonNode json) throws IOException {
         ConfigKeyVO fullTrees = mapper.readValue(json.get("fullTree"), ConfigKeyVO.class);
 
         configurationService.addKeyValue(fullTrees);
-        return Message.messageToResponse(Message.ok());
+        return Message.ok();
     }
 
     @POST
     @Path("/add")
-    public Response saveFullTree(@Context HttpServletRequest req, JsonNode json) throws IOException {
+    public Message saveFullTree(@Context HttpServletRequest req, JsonNode json) throws IOException {
         ConfigKeyVO fullTrees = mapper.readValue(json.get("fullTree"), ConfigKeyVO.class);
 
         configurationService.addKeyValue(fullTrees);
-        return Message.messageToResponse(Message.ok());
+        return Message.ok();
     }
 
     @GET
     @Path("/getWorkspaceUsers")
-    public Response getWorkspaceUsers(@Context HttpServletRequest req) {
+    public Message getWorkspaceUsers(@Context HttpServletRequest req) {
         //获取工作空间
         String workspaceId = CookieUtils.getCookieWorkspaceId(req);
         if (StringUtils.isBlank(workspaceId)) {
-            return Message.messageToResponse(Message.error("无法获取到工作空间ID，请检查!"));
+            return Message.error("无法获取到工作空间ID，请检查!");
         }
         String userName = SecurityFilter.getLoginUsername(req);
         List<String> list = userService.workspaceUserQuery(req, workspaceId);
-        return Message.messageToResponse(Message.ok().data("users",list));
+        return Message.ok().data("users",list);
 
     }
 

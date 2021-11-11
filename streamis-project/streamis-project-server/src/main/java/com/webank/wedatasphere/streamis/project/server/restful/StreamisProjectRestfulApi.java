@@ -1,7 +1,6 @@
 package com.webank.wedatasphere.streamis.project.server.restful;
 
 
-import org.apache.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.streamis.project.common.DeleteStreamProjectRequest;
 import com.webank.wedatasphere.streamis.project.common.UpdateStreamProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.entity.StreamisProject;
@@ -11,11 +10,12 @@ import com.webank.wedatasphere.streamis.project.server.entity.request.UpdateProj
 import com.webank.wedatasphere.streamis.project.server.service.StreamisProjectService;
 import com.webank.wedatasphere.streamis.project.server.utils.StreamisProjectRestfulUtils;
 import org.apache.commons.math3.util.Pair;
+import org.apache.linkis.server.Message;
+import org.apache.linkis.server.security.SecurityFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import scala.xml.Null;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -25,7 +25,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 
 /**
@@ -36,11 +35,11 @@ import javax.ws.rs.core.Response;
 @Path("/streamis")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class StreamisProjectRestful {
+public class StreamisProjectRestfulApi {
 
 
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StreamisProjectRestful.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StreamisProjectRestfulApi.class);
 
 
     @Autowired
@@ -51,7 +50,7 @@ public class StreamisProjectRestful {
 
     @POST
     @Path("createProject")
-    public Response createProject(@Context HttpServletRequest request, @Valid CreateProjectRequest createProjectRequest){
+    public Message createProject(@Context HttpServletRequest request, @Valid CreateProjectRequest createProjectRequest){
         String username = SecurityFilter.getLoginUsername(request);
         try{
             StreamisProject streamisProject = projectService.createProject(username, createProjectRequest);
@@ -68,7 +67,7 @@ public class StreamisProjectRestful {
 
     @POST
     @Path("updateProject")
-    public Response updateProject(@Context HttpServletRequest request, @Valid UpdateProjectRequest updateProjectRequest){
+    public Message updateProject(@Context HttpServletRequest request, @Valid UpdateProjectRequest updateProjectRequest){
         String username = SecurityFilter.getLoginUsername(request);
         try{
              projectService.updateProject(new UpdateStreamProjectRequest(updateProjectRequest.getId(),updateProjectRequest.getProjectName(),updateProjectRequest.getDescription(),username));
@@ -83,7 +82,7 @@ public class StreamisProjectRestful {
 
     @POST
     @Path("deleteProject")
-    public Response deleteProject(@Context HttpServletRequest request, @Valid DeleteProjectRequest deleteProjectRequest){
+    public Message deleteProject(@Context HttpServletRequest request, @Valid DeleteProjectRequest deleteProjectRequest){
         String username = SecurityFilter.getLoginUsername(request);
         try{
             projectService.deleteProject(new DeleteStreamProjectRequest(0L,deleteProjectRequest.getProjectName()));
