@@ -15,37 +15,30 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
-import org.apache.linkis.server.Message;
 import com.webank.wedatasphere.streamis.jobmanager.exception.ProjectException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.TaskCoreNumVO;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;
 import org.apache.commons.lang.StringUtils;
+import org.apache.linkis.server.Message;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-
-@Component
-@Path("/streamis/streamJobManager/project")
-@Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
+@RequestMapping(path = "/streamis/streamJobManager/project")
+@RestController
 public class ProjectRestfulApi {
 
     @Autowired
-    JobService jobService;
-    @GET
-    @Path("/core/target")
-    public Response getView(@Context HttpServletRequest req, @QueryParam("projectName") String projectName) throws IOException, ProjectException {
+    private JobService jobService;
 
+    @RequestMapping(path = "/core/target", method = RequestMethod.GET)
+    public Message getView(@RequestParam(value= "projectName") String projectName) throws ProjectException {
         if(StringUtils.isBlank(projectName)){
             throw new ProjectException("params cannot be empty!");
         }
         TaskCoreNumVO taskCoreNumVO = jobService.countByCores(projectName);
-        return  Message.messageToResponse(Message.ok().data("taskCore",taskCoreNumVO));
+        return Message.ok().data("taskCore",taskCoreNumVO);
     }
 }
