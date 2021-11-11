@@ -15,7 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis
 
-import com.webank.wedatasphere.linkis.common.utils.ClassUtils
+import org.apache.linkis.common.utils.ClassUtils
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{LaunchJob, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
 

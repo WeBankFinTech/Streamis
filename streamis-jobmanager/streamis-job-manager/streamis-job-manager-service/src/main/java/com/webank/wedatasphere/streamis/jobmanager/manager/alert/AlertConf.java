@@ -18,7 +18,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.alert;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.webank.wedatasphere.linkis.common.conf.CommonVars;
+import org.apache.linkis.common.conf.CommonVars;
 
 
 public interface AlertConf {
