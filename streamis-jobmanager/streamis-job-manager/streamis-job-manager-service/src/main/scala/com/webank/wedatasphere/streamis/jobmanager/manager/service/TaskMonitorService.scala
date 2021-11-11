@@ -16,18 +16,16 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import java.util
-import java.util.Date
 import java.util.concurrent.{Future, TimeUnit}
 
 import com.google.common.collect.{Lists, Sets}
-import org.apache.linkis.common.utils.{Logging, Utils}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LinkisJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.{AlertLevel, Alerter}
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask
 import javax.annotation.PostConstruct
+import org.apache.linkis.common.utils.{Logging, Utils}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -65,32 +63,30 @@ class TaskMonitorService extends Logging {
     streamTasks.filter(shouldMonitor).foreach { streamTask =>
       val job = streamJobMapper.getJobById(streamTask.getJobId)
       info(s"Try to update status of StreamJob-${job.getName}.")
-      try {
-        val jobInfo = LinkisJobManager.getLinkisJobManager.getJobInfo(streamTask.getLinkisJobId, streamTask.getSubmitUser)
-      } catch {
-        case ex: Exception => {
-          // todo 如果有异常  应该再请求N次 如果都是异常 则不再重试 表示已经死亡
-          Utils.tryCatch{
-            val s = "您的streamis流式应用[%s]进程不存在,请您检查该流式应用的状况".format(job.getName)
-            //todo 先告警给createby 和 updateby 和子系统负责人
-            val set = Sets.newHashSet(job.getCreateBy, job.getSubmitUser, "cooperyang")
-            alerters.foreach(alerter => alerter.alert(AlertLevel.CRITICAL, s, Lists.newArrayList(set)))
-          }{
-            t => logger.error("failed to send ims alert", t)
-              //todo 告警失败一定要再告警
-          }
-          error(s"do not have this job StreamJob-${job.getName}. maybe run failed", ex)
-          streamTask.setLastUpdateTime(new Date())
-          streamTask.setErrDesc(ex.getMessage)
-          streamTask.setStatus(JobConf.JOBMANAGER_FLINK_JOB_STATUS_SIX.getValue)
-          streamTaskMapper.updateTask(streamTask)
+      Utils.tryCatch {
+        TaskService.updateStreamTaskStatus(streamTask, job.getName, streamTask.getSubmitUser)
+      } { ex =>
+          error(s"Fetch StreamJob-${job.getName} failed, maybe the Linkis cluster is wrong, please be noticed!", ex)
+          // 连续三次还是出现异常，说明Linkis的Manager已经不能正常提供服务，告警并不再尝试获取状态，等待下次尝试
+        alert(AlertLevel.CRITICAL, "请求LinkisManager失败，Linkis集群出现异常，请关注！",
+          util.Arrays.asList(JobConf.STREAMIS_DEVELOPER.getValue.split(","):_*))
           return
-        }
       }
-      TaskService.updateStreamTaskStatus(streamTask, job.getName, streamTask.getSubmitUser)
+      if(streamTask.getStatus == JobConf.JOBMANAGER_FLINK_JOB_STATUS_SIX.getValue) {
+        warn(s"StreamJob-${job.getName} is failed, please be noticed.")
+        val alertMsg = s"您的 streamis 流式应用[${job.getName}]已经失败, 请您确认该流式应用的状况是否正常"
+        val set = Sets.newHashSet(job.getCreateBy, job.getSubmitUser)
+        alert(AlertLevel.MAJOR, alertMsg, Lists.newArrayList(set))
+      }
       streamTaskMapper.updateTask(streamTask)
     }
     info("All StreamTasks status have updated.")
+  }
+
+  protected def alert(alertLevel: AlertLevel, alertMsg: String, users: util.List[String]): Unit = alerters.foreach{ alerter =>
+    Utils.tryCatch {
+      alerter.alert(alertLevel, alertMsg, users)
+    }(t => error(s"failed to send alert message to ${alerter.getClass.getSimpleName}.", t))
   }
 
   protected def shouldMonitor(streamTask: StreamTask): Boolean =
