@@ -15,26 +15,20 @@ import org.apache.linkis.server.security.SecurityFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 
 
 /**
  * this is the restful class for streamis project
  */
 
-@Component
-@Path("/streamis")
-@Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
+@RequestMapping(path = "/streamis")
+@RestController
 public class StreamisProjectRestfulApi {
 
 
@@ -48,9 +42,8 @@ public class StreamisProjectRestfulApi {
 
 
 
-    @POST
-    @Path("createProject")
-    public Message createProject(@Context HttpServletRequest request, @Valid CreateProjectRequest createProjectRequest){
+    @RequestMapping(path = "/createProject", method = RequestMethod.POST)
+    public Message createProject( HttpServletRequest request,@RequestBody CreateProjectRequest createProjectRequest){
         String username = SecurityFilter.getLoginUsername(request);
         try{
             StreamisProject streamisProject = projectService.createProject(username, createProjectRequest);
@@ -65,9 +58,8 @@ public class StreamisProjectRestfulApi {
 
 
 
-    @POST
-    @Path("updateProject")
-    public Message updateProject(@Context HttpServletRequest request, @Valid UpdateProjectRequest updateProjectRequest){
+    @RequestMapping(path = "/updateProject", method = RequestMethod.POST)
+    public Message updateProject( HttpServletRequest request, @RequestBody UpdateProjectRequest updateProjectRequest){
         String username = SecurityFilter.getLoginUsername(request);
         try{
              projectService.updateProject(new UpdateStreamProjectRequest(updateProjectRequest.getId(),updateProjectRequest.getProjectName(),updateProjectRequest.getDescription(),username));
@@ -80,9 +72,8 @@ public class StreamisProjectRestfulApi {
     }
 
 
-    @POST
-    @Path("deleteProject")
-    public Message deleteProject(@Context HttpServletRequest request, @Valid DeleteProjectRequest deleteProjectRequest){
+    @RequestMapping(path = "/deleteProject", method = RequestMethod.POST)
+    public Message deleteProject( HttpServletRequest request, @RequestBody DeleteProjectRequest deleteProjectRequest){
         String username = SecurityFilter.getLoginUsername(request);
         try{
             projectService.deleteProject(new DeleteStreamProjectRequest(0L,deleteProjectRequest.getProjectName()));
