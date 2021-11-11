@@ -17,38 +17,29 @@ package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import org.apache.linkis.server.Message;
-import org.apache.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.JobDetailsVO;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.JobProgressVO;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.QueryJobListVO;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.StreamTaskListVO;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.VersionDetailVO;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.*;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.TaskService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import org.apache.linkis.server.Message;
+import org.apache.linkis.server.security.SecurityFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Component
 @Path("/streamis/streamJobManager/job")
@@ -62,7 +53,7 @@ public class JobRestfulApi {
 
     @GET
     @Path("/list")
-    public Response getJobList(@Context HttpServletRequest req,
+    public Message getJobList(@Context HttpServletRequest req,
                                @QueryParam("pageNow") Integer pageNow,
                                @QueryParam("pageSize") Integer pageSize,
                                @QueryParam("projectName") String projectName,
@@ -84,29 +75,29 @@ public class JobRestfulApi {
             PageHelper.clearPage();
         }
 
-        return Message.messageToResponse(Message.ok().data("tasks", pageInfo.getList()).data("totalPage", pageInfo.getTotal()));
+        return Message.ok().data("tasks", pageInfo.getList()).data("totalPage", pageInfo.getTotal());
     }
 
     @POST
     @Path("/createOrUpdate")
-    public Response createOrUpdate(@Context HttpServletRequest req,@RequestBody MetaJsonInfo metaJsonInfo) throws Exception {
+    public Message createOrUpdate(@Context HttpServletRequest req,@RequestBody MetaJsonInfo metaJsonInfo) throws Exception {
         String username = SecurityFilter.getLoginUsername(req);
         if (org.apache.commons.lang.StringUtils.isBlank(metaJsonInfo.getJobName())) {
-            return Message.messageToResponse(Message.error("jobName is null"));
+            return Message.error("jobName is null");
         }
         if (org.apache.commons.lang.StringUtils.isBlank(metaJsonInfo.getJobType())) {
-            return Message.messageToResponse(Message.error("jobType is null"));
+            return Message.error("jobType is null");
         }
         if (org.apache.commons.lang.StringUtils.isBlank(metaJsonInfo.getProjectName())) {
-            return Message.messageToResponse(Message.error("projectName is null"));
+            return Message.error("projectName is null");
         }
         StreamJobVersion job = jobService.createOrUpdate(username, metaJsonInfo);
-        return Message.messageToResponse(Message.ok().data("jobId",job.getJobId()));
+        return Message.ok().data("jobId",job.getJobId());
     }
 
     @GET
     @Path("/version")
-    public Response version(@QueryParam("jobId") Long jobId, @QueryParam("version") String version) throws JobException {
+    public Message version(@QueryParam("jobId") Long jobId, @QueryParam("version") String version) throws JobException {
         if (jobId == null) {
             JobExceptionManager.createException(30301, "jobId");
         }
@@ -114,36 +105,36 @@ public class JobRestfulApi {
             JobExceptionManager.createException(30301, "version");
         }
         VersionDetailVO versionDetailVO = jobService.versionDetail(jobId, version);
-        return Message.messageToResponse(Message.ok().data("detail", versionDetailVO));
+        return Message.ok().data("detail", versionDetailVO);
     }
 
 
     @POST
     @Path("/execute")
-    public Response executeJob(@Context HttpServletRequest req, Map<String, Object> json) throws JobException {
+    public Message executeJob(@Context HttpServletRequest req, Map<String, Object> json) throws JobException {
         String userName = SecurityFilter.getLoginUsername(req);
         if (!json.containsKey("jobId") || json.get("jobId") == null) {
             JobExceptionManager.createException(30301, "jobId");
         }
         long jobId = Long.parseLong(json.get("jobId").toString());
         taskService.executeJob(jobId, userName);
-        return Message.messageToResponse(Message.ok());
+        return Message.ok();
     }
 
     @GET
     @Path("/stop")
-    public Response killJob(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId) throws JobException {
+    public Message killJob(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId) throws JobException {
         String userName = SecurityFilter.getLoginUsername(req);
         if (jobId == null) {
             JobExceptionManager.createException(30301, "jobId");
         }
         taskService.stopJob(jobId, userName);
-        return Message.messageToResponse(Message.ok());
+        return Message.ok();
     }
 
     @GET
     @Path("/details")
-    public Response detailsJob(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId) throws IOException, JobException {
+    public Message detailsJob(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId) throws IOException, JobException {
         if (jobId == null) {
             JobExceptionManager.createException(30301, "jobId");
         }
@@ -178,12 +169,12 @@ public class JobRestfulApi {
         jobDetailsVO.setLoadCondition(loadConditionDTOs);
         jobDetailsVO.setRealTimeTraffic(realTimeTrafficDTOS);
 
-        return Message.messageToResponse(Message.ok().data("details", jobDetailsVO));
+        return Message.ok().data("details", jobDetailsVO);
     }
 
     @GET
     @Path("/execute/history")
-    public Response executeHistoryJob(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId, @QueryParam("version") String version) throws IOException, JobException {
+    public Message executeHistoryJob(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId, @QueryParam("version") String version) throws IOException, JobException {
         if (jobId == null) {
             JobExceptionManager.createException(30301, "jobId");
         }
@@ -191,35 +182,35 @@ public class JobRestfulApi {
             JobExceptionManager.createException(30301, "version");
         }
         List<StreamTaskListVO> details = taskService.executeHistory(jobId, version);
-        return Message.messageToResponse(Message.ok().data("details", details));
+        return Message.ok().data("details", details);
     }
 
 
     @GET
     @Path("/progress")
-    public Response progressJob(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId,@QueryParam("version") String version) throws IOException, JobException {
+    public Message progressJob(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId,@QueryParam("version") String version) throws IOException, JobException {
         if (jobId == null) {
             JobExceptionManager.createException(30301, "jobId");
         }
         JobProgressVO jobProgressVO = taskService.getByJobStatus(jobId,version);
-        return Message.messageToResponse(Message.ok().data("taskId", jobProgressVO.getTaskId()).data("progress", jobProgressVO.getProgress()));
+        return Message.ok().data("taskId", jobProgressVO.getTaskId()).data("progress", jobProgressVO.getProgress());
     }
 
     @GET
     @Path("/jobContent")
-    public Response uploadDetailsJob(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId,
+    public Message uploadDetailsJob(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId,
         @QueryParam("version") String version) {
         StreamisTransformJobContent jobContent = jobService.getJobContent(jobId, version);
-        return Message.messageToResponse(Message.ok().data("jobContent", jobContent));
+        return Message.ok().data("jobContent", jobContent);
     }
 
     @GET
     @Path("/back")
-    public Response back(@QueryParam("jobId") Long jobId) throws JobException {
+    public Message back(@QueryParam("jobId") Long jobId) throws JobException {
         if (jobId == null) {
             JobExceptionManager.createException(30301, "jobId");
         }
         String url = "http://bdphdp110002:8088/proxy/application_1623431123087_43873/#/overview";
-        return Message.messageToResponse(Message.ok().data("url", url));
+        return Message.ok().data("url", url);
     }
 }
