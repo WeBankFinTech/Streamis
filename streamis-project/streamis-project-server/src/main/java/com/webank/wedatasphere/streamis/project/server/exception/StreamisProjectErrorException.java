@@ -1,6 +1,6 @@
 package com.webank.wedatasphere.streamis.project.server.exception;
 
-import com.webank.wedatasphere.linkis.common.exception.ErrorException;
+import org.apache.linkis.common.exception.ErrorException;
 
 /**
  * Description:
