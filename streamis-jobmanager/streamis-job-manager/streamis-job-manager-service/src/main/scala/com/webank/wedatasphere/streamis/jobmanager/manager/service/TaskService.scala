@@ -18,8 +18,8 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 import java.util
 import java.util.Date
 
-import com.webank.wedatasphere.linkis.common.utils.Logging
-import com.webank.wedatasphere.linkis.httpclient.dws.DWSHttpClient
+import org.apache.linkis.common.utils.Logging
+import org.apache.linkis.httpclient.dws.DWSHttpClient
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
