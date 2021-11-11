@@ -53,7 +53,7 @@ export default {
     getIndexData() {
       api
         .fetch(
-          `streamis/streamJobManager/project/core/target?projectName=${this.$route.query.projectName}`,
+          `streamis/streamJobManager/project/core/target?projectName=${this.$route.query.projectName || null}`,
           'get'
         )
         .then(res => {
