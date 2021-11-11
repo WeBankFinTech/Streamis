@@ -15,8 +15,8 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.service.impl;
 
-import com.webank.wedatasphere.linkis.common.conf.Configuration;
-import com.webank.wedatasphere.linkis.server.conf.ServerConfiguration;
+import org.apache.linkis.common.conf.Configuration;
+import org.apache.linkis.server.conf.ServerConfiguration;
 import com.webank.wedatasphere.streamis.jobmanager.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;

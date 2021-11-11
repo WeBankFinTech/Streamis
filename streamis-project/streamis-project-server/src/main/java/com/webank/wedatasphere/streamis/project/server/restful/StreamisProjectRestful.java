@@ -1,7 +1,7 @@
 package com.webank.wedatasphere.streamis.project.server.restful;
 
 
-import com.webank.wedatasphere.linkis.server.security.SecurityFilter;
+import org.apache.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.streamis.project.common.DeleteStreamProjectRequest;
 import com.webank.wedatasphere.streamis.project.common.UpdateStreamProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.entity.StreamisProject;

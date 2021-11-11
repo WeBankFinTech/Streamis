@@ -15,7 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.conf
 
-import com.webank.wedatasphere.linkis.common.conf.{CommonVars, TimeType}
+import org.apache.linkis.common.conf.{CommonVars, TimeType}
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteFailedErrorException
 
 

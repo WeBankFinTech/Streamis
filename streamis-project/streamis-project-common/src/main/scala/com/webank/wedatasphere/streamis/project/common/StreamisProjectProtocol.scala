@@ -1,6 +1,6 @@
 package com.webank.wedatasphere.streamis.project.common
 
-import com.webank.wedatasphere.linkis.protocol.Protocol
+import org.apache.linkis.protocol.Protocol
 
 /**
  * created by yangzhiyue on 2021/4/25
