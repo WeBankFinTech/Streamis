@@ -17,9 +17,10 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager
 
 import java.util
 
-import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{LaunchJob, LinkisJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.core.FlinkLogIterator
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{LaunchJob, LinkisJobInfo, LogRequestPayload}
+import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
 
 
 trait FlinkJobManager extends LinkisJobManager {
@@ -76,6 +77,8 @@ trait FlinkJobManager extends LinkisJobManager {
     onceJobs.remove(id)
     onceJobIdToJobInfo.remove(id)
   }
+
+  def fetchLogs(id: String, user: String, requestPayload: LogRequestPayload): FlinkLogIterator
 
   def getCheckpoints(id: String, user: String): LinkisJobInfo
 
