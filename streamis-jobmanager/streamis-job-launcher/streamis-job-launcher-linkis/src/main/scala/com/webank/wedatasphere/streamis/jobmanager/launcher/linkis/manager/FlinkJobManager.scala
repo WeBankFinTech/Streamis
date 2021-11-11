@@ -17,7 +17,7 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager
 
 import java.util
 
-import com.webank.wedatasphere.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
+import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{LaunchJob, LinkisJobInfo}
 
