@@ -26,21 +26,15 @@ import org.apache.linkis.server.security.SecurityFilter;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.List;
 
 
-@Component
-@Path("/streamis/streamJobManager/config")
-@Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
+@RequestMapping(path = "/streamis/streamJobManager/config")
+@RestController
 public class ConfigurationRestfulApi {
     @Autowired
     ConfigurationService configurationService;
@@ -50,9 +44,8 @@ public class ConfigurationRestfulApi {
     ObjectMapper mapper = new ObjectMapper();
 
 
-    @GET
-    @Path("/view")
-    public Message getView(@Context HttpServletRequest req, @QueryParam("jobId") Long jobId) throws IOException, ConfigurationException {
+    @RequestMapping(path = "/view", method = RequestMethod.GET)
+    public Message getView(@RequestParam(value = "jobId",required = false) Long jobId) throws IOException, ConfigurationException {
         if (jobId == null) {
             throw new ConfigurationException("params cannot be empty!");
         }
@@ -60,27 +53,24 @@ public class ConfigurationRestfulApi {
         return Message.ok().data("fullTree", fullTree);
     }
 
-    @POST
-    @Path("/update")
-    public Message updateFullTree(@Context HttpServletRequest req, JsonNode json) throws IOException {
+    @RequestMapping(path = "/update", method = RequestMethod.POST)
+    public Message updateFullTree(@RequestBody JsonNode json) throws IOException {
         ConfigKeyVO fullTrees = mapper.readValue(json.get("fullTree"), ConfigKeyVO.class);
 
         configurationService.addKeyValue(fullTrees);
         return Message.ok();
     }
 
-    @POST
-    @Path("/add")
-    public Message saveFullTree(@Context HttpServletRequest req, JsonNode json) throws IOException {
+    @RequestMapping(path = "/add", method = RequestMethod.POST)
+    public Message saveFullTree(@RequestBody JsonNode json) throws IOException {
         ConfigKeyVO fullTrees = mapper.readValue(json.get("fullTree"), ConfigKeyVO.class);
 
         configurationService.addKeyValue(fullTrees);
         return Message.ok();
     }
 
-    @GET
-    @Path("/getWorkspaceUsers")
-    public Message getWorkspaceUsers(@Context HttpServletRequest req) {
+    @RequestMapping(path = "/getWorkspaceUsers", method = RequestMethod.GET)
+    public Message getWorkspaceUsers(HttpServletRequest req) {
         //获取工作空间
         String workspaceId = CookieUtils.getCookieWorkspaceId(req);
         if (StringUtils.isBlank(workspaceId)) {
