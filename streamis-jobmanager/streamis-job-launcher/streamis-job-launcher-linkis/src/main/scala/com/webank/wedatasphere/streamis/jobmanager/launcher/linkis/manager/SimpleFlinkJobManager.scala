@@ -19,9 +19,11 @@ import java.util
 
 import org.apache.linkis.computation.client.once.simple.SimpleOnceJob
 import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
-import org.apache.linkis.computation.client.operator.impl.ApplicationInfoOperator
+import org.apache.linkis.computation.client.operator.impl.EngineConnApplicationInfoOperator
+import org.apache.linkis.computation.client.operator.impl.EngineConnLogOperator
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{FlinkJobInfo, LaunchJob, LinkisJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.core.{FlinkLogIterator, SimpleFlinkJobLogIterator}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{FlinkJobInfo, LaunchJob, LinkisJobInfo, LogRequestPayload}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
 
 
@@ -56,10 +58,20 @@ class SimpleFlinkJobManager extends FlinkJobManager {
   }
 
   protected def fetchApplicationInfo(jobInfo: FlinkJobInfo): Unit = {
-    val applicationInfo = getOnceJob(jobInfo.getId, jobInfo.getUser).getOperator(ApplicationInfoOperator.OPERATOR_NAME) match {
-      case applicationInfoOperator: ApplicationInfoOperator => applicationInfoOperator.apply()
+    val applicationInfo = getOnceJob(jobInfo.getId, jobInfo.getUser).getOperator(EngineConnApplicationInfoOperator.OPERATOR_NAME) match {
+      case applicationInfoOperator: EngineConnApplicationInfoOperator => applicationInfoOperator.apply()
     }
     jobInfo.setApplicationId(applicationInfo.applicationId)
     jobInfo.setApplicationUrl(applicationInfo.applicationUrl)
+  }
+
+  override def fetchLogs(id: String, user: String, requestPayload: LogRequestPayload): FlinkLogIterator = getOnceJob(id, user).getOperator(EngineConnLogOperator.OPERATOR_NAME) match {
+    case engineConnLogOperator: EngineConnLogOperator =>
+      val logIterator = new SimpleFlinkJobLogIterator(requestPayload, engineConnLogOperator)
+      logIterator.init()
+      getJobInfo(id, user) match {
+        case jobInfo: FlinkJobInfo => jobInfo.setLogPath(logIterator.getLogPath)
+      }
+      logIterator
   }
 }
