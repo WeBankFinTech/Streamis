@@ -15,7 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
-import com.webank.wedatasphere.linkis.server.Message;
+import org.apache.linkis.server.Message;
 import com.webank.wedatasphere.streamis.jobmanager.exception.ProjectException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.TaskCoreNumVO;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;

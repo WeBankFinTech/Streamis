@@ -17,7 +17,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
 import java.util
 
-import com.webank.wedatasphere.linkis.computation.client.utils.LabelKeyUtils
+import org.apache.linkis.computation.client.utils.LabelKeyUtils
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.Transform
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJob
