@@ -15,7 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform
 
-import com.webank.wedatasphere.linkis.common.utils.ClassUtils
+import org.apache.linkis.common.utils.ClassUtils
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJob
 

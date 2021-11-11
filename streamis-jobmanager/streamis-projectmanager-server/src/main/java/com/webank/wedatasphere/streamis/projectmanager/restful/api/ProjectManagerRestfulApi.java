@@ -18,8 +18,8 @@ package com.webank.wedatasphere.streamis.projectmanager.restful.api;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.webank.wedatasphere.linkis.server.Message;
-import com.webank.wedatasphere.linkis.server.security.SecurityFilter;
+import org.apache.linkis.server.Message;
+import org.apache.linkis.server.security.SecurityFilter;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileExceptionManager;
