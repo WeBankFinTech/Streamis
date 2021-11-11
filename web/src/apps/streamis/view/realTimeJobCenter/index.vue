@@ -1,8 +1,8 @@
 <template>
   <div class="container">
-    <coreIndex/>
+    <coreIndex ref="coreIndex"/>
     <div class="divider"/>
-    <jobList/>
+    <jobList @refreshCoreIndex="refreshCoreIndex"/>
   </div>
 </template>
 <script>
@@ -25,6 +25,9 @@ export default {
     resize(height) {
       this.navHeight = height;
     },
+    refreshCoreIndex(){
+      this.$refs.coreIndex.getIndexData();
+    }
   },
 };
 </script>
