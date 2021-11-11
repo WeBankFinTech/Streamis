@@ -81,7 +81,7 @@
     <select id="getRunningTaskByJobId" resultMap="StreamTaskMap">
         SELECT <include refid="StreamTask_Column"/>
         FROM linkis_stream_task
-        WHERE `job_id` = #{jobId} AND `status` <= 5 AND `status` >= 2
+        WHERE `job_id` = #{jobId} AND `status` <![CDATA[<=]]> 5 AND `status` <![CDATA[>=]]> 2
     </select>
 
     <select id="getTaskById" resultMap="StreamTaskMap">
