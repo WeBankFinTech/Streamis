@@ -1,7 +1,7 @@
 package com.webank.wedatasphere.streamis.project.server.receiver
 
-import com.webank.wedatasphere.linkis.common.utils.{Logging, Utils}
-import com.webank.wedatasphere.linkis.rpc.{Receiver, Sender}
+import org.apache.linkis.common.utils.{Logging, Utils}
+import org.apache.linkis.rpc.{Receiver, Sender}
 import com.webank.wedatasphere.streamis.project.common.{CreateStreamProjectRequest, CreateStreamProjectResponse, DeleteStreamProjectRequest, DeleteStreamProjectResponse, UpdateStreamProjectRequest, UpdateStreamProjectResponse}
 import com.webank.wedatasphere.streamis.project.server.entity.request.CreateProjectRequest
 import com.webank.wedatasphere.streamis.project.server.service.StreamisProjectService
