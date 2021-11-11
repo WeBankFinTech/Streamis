@@ -21,7 +21,8 @@ import java.util.Date
 import org.apache.linkis.common.utils.Logging
 import org.apache.linkis.httpclient.dws.DWSHttpClient
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LaunchJob
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{LaunchJob, LogRequestPayload}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager.FlinkJobManager
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask
@@ -56,7 +57,7 @@ class TaskService extends Logging{
     val job = streamJobMapper.getJobById(jobId)
     if(job == null)
       throw new JobExecuteFailedErrorException(30350, s"StreamJob-$jobId is not exists.")
-      info(s"Try to start StreamJob-${job.getName}.")
+    info(s"Try to start StreamJob-${job.getName}.")
     val streamJobVersions = streamJobMapper.getJobVersions(jobId)
     if(streamJobVersions == null || streamJobVersions.isEmpty)
       throw new JobExecuteFailedErrorException(30350, s"StreamJob-${job.getName} does not exists any JobVersion.")
@@ -136,7 +137,20 @@ class TaskService extends Logging{
     list
   }
 
-  def sub(str:String):String = {
+  def getRealtimeLog(jobId: Long, userName: String, requestPayload: LogRequestPayload): util.Map[String, Any] = {
+    val streamTask = streamTaskMapper.getRunningTaskByJobId(jobId)
+    LinkisJobManager.getLinkisJobManager match {
+      case jobManager: FlinkJobManager =>
+        val logIterator = jobManager.fetchLogs(streamTask.getLinkisJobId, streamTask.getSubmitUser, requestPayload)
+        val returnMap = new util.HashMap[String, Any]
+        returnMap.put("logPath", logIterator.getLogPath)
+        returnMap.put("logs", logIterator.getLogs)
+        logIterator.close()
+        returnMap
+    }
+  }
+
+  private def sub(str:String):String = {
     if (StringUtils.isBlank(str) || str.length <= 100){
       str
     }else {
