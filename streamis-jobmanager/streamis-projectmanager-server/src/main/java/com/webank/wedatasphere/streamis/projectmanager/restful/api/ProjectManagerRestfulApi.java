@@ -32,22 +32,22 @@ import org.apache.linkis.server.security.SecurityFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-@Component
-@Path("/streamis/streamProjectManager/project")
+@RequestMapping(path = "/streamis/streamProjectManager/project")
+@RestController
 public class ProjectManagerRestfulApi {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProjectManagerRestfulApi.class);
@@ -55,11 +55,10 @@ public class ProjectManagerRestfulApi {
     @Autowired
     private ProjectManagerService projectManagerService;
 
-    @POST
-    @Path("/files/upload")
-    public Message upload(@Context HttpServletRequest req,
-                           @RequestParam(name = "version") String version,
-                           @RequestParam(name = "projectName") String projectName,
+    @RequestMapping(path = "/files/upload", method = RequestMethod.POST)
+    public Message upload(HttpServletRequest req,
+                           @RequestParam(name = "version",required = false) String version,
+                           @RequestParam(name = "projectName",required = false) String projectName,
                            @RequestParam(name = "comment", required = false) String comment,
                            @RequestParam(name = "updateWhenExists", required = false) boolean updateWhenExists,
                            @RequestParam(name = "file") List<MultipartFile> files) throws UnsupportedEncodingException, FileException {
@@ -104,12 +103,12 @@ public class ProjectManagerRestfulApi {
     }
 
 
-    @GET
-    @Path("/files/list")
-    public Message list(@Context HttpServletRequest req,@QueryParam("filename") String filename,
-                         @QueryParam("projectName") String projectName, @QueryParam("username") String username,
-                         @DefaultValue("1") @QueryParam("pageNow") Integer pageNow,
-                         @DefaultValue("20") @QueryParam("pageSize") Integer pageSize) {
+
+    @RequestMapping(path = "/files/list", method = RequestMethod.GET)
+    public Message list( HttpServletRequest req,@RequestParam(value = "filename",required = false) String filename,
+                         @RequestParam(value = "projectName",required = false) String projectName, @RequestParam(value = "username",required = false) String username,
+                         @RequestParam(value = "pageNow",defaultValue = "1") Integer pageNow,
+                         @RequestParam(value = "pageSize",defaultValue = "20") Integer pageSize) {
         if (StringUtils.isBlank(projectName)) {
             return Message.error("projectName is null");
         }
@@ -124,12 +123,11 @@ public class ProjectManagerRestfulApi {
         return Message.ok().data("files", fileList).data("totalPage", pageInfo.getTotal());
     }
 
-    @GET
-    @Path("/files/version/list")
-    public Message versionList(@Context HttpServletRequest req, @QueryParam("fileName") String fileName,
-                                @QueryParam("projectName") String projectName,
-                                @DefaultValue("1") @QueryParam("pageNow") Integer pageNow,
-                                @DefaultValue("20") @QueryParam("pageSize") Integer pageSize) {
+    @RequestMapping(path = "/files/version/list", method = RequestMethod.GET)
+    public Message versionList( HttpServletRequest req, @RequestParam(value = "fileName",required = false) String fileName,
+                                @RequestParam(value = "projectName",required = false) String projectName,
+                                @RequestParam(value = "pageNow",defaultValue = "1") Integer pageNow,
+                                @RequestParam(value = "pageSize",defaultValue = "20") Integer pageSize) {
         String username = SecurityFilter.getLoginUsername(req);
         if (StringUtils.isBlank(projectName)) {
             return Message.error("projectName is null");
@@ -148,28 +146,27 @@ public class ProjectManagerRestfulApi {
         return Message.ok().data("files", fileList).data("totalPage", pageInfo.getTotal());
     }
 
-    @GET
-    @Path("/files/delete")
-    public Message delete(@Context HttpServletRequest req, @QueryParam("fileName") String fileName,
-                           @QueryParam("projectName") String projectName) {
+
+    @RequestMapping(path = "/files/delete", method = RequestMethod.GET)
+    public Message delete( HttpServletRequest req, @RequestParam(value = "fileName",required = false) String fileName,
+                           @RequestParam(value = "projectName",required = false) String projectName) {
         String username = SecurityFilter.getLoginUsername(req);
 
         return projectManagerService.delete(fileName, projectName, username) ? Message.ok()
                 : Message.warn("you have no permission delete some files not belong to you");
     }
 
-    @GET
-    @Path("/files/version/delete")
-    public Message deleteVersion(@Context HttpServletRequest req, @QueryParam("ids") String ids) {
+    @RequestMapping(path = "/files/version/delete", method = RequestMethod.GET)
+    public Message deleteVersion(HttpServletRequest req, @RequestParam(value = "ids",required = false) String ids) {
         String username = SecurityFilter.getLoginUsername(req);
 
         return projectManagerService.deleteFiles(ids, username) ? Message.ok()
                 : Message.warn("you have no permission delete some files not belong to you");
     }
 
-    @GET
-    @Path("/files/download")
-    public Message download(@Context HttpServletResponse response, @QueryParam("id") Long id,@QueryParam("projectName")String projectName) {
+    @RequestMapping(path = "/files/download", method = RequestMethod.GET)
+    public Message download( HttpServletResponse response, @RequestParam(value = "id",required = false) Long id,
+                             @RequestParam(value = "projectName",required = false)String projectName) {
         ProjectFiles projectFiles = projectManagerService.getFile(id, projectName);
         if (projectFiles == null) {
             return Message.error("no such file in this project");
