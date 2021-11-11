@@ -94,7 +94,7 @@
               <div v-show="index !== 0">
                 <Button
                   type="primary"
-                  v-show="row.taskStatus !== 5"
+                  v-show="row.status !== 5"
                   :loading="buttonLoading && choosedRowId === row.id"
                   style="width:55px;height:22px;background:#008000;margin-right: 5px"
                   :style="{
@@ -107,7 +107,7 @@
                 </Button>
                 <Button
                   type="primary"
-                  v-show="row.taskStatus === 5"
+                  v-show="row.status === 5"
                   :loading="buttonLoading && choosedRowId === row.id"
                   style="width:55px;height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
                   :style="{
@@ -128,7 +128,7 @@
                 <br />
                 <Button
                   type="primary"
-                  v-show="row.taskStatus !== 'running'"
+                  v-show="row.status !== 'running'"
                   style="width:115px;height:24px;background:#008000;margin-right: 5px;margin-top:2px;"
                 >
                   checkpoint
@@ -367,12 +367,12 @@ export default {
     },
     handleAction(data) {
       console.log(data)
-      const { taskStatus, id } = data
+      const { status, id } = data
       const path =
-        taskStatus === 5
+        status === 5
           ? 'streamis/streamJobManager/job/stop?jobId=' + id
           : 'streamis/streamJobManager/job/execute'
-      const second = taskStatus === 5 ? 'get' : { jobId: id }
+      const second = status === 5 ? 'get' : { jobId: id }
       this.buttonLoading = true
       this.choosedRowId = id
       api
@@ -382,6 +382,7 @@ export default {
           this.buttonLoading = false
           this.choosedRowId = ''
           if (res) {
+            this.$emit("refreshCoreIndex");
             this.loading = false
             this.getJobList()
           }
