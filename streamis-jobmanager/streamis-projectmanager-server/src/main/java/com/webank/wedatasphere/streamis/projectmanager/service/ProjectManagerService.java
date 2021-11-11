@@ -16,11 +16,9 @@
 package com.webank.wedatasphere.streamis.projectmanager.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.pagehelper.PageInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
 import com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles;
 
-import javax.ws.rs.QueryParam;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
