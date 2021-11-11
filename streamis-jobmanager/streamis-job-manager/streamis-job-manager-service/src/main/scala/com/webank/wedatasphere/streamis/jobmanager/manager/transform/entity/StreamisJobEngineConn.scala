@@ -15,7 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity
 
-import com.webank.wedatasphere.linkis.manager.label.entity.engine.RunType._
+import org.apache.linkis.manager.label.entity.engine.RunType._
 
 
 trait StreamisJobEngineConn {
