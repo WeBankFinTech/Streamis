@@ -15,9 +15,9 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.rpc
 
-import com.webank.wedatasphere.linkis.common.conf.CommonVars
-import com.webank.wedatasphere.linkis.common.utils.Logging
-import com.webank.wedatasphere.linkis.rpc.{Receiver, Sender}
+import org.apache.linkis.common.conf.CommonVars
+import org.apache.linkis.common.utils.Logging
+import org.apache.linkis.rpc.{Receiver, Sender}
 import com.webank.wedatasphere.streamis.jobmanager.common.protocol.{ImportJobManagerRequest, ImportJobManagerResponse}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService

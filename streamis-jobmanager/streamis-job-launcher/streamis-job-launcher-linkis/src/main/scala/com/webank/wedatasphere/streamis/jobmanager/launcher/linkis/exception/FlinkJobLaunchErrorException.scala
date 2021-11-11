@@ -15,7 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception
 
-import com.webank.wedatasphere.linkis.common.exception.ErrorException
+import org.apache.linkis.common.exception.ErrorException
 
 
 class FlinkJobLaunchErrorException(errorCode: Int, errorMsg: String) extends ErrorException(errorCode, errorMsg) {

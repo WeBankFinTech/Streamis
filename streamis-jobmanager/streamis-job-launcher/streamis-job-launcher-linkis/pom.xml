@@ -33,7 +33,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.webank.wedatasphere.linkis</groupId>
+            <groupId>org.apache.linkis</groupId>
             <artifactId>linkis-computation-client</artifactId>
             <version>${linkis.version}</version>
         </dependency>
