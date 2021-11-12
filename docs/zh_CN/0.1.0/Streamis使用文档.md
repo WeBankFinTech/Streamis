@@ -38,22 +38,22 @@ meta.txt文件中存储任务的基本信息，具体格式和内容如下：
 
 项目名(projectName)，任务名(jobName)，文件名(fileName)，单个标签（tag）均限制为最大长度为64字符，且仅允许输入中文，数字，英文和下划线。描述（description）长度限制为128字符，内容不做限制。
 meta.txt的一个样例如下<br>
-![components](../images/zh_CN/meta_txt_demo.png)
+![components](../../images/zh_CN/meta_txt_demo.png)
 
 
 ### 1.2流式应用物料包上传
 
 物料打包结束之后，进入streamis流式应用管理中心,开始上传物料包<br>
-![components](../images/zh_CN/upload_zip.png)
+![components](../../images/zh_CN/upload_zip.png)
 
 
 ### 1.3流式应用参数配置
 物料包上传完毕之后，就可以看到已经有一个新的流式应用，点击该流式应用，可以进入配置界面<br>
-![components](../images/zh_CN/streamis_config.png)
+![components](../../images/zh_CN/streamis_config.png)
 
 ### 1.4流式应用启停
 参数等内容配置完毕之后，即可以开启流式应用<br>
-![components](../images/zh_CN/start-app.png)
+![components](../../images/zh_CN/start-app.png)
 
 ## 2.实时数仓版本使用
 ----------
