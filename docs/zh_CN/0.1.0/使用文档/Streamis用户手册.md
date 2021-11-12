@@ -10,7 +10,7 @@
 
 入口路径为 **首页-DSS组件应用-进入Streamis**
 
-![Streamis入口](../../images/entry.png)
+![Streamis入口](../../../images/entry.png)
 <center>图 2.1 Streamis在DSS中的入口</center>
 
 ## 3. 核心指标 
@@ -19,7 +19,7 @@
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;核心指标显示上传到该项目执行的Flink任务的状态汇总，状态暂时有7种，显示状态名称和处于该状态的任务数量，具体内容如下图。
 
-![核心指标](../../images/homePage.png)
+![核心指标](../../../images/homePage.png)
 <center>图 3.1 首页核心指标</center>
 
 # 4. 任务管理
@@ -32,7 +32,7 @@
 
 ### 4.1.1. Flink Jar ZIP文件内容如下：
 
-![jar zip文件](../../images/jarZip.png)
+![jar zip文件](../../../images/jarZip.png)
 <center>图4.1 Flink Jar ZIP文件内容</center> 
 
 <br/>
@@ -94,14 +94,14 @@
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;点击任务列表中某一任务的 **“版本”** 提供查看该任务所有版本的功能，如下图：
 
-![版本详情](../../images/versionDetail.png)
+![版本详情](../../../images/versionDetail.png)
 <center>图4.2 版本详情</center> 
 
 <br/>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;点击任务列表中某一版本的“打开”提供查看该版本的 **“执行历史”** 和 **“任务详情”**，如下图：
 
-![版本详情](../../images/versionHistory.png)
+![版本详情](../../../images/versionHistory.png)
 <center>图4.3 版本详情</center> 
 <br/>
 
@@ -113,7 +113,7 @@
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;点击任务列表中某一任务的 **“作业名称”** 提供管理该任务的功能，或者点击名称左侧 **“三点符号”** 调出具体功能配置入口，如下图：
 
-![配置任务](../../images/jobNav.png)
+![配置任务](../../../images/jobNav.png)
 <center>图4.3 配置任务</center> 
 
 <br/>
@@ -129,7 +129,7 @@
 
 ### 4.3.1. 运行情况：
 
-![运行情况](../../images/statusDetail.png)
+![运行情况](../../../images/statusDetail.png)
 <center>图4.4 运行情况</center> 
 
 <br/>
@@ -140,7 +140,7 @@
 
 ### 4.3.2. 运行历史：
 
-![运行历史](../../images/history.png)
+![运行历史](../../../images/history.png)
 <center>图4.5 运行历史</center> 
 
 <br/>
@@ -152,7 +152,7 @@
 
 ### 4.3.3. 配置：
 
-![配置](../../images/config.png)
+![配置](../../../images/config.png)
 <center>图4.6 配置</center> 
 
 <br/>
@@ -177,7 +177,7 @@
 
 **Flink Jar任务详情**
 
-![任务详情](../../images/jarDetail.png)
+![任务详情](../../../images/jarDetail.png)
 <center>Flink Jar任务详情</center> 
 
 <br/>
@@ -189,7 +189,7 @@
 
 **Flink SQL任务详情**
 
-![任务详情](../../images/SQLDetail.png)
+![任务详情](../../../images/SQLDetail.png)
 <center>Flink SQL任务详情</center> 
 
 <br/>
@@ -210,10 +210,10 @@
 
 <br/>
 
-![工程文件首页](../../images/fileHome.png)
+![工程文件首页](../../../images/fileHome.png)
 <center>图 5.1 工程文件首页</center>
 
 <br/>
 
-![上传工程文件](../../images/fileUpload.png)
+![上传工程文件](../../../images/fileUpload.png)
 <center>图 5.2 上传工程文件</center>
