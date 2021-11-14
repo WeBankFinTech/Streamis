@@ -39,7 +39,7 @@ Streamis的执行依赖于Linkis，并且需要在1.0.3及以上的版本，所�
 并执行。如果flinksql能正确执行，表示linkis1.0.3环境是正常的。
 
 ### 3.3软件包准备
-从第三步骤中获取软件包，并上传到服务器的安装目录,如 /appcom/Install/streamis
+从第二步骤中获取软件包，并上传到服务器的安装目录,如 /appcom/Install/streamis
 ```bash
 cd /appcom/Install/streamis
 tar -xvf wedatasphere-streamis-${streamis-version}-dist.tar.gz
@@ -145,7 +145,7 @@ sudo systemctl restart nginx
 ## 5.接入DSS
 Streamis0.1.0版本接入DSS只实现了一级规范，也就是能够在DSS的页面进行免密跳转到Streamis前端，具体的您需要将streamis的基本信息配置到DSS的数据库中，具体如下,你需要替换sql首行的ip和端口即可。
 ```roomsql
-SET @STREAMIS_INSTALL_IP_PORT='127.0.0.1:9088'; 
+SET @STREAMIS_INSTALL_IP_PORT='127.0.0.1:9088';  -- 注意此处是streamis的前端地址
 SET @URL = replace('http://STREAMIS_IP_PORT', 'STREAMIS_IP_PORT', @STREAMIS_INSTALL_IP_PORT);
 SET @HOMEPAGE_URL = replace('http://STREAMIS_IP_PORT', 'STREAMIS_IP_PORT', @STREAMIS_INSTALL_IP_PORT);
 SET @PROJECT_URL = replace('http://STREAMIS_IP_PORT', 'STREAMIS_IP_PORT', @STREAMIS_INSTALL_IP_PORT);
