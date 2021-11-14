@@ -145,7 +145,7 @@ sudo systemctl restart nginx
 ## 5.接入DSS
 Streamis0.1.0版本接入DSS只实现了一级规范，也就是能够在DSS的页面进行免密跳转到Streamis前端，具体的您需要将streamis的基本信息配置到DSS的数据库中，具体如下,你需要替换sql首行的ip和端口即可。
 ```roomsql
-SET @STREAMIS_INSTALL_IP_PORT='127.0.0.1:9321'; 
+SET @STREAMIS_INSTALL_IP_PORT='127.0.0.1:9088'; 
 SET @URL = replace('http://STREAMIS_IP_PORT', 'STREAMIS_IP_PORT', @STREAMIS_INSTALL_IP_PORT);
 SET @HOMEPAGE_URL = replace('http://STREAMIS_IP_PORT', 'STREAMIS_IP_PORT', @STREAMIS_INSTALL_IP_PORT);
 SET @PROJECT_URL = replace('http://STREAMIS_IP_PORT', 'STREAMIS_IP_PORT', @STREAMIS_INSTALL_IP_PORT);
