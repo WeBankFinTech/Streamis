@@ -30,17 +30,17 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 &nbsp; &nbsp; &nbsp; &nbsp;Streamis is an open source project that leads the direction of streaming application development. There is no similar product in the open source community.
 
-| Function module | describe | Streamis | 
+| Function Module | Description | Streamis |
  | :----: | :----: |-------|
-| UI | Integrated convenient management interface and monitoring window | Integrated |
-| Installation and deployment | Ease of deployment and third-party dependence | One-click deployment, relying on Linkis Flink engine |
-| open your heart | Streaming application editing | Support (not open source), integrated DSS | 
-|        | Seamlessly connect with DSS and support workflow | Support (not open source) |
-|production center | Streaming application management operation and maintenance capabilities | support |
-|       | Reuse Linkis computing governance capabilities | support |
-|       |Support SQL and jar package release|support |
-| High service availability | Multiple services, failure does not affect the use | Application high availability | 
-| System Management | Node and resource management | support |
+ | UI | Integrated and convenient management interface and monitoring window | Integrated |
+ | Installation and deployment | Deployment difficulty and third-party dependencies | One-click deployment, relying on Linkis Flink engine |
+ | Development Center | FlinkSQL streaming application real-time development and debugging | Support, need to integrate DSS |
+ |Production Center | Streaming Application Management Operation and Maintenance Capability | Support |
+ | | Reuse Linkis computing governance capabilities | Support |
+ | |Support FlinkSQL and FlinkJar package release | Support |
+ | Service high availability | Multiple services, failure does not affect the use | Application high availability |
+ | System Management | Node and Resource Management | Support |
+
 ----
 
 ## Architecture
