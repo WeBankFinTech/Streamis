@@ -45,7 +45,7 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 ## Architecture
 
-![架构](images/zh_CN/readme/architecture.png)
+![Architecture](images/zh_CN/readme/architecture.png)
 
 ----
 
@@ -57,6 +57,7 @@ Before installing Streamis, please install Linkis1.0.3 and DSS1.0.2 first, pleas
 At the same time, please make sure that the Linkis Flink engine can be used normally, please refer to:[Linkis Flink Engine Plug-in Installation Document](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/en_US/Deployment_Documents/EngineConnPlugin_installation_document.md)
 
 Finally, please refer to [Streamis Installation and Deployment Document](docs/en_US/0.1.0/StreamisDeployment.md) for installing and deploying Streamis.
+
 ----
 ## Examples and usage guidelines
 Please come [User documentation](docs/en_US/userManual/StreamisUserManual.md) ,Learn how to use Streamis quickly.
