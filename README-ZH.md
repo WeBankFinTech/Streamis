@@ -56,7 +56,7 @@ Dimension节点、Transform节点、Sink节点和 [Visualis](https://github.com/
 
 同时，请确保 Linkis Flink 引擎已可正常使用，可参照：[Linkis Flink 引擎插件安装文档](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/zh_CN/Deployment_Documents/EngineConnPlugin%E5%BC%95%E6%93%8E%E6%8F%92%E4%BB%B6%E5%AE%89%E8%A3%85%E6%96%87%E6%A1%A3.md)
 
-最后，请参考 [Streamis 安装部署文档]() ，用于安装部署 Streamis。
+最后，请参考 [Streamis 安装部署文档](docs/zh_CN/0.1.0/Streamis安装文档.md) ，用于安装部署 Streamis。
 
 
 ----
