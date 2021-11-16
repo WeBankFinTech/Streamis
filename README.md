@@ -11,6 +11,7 @@ English | [中文](README-ZH.md)
 
 &nbsp; &nbsp; &nbsp; &nbsp;In the future, it is also planned to use a workflow-style graphical drag-and-drop development experience, and the streaming application will be based on the Source node,
 The Dimension node, Transform node, Sink node and [Visualis](https://github.com/WeBankFinTech/Visualis) nodes are connected in series to form a streaming workflow, allowing users to complete the development of streaming applications at a lower learning cost. Debug and release.
+
 ----
 
 ## Core features
@@ -29,22 +30,22 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 &nbsp; &nbsp; &nbsp; &nbsp;Streamis is an open source project that leads the direction of streaming application development. There is no similar product in the open source community.
 
-| Function module | describe | Streamis | 
+| Function Module | Description | Streamis |
  | :----: | :----: |-------|
-| UI | Integrated convenient management interface and monitoring window | Integrated |
-| Installation and deployment | Ease of deployment and third-party dependence | One-click deployment, relying on Linkis Flink engine |
-| open your heart | Streaming application editing | Support (not open source), integrated DSS | 
-|        | Seamlessly connect with DSS and support workflow | Support (not open source) |
-|production center | Streaming application management operation and maintenance capabilities | support |
-|       | Reuse Linkis computing governance capabilities | support |
-|       |Support SQL and jar package release|support |
-| High service availability | Multiple services, failure does not affect the use | Application high availability | 
-| System Management | Node and resource management | support |
+| UI | Integrated and convenient management interface and monitoring window | Integrated |
+| Installation and deployment | Deployment difficulty and third-party dependencies | One-click deployment, relying on Linkis Flink engine |
+| Development Center | FlinkSQL streaming application real-time development and debugging | Support, need to integrate DSS |
+|Production Center | Streaming Application Management Operation and Maintenance Capability | Support |
+| | Reuse Linkis computing governance capabilities | Support |
+| |Support FlinkSQL and FlinkJar package release | Support |
+| Service high availability | Multiple services, failure does not affect the use | Application high availability |
+| System Management | Node and Resource Management | Support |
+
 ----
 
 ## Architecture
 
-![架构](images/zh_CN/readme/architecture.png)
+![Architecture](images/zh_CN/readme/architecture.png)
 
 ----
 
@@ -56,6 +57,7 @@ Before installing Streamis, please install Linkis1.0.3 and DSS1.0.2 first, pleas
 At the same time, please make sure that the Linkis Flink engine can be used normally, please refer to:[Linkis Flink Engine Plug-in Installation Document](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/en_US/Deployment_Documents/EngineConnPlugin_installation_document.md)
 
 Finally, please refer to [Streamis Installation and Deployment Document](docs/en_US/0.1.0/StreamisDeployment.md) for installing and deploying Streamis.
+
 ----
 ## Examples and usage guidelines
 Please come [User documentation](docs/en_US/userManual/StreamisUserManual.md) ,Learn how to use Streamis quickly.
