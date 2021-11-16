@@ -32,14 +32,14 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 | Function Module | Description | Streamis |
  | :----: | :----: |-------|
- | UI | Integrated and convenient management interface and monitoring window | Integrated |
- | Installation and deployment | Deployment difficulty and third-party dependencies | One-click deployment, relying on Linkis Flink engine |
- | Development Center | FlinkSQL streaming application real-time development and debugging | Support, need to integrate DSS |
- |Production Center | Streaming Application Management Operation and Maintenance Capability | Support |
- | | Reuse Linkis computing governance capabilities | Support |
- | |Support FlinkSQL and FlinkJar package release | Support |
- | Service high availability | Multiple services, failure does not affect the use | Application high availability |
- | System Management | Node and Resource Management | Support |
+| UI | Integrated and convenient management interface and monitoring window | Integrated |
+| Installation and deployment | Deployment difficulty and third-party dependencies | One-click deployment, relying on Linkis Flink engine |
+| Development Center | FlinkSQL streaming application real-time development and debugging | Support, need to integrate DSS |
+|Production Center | Streaming Application Management Operation and Maintenance Capability | Support |
+| | Reuse Linkis computing governance capabilities | Support |
+| |Support FlinkSQL and FlinkJar package release | Support |
+| Service high availability | Multiple services, failure does not affect the use | Application high availability |
+| System Management | Node and Resource Management | Support |
 
 ----
 
