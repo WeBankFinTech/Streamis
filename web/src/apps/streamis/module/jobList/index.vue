@@ -74,7 +74,7 @@
                       :name="item"
                       :key="index"
                     >
-                      {{ $t('message.streamis.jobMoudleRouter.' + item) }}
+                      {{ item === 'savepoint' ? item : $t('message.streamis.jobMoudleRouter.' + item) }}
                     </DropdownItem>
                   </DropdownMenu>
                 </Dropdown>
@@ -96,11 +96,7 @@
                   type="primary"
                   v-show="row.status !== 5"
                   :loading="buttonLoading && choosedRowId === row.id"
-                  style="width:55px;height:22px;background:#008000;margin-right: 5px"
-                  :style="{
-                    fontSize:
-                      buttonLoading && choosedRowId === row.id ? '10px' : '14px'
-                  }"
+                  style="height:22px;background:#008000;margin-right: 5px; font-size:10px;"
                   @click="handleAction(row)"
                 >
                   {{ $t('message.streamis.formItems.startBtn') }}
@@ -109,11 +105,7 @@
                   type="primary"
                   v-show="row.status === 5"
                   :loading="buttonLoading && choosedRowId === row.id"
-                  style="width:55px;height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
-                  :style="{
-                    fontSize:
-                      buttonLoading && choosedRowId === row.id ? '10px' : '14px'
-                  }"
+                  style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
                   @click="handleAction(row)"
                 >
                   {{ $t('message.streamis.formItems.stopBtn') }}
@@ -121,18 +113,11 @@
                 <Button
                   type="primary"
                   @click="handleRouter(row, 'jobConfig')"
-                  style="width:55px;height:22px;background:rgba(22, 155, 213, 1);margin-right: 5px;"
+                  style="height:22px;background:rgba(22, 155, 213, 1);margin-right: 5px; font-size:10px;"
                 >
                   {{ $t('message.streamis.formItems.configBtn') }}
                 </Button>
-                <br />
-                <Button
-                  type="primary"
-                  v-show="row.status !== 'running'"
-                  style="width:115px;height:24px;background:#008000;margin-right: 5px;margin-top:2px;"
-                >
-                  checkpoint
-                </Button>
+        
               </div>
             </template>
           </Table>
@@ -198,7 +183,37 @@ export default {
       },
       jobStatus: ['all'].concat(allJobStatuses.map(item => item.name)),
 
-      tableDatas: [{}],
+      tableDatas: [
+        {},
+        // {
+        //   id: 10,
+        //   name: 'flinkJarTestc',
+        //   workspaceName: null,
+        //   projectName: 'flinkJarTest3',
+        //   jobType: 'flink.jar',
+        //   label: 'e,t,y,h,g',
+        //   createBy: 'hdfs',
+        //   createTime: 1636338541000,
+        //   status: 0,
+        //   version: 'v00002',
+        //   lastVersionTime: 1636339360000,
+        //   description: '这是一个FlinkJar测试Job3'
+        // },
+        // {
+        //   id: 9,
+        //   name: 'flinkSqlTesta',
+        //   workspaceName: null,
+        //   projectName: 'flinkSqlTestD',
+        //   jobType: 'flink.sql',
+        //   label: 'a,b,c',
+        //   createBy: 'hdfs',
+        //   createTime: 1636338055000,
+        //   status: 0,
+        //   version: 'v00001',
+        //   lastVersionTime: 1636338055000,
+        //   description: '这是一个FlinkSql测试JobD'
+        // }
+      ],
       columns: [
         {
           title: this.$t('message.streamis.jobListTableColumns.jobName'),
@@ -285,7 +300,8 @@ export default {
         'paramsConfiguration',
         'alertConfiguration',
         'runningHistory',
-        'runningLogs'
+        'runningLogs',
+        'savepoint'
       ],
       pageData: {
         total: 0,
@@ -345,7 +361,7 @@ export default {
             })
             datas.unshift({})
             this.tableDatas = datas
-            console.log(JSON.stringify(datas));
+            console.log(JSON.stringify(datas))
             this.pageData.total = parseInt(res.totalPage)
             this.loading = false
           }
@@ -382,7 +398,7 @@ export default {
           this.buttonLoading = false
           this.choosedRowId = ''
           if (res) {
-            this.$emit("refreshCoreIndex");
+            this.$emit('refreshCoreIndex')
             this.loading = false
             this.getJobList()
           }
@@ -398,6 +414,9 @@ export default {
       console.log(data)
     },
     handleRouter(rowData, moduleName) {
+      if(moduleName === 'savepoint'){
+        return;
+      }
       console.log(rowData)
       console.log(moduleName)
       const moduleMap = {
@@ -493,7 +512,7 @@ export default {
 .page {
   margin-top: 20px;
 }
-.versionWrap{
+.versionWrap {
   display: flex;
   justify-content: flex-start;
   align-items: center;
