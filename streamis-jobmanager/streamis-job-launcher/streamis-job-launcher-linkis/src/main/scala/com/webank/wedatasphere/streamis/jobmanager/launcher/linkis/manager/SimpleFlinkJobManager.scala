@@ -25,6 +25,8 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobMana
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.core.{FlinkLogIterator, SimpleFlinkJobLogIterator}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{FlinkJobInfo, LaunchJob, LinkisJobInfo, LogRequestPayload}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
+import org.apache.linkis.common.utils.RetryHandler
+import org.apache.linkis.ujes.client.exception.UJESJobException
 
 
 class SimpleFlinkJobManager extends FlinkJobManager {
@@ -53,16 +55,20 @@ class SimpleFlinkJobManager extends FlinkJobManager {
     jobInfo.setUser(user)
     fetchApplicationInfo(jobInfo)
     jobInfo.setResources(nodeInfo.get("nodeResource").asInstanceOf[util.Map[String, Object]])
-    jobInfo.setLogPath("") //TODO wait for completed
     jobInfo
   }
 
   protected def fetchApplicationInfo(jobInfo: FlinkJobInfo): Unit = {
-    val applicationInfo = getOnceJob(jobInfo.getId, jobInfo.getUser).getOperator(EngineConnApplicationInfoOperator.OPERATOR_NAME) match {
-      case applicationInfoOperator: EngineConnApplicationInfoOperator => applicationInfoOperator.apply()
+    getOnceJob(jobInfo.getId, jobInfo.getUser).getOperator(EngineConnApplicationInfoOperator.OPERATOR_NAME) match {
+      case applicationInfoOperator: EngineConnApplicationInfoOperator =>
+        val retryHandler = new RetryHandler {}
+        retryHandler.setRetryNum(3)
+        retryHandler.setRetryMaxPeriod(3000)
+        retryHandler.addRetryException(classOf[UJESJobException])
+        val applicationInfo = retryHandler.retry(applicationInfoOperator(), "Fetch-Yarn-Application-Info")
+        jobInfo.setApplicationId(applicationInfo.applicationId)
+        jobInfo.setApplicationUrl(applicationInfo.applicationUrl)
     }
-    jobInfo.setApplicationId(applicationInfo.applicationId)
-    jobInfo.setApplicationUrl(applicationInfo.applicationUrl)
   }
 
   override def fetchLogs(id: String, user: String, requestPayload: LogRequestPayload): FlinkLogIterator = getOnceJob(id, user).getOperator(EngineConnLogOperator.OPERATOR_NAME) match {
