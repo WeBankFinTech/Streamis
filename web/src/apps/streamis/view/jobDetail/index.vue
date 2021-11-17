@@ -18,7 +18,7 @@
           {{ $t(`message.streamis.jobStatus.${status.name}`) }}
         </p>
       </div>
-      <div class="linkis">
+      <div class="linkis" v-if="!isHistory">
         <Button
           type="primary"
           @click="jumpToLinkis()"
@@ -28,34 +28,54 @@
         </Button>
       </div>
     </div>
-    <Tabs type="card" v-model="choosedModule">
-      <TabPane
-        name="jobSummary"
-        :label="$t('message.streamis.moduleName.jobSummary')"
-        v-if="!isHistory"
-      >
-        <jobSummary />
-      </TabPane>
-      <TabPane
-        name="jobHistory"
-        :label="$t('message.streamis.moduleName.jobHistory')"
-      >
-        <jobHistory />
-      </TabPane>
-      <TabPane
-        name="jobConfig"
-        :label="$t('message.streamis.moduleName.jobConfig')"
-        v-if="!isHistory"
-      >
-        <jobConfig />
-      </TabPane>
-      <TabPane
-        name="jobDetail"
-        :label="$t('message.streamis.moduleName.jobDetail')"
-      >
-        <jobDetail />
-      </TabPane>
-    </Tabs>
+    <div class="tabWrap">
+      <Tabs type="card" v-model="choosedModule">
+        <TabPane
+          name="jobSummary"
+          :label="$t('message.streamis.moduleName.jobSummary')"
+          @setLinksInfo="setLinksInfo"
+          v-if="!isHistory"
+        >
+          <div class="contWrap">
+            <jobSummary />
+          </div>
+        </TabPane>
+        <TabPane
+          name="jobHistory"
+          :label="$t('message.streamis.moduleName.jobHistory')"
+        >
+          <div class="contWrap">
+            <jobHistory />
+          </div>
+        </TabPane>
+        <TabPane
+          name="jobConfig"
+          :label="$t('message.streamis.moduleName.jobConfig')"
+          v-if="!isHistory"
+        >
+          <div class="contWrap">
+            <jobConfig />
+          </div>
+        </TabPane>
+        <TabPane
+          name="jobDetail"
+          :label="$t('message.streamis.moduleName.jobDetail')"
+        >
+          <div class="contWrap">
+            <jobDetail />
+          </div>
+        </TabPane>
+        <TabPane
+          name="jobAlert"
+          :label="$t('message.streamis.moduleName.alert')"
+          v-if="!isHistory"
+        >
+          <div class="contWrap">
+            <jobAlert />
+          </div>
+        </TabPane>
+      </Tabs>
+    </div>
   </div>
 </template>
 <script>
@@ -63,13 +83,16 @@ import jobSummary from '@/apps/streamis/module/jobSummary'
 import jobHistory from '@/apps/streamis/module/jobHistory'
 import jobConfig from '@/apps/streamis/module/jobConfig'
 import jobDetail from '@/apps/streamis/module/jobDetail'
+import jobAlert from '@/apps/streamis/module/jobAlert'
 import { allJobStatuses } from '@/apps/streamis/common/common'
+import { Message } from 'view-design'
 export default {
   components: {
     jobSummary: jobSummary.component,
     jobHistory: jobHistory.component,
     jobDetail: jobDetail.component,
-    jobConfig: jobConfig.component
+    jobConfig: jobConfig.component,
+    jobAlert: jobAlert.component
   },
   data() {
     const status = allJobStatuses.find(
@@ -83,27 +106,34 @@ export default {
       version: this.$route.params.version,
       projectName: this.$route.params.projectName,
       status: status || {},
-      isHistory: !!this.$route.params.isHistory
+      isHistory: !!this.$route.params.isHistory,
+      linksInfo: {},
+      inIframe: true
     }
   },
   methods: {
     jumpToLinkis() {
-      this.$router.push({
-        name: 'RealTimeJobCenter'
-      })
+      if (this.linksInfo.applicationUrl) {
+        window.open(this.linksInfo.applicationUrl)
+      } else {
+        Message.error(this.$t('message.streamis.jobDetail.urlEmpty'))
+      }
     },
     jumpToCenter() {
       this.$router.push({
         name: 'RealTimeJobCenter',
         query: { projectName: this.$route.params.projectName }
       })
+    },
+    setLinksInfo(data) {
+      this.linksInfo = { ...data }
     }
   }
 }
 </script>
 <style lang="scss" scoped>
 .container {
-  padding: 10px 30px 0;
+  padding: 0;
 }
 .divider {
   height: 30px;
@@ -114,6 +144,12 @@ export default {
   align-items: center;
   font-size: 14px;
   height: 60px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  padding: 10px 30px 0;
+  background: #fff;
   .center {
     cursor: pointer;
   }
@@ -145,5 +181,14 @@ export default {
       margin-right: 3px;
     }
   }
+}
+.tabWrap {
+  margin-top: 60px;
+  padding: 0px 30px;
+}
+.contWrap {
+  padding-bottom: 20px;
+  height: calc(100vh - 115px);
+  overflow-y: auto;
 }
 </style>

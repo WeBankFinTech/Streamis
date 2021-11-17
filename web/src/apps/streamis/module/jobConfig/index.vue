@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Row :gutter="80">
+    <Row :gutter="0">
       <Col span="14">
         <div class="itemWrap">
           <p>{{ $t('message.streamis.jobConfig.resourceConfig') }}</p>
@@ -58,6 +58,7 @@
                   </FormItem>
                 </Col>
               </Row>
+
               <Row :gutter="60">
                 <Col span="12">
                   <FormItem
@@ -179,7 +180,9 @@
           </div>
         </div>
       </Col>
-      <Col span="10">
+      <Col span="1">
+      </Col>
+      <Col span="9">
         <div class="itemWrap">
           <p>{{ $t('message.streamis.jobConfig.alertSet') }}</p>
           <div>
@@ -213,9 +216,9 @@
                 "
                 :label-width="labelWidth"
               >
-                <Select v-model="alertSet.alertLeve" class="select">
+                <Select v-model="alertSet.alertLevel" class="select">
                   <Option
-                    v-for="(item, index) in alertLeveOptions"
+                    v-for="(item, index) in alertLevelOptions"
                     :value="item.value"
                     :key="index"
                   >
@@ -408,12 +411,12 @@ export default {
       flinkParameters: [[]],
       alertSet: {
         alertRule: [],
-        alertLeve: '',
+        alertLevel: '',
         alertUser: [],
         alertFailureLevel: '',
         alertFailureUser: []
       },
-      alertLeveOptions: [],
+      alertLevelOptions: [],
       alertFailureLevelOptions: [],
       alertRuleOptions: [],
       authoritySet: {
