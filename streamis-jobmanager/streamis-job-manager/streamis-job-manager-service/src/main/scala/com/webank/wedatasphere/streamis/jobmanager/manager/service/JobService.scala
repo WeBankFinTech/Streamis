@@ -65,11 +65,12 @@ class JobService extends Logging {
     if (jobs != null && !jobs.isEmpty) {
       jobs.asScala.filter(_.getStatus != null).groupBy(_.getStatus).map(m => (m._1, m._2.size)).foreach(fo => {
         if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_ONE.getValue)) taskNum.setSuccessNum(fo._2)
-        if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_TWO.getValue)) taskNum.setWaitRestartNum(fo._2)
-        if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_THREE.getValue)) taskNum.setAlertNum(fo._2)
-        if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_FOUR.getValue)) taskNum.setSlowTaskNum(fo._2)
-        if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_FIVE.getValue)) taskNum.setRunningNum(fo._2)
-        if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_SIX.getValue)) taskNum.setFailureNum(fo._2)
+        else if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_TWO.getValue)) taskNum.setWaitRestartNum(fo._2)
+        else if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_THREE.getValue)) taskNum.setAlertNum(fo._2)
+        else if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_FOUR.getValue)) taskNum.setSlowTaskNum(fo._2)
+        else if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_FIVE.getValue)) taskNum.setRunningNum(fo._2)
+        else if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_SIX.getValue)) taskNum.setFailureNum(fo._2)
+        else if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_SEVEN.getValue)) taskNum.setStoppedNum(fo._2)
       })
     }
     taskNum
