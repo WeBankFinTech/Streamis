@@ -33,6 +33,16 @@ public class TaskCoreNumVO {
     private Integer waitRestartNum = 0;
     //已完成数目
     private Integer successNum = 0;
+    //已停止数目
+    private Integer stoppedNum = 0;
+
+    public Integer getStoppedNum() {
+        return stoppedNum;
+    }
+
+    public void setStoppedNum(Integer stoppedNum) {
+        this.stoppedNum = stoppedNum;
+    }
 
     public String getProjectName() {
         return projectName;
