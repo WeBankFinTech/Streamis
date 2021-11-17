@@ -140,10 +140,11 @@ export default {
   },
   methods: {
     getDatas() {
+      const {id, version} = this.$route.params || {};
+
       api
         .fetch(
-          'streamis/streamJobManager/job/details?jobId=' +
-            this.$route.params.id,
+          `streamis/streamJobManager/job/details?jobId=${id}&version=${version}`,
           'get'
         )
         .then(res => {
@@ -159,6 +160,7 @@ export default {
             })
             this.dataNumber = res.details.dataNumber
             this.realTimeTraffic = [...res.details.realTimeTraffic]
+            this.$emit("setLinksInfo", res.details.linkisJobInfo)
           }
         })
         .catch(e => console.log(e))
