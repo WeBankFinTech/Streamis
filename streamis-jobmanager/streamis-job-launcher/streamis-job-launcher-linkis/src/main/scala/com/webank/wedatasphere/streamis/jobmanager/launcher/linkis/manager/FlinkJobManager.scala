@@ -48,11 +48,9 @@ trait FlinkJobManager extends LinkisJobManager {
   override def launch(job: LaunchJob): String = {
     val onceJob = buildOnceJob(job)
     onceJob.submit()
+    onceJobs synchronized onceJobs.put(onceJob.getId, onceJob)
     val linkisJobInfo = createJobInfo(onceJob.getId, job.getSubmitUser)
-    onceJobs synchronized {
-      onceJobs.put(onceJob.getId, onceJob)
-      onceJobIdToJobInfo.put(onceJob.getId, linkisJobInfo)
-    }
+    onceJobs synchronized onceJobIdToJobInfo.put(onceJob.getId, linkisJobInfo)
     onceJob.getId
   }
 
