@@ -33,13 +33,19 @@
       :fromHistory="fromHistory"
       @modalCancel="modalCancel"
     />
+    <logDetail
+      :visible="logVisible"
+      @modalCancel="modalCancel"
+      ref='logDetail'
+    />
   </div>
 </template>
 <script>
 import api from '@/common/service/api'
 import versionDetail from '@/apps/streamis/module/versionDetail'
+import logDetail from '@/apps/streamis/module/logDetail'
 export default {
-  components: { versionDetail },
+  components: { versionDetail, logDetail },
   data() {
     return {
       columns: [
@@ -87,6 +93,7 @@ export default {
       ],
       tableDatas: [],
       modalVisible: false,
+      logVisible: false,
       versionDatas: [],
       jobId: this.$route.params.id,
       fromHistory: true
@@ -138,9 +145,12 @@ export default {
     },
     showLogs(row) {
       console.log(row)
+      this.$refs['logDetail'].getDatas();
+      this.logVisible = true;
     },
     modalCancel() {
       this.modalVisible = false
+      this.logVisible = false
     }
   }
 }

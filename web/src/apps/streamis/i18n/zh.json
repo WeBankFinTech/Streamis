@@ -15,7 +15,8 @@
         "jobSummary": "运行情况",
         "jobHistory": "执行历史",
         "jobConfig": "配置",
-        "jobDetail": "任务详情"
+        "jobDetail": "任务详情",
+        "alert": "告警"
       },
       "jobStatus": {
         "failure": "失败任务",
@@ -107,6 +108,7 @@
         "dependJarPac": "依赖Jar包",
         "userResource": "用户资源",
         "sqlContent": "SQL内容",
+        "urlEmpty": "链接为空",
         "columns": {
             "name": "名称",
             "version": "版本",
@@ -176,6 +178,19 @@
         "delelteConfirm": "确定删除该文件?",
         "createTime": "创建时间",
         "versionDescription": "版本说明"
+      },
+      "jobAlert": {
+        "alertMsg": "告警信息",
+        "errorMsg": "错误信息"
+      },
+      "logDetail": {
+        "logDetail": "日志详情",
+        "pre": "上一页",
+        "next": "下一页",
+        "latestLog": "查看最新日志",
+        "noLog": "没有日志信息",
+        "onlyKeywords": "请输入需要查询的关键字",
+        "ignoreKeywords": "请输入需要排除的关键字"
       }
     }
   }
