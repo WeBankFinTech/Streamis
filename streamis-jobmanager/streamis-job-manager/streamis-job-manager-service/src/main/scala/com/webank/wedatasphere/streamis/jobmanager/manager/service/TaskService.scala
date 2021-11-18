@@ -115,7 +115,7 @@ class TaskService extends Logging{
     if(job == null) throw new JobFetchFailedErrorException(30355, s"Unknown job $jobId.")
     val jobVersion = streamJobMapper.getJobVersionById(jobId, version)
     if(jobVersion == null) return new util.ArrayList[StreamTaskListVO]
-    val tasks = streamTaskMapper.getByJobIds(jobVersion.getId, version)
+    val tasks = streamTaskMapper.getByJobVersionId(jobVersion.getId, version)
     if(tasks == null || tasks.isEmpty) return new util.ArrayList[StreamTaskListVO]
     val list = new util.ArrayList[StreamTaskListVO]
     tasks.asScala.foreach{ f =>
