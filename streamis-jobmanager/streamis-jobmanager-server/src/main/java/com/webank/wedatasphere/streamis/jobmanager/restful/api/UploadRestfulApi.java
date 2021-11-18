@@ -24,6 +24,8 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.ZipHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.linkis.common.exception.ErrorException;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
@@ -58,6 +60,7 @@ public class UploadRestfulApi {
 
     @RequestMapping(path = "/upload", method = RequestMethod.POST)
     public Message uploadJar(HttpServletRequest request,
+                             @RequestParam(name = "projectName", required = false) String projectName,
                               @RequestParam(name = "file") List<MultipartFile> files) throws IOException, JobException {
 
         String userName = SecurityFilter.getLoginUsername(request);
@@ -67,6 +70,7 @@ public class UploadRestfulApi {
         //Only uses 1st file(只取第一个文件)
         MultipartFile p = files.get(0);
         String fileName = new String(p.getOriginalFilename().getBytes("ISO8859-1"), StandardCharsets.UTF_8);
+        LOG.info("Try to upload a StreamJob zip {} to project {}.", fileName, projectName);
         if(!ZipHelper.isZip(fileName)){
             throw JobExceptionManager.createException(30302);
         }
@@ -81,19 +85,14 @@ public class UploadRestfulApi {
             is = p.getInputStream();
             os = IoUtils.generateExportOutputStream(inputPath);
             IOUtils.copy(is, os);
-            StreamJobVersion job = jobService.uploadJob(userName, inputPath);
+            StreamJobVersion job = jobService.uploadJob(projectName, userName, inputPath);
             return Message.ok().data("jobId",job.getJobId());
-        } catch(ErrorException e){
-            LOG.error("Failed to upload zip(zip上传失败)", e);
-            return Message.error(e.getDesc());
         } catch (Exception e){
-            LOG.error("failed to upload zip {} fo user {}", fileName, userName, e);
-            return Message.error(e.getMessage());
-        }
-        finally{
+            LOG.error("Failed to upload zip {} to project {} for user {}.", fileName, projectName, userName, e);
+            return Message.error(ExceptionUtils.getRootCauseMessage(e));
+        } finally{
             IOUtils.closeQuietly(os);
             IOUtils.closeQuietly(is);
         }
-
     }
 }
