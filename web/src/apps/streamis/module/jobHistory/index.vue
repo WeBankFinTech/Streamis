@@ -7,20 +7,12 @@
             {{ $t('message.streamis.jobHistoryColumns.showVersionInfo') }}
           </a>
         </div>
-        <div
-          style="margin-left: 5px"
-          @click="showDetail(row)"
-          v-show="row.status === 'running'"
-        >
+        <div style="margin-left: 5px" @click="showDetail(row)" v-show="false">
           <a href="javascript:void(0)">
             {{ $t('message.streamis.jobHistoryColumns.detail') }}
           </a>
         </div>
-        <div
-          style="margin-left: 5px"
-          @click="showLogs(row)"
-          v-show="row.status !== 'running'"
-        >
+        <div style="margin-left: 5px" @click="showLogs(row)">
           <a href="javascript:void(0)">
             {{ $t('message.streamis.jobHistoryColumns.logs') }}
           </a>
@@ -36,7 +28,7 @@
     <logDetail
       :visible="logVisible"
       @modalCancel="modalCancel"
-      ref='logDetail'
+      ref="logDetail"
     />
   </div>
 </template>
@@ -91,7 +83,22 @@ export default {
           slot: 'operation'
         }
       ],
-      tableDatas: [],
+      tableDatas: [
+        // {
+        //   id: 10,
+        //   name: 'flinkJarTestc',
+        //   workspaceName: null,
+        //   projectName: 'flinkJarTest3',
+        //   jobType: 'flink.jar',
+        //   label: 'e,t,y,h,g',
+        //   createBy: 'hdfs',
+        //   createTime: 1636338541000,
+        //   status: "running",
+        //   version: 'v00002',
+        //   lastVersionTime: 1636339360000,
+        //   description: '这是一个FlinkJar测试Job3'
+        // }
+      ],
       modalVisible: false,
       logVisible: false,
       versionDatas: [],
@@ -145,8 +152,8 @@ export default {
     },
     showLogs(row) {
       console.log(row)
-      this.$refs['logDetail'].getDatas();
-      this.logVisible = true;
+      this.$refs['logDetail'].getDatas()
+      this.logVisible = true
     },
     modalCancel() {
       this.modalVisible = false
