@@ -127,6 +127,7 @@ public class JobRestfulApi {
         if (jobId == null) {
             JobExceptionManager.createException(30301, "jobId");
         }
+        // TODO This is just sample datas, waiting for it completed. We have planned it to a later release, welcome all partners to join us to realize this powerful feature.
         JobDetailsVO jobDetailsVO = new JobDetailsVO();
         List<JobDetailsVO.DataNumberDTO> dataNumberDTOS = new ArrayList<>();
         JobDetailsVO.DataNumberDTO dataNumberDTO = new JobDetailsVO.DataNumberDTO();
