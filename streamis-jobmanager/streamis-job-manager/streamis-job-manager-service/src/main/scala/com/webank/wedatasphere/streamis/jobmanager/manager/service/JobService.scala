@@ -65,11 +65,12 @@ class JobService extends Logging {
     if (jobs != null && !jobs.isEmpty) {
       jobs.asScala.filter(_.getStatus != null).groupBy(_.getStatus).map(m => (m._1, m._2.size)).foreach(fo => {
         if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_ONE.getValue)) taskNum.setSuccessNum(fo._2)
-        if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_TWO.getValue)) taskNum.setWaitRestartNum(fo._2)
-        if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_THREE.getValue)) taskNum.setAlertNum(fo._2)
-        if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_FOUR.getValue)) taskNum.setSlowTaskNum(fo._2)
-        if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_FIVE.getValue)) taskNum.setRunningNum(fo._2)
-        if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_SIX.getValue)) taskNum.setFailureNum(fo._2)
+        else if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_TWO.getValue)) taskNum.setWaitRestartNum(fo._2)
+        else if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_THREE.getValue)) taskNum.setAlertNum(fo._2)
+        else if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_FOUR.getValue)) taskNum.setSlowTaskNum(fo._2)
+        else if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_FIVE.getValue)) taskNum.setRunningNum(fo._2)
+        else if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_SIX.getValue)) taskNum.setFailureNum(fo._2)
+        else if (fo._1.equals(JobConf.JOBMANAGER_FLINK_JOB_STATUS_SEVEN.getValue)) taskNum.setStoppedNum(fo._2)
       })
     }
     taskNum
@@ -153,10 +154,12 @@ class JobService extends Logging {
 
   @throws(classOf[ErrorException])
   @Transactional(rollbackFor = Array(classOf[Exception]))
-  def uploadJob(userName: String, inputZipPath: String): StreamJobVersion = {
+  def uploadJob(projectName: String, userName: String, inputZipPath: String): StreamJobVersion = {
     val inputPath = ZipHelper.unzip(inputZipPath)
     val readerUtils = new ReaderUtils
     val metaJsonInfo = readerUtils.parseJson(inputPath)
+    if(StringUtils.isNotBlank(projectName) && projectName != metaJsonInfo.getProjectName)
+      throw new JobCreateFailedErrorException(30030, s"The projectName ${metaJsonInfo.getProjectName} in meta.json is not the same to project $projectName.")
     validateUpload(metaJsonInfo.getProjectName, metaJsonInfo.getJobName, userName)
     //  生成StreamJob，根据StreamJob生成StreamJobVersion
     val version = createStreamJob(metaJsonInfo, userName)
