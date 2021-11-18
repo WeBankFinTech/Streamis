@@ -109,7 +109,7 @@ export default {
       })
       this.spinShow = true
       api
-        .fetch('streamis/streamJobManager/job/log' + queries, 'get')
+        .fetch('streamis/streamJobManager/job/logs' + queries, 'get')
         .then(res => {
           this.spinShow = false
           if (res && res.logs) {
