@@ -154,10 +154,12 @@ class JobService extends Logging {
 
   @throws(classOf[ErrorException])
   @Transactional(rollbackFor = Array(classOf[Exception]))
-  def uploadJob(userName: String, inputZipPath: String): StreamJobVersion = {
+  def uploadJob(projectName: String, userName: String, inputZipPath: String): StreamJobVersion = {
     val inputPath = ZipHelper.unzip(inputZipPath)
     val readerUtils = new ReaderUtils
     val metaJsonInfo = readerUtils.parseJson(inputPath)
+    if(StringUtils.isNotBlank(projectName) && projectName != metaJsonInfo.getProjectName)
+      throw new JobCreateFailedErrorException(30030, s"The projectName ${metaJsonInfo.getProjectName} in meta.json is not the same to project $projectName.")
     validateUpload(metaJsonInfo.getProjectName, metaJsonInfo.getJobName, userName)
     //  生成StreamJob，根据StreamJob生成StreamJobVersion
     val version = createStreamJob(metaJsonInfo, userName)
