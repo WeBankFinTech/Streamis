@@ -1,7 +1,7 @@
 {
   "message": {
     "streamis": {
-      "enterLinkis": "Enter Linkis",
+      "enterYarn": "Enter Yarn",
       "operationSuccess": "Operation Success",
       "routerName": {
         "realTimeJobCenter": "Real-time job center",
