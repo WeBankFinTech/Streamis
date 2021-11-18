@@ -3,65 +3,104 @@
 ## 1.组件介绍
 ----------
 
-Streamis0.1.0提供了Streamis-JobManager组件,组件的作用有<br>
-1.发布流式应用<br>
-2.设置流式应用参数,如Flink的Slot数量,checkpoint相关参数等<br> 
-3.管理流式应用(例如启停)<br> 
-4.流式应用监控<br>
+Streamis0.1.0 提供了 Streamis-JobManager 流式生产中心，其作用主要有：
+
+1. 上传/更新流式应用
+2. 配置流式应用参数，如 Flink 的 Slot 数量、checkpoint相关参数等 
+3. 管理流式应用，如启停、savepoint等 
+4. 流式应用监控告警
 
 
 ## 2.代码编译
 ----------
-如果已经获取到安装包，可以跳过此步骤<br>
-后台编译方式如下
+
+**Streamis 无需手动编译，可以直接下载安装包进行部署，请 [点我下载安装包](https://github.com/WeBankFinTech/Streamis/releases)。**
+
+如果您想自己编译 Streamis，可参考如下步骤进行。
+
+后台编译方式如下：
+
 ```
 cd ${STREAMIS_CODE_HOME}
 mvn -N install
 mvn clean install
 ```
-前端编译方式如下
+
+前端编译方式如下：
+
 ```bash
 cd ${STREAMIS_CODE_HOME}/web
 npm i
 npm run build
 ```
 
-
 ## 3.安装准备
-### 3.1基础环境安装
+
+#### 3.1 基础环境安装
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;下面的软件必须安装：
 
 - MySQL (5.5+)，[如何安装MySQL](https://www.runoob.com/mysql/mysql-install.html)
 - JDK (1.8.0_141以上)，[如何安装JDK](https://www.runoob.com/java/java-environment-setup.html)
 
-### 3.2Linkis环境
-Streamis的执行依赖于Linkis，并且需要在1.0.3及以上的版本，所以您需要安装1.0.3以上的Linkis,并且保证Flink引擎可以正常使用,具体的,您可以在Scriptis上新建编辑一个flinksql脚本
-并执行。如果flinksql能正确执行，表示linkis1.0.3环境是正常的。
+### 3.2 Linkis 和 DSS 环境
 
-### 3.3软件包准备
-从第二步骤中获取软件包，并上传到服务器的安装目录,如 /appcom/Install/streamis
+- Linkis (>=1.0.3)，Streamis 的执行依赖于 Linkis 的 Flink 引擎，并且依赖 **Linkis-1.0.3** 及以上版本。
+- DataSphere Studio (>=1.0.1)，Streamis 流式作业的开发和调试，依赖于 DSS-Scriptis，Streamis 流式生产中心则需嵌入到 DSS 工程框架体系之中，所以依赖于 **DSS-1.0.1** 及以上版本。
+
+在正式安装 Streamis 之前，请先安装 Linkis1.0.3 和 DSS1.0.1 及以上版本，并且保证 Linkis Flink 引擎 和 DSS 可以正常使用，DSS 和 Linkis 安装，可参照 [DSS & Linkis 一键安装部署文档](https://github.com/WeBankFinTech/DataSphereStudio-Doc/blob/main/zh_CN/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/DSS%E5%8D%95%E6%9C%BA%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.md)。
+
+如何验证 DSS 和 Linkis 已基本可用？您可以在 DSS-Scriptis 上新建一个 flinksql 脚本并执行，如果 flinksql 能正确执行并返回结果集，表示 DSS 和 linkis 环境是可用的。
+
+### 3.3 安装包准备
+
+将安装包上传到 Linux 服务器（目前只支持 Linux 环境部署）的安装目录，如 /appcom/Install/streamis：
+
 ```bash
 cd /appcom/Install/streamis
 tar -xvf wedatasphere-streamis-${streamis-version}-dist.tar.gz
 ```
 
-### 3.4修改数据库配置
+### 3.4 修改数据库配置
+
 ```bash
 vi conf/db.sh
 #配置基础的数据库信息
+
 ```
 
-### 3.5修改基础配置文件
+### 3.5 修改基础配置文件
 
 ```bash
-vi conf/config.sh
-#配置服务端口信息
-#配置Linkis服务信息
+    vi conf/config.sh
 ```
+
+```bash
+
+### deploy user
+deployUser=hadoop
+
+##The Port of Streamis
+STREAMIS_PORT=9400
+
+### The install home path of STREAMIS，Must provided
+STREAMIS_INSTALL_HOME=/appcom/Install/streamis
+
+###  Linkis EUREKA  information.  # Microservices Service Registration Discovery Center
+EUREKA_INSTALL_IP=127.0.0.1
+EUREKA_PORT=20303
+
+### Linkis Gateway  information
+GATEWAY_INSTALL_IP=127.0.0.1
+GATEWAY_PORT=9001
+
+```
+
 ## 4.安装和启动
 ----------
 
 - 后台安装
+
 ```bash
 sh bin/install.sh
 ```
@@ -74,14 +113,16 @@ sh bin/install.sh
 
 
 - 启动
+
 ```bash
 sh bin/start-streamis.sh
 ```
 
 - 启动验证
-验证方式，因为Streamis和Linkis同用一套Eureka,所以您需要检查Linkis的Eureka页面是否已经包含了Streamis的服务，如图, 
-![components](../../images/zh_CN/eureka_streamis.png)
 
+验证方式，因为 Streamis 与 Linkis 同用一套 Eureka，所以您需要检查 Linkis 的 Eureka 页面是否已经包含了 Streamis 的服务，如图：
+
+![components](../../images/zh_CN/eureka_streamis.png)
 
 
 - 前端部署
@@ -91,13 +132,16 @@ sh bin/start-streamis.sh
 ```bash
 sudo yum install -y nginx
 ```
+
 2.部署前端包
+
 ```
 mkdir ${STREAMIS_FRONT_PATH}
 cd ${STREAMIS_FRONT_PATH}
 #放置前端包
 unzip streamis-web.zip
 ```
+
 3.修改nginx配置文件<br>
 
 ```bash
@@ -105,6 +149,7 @@ cd /etc/nginx/conf.d
 vi streamis.conf
 # 复制下面的模板并根据实际情况进行修改
 ```
+
 ```
 server {
     listen       9088;# 访问端口
@@ -137,29 +182,31 @@ server {
     }
 }
 ```
+
 4.重启nginx
+
 ```bash
 sudo systemctl restart nginx
 ```
 
-## 5.接入DSS
-Streamis0.1.0版本接入DSS只实现了一级规范，也就是能够在DSS的页面进行免密跳转到Streamis前端，具体的您需要将streamis的基本信息配置到DSS的数据库中，具体如下,你需要替换sql首行的ip和端口即可。
+## 5. 接入DSS
+
+请在 **DSS 数据库**之中，执行以下SQL：
+
+请注意：是在 **DSS 数据库**之中，执行以下SQL！！！
+
+请注意：是在 **DSS 数据库**之中，执行以下SQL！！！
+
+特别需要注意的是：需将以下SQL url 字段的值 ：`http://127.0.0.1:9188/#/realtimeJobCenter?projectName=${projectName}&workspaceName=${workspaceName}` 中的 IP 和 端口，替换为 Streamis 的 IP 和 端口
+
 ```roomsql
-SET @STREAMIS_INSTALL_IP_PORT='127.0.0.1:9088';  -- 注意此处是streamis的前端地址
-SET @URL = replace('http://STREAMIS_IP_PORT', 'STREAMIS_IP_PORT', @STREAMIS_INSTALL_IP_PORT);
-SET @HOMEPAGE_URL = replace('http://STREAMIS_IP_PORT', 'STREAMIS_IP_PORT', @STREAMIS_INSTALL_IP_PORT);
-SET @PROJECT_URL = replace('http://STREAMIS_IP_PORT', 'STREAMIS_IP_PORT', @STREAMIS_INSTALL_IP_PORT);
-
-
-delete from `dss_application` WHERE `name` = 'STREAMIS';
-INSERT INTO `dss_application`(`name`,`url`,`is_user_need_init`,`level`,`user_init_url`,`exists_project_service`,`project_url`,`enhance_json`,`if_iframe`,`homepage_url`,`redirect_url`) VALUES ('STREAMIS', @URL, 0, 1, NULL, 0, @PROJECT_URL, '', 1, @HOMEPAGE_URL, @REDIRECT_URL);
-
-select @dss_STREAMIS_applicationId:=id from `dss_application` WHERE `name` = 'STREAMIS';
-
-select @dss_onestop_menu_id:=id from `dss_onestop_menu` where `name` = '应用开发';
-
-delete from `dss_onestop_menu_application` WHERE title_en = 'STREAMIS';
-INSERT INTO `dss_onestop_menu_application` (`application_id`, `onestop_menu_id`, `title_en`, `title_cn`, `desc_en`, `desc_cn`, `labels_en`, `labels_cn`, `is_active`, `access_button_en`, `access_button_cn`, `manual_button_en`, `manual_button_cn`, `manual_button_url`, `icon`, `order`, `create_by`, `create_time`, `last_update_time`, `last_update_user`, `image`) 
-VALUES(@dss_STREAMIS_applicationId, @dss_onestop_menu_id, 'STREAMIS','实时计算平台','Streamis is a streaming application development management system. Based on DataSphereStudio framing capabilities and the underlying docking of Linkis Flink engine, users can complete the development, debugging, release and production management of streaming applications at low cost','Streamis是微众银行联合天翼云、仙翁科技和萨摩耶云共建的流式应用开发管理系统。基于DataSphereStudio的框架化能力，以及底层对接Linkis的Flink引擎，让用户低成本完成流式应用的开发、调试、发布和生产管理。','Streamis','实时计算平台','1','Enter Streamis','进入Streamis','user manual','用户手册','http://127.0.0.1:8088/wiki/scriptis/manual/workspace_cn.html','shujujiaohuan-logo',NULL,NULL,NULL,NULL,NULL,'shujujiaohuan-icon');
+INSERT INTO `dss_dictionary` ( `workspace_id`, `parent_key`, `dic_name`, `dic_name_en`, `dic_key`, `dic_value`, `dic_value_en`, `title`, `title_en`, `url`, `url_type`,`icon`, `order_num`, `remark`, `create_user`, `create_time`, `update_user`, `update_time`) 
+VALUES ('0','p_develop_process','流式生产中心','Streamis Product Center','pdp_streamis_product_center','streamis_prod',NULL,NULL,NULL,
+'http://127.0.0.1:9188/#/realtimeJobCenter?projectName=${projectName}&workspaceName=${workspaceName}','0','kaifa-icon','1','工程开发流程-流式生产中心','SYSTEM','2020-12-28 17:32:35',NULL,'2021-02-22 17:49:02');
 ```
-执行完sql之后，您可能需要重新启动一下dss-framework-project-server进行一下内存刷新。
+
+如何验证 DSS 已经成功集成了 Streamis？
+
+请进入 DSS 的工程首页，如果能正常切换到 流式生产中心，则表示 DSS 已经成功集成了 Streamis。如下图：
+
+![DSS 集成 Streamis](../../images/zh_CN/DSS_integration_Streamis.png)
