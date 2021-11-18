@@ -199,6 +199,8 @@ sudo systemctl restart nginx
 
 特别需要注意的是：需将以下SQL url 字段的值 ：`http://127.0.0.1:9188/#/realtimeJobCenter?projectName=${projectName}&workspaceName=${workspaceName}` 中的 IP 和 端口，替换为 Streamis 的 IP 和 端口
 
+请注意：以下SQL，只需替换 IP 和 端口 即可，其他无需改动。
+
 ```roomsql
 INSERT INTO `dss_dictionary` ( `workspace_id`, `parent_key`, `dic_name`, `dic_name_en`, `dic_key`, `dic_value`, `dic_value_en`, `title`, `title_en`, `url`, `url_type`,`icon`, `order_num`, `remark`, `create_user`, `create_time`, `update_user`, `update_time`) 
 VALUES ('0','p_develop_process','流式生产中心','Streamis Product Center','pdp_streamis_product_center','streamis_prod',NULL,NULL,NULL,
