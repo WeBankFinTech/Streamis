@@ -21,10 +21,10 @@
       <div class="linkis" v-if="!isHistory">
         <Button
           type="primary"
-          @click="jumpToLinkis()"
+          @click="jumpToYarn()"
           style="height:24px;background:rgba(22, 155, 213, 1);margin-left: 15px;"
         >
-          {{ $t('message.streamis.enterLinkis') }}
+          {{ $t('message.streamis.enterYarn') }}
         </Button>
       </div>
     </div>
@@ -33,11 +33,10 @@
         <TabPane
           name="jobSummary"
           :label="$t('message.streamis.moduleName.jobSummary')"
-          @setLinksInfo="setLinksInfo"
           v-if="!isHistory"
         >
           <div class="contWrap">
-            <jobSummary />
+            <jobSummary @links-info="linksInfo" />
           </div>
         </TabPane>
         <TabPane
@@ -88,7 +87,7 @@ import { allJobStatuses } from '@/apps/streamis/common/common'
 import { Message } from 'view-design'
 export default {
   components: {
-    jobSummary: jobSummary.component,
+    jobSummary,
     jobHistory: jobHistory.component,
     jobDetail: jobDetail.component,
     jobConfig: jobConfig.component,
@@ -107,14 +106,15 @@ export default {
       projectName: this.$route.params.projectName,
       status: status || {},
       isHistory: !!this.$route.params.isHistory,
-      linksInfo: {},
+      linkInfo: {},
       inIframe: true
     }
   },
   methods: {
-    jumpToLinkis() {
-      if (this.linksInfo.applicationUrl) {
-        window.open(this.linksInfo.applicationUrl)
+    jumpToYarn() {
+      console.log(this.linkInfo)
+      if (this.linkInfo.applicationUrl) {
+        window.open(this.linkInfo.applicationUrl)
       } else {
         Message.error(this.$t('message.streamis.jobDetail.urlEmpty'))
       }
@@ -125,8 +125,9 @@ export default {
         query: { projectName: this.$route.params.projectName }
       })
     },
-    setLinksInfo(data) {
-      this.linksInfo = { ...data }
+    linksInfo(data) {
+      console.log(data)
+      this.linkInfo = { ...data }
     }
   }
 }

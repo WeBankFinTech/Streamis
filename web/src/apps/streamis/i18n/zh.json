@@ -1,7 +1,7 @@
 {
   "message": {
     "streamis": {
-      "enterLinkis": "进入Linkis查看",
+      "enterYarn": "跳转到Yarn页面",
       "operationSuccess": "操作成功",
       "routerName": {
         "realTimeJobCenter": "实时生产中心",
