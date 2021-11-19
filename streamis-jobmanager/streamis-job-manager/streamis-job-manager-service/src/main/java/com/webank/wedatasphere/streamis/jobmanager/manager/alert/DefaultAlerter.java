@@ -15,23 +15,40 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.alert;
 
+import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamAlertMapper;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamAlertRecord;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 
-/**
- * created by cooperyang on 2021/9/6
- * Description:
- */
 @Component
 public class DefaultAlerter implements Alerter{
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultAlerter.class);
 
+    @Autowired
+    private StreamAlertMapper streamAlertMapper;
+
     @Override
-    public void alert(AlertLevel alertLevel, String alertMessage, List<String> alertUsers) {
+    public void alert(AlertLevel alertLevel, String alertMessage, List<String> alertUsers, StreamTask streamTask) {
         LOG.info("alert in default alerter");
+        for (String alertUser : alertUsers) {
+            StreamAlertRecord streamAlertRecord = new StreamAlertRecord();
+            streamAlertRecord.setAlertLevel(alertLevel.name());
+            streamAlertRecord.setAlertMsg(alertMessage);
+            streamAlertRecord.setAlertUser(alertUser);
+            streamAlertRecord.setJobVersionId(streamTask.getJobVersionId());
+            streamAlertRecord.setJobId(streamTask.getJobId());
+            streamAlertRecord.setCreateTime(new Date());
+            streamAlertRecord.setStatus(0);
+            streamAlertRecord.setTaskId(streamTask.getId());
+            streamAlertMapper.insert(streamAlertRecord);
+        }
     }
 }
