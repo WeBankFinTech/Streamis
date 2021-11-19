@@ -223,4 +223,20 @@ CREATE TABLE `linkis_stream_task` (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='任务表';
 
+DROP TABLE IF EXISTS `linkis_stream_alert_record`;
+
+CREATE TABLE `linkis_stream_alert_record` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `alert_level` varchar(20) NOT NULL DEFAULT 'critical' COMMENT '告警级别',
+  `alert_user` varchar(20) NOT NULL COMMENT '告警用户',
+  `alert_msg` varchar(200) NOT NULL COMMENT '告警信息',
+  `job_id` bigint(20) NOT NULL,
+  `job_version_id` bigint(20) DEFAULT NULL,
+  `task_id` bigint(20) DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
+  `status` bigint(2) DEFAULT '1' COMMENT '''1为成功，0为失败''',
+  `error_msg` varchar(200) DEFAULT NULL COMMENT '告警发送失败后的错误信息',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
 SET FOREIGN_KEY_CHECKS = 1;
