@@ -19,23 +19,20 @@ import java.util
 import java.util.concurrent.{Future, TimeUnit}
 
 import com.google.common.collect.{Lists, Sets}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.ConfigConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LinkisJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.{AlertLevel, Alerter}
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
-import javax.annotation.PostConstruct
-import org.apache.commons.lang.StringUtils
-import org.apache.linkis.common.utils.{Logging, Utils}
+import javax.annotation.{PostConstruct, PreDestroy}
+import org.apache.linkis.common.utils.{Logging, RetryHandler, Utils}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import org.springframework.util.CollectionUtils
 
 import scala.collection.convert.WrapAsScala._
 
 
-//@Service
+@Service
 class TaskMonitorService extends Logging {
 
   @Autowired private var streamTaskMapper:StreamTaskMapper=_
@@ -56,6 +53,11 @@ class TaskMonitorService extends Logging {
     }, JobConf.TASK_MONITOR_INTERVAL.getValue.toLong, JobConf.TASK_MONITOR_INTERVAL.getValue.toLong, TimeUnit.MILLISECONDS)
   }
 
+  @PreDestroy
+  def close(): Unit = {
+    future.cancel(true)
+  }
+
   def doMonitor(): Unit = {
     info("Try to update all StreamTasks status.")
     val status = util.Arrays.asList(JobConf.NOT_COMPLETED_STATUS_ARRAY.map(c => new Integer(c.getValue)) :_*)
@@ -67,18 +69,22 @@ class TaskMonitorService extends Logging {
     streamTasks.filter(shouldMonitor).foreach { streamTask =>
       val job = streamJobMapper.getJobById(streamTask.getJobId)
       info(s"Try to update status of StreamJob-${job.getName}.")
+      val retryHandler = new RetryHandler {}
+      retryHandler.setRetryNum(3)
+      retryHandler.setRetryMaxPeriod(2000)
       Utils.tryCatch {
-        TaskService.updateStreamTaskStatus(streamTask, job.getName, streamTask.getSubmitUser)
+        retryHandler.retry(TaskService.updateStreamTaskStatus(streamTask, job.getName, streamTask.getSubmitUser), s"Task-Monitor-${job.getName}")
       } { ex =>
           error(s"Fetch StreamJob-${job.getName} failed, maybe the Linkis cluster is wrong, please be noticed!", ex)
         // 连续三次还是出现异常，说明Linkis的Manager已经不能正常提供服务，告警并不再尝试获取状态，等待下次尝试
         val users = getAlertUsers(job)
         users.add(job.getCreateBy)
         alert(jobService.getAlertLevel(job), "请求LinkisManager失败，Linkis集群出现异常，请关注！", users ,streamTask)
-          return
+        return
       }
       if(streamTask.getStatus == JobConf.JOBMANAGER_FLINK_JOB_STATUS_SIX.getValue) {
         warn(s"StreamJob-${job.getName} is failed, please be noticed.")
+        // TODO Need to add restart feature if user sets the restart parameters in checkpoint module.
         val alertMsg = s"您的 streamis 流式应用[${job.getName}]已经失败, 请您确认该流式应用的状况是否正常"
         val set = Sets.newHashSet(job.getCreateBy, job.getSubmitUser)
         val users = getAlertUsers(job)
