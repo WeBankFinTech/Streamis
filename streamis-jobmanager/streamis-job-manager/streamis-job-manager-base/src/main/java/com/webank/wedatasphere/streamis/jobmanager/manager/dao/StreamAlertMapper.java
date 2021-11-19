@@ -13,15 +13,17 @@
  * limitations under the License.
  */
 
-package com.webank.wedatasphere.streamis.jobmanager.manager.alert;
+package com.webank.wedatasphere.streamis.jobmanager.manager.dao;
 
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask;
+
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamAlertRecord;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
+public interface StreamAlertMapper {
 
-public interface Alerter {
+    void insert(StreamAlertRecord streamAlertRecord);
 
-    void alert(AlertLevel alertLevel, String alertMessage, List<String> alertUsers, StreamTask streamTask);
-
+    List<StreamAlertRecord> getAlertByJobIdAndVersion(@Param("username") String username, @Param("jobId") Long jobId, @Param("versionId") Long versionId);
 }
