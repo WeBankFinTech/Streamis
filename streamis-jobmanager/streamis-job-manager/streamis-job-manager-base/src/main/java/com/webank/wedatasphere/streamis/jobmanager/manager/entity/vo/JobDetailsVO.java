@@ -15,6 +15,8 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo;
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LinkisJobInfo;
+
 import java.util.List;
 
 public class JobDetailsVO {
@@ -22,6 +24,15 @@ public class JobDetailsVO {
     private List<RealTimeTrafficDTO> realTimeTraffic;
     private List<DataNumberDTO> dataNumber;
     private List<LoadConditionDTO> loadCondition;
+    private LinkisJobInfo linkisJobInfo;
+
+    public LinkisJobInfo getLinkisJobInfo() {
+        return linkisJobInfo;
+    }
+
+    public void setLinkisJobInfo(LinkisJobInfo linkisJobInfo) {
+        this.linkisJobInfo = linkisJobInfo;
+    }
 
     public List<RealTimeTrafficDTO> getRealTimeTraffic() {
         return realTimeTraffic;
