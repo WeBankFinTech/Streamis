@@ -54,7 +54,7 @@
               </div>
               <div class="jobName" v-show="index === 0">
                 <Upload
-                  action="/api/rest_j/v1/streamis/streamJobManager/job/upload"
+                  :action="`/api/rest_j/v1/streamis/streamJobManager/job/upload?projectName=${projectName}`"
                   :on-success="jarUploadSuccess"
                   :on-error="jarUploadError"
                   :show-upload-list="false"
