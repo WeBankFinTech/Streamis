@@ -245,12 +245,12 @@ class JobService extends Logging {
 
   def getAlertLevel(job: StreamJob): AlertLevel = {
     val values = configMapper.getConfigKeyValues(null, job.getId)
-    if (CollectionUtils.isEmpty(values)) return AlertLevel.CRITICAL
+    if (CollectionUtils.isEmpty(values)) return AlertLevel.MINOR
     val configValues = values.asScala
     val list = configValues.groupBy(_.getConfigKey).filter(f => f._1.equals(ConfigConf.JOBMANAGER_FLINK_ALERT_LEVEL.getValue)).toList
-    if (list.size <= 0) return AlertLevel.CRITICAL
+    if (list.size <= 0) return AlertLevel.MINOR
     val value = list.head._2.head.getConfigValue
-    if (StringUtils.isBlank(value)) return AlertLevel.CRITICAL
+    if (StringUtils.isBlank(value)) return AlertLevel.MINOR
     AlertLevel.valueOf(value)
   }
 
