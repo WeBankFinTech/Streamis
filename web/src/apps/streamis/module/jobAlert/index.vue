@@ -89,7 +89,7 @@ export default {
         .then(res => {
           if (res && res.list) {
             res.list.forEach(item => {
-              if (item.lastVersionTime) {
+              if (item.createTime) {
                 const newDate = moment(new Date(item.createTime)).format(
                   'YYYY-MM-DD HH:mm:ss'
                 )
