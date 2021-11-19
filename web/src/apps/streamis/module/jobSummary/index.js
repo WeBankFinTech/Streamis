@@ -15,9 +15,5 @@
  *
  */
 
-export default {
-  name: 'jobSummary',
-  dispatchs: {
-  },
-  component: () => import('./index.vue'),
-};
+import jobSummary from './index.vue';
+export default jobSummary;
