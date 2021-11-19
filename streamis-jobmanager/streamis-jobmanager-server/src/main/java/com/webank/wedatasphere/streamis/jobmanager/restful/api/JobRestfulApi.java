@@ -26,8 +26,11 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.*;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.TaskService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +44,9 @@ import java.util.Map;
 @RequestMapping(path = "/streamis/streamJobManager/job")
 @RestController
 public class JobRestfulApi {
+
+    private final Logger LOG = LoggerFactory.getLogger(JobRestfulApi.class);
+
     @Autowired
     JobService jobService;
     @Autowired
@@ -113,10 +119,16 @@ public class JobRestfulApi {
             JobExceptionManager.createException(30301, "jobId");
         }
         long jobId = Long.parseLong(json.get("jobId").toString());
+        LOG.info("{} try to execute job {}.", userName, jobId);
         if (!jobService.hasPermission(jobId, userName)) {
             return Message.error("you have no permission of this job ,please ask for the job creator");
         }
-        taskService.executeJob(jobId, userName);
+        try {
+            taskService.executeJob(jobId, userName);
+        } catch (Exception e) {
+            LOG.error("{} execute job {} failed!", userName, jobId, e);
+            return Message.error(ExceptionUtils.getRootCauseMessage(e));
+        }
         return Message.ok();
     }
 
@@ -126,10 +138,16 @@ public class JobRestfulApi {
         if (jobId == null) {
             JobExceptionManager.createException(30301, "jobId");
         }
+        LOG.info("{} try to kill job {}.", userName, jobId);
         if (!jobService.hasPermission(jobId, userName)) {
             return Message.error("you have no permission of this job ,please ask for the job creator");
         }
-        taskService.stopJob(jobId, userName);
+        try {
+            taskService.stopJob(jobId, userName);
+        } catch (Exception e) {
+            LOG.error("{} kill job {} failed!", userName, jobId, e);
+            return Message.error(ExceptionUtils.getRootCauseMessage(e));
+        }
         return Message.ok();
     }
 
