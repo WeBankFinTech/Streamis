@@ -21,7 +21,7 @@ import java.util.Date
 import org.apache.linkis.common.utils.Logging
 import org.apache.linkis.httpclient.dws.DWSHttpClient
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{LaunchJob, LogRequestPayload}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{FlinkJobInfo, LaunchJob, LogRequestPayload}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager.FlinkJobManager
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
@@ -182,6 +182,14 @@ class TaskService extends Logging{
     jobProgressVO.setTaskId(task.getId)
     jobProgressVO.setProgress(task.getStatus)
     jobProgressVO
+  }
+
+  def getTask(jobId:Long, version: String): FlinkJobInfo ={
+    val str = streamTaskMapper.getTask(jobId, version)
+    if (StringUtils.isBlank(str)) {
+      return new FlinkJobInfo
+    }
+    DWSHttpClient.jacksonJson.readValue(str,classOf[FlinkJobInfo])
   }
 
   private def saveTask(jobId: Long, jobVersionId: Long, userName:String, date:Date,version:String): StreamTask ={
