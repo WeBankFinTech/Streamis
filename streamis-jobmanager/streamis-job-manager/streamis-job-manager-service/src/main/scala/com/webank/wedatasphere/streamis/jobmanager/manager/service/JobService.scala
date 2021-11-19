@@ -19,12 +19,15 @@ import java.util
 import java.util.Date
 
 import com.github.pagehelper.PageInfo
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.ConfigConf
+import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.ConfigMapper
+import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
 import org.apache.linkis.common.exception.ErrorException
 import org.apache.linkis.common.utils.Logging
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
-import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
+import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamAlertMapper, StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{QueryJobListVO, TaskCoreNumVO, VersionDetailVO}
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{MetaJsonInfo, StreamJob, StreamJobVersion, StreamJobVersionFiles}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{MetaJsonInfo, StreamAlertRecord, StreamJob, StreamJobVersion, StreamJobVersionFiles}
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.{JobCreateFailedErrorException, JobFetchFailedErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent
@@ -33,6 +36,7 @@ import org.apache.commons.lang.StringUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.util.CollectionUtils
 
 import scala.collection.JavaConverters._
 
@@ -44,6 +48,8 @@ class JobService extends Logging {
   @Autowired private var streamTaskMapper: StreamTaskMapper = _
   @Autowired private var bmlService: BMLService = _
   @Autowired private var jobContentParsers: Array[JobContentParser] = _
+  @Autowired private var configMapper: ConfigMapper = _
+  @Autowired private var streamAlertMapper:StreamAlertMapper = _
 
 
   def getByProList(projectName: String, jobName: String, jobStatus: Integer, jobCreator: String): PageInfo[QueryJobListVO] = {
@@ -158,8 +164,9 @@ class JobService extends Logging {
     val inputPath = ZipHelper.unzip(inputZipPath)
     val readerUtils = new ReaderUtils
     val metaJsonInfo = readerUtils.parseJson(inputPath)
-    if(StringUtils.isNotBlank(projectName) && projectName != metaJsonInfo.getProjectName)
-      throw new JobCreateFailedErrorException(30030, s"The projectName ${metaJsonInfo.getProjectName} in meta.json is not the same to project $projectName.")
+    if (StringUtils.isNotBlank(projectName) && projectName!=metaJsonInfo.getProjectName) {
+      throw new JobCreateFailedErrorException(30030, s"the projectName ${metaJsonInfo.getProjectName} is not matching the project ")
+    }
     validateUpload(metaJsonInfo.getProjectName, metaJsonInfo.getJobName, userName)
     //  生成StreamJob，根据StreamJob生成StreamJobVersion
     val version = createStreamJob(metaJsonInfo, userName)
@@ -208,5 +215,54 @@ class JobService extends Logging {
           }
       }
     }
+  }
+
+  def hasPermission(jobId: Long, username: String): Boolean = {
+    val job = streamJobMapper.getJobById(jobId)
+    if (job == null) return false
+    if (username.equals(job.getCreateBy)) return true
+    val values = configMapper.getConfigKeyValues(null, jobId)
+    if (CollectionUtils.isEmpty(values)) return false
+    val configValues = values.asScala
+    val list = configValues.groupBy(_.getConfigKey).filter(f => f._1.equals(ConfigConf.JOBMANAGER_FLINK_AUTHORITY_VISIBLE.getValue)).toList
+    if (list.size <= 0) return false
+    val value = list.head._2.head.getConfigValue
+    if (StringUtils.isBlank(value)) return false
+    val names = value.split(",").toList
+    names.contains(username)
+  }
+
+  def getAlertUsers(job: StreamJob): util.List[String] = {
+    val values = configMapper.getConfigKeyValues(null, job.getId)
+    if (CollectionUtils.isEmpty(values)) return null
+    val configValues = values.asScala
+    val list = configValues.groupBy(_.getConfigKey).filter(f => f._1.equals(ConfigConf.JOBMANAGER_FLINK_ALERT_USER.getValue)).toList
+    if (list.size <= 0) return null
+    val value = list.head._2.head.getConfigValue
+    if (StringUtils.isBlank(value)) return null
+    value.split(",").toList.asJava
+  }
+
+  def getAlertLevel(job: StreamJob): AlertLevel = {
+    val values = configMapper.getConfigKeyValues(null, job.getId)
+    if (CollectionUtils.isEmpty(values)) return AlertLevel.CRITICAL
+    val configValues = values.asScala
+    val list = configValues.groupBy(_.getConfigKey).filter(f => f._1.equals(ConfigConf.JOBMANAGER_FLINK_ALERT_LEVEL.getValue)).toList
+    if (list.size <= 0) return AlertLevel.CRITICAL
+    val value = list.head._2.head.getConfigValue
+    if (StringUtils.isBlank(value)) return AlertLevel.CRITICAL
+    AlertLevel.valueOf(value)
+  }
+
+  def isCreator(jobId: Long, username: String): Boolean = {
+    val job = streamJobMapper.getJobById(jobId)
+    if (job == null) return false
+    username.equals(job.getCreateBy)
+  }
+
+  def getAlert(username: String, jobId: Long, version: String): util.List[StreamAlertRecord] = {
+    val job = streamJobMapper.getJobVersionById(jobId, version)
+    if (job == null) return null
+    streamAlertMapper.getAlertByJobIdAndVersion(username,jobId,job.getId)
   }
 }
