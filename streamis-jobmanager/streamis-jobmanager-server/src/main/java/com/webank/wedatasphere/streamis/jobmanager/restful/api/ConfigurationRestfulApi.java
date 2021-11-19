@@ -15,16 +15,17 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.ConfigKeyVO;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.exception.ConfigurationException;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.ConfigurationService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.CookieUtils;
 import com.webank.wedatasphere.streamis.jobmanager.service.UserService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,31 +41,45 @@ public class ConfigurationRestfulApi {
     ConfigurationService configurationService;
     @Autowired
     UserService userService;
+    @Autowired
+    JobService jobService;
 
     ObjectMapper mapper = new ObjectMapper();
 
 
     @RequestMapping(path = "/view", method = RequestMethod.GET)
-    public Message getView(@RequestParam(value = "jobId",required = false) Long jobId) throws IOException, ConfigurationException {
+    public Message getView(HttpServletRequest req, @RequestParam(value = "jobId", required = false) Long jobId) throws IOException, ConfigurationException {
+        String username = SecurityFilter.getLoginUsername(req);
+
         if (jobId == null) {
             throw new ConfigurationException("params cannot be empty!");
+        }
+        if (!jobService.hasPermission(jobId, username)) {
+            return Message.error("you have no permission of this job ,please ask for the job creator");
         }
         ConfigKeyVO fullTree = configurationService.getFullTree(jobId);
         return Message.ok().data("fullTree", fullTree);
     }
 
     @RequestMapping(path = "/update", method = RequestMethod.POST)
-    public Message updateFullTree(@RequestBody JsonNode json) throws IOException {
-        ConfigKeyVO fullTrees = mapper.readValue(json.get("fullTree"), ConfigKeyVO.class);
-
+    public Message updateFullTree(HttpServletRequest req, @RequestBody JsonNode json) throws IOException {
+        String username = SecurityFilter.getLoginUsername(req);
+        ConfigKeyVO fullTrees = mapper.readValue(json.get("fullTree").traverse(), ConfigKeyVO.class);
+        if (!jobService.isCreator(fullTrees.getJobId(), username)) {
+            return Message.error("you con not modify the config ,the job is not belong to you");
+        }
         configurationService.addKeyValue(fullTrees);
         return Message.ok();
     }
 
     @RequestMapping(path = "/add", method = RequestMethod.POST)
-    public Message saveFullTree(@RequestBody JsonNode json) throws IOException {
-        ConfigKeyVO fullTrees = mapper.readValue(json.get("fullTree"), ConfigKeyVO.class);
+    public Message saveFullTree(HttpServletRequest req, @RequestBody JsonNode json) throws IOException {
+        String username = SecurityFilter.getLoginUsername(req);
+        ConfigKeyVO fullTrees = mapper.readValue(json.get("fullTree").traverse(), ConfigKeyVO.class);
 
+        if (!jobService.isCreator(fullTrees.getJobId(), username)) {
+            return Message.error("you con not modify the config ,the job is not belong to you");
+        }
         configurationService.addKeyValue(fullTrees);
         return Message.ok();
     }
@@ -78,7 +93,7 @@ public class ConfigurationRestfulApi {
         }
         String userName = SecurityFilter.getLoginUsername(req);
         List<String> list = userService.workspaceUserQuery(req, workspaceId);
-        return Message.ok().data("users",list);
+        return Message.ok().data("users", list);
 
     }
 

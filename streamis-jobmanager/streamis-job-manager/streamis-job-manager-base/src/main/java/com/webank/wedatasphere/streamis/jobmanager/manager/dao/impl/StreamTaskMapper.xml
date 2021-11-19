@@ -28,6 +28,7 @@
         <result column="err_desc" property="errDesc" jdbcType="VARCHAR"/>
         <result column="submit_user" property="submitUser" jdbcType="VARCHAR"/>
         <result column="linkis_job_id" property="linkisJobId" jdbcType="VARCHAR"/>
+        <result column="version" property="version" jdbcType="VARCHAR"/>
         <result column="linkis_job_info" property="linkisJobInfo" jdbcType="LONGVARCHAR"/>
     </resultMap>
 
@@ -76,7 +77,7 @@
                 AND version=#{version}
             </if>
         </where>
-        ORDER BY `last_update_time` DESC
+        ORDER BY start_time DESC
     </select>
 
     <select id="getRunningTaskByJobId" resultMap="StreamTaskMap">
@@ -113,5 +114,10 @@
         FROM linkis_stream_task where job_id = #{jobId} and job_version_id = #{jobVersionId}
         order by start_time desc
     </select>
+
+    <select id="getTask" resultType="java.lang.String">
+        SELECT linkis_job_info FROM  linkis_stream_task WHERE job_id = #{jobId} and version = #{version}  ORDER BY start_time DESC limit 1
+    </select>
+
 
 </mapper>
