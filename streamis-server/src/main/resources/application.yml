@@ -3,7 +3,9 @@ server:
 spring:
   application:
     name: streamis-server
-
+  mvc:
+    servlet:
+      path: /api/rest_j/v1
 
 eureka:
   client:

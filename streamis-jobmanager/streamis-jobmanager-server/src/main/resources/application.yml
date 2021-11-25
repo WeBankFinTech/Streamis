@@ -3,6 +3,9 @@ server:
 spring:
   application:
     name: cloud-streammanager-debug
+  mvc:
+    servlet:
+      path: /api/rest_j/v1
 eureka:
   client:
     serviceUrl:
