@@ -53,7 +53,7 @@ export default {
     getIndexData() {
       api
         .fetch(
-          'streamis/streamJobManager/project/core/target?projectName=flinkJarTest3',
+          `streamis/streamJobManager/project/core/target?projectName=${this.$route.query.projectName || null}`,
           'get'
         )
         .then(res => {
@@ -73,7 +73,7 @@ export default {
       this.$router.push({
         name: 'ProjectResourceFiles',
         params: {
-          name: '123'
+          projectName: this.$route.query.projectName
         }
       })
     }

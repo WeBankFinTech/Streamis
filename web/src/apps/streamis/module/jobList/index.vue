@@ -54,7 +54,7 @@
               </div>
               <div class="jobName" v-show="index === 0">
                 <Upload
-                  action="/api/rest_j/v1/streamis/streamJobManager/job/upload"
+                  :action="`/api/rest_j/v1/streamis/streamJobManager/job/upload?projectName=${projectName}`"
                   :on-success="jarUploadSuccess"
                   :on-error="jarUploadError"
                   :show-upload-list="false"
@@ -74,7 +74,7 @@
                       :name="item"
                       :key="index"
                     >
-                      {{ $t('message.streamis.jobMoudleRouter.' + item) }}
+                      {{ item === 'savepoint' ? item : $t('message.streamis.jobMoudleRouter.' + item) }}
                     </DropdownItem>
                   </DropdownMenu>
                 </Dropdown>
@@ -94,26 +94,18 @@
               <div v-show="index !== 0">
                 <Button
                   type="primary"
-                  v-show="row.taskStatus !== 5"
+                  v-show="row.status !== 5"
                   :loading="buttonLoading && choosedRowId === row.id"
-                  style="width:55px;height:22px;background:#008000;margin-right: 5px"
-                  :style="{
-                    fontSize:
-                      buttonLoading && choosedRowId === row.id ? '10px' : '14px'
-                  }"
+                  style="height:22px;background:#008000;margin-right: 5px; font-size:10px;"
                   @click="handleAction(row)"
                 >
                   {{ $t('message.streamis.formItems.startBtn') }}
                 </Button>
                 <Button
                   type="primary"
-                  v-show="row.taskStatus === 5"
+                  v-show="row.status === 5"
                   :loading="buttonLoading && choosedRowId === row.id"
-                  style="width:55px;height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
-                  :style="{
-                    fontSize:
-                      buttonLoading && choosedRowId === row.id ? '10px' : '14px'
-                  }"
+                  style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
                   @click="handleAction(row)"
                 >
                   {{ $t('message.streamis.formItems.stopBtn') }}
@@ -121,18 +113,11 @@
                 <Button
                   type="primary"
                   @click="handleRouter(row, 'jobConfig')"
-                  style="width:55px;height:22px;background:rgba(22, 155, 213, 1);margin-right: 5px;"
+                  style="height:22px;background:rgba(22, 155, 213, 1);margin-right: 5px; font-size:10px;"
                 >
                   {{ $t('message.streamis.formItems.configBtn') }}
                 </Button>
-                <br />
-                <Button
-                  type="primary"
-                  v-show="row.taskStatus !== 'running'"
-                  style="width:115px;height:24px;background:#008000;margin-right: 5px;margin-top:2px;"
-                >
-                  checkpoint
-                </Button>
+        
               </div>
             </template>
           </Table>
@@ -152,6 +137,7 @@
     <versionDetail
       :visible="modalVisible"
       :datas="versionDatas"
+      :projectName="projectName"
       @modalCancel="modalCancel"
     />
     <uploadJobJar
@@ -197,7 +183,37 @@ export default {
       },
       jobStatus: ['all'].concat(allJobStatuses.map(item => item.name)),
 
-      tableDatas: [{}],
+      tableDatas: [
+        {},
+        // {
+        //   id: 10,
+        //   name: 'flinkJarTestc',
+        //   workspaceName: null,
+        //   projectName: 'flinkJarTest3',
+        //   jobType: 'flink.jar',
+        //   label: 'e,t,y,h,g',
+        //   createBy: 'hdfs',
+        //   createTime: 1636338541000,
+        //   status: 0,
+        //   version: 'v00002',
+        //   lastVersionTime: 1636339360000,
+        //   description: '这是一个FlinkJar测试Job3'
+        // },
+        // {
+        //   id: 9,
+        //   name: 'flinkSqlTesta',
+        //   workspaceName: null,
+        //   projectName: 'flinkSqlTestD',
+        //   jobType: 'flink.sql',
+        //   label: 'a,b,c',
+        //   createBy: 'hdfs',
+        //   createTime: 1636338055000,
+        //   status: 0,
+        //   version: 'v00001',
+        //   lastVersionTime: 1636338055000,
+        //   description: '这是一个FlinkSql测试JobD'
+        // }
+      ],
       columns: [
         {
           title: this.$t('message.streamis.jobListTableColumns.jobName'),
@@ -284,7 +300,8 @@ export default {
         'paramsConfiguration',
         'alertConfiguration',
         'runningHistory',
-        'runningLogs'
+        'runningLogs',
+        'savepoint'
       ],
       pageData: {
         total: 0,
@@ -296,7 +313,8 @@ export default {
       choosedRowId: '',
       modalVisible: false,
       versionDatas: [],
-      uploadVisible: false
+      uploadVisible: false,
+      projectName: this.$route.query.projectName
     }
   },
   mounted() {
@@ -312,7 +330,7 @@ export default {
       const params = {
         pageNow: current,
         pageSize,
-        projectName: 'flinkJarTest3'
+        projectName: this.projectName
       }
       const { jobName, jobStatus } = this.query
       if (jobName) {
@@ -324,7 +342,7 @@ export default {
       }
 
       const queries = Object.entries(params)
-        .filter(item => !!item[1])
+        .filter(item => !!item[1] || item[1] === 0)
         .map(item => item.join('='))
         .join('&')
       api
@@ -343,6 +361,7 @@ export default {
             })
             datas.unshift({})
             this.tableDatas = datas
+            console.log(JSON.stringify(datas))
             this.pageData.total = parseInt(res.totalPage)
             this.loading = false
           }
@@ -364,12 +383,12 @@ export default {
     },
     handleAction(data) {
       console.log(data)
-      const { taskStatus, id } = data
+      const { status, id } = data
       const path =
-        taskStatus === 5
+        status === 5
           ? 'streamis/streamJobManager/job/stop?jobId=' + id
           : 'streamis/streamJobManager/job/execute'
-      const second = taskStatus === 5 ? 'get' : { jobId: id }
+      const second = status === 5 ? 'get' : { jobId: id }
       this.buttonLoading = true
       this.choosedRowId = id
       api
@@ -379,6 +398,7 @@ export default {
           this.buttonLoading = false
           this.choosedRowId = ''
           if (res) {
+            this.$emit('refreshCoreIndex')
             this.loading = false
             this.getJobList()
           }
@@ -394,6 +414,9 @@ export default {
       console.log(data)
     },
     handleRouter(rowData, moduleName) {
+      if(moduleName === 'savepoint'){
+        return;
+      }
       console.log(rowData)
       console.log(moduleName)
       const moduleMap = {
@@ -412,7 +435,8 @@ export default {
           name: rowData.name,
           version: rowData.version,
           status: rowData.status,
-          jobType: rowData.jobType
+          jobType: rowData.jobType,
+          projectName: rowData.projectName || this.projectName
         }
       })
     },
@@ -488,7 +512,7 @@ export default {
 .page {
   margin-top: 20px;
 }
-.versionWrap{
+.versionWrap {
   display: flex;
   justify-content: flex-start;
   align-items: center;
