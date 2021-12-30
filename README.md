@@ -45,22 +45,24 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 ## Architecture
 
-![Architecture](images/zh_CN/readme/architecture.png)
+![Architecture](images/en_US/readme/architecture.png)
 
 ----
 
 ## Compile and install deployment
-Please refer to [Compilation guidelines](docs/en_US/0.1.0/StreamisCompiledDocument.md) used to compile Streamis.
 
-Before installing Streamis, please install Linkis1.0.3 and DSS1.0.2 first, please refer to:：[DSS deployment documents](https://github.com/WeBankFinTech/DataSphereStudio/blob/master/docs/en_US/ch1/DataSphereStudio_Compile_Manual.md) and [Linkis deployment documents](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/en_US/Deployment_Documents/Quick_Deploy_Linkis1.0.md)
+&nbsp; &nbsp; &nbsp; &nbsp;Please refer to [Compilation guidelines](docs/en_US/0.1.0/StreamisCompiledDocument.md) used to compile Streamis.
 
-At the same time, please make sure that the Linkis Flink engine can be used normally, please refer to:[Linkis Flink Engine Plug-in Installation Document](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/en_US/Deployment_Documents/EngineConnPlugin_installation_document.md)
+&nbsp; &nbsp; &nbsp; &nbsp;Before installing Streamis, please install Linkis1.0.3 and DSS1.0.2 first, please refer to:：[DSS deployment documents](https://github.com/WeBankFinTech/DataSphereStudio/blob/master/docs/en_US/ch1/DataSphereStudio_Compile_Manual.md) and [Linkis deployment documents](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/en_US/Deployment_Documents/Quick_Deploy_Linkis1.0.md)
 
-Finally, please refer to [Streamis Installation and Deployment Document](docs/en_US/0.1.0/StreamisDeployment.md) for installing and deploying Streamis.
+&nbsp; &nbsp; &nbsp; &nbsp;At the same time, please make sure that the Linkis Flink engine can be used normally, please refer to:[Linkis Flink Engine Plug-in Installation Document](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/en_US/Deployment_Documents/EngineConnPlugin_installation_document.md)
+
+&nbsp; &nbsp; &nbsp; &nbsp;Finally, please refer to [Streamis Installation and Deployment Document](docs/en_US/0.1.0/StreamisDeployment.md) for installing and deploying Streamis.
 
 ----
 ## Examples and usage guidelines
-Please come [User documentation](docs/en_US/userManual/StreamisUserManual.md) ,Learn how to use Streamis quickly.
+
+&nbsp; &nbsp; &nbsp; &nbsp;Please come [User documentation](docs/en_US/userManual/StreamisUserManual.md) ,Learn how to use Streamis quickly.
 
 ----
 ## Communication contribution
