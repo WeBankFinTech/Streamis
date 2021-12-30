@@ -1,6 +1,6 @@
 package com.webank.wedatasphere.streamis.project.server.receiver
 
-import com.webank.wedatasphere.linkis.rpc.{RPCMessageEvent, Receiver, ReceiverChooser}
+import org.apache.linkis.rpc.{RPCMessageEvent, Receiver, ReceiverChooser}
 import com.webank.wedatasphere.streamis.project.common.StreamisProjectProtocol
 import com.webank.wedatasphere.streamis.project.server.service.StreamisProjectService
 import org.springframework.beans.factory.annotation.Autowired
@@ -8,10 +8,6 @@ import org.springframework.stereotype.Component
 
 import javax.annotation.PostConstruct
 
-/**
- * created by yangzhiyue on 2021/4/30
- * Description:
- */
 @Component
 class StreamisProjectServerReceiverChooser extends ReceiverChooser {
 
