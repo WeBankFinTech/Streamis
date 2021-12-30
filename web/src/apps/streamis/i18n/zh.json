@@ -1,7 +1,7 @@
 {
   "message": {
     "streamis": {
-      "enterLinkis": "进入Linkis查看",
+      "enterYarn": "跳转到Yarn页面",
       "operationSuccess": "操作成功",
       "routerName": {
         "realTimeJobCenter": "实时生产中心",
@@ -15,7 +15,8 @@
         "jobSummary": "运行情况",
         "jobHistory": "执行历史",
         "jobConfig": "配置",
-        "jobDetail": "任务详情"
+        "jobDetail": "任务详情",
+        "alert": "告警"
       },
       "jobStatus": {
         "failure": "失败任务",
@@ -100,13 +101,14 @@
         "operation": "操作",
         "showVersionInfo":"查看版本信息",
         "detail":"详情",
-        "logs":"历史版本"
+        "logs":"历史日志"
       },
       "jobDetail": {
         "flinkJarPac": "Flink主Jar包",
         "dependJarPac": "依赖Jar包",
         "userResource": "用户资源",
         "sqlContent": "SQL内容",
+        "urlEmpty": "链接为空",
         "columns": {
             "name": "名称",
             "version": "版本",
@@ -162,7 +164,7 @@
       },
       "projectFile": {
         "file": "文件",
-        "specifyVersion": "制定版本",
+        "specifyVersion": "指定版本",
         "overrideImport": "覆盖式导入",
         "chooseUploadFile": "请选择您要导入的资源文件",
         "versionPlaceholder": "只支持数字和.，例如0.1.0",
@@ -176,6 +178,19 @@
         "delelteConfirm": "确定删除该文件?",
         "createTime": "创建时间",
         "versionDescription": "版本说明"
+      },
+      "jobAlert": {
+        "alertMsg": "告警信息",
+        "errorMsg": "错误信息"
+      },
+      "logDetail": {
+        "logDetail": "日志详情",
+        "pre": "上一页",
+        "next": "下一页",
+        "latestLog": "查看最新日志",
+        "noLog": "没有日志信息",
+        "onlyKeywords": "请输入需要查询的关键字",
+        "ignoreKeywords": "请输入需要排除的关键字"
       }
     }
   }
