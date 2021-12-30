@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Row :gutter="80">
+    <Row :gutter="0">
       <Col span="14">
         <div class="itemWrap">
           <p>{{ $t('message.streamis.jobConfig.resourceConfig') }}</p>
@@ -58,6 +58,7 @@
                   </FormItem>
                 </Col>
               </Row>
+
               <Row :gutter="60">
                 <Col span="12">
                   <FormItem
@@ -179,7 +180,9 @@
           </div>
         </div>
       </Col>
-      <Col span="10">
+      <Col span="1">
+      </Col>
+      <Col span="9">
         <div class="itemWrap">
           <p>{{ $t('message.streamis.jobConfig.alertSet') }}</p>
           <div>
@@ -199,6 +202,13 @@
                     <span>{{ option.title }}</span>
                   </Checkbox>
                 </CheckboxGroup>
+                <!-- <RadioGroup v-model="alertSet.alertRule">
+                  <Radio
+                    :label="option.value"
+                    v-for="option in alertRuleOptions"
+                    :key="option.value"
+                  ></Radio>
+                </RadioGroup> -->
               </FormItem>
               <FormItem
                 :label="
@@ -206,9 +216,9 @@
                 "
                 :label-width="labelWidth"
               >
-                <Select v-model="alertSet.alertLeve" class="select">
+                <Select v-model="alertSet.alertLevel" class="select">
                   <Option
-                    v-for="(item, index) in alertLeveOptions"
+                    v-for="(item, index) in alertLevelOptions"
                     :value="item.value"
                     :key="index"
                   >
@@ -348,15 +358,19 @@ function resetFormValue(vueThis, dataName, configs) {
   const newValues = {}
   const keys = Object.keys(vueThis[dataName])
   const options = {}
+  const temp1 = []
   configs.forEach(item => {
     const { key, value, valueLists, name } = item
     const temp = (key && key.replace(/\./g, '').toLowerCase()) || ''
     const hit = keys.find(i => temp.endsWith(i.toLowerCase()))
     const isUser = ['告警用户', '失败时告警用户', '可见人员'].includes(name)
-    let finalValue =
-      name === '告警规则' ? [] : value || value === 0 ? value : ''
+    let finalValue = value || value === 0 ? value : ''
     if (isUser && finalValue) {
       finalValue = finalValue.split(',')
+    }
+    if (name === '告警规则' && finalValue) {
+      temp1.push(finalValue)
+      finalValue = [...temp1]
     }
     if (valueLists && !isUser) {
       const ar = []
@@ -365,12 +379,8 @@ function resetFormValue(vueThis, dataName, configs) {
           value: option.value,
           title: option.value
         })
-        if (option.selected) {
-          if (name === '告警规则') {
-            finalValue.push(option.value)
-          } else {
-            finalValue = option.value
-          }
+        if (option.selected && name !== '告警规则') {
+          finalValue = option.value
         }
       })
       options[hit + 'Options'] = ar
@@ -401,12 +411,12 @@ export default {
       flinkParameters: [[]],
       alertSet: {
         alertRule: [],
-        alertLeve: '',
+        alertLevel: '',
         alertUser: [],
         alertFailureLevel: '',
         alertFailureUser: []
       },
-      alertLeveOptions: [],
+      alertLevelOptions: [],
       alertFailureLevelOptions: [],
       alertRuleOptions: [],
       authoritySet: {
@@ -447,6 +457,7 @@ export default {
         )
         .then(res => {
           console.log(res)
+
           if (res && res.fullTree) {
             const { fullTree } = res
             const {
@@ -462,6 +473,7 @@ export default {
             resetFormValue(this, 'productionConfig', produceConfig)
             resetFormValue(this, 'alertSet', alarmConfig)
             resetFormValue(this, 'authoritySet', permissionConfig)
+            console.log(this.alertSet)
             if (parameterConfig) {
               const parameters = []
               parameterConfig.forEach(item => {
