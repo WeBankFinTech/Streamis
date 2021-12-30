@@ -5,7 +5,7 @@
 English | [中文](README-ZH.md)
 ## Introduction
 
-&nbsp; &nbsp; &nbsp; &nbsp;Streamis is an jointed development project established by WeBank, CTYun, Samoyed Financial Cloud and XianWeng Technology.
+&nbsp; &nbsp; &nbsp; &nbsp;Streamis is an jointed development project for Streaming application development and management established by WeBank, CtYun, Samoyed Financial Cloud and XianWeng Technology.
 
 &nbsp; &nbsp; &nbsp; &nbsp;Based on the framework capabilities of [DataSphere Studio](https://github.com/WeBankFinTech/DataSphereStudio) and the underlying docking [Linkis](https://github.com/apache/incubator-linkis/blob/master/README.md) 's **Flink engine** allows users to complete the development, debugging, release and production management of streaming applications at low cost.
 
