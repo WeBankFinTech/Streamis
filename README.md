@@ -2,51 +2,76 @@
 
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
-## 引言
+English | [中文](README-ZH.md)
+## Introduction
 
- &nbsp; &nbsp; &nbsp; &nbsp;Streamis 是微众银行联合**萨摩耶金服**、**仙翁科技**和**中国电信天翼云**联合共建的一站式流式应用开发管理系统。
+&nbsp; &nbsp; &nbsp; &nbsp;Streamis is an jointed development project for Streaming application development and management established by WeBank, CtYun, Samoyed Financial Cloud and XianWeng Technology.
 
- &nbsp; &nbsp; &nbsp; &nbsp;基于DataSphere Studio的Orchestrator编排模式、工作流微模块和框架化能力，以及底层对接Linkis的Flink引擎，以工作流式的图形化拖拽开发体验，将实时流式应用以Source节点、
-Dimension节点、Transform节点、Sink节点和Visualis节点串连成一条实时工作流，让用户几乎0学习成本完成流式应用的开发、调试、发布和生产管理。
+&nbsp; &nbsp; &nbsp; &nbsp;Based on the framework capabilities of [DataSphere Studio](https://github.com/WeBankFinTech/DataSphereStudio) and the underlying docking [Linkis](https://github.com/apache/incubator-linkis/blob/master/README.md) 's **Flink engine** allows users to complete the development, debugging, release and production management of streaming applications at low cost.
 
-----
-
-## 核心特点
-
-#### 基于DSS，打造业界领先的工作流式图形化拖拽开发体验。
-
-#### 覆盖流式应用开发全流程。提供Source节点、Dimension节点、Transform节点、Sink节点和Visualis节点，基本满足流式应用的所有使用场景。
-
-#### 强大的调试和数据预览能力。基于DSS的跨系统、跨用户级上下文能力，让流式工作流真正具备“开发即调试”、“调试即预览”的开发能力。
-
-#### 基于Linkis计算中间件，打造金融级高并发、高可用、多租户隔离和资源管控等全生命周期管理与checkpoint能力的实时生产中心。
+&nbsp; &nbsp; &nbsp; &nbsp;In the future, it is also planned to use a workflow-style graphical drag-and-drop development experience, and the streaming application will be based on the Source node,
+The Dimension node, Transform node, Sink node and [Visualis](https://github.com/WeBankFinTech/Visualis) nodes are connected in series to form a streaming workflow, allowing users to complete the development of streaming applications at a lower learning cost. Debug and release.
 
 ----
 
-## 与类似系统对比
+## Core features
 
- &nbsp; &nbsp; &nbsp; &nbsp;Streamis是一个引领流式应用开发方向的开源项目，开源社区目前尚没有同类型产品。
- 
+#### Based on DSS and DSS-Scriptis, to create an industry-leading streaming application development management system.
+
+#### Powerful streaming application development and debugging capabilities, based on DSS-Scriptis, provides streaming application development and debugging functions, and supports real-time debugging and result set display of FlinkSQL.
+
+#### Powerful streaming application production center capabilities. Supports multi-version management, full life cycle management, monitoring alarm, checkpoint and savepoint management capabilities of streaming jobs.
+
+#### Based on Linkis computing middleware, build a financial-level streaming production center with high concurrency, high availability, multi-tenant isolation and resource management and control capabilities.
+
 ----
 
-## 架构
+## Comparison With Existing Systems
 
-![架构](images/zh_CN/readme/architecture.png)
+&nbsp; &nbsp; &nbsp; &nbsp;Streamis is an open source project that leads the direction of streaming application development. There is no similar product in the open source community.
+
+| Function Module | Description | Streamis |
+ | :----: | :----: |-------|
+| UI | Integrated and convenient management interface and monitoring window | Integrated |
+| Installation and deployment | Deployment difficulty and third-party dependencies | One-click deployment, relying on Linkis Flink engine |
+| Development Center | FlinkSQL streaming application real-time development and debugging | Support, need to integrate DSS |
+|Production Center | Streaming Application Management Operation and Maintenance Capability | Support |
+| | Reuse Linkis computing governance capabilities | Support |
+| |Support FlinkSQL and FlinkJar package release | Support |
+| Service high availability | Multiple services, failure does not affect the use | Application high availability |
+| System Management | Node and Resource Management | Support |
 
 ----
 
-## 文档列表
+## Architecture
 
-（待补充）
- 
+![Architecture](images/en_US/readme/architecture.png)
+
 ----
 
-## 交流贡献
+## Compile and install deployment
 
-![交流](images/zh_CN/readme/communication.png)
+&nbsp; &nbsp; &nbsp; &nbsp;Please refer to [Compilation guidelines](docs/en_US/0.1.0/StreamisCompiledDocument.md) used to compile Streamis.
+
+&nbsp; &nbsp; &nbsp; &nbsp;Before installing Streamis, please install Linkis1.0.3 and DSS1.0.2 first, please refer to:：[DSS deployment documents](https://github.com/WeBankFinTech/DataSphereStudio/blob/master/docs/en_US/ch1/DataSphereStudio_Compile_Manual.md) and [Linkis deployment documents](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/en_US/Deployment_Documents/Quick_Deploy_Linkis1.0.md)
+
+&nbsp; &nbsp; &nbsp; &nbsp;At the same time, please make sure that the Linkis Flink engine can be used normally, please refer to:[Linkis Flink Engine Plug-in Installation Document](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/en_US/Deployment_Documents/EngineConnPlugin_installation_document.md)
+
+&nbsp; &nbsp; &nbsp; &nbsp;Finally, please refer to [Streamis Installation and Deployment Document](docs/en_US/0.1.0/StreamisDeployment.md) for installing and deploying Streamis.
+
+----
+## Examples and usage guidelines
+
+&nbsp; &nbsp; &nbsp; &nbsp;Please come [User documentation](docs/en_US/userManual/StreamisUserManual.md) ,Learn how to use Streamis quickly.
+
+----
+## Communication contribution
+
+![comminicate](images/zh_CN/readme/communication.png)
 
 ----
 
 ## License
 
- &nbsp; &nbsp; &nbsp; &nbsp;DSS is under the Apache 2.0 license. See the [License](LICENSE) file for details.
+&nbsp; &nbsp; &nbsp; &nbsp;DSS is under the Apache 2.0 license. See the [License](LICENSE) file for details.
+

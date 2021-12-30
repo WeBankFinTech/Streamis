@@ -57,7 +57,8 @@
 import api from '@/common/service/api'
 export default {
   props: {
-    visible: Boolean
+    visible: Boolean,
+    projectName: String
   },
   data() {
     return {
@@ -81,6 +82,7 @@ export default {
   },
   methods: {
     handleSubmit() {
+      console.log(this.projectName);
       this.$refs['uploadForm'].validate(valid => {
         if (!this.file) {
           this.$Message.error(this.$t('message.streamis.projectFile.fileEmpty'))
@@ -90,7 +92,7 @@ export default {
           const formData = new FormData()
           formData.append('file', this.file)
           formData.append('fileName', this.file.name)
-          formData.append('projectName', 'flinkJarTest3')
+          formData.append('projectName', this.projectName)
           Object.keys(this.uploadForm).forEach(key => {
             const value = this.uploadForm[key]
             formData.append(key, value)
