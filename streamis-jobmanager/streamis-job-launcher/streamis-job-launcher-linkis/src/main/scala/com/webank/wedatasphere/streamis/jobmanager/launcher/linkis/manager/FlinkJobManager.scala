@@ -20,8 +20,10 @@ import java.util
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.core.FlinkLogIterator
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{LaunchJob, LinkisJobInfo, LogRequestPayload}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
 import org.apache.linkis.common.utils.{Logging, Utils}
 import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
+import org.apache.linkis.computation.client.utils.LabelKeyUtils
 
 
 trait FlinkJobManager extends LinkisJobManager with Logging {
@@ -31,60 +33,86 @@ trait FlinkJobManager extends LinkisJobManager with Logging {
 
   protected def buildOnceJob(job: LaunchJob): SubmittableOnceJob
 
-  protected def createSubmittedOnceJob(id: String, user: String): OnceJob
+  protected def createSubmittedOnceJob(id: String): OnceJob
 
-  protected def getOnceJob(id: String, user: String): OnceJob = {
+  protected def getOnceJob(id: String): OnceJob = {
     if (onceJobs.containsKey(id)) return onceJobs.get(id)
     onceJobs synchronized {
       if (!onceJobs.containsKey(id)) {
-        val onceJob = createSubmittedOnceJob(id, user)
+        val onceJob = createSubmittedOnceJob(id)
         onceJobs.put(id, onceJob)
       }
     }
     onceJobs.get(id)
   }
 
-  def createJobInfo(id: String, user: String): LinkisJobInfo
+  protected def createJobInfo(onceJob: SubmittableOnceJob, job: LaunchJob): LinkisJobInfo
+
+  protected def createJobInfo(jobInfo: String): LinkisJobInfo
 
   override def launch(job: LaunchJob): String = {
+    job.getLabels.get(LabelKeyUtils.ENGINE_TYPE_LABEL_KEY) match {
+      case engineConnType: String =>
+        if(!engineConnType.toLowerCase.startsWith(FlinkJobManager.FLINK_ENGINE_CONN_TYPE))
+          throw new FlinkJobLaunchErrorException(30401, s"Only ${FlinkJobManager.FLINK_ENGINE_CONN_TYPE} job is supported to be launched to Linkis, but $engineConnType is found.")
+      case _ => throw new FlinkJobLaunchErrorException(30401, s"Not exists ${LabelKeyUtils.ENGINE_TYPE_LABEL_KEY}, StreamisJob cannot be submitted to Linkis successfully.")
+    }
     val onceJob = buildOnceJob(job)
     onceJob.submit()
     onceJobs synchronized onceJobs.put(onceJob.getId, onceJob)
-    val linkisJobInfo = Utils.tryCatch(createJobInfo(onceJob.getId, job.getSubmitUser)){ t =>
+    val linkisJobInfo = Utils.tryCatch(createJobInfo(onceJob, job)){ t =>
       error(s"${job.getSubmitUser} create jobInfo failed, now stop this EngineConn ${onceJob.getId}.")
-      stop(onceJob.getId, job.getSubmitUser)
+      stop(onceJob)
       throw t
     }
     onceJobs synchronized onceJobIdToJobInfo.put(onceJob.getId, linkisJobInfo)
     onceJob.getId
   }
 
-  override def getJobInfo(id: String, user: String): LinkisJobInfo = {
-    val jobInfo = if (onceJobIdToJobInfo.containsKey(id)) onceJobIdToJobInfo.get(id)
-    else onceJobs synchronized {
-      if (!onceJobIdToJobInfo.containsKey(id)) onceJobIdToJobInfo.put(id, createJobInfo(id, user))
-      onceJobIdToJobInfo.get(id)
+
+  override def launch(id: String, jobInfo: String): Unit = launchExistedJob(id, createJobInfo(jobInfo))
+
+  override def launch(id: String, jobInfo: LinkisJobInfo): Unit = launchExistedJob(id, jobInfo)
+
+  private def launchExistedJob(id: String, getJobInfo: => LinkisJobInfo): Unit = if(!onceJobIdToJobInfo.containsKey(id)) {
+    onceJobs synchronized {
+      if(!onceJobIdToJobInfo.containsKey(id)) {
+        onceJobIdToJobInfo.put(id, getJobInfo)
+      }
     }
-    jobInfo.setStatus(getStatus(id, user))
-    jobInfo
   }
 
-  protected def getStatus(id: String, user: String): String
+  override def isExists(id: String): Boolean = onceJobIdToJobInfo.containsKey(id)
 
-  override def stop(id: String, user: String): Unit = {
-    getOnceJob(id, user).kill()
-    deleteOnceJob(id)
+  override def getJobInfo(id: String): LinkisJobInfo = {
+    if (onceJobIdToJobInfo.containsKey(id)) {
+      val jobInfo = onceJobIdToJobInfo.get(id)
+      jobInfo.setStatus(getStatus(id))
+      jobInfo
+    } else throw new FlinkJobLaunchErrorException(30402, "LinkisJobInfo is not exists, please launch it first.")
   }
 
-  def deleteOnceJob(id: String): Unit = onceJobs synchronized {
+  protected def getStatus(id: String): String
+
+  override def stop(id: String): Unit = stop(getOnceJob(id))
+
+  def stop(onceJob: OnceJob): Unit = {
+    onceJob.kill()
+    deleteOnceJob(onceJob.getId)
+  }
+
+  protected def deleteOnceJob(id: String): Unit = onceJobs synchronized {
     onceJobs.remove(id)
     onceJobIdToJobInfo.remove(id)
   }
 
-  def fetchLogs(id: String, user: String, requestPayload: LogRequestPayload): FlinkLogIterator
+  def fetchLogs(id: String, requestPayload: LogRequestPayload): FlinkLogIterator
 
-  def getCheckpoints(id: String, user: String): LinkisJobInfo
+  def getCheckpoints(id: String): LinkisJobInfo
 
-  def triggerSavepoint(id: String, user: String): LinkisJobInfo
+  def triggerSavepoint(id: String): LinkisJobInfo
 
+}
+object FlinkJobManager {
+  val FLINK_ENGINE_CONN_TYPE = "flink"
 }
