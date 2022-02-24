@@ -24,11 +24,43 @@ trait LinkisJobManager {
 
   def getName: String
 
+  /**
+   * This method is used to launch a new Linkis Job.
+   * @param job a StreamisJob wanted to be launched.
+   * @return the Linkis Job id.
+   */
   def launch(job: LaunchJob): String
 
-  def stop(id: String, user: String): Unit
+  /**
+   * If a StreamisJob is already launched in another process, and you want to refresh the LinkisJobInfo,
+   *  please use this method to launch an existed Linkis Job at first.
+   * @param id the Linkis Job id.
+   * @param jobInfo serialized LinkisJobInfo got from [[launch(job: LaunchJob)]]
+   */
+  def launch(id: String, jobInfo: String): Unit
 
-  def getJobInfo(id: String, user: String): LinkisJobInfo
+  /**
+   * If a StreamisJob is already launched in another process, and you want to refresh the LinkisJobInfo,
+   *  please use this method to launch an existed Linkis Job at first.
+   * @param id the Linkis Job id.
+   * @param jobInfo LinkisJobInfo got from [[launch(job: LaunchJob)]]
+   */
+  def launch(id: String, jobInfo: LinkisJobInfo): Unit
+
+  def isExists(id: String): Boolean
+
+  /**
+   * Stop a launched Linkis Job by Linkis JobId. You should use [[launch()]] method before use this method.
+   * @param id Linkis JobId
+   */
+  def stop(id: String): Unit
+
+  /**
+   * get LinkisJobInfo of a launched Linkis Job by Linkis JobId. Usually, this method is used to update the status of Linkis Job.
+   * You should use [[launch()]] method before use this method.
+   * @param id Linkis JobId
+   */
+  def getJobInfo(id: String): LinkisJobInfo
 
 }
 
