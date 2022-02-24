@@ -18,8 +18,6 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 import java.util
 import java.util.Date
 
-import org.apache.linkis.common.utils.Logging
-import org.apache.linkis.httpclient.dws.DWSHttpClient
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{FlinkJobInfo, LaunchJob, LogRequestPayload}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager.FlinkJobManager
@@ -32,6 +30,8 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.transform.exception.T
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.{StreamisTransformJobBuilder, Transform}
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.DateUtils
 import org.apache.commons.lang.StringUtils
+import org.apache.linkis.common.utils.Logging
+import org.apache.linkis.httpclient.dws.DWSHttpClient
 import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -76,9 +76,9 @@ class TaskService extends Logging{
     info(s"StreamJob-${job.getName} has transformed with launchJob $launchJob.")
     //TODO getLinkisJobManager should use jobManagerType to instance in future, since not only `simpleFlink` mode is supported in future.
     val id = LinkisJobManager.getLinkisJobManager.launch(launchJob)
-      task.setLinkisJobId(id)
+    task.setLinkisJobId(id)
     info(s"StreamJob-${job.getName} has launched with id $id.")
-    TaskService.updateStreamTaskStatus(task, job.getName, userName)
+    TaskService.updateStreamTaskStatus(task, job.getName)
     streamTaskMapper.updateTask(task)
   }
 
@@ -94,7 +94,8 @@ class TaskService extends Logging{
       throw new JobStopFailedErrorException(30355, s"StreamJob-${job.getName} has not bean started.")
     val oldTask = oldTasks.get(0)
     info(s"Try to stop StreamJob-${job.getName} with task(taskId: ${oldTask.getId}, linkisJobId: ${oldTask.getLinkisJobId}).")
-    LinkisJobManager.getLinkisJobManager.stop(oldTask.getLinkisJobId, userName)
+    TaskService.launchExistedStreamTask(oldTask)
+    LinkisJobManager.getLinkisJobManager.stop(oldTask.getLinkisJobId)
     info(s"StreamJob-${job.getName} has stopped with task(taskId: ${oldTask.getId}, linkisJobId: ${oldTask.getLinkisJobId}).")
     val taskModel = new StreamTask()
     taskModel.setId(oldTask.getId)
@@ -141,7 +142,8 @@ class TaskService extends Logging{
     val streamTask = streamTaskMapper.getRunningTaskByJobId(jobId)
     LinkisJobManager.getLinkisJobManager match {
       case jobManager: FlinkJobManager =>
-        val logIterator = jobManager.fetchLogs(streamTask.getLinkisJobId, streamTask.getSubmitUser, requestPayload)
+        TaskService.launchExistedStreamTask(streamTask)
+        val logIterator = jobManager.fetchLogs(streamTask.getLinkisJobId, requestPayload)
         val returnMap = new util.HashMap[String, Any]
         returnMap.put("logPath", logIterator.getLogPath)
         returnMap.put("logs", logIterator.getLogs)
@@ -210,8 +212,13 @@ class TaskService extends Logging{
 
 object TaskService {
 
-  def updateStreamTaskStatus(task: StreamTask, jobName: String, executeUser: String)(implicit logger: Logger): Unit = {
-    val jobInfo = LinkisJobManager.getLinkisJobManager.getJobInfo(task.getLinkisJobId, executeUser)
+  def launchExistedStreamTask(task: StreamTask): Unit = if (!LinkisJobManager.getLinkisJobManager.isExists(task.getLinkisJobId)) {
+    LinkisJobManager.getLinkisJobManager.launch(task.getLinkisJobId, task.getLinkisJobInfo)
+  }
+
+  def updateStreamTaskStatus(task: StreamTask, jobName: String)(implicit logger: Logger): Unit = {
+    launchExistedStreamTask(task)
+    val jobInfo = LinkisJobManager.getLinkisJobManager.getJobInfo(task.getLinkisJobId)
     logger.info(s"StreamJob-$jobName is ${jobInfo.getStatus} with $jobInfo.")
     task.setLastUpdateTime(new Date)
     task.setStatus(JobConf.linkisStatusToStreamisStatus(jobInfo.getStatus))
