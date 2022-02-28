@@ -16,6 +16,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import java.util
+import java.util.Date
 import java.util.concurrent.{Future, TimeUnit}
 
 import com.google.common.collect.{Lists, Sets}
@@ -67,13 +68,15 @@ class TaskMonitorService extends Logging {
       return
     }
     streamTasks.filter(shouldMonitor).foreach { streamTask =>
+      streamTask.setLastUpdateTime(new Date)
+      streamTaskMapper.updateTask(streamTask)
       val job = streamJobMapper.getJobById(streamTask.getJobId)
       info(s"Try to update status of StreamJob-${job.getName}.")
       val retryHandler = new RetryHandler {}
       retryHandler.setRetryNum(3)
       retryHandler.setRetryMaxPeriod(2000)
       Utils.tryCatch {
-        retryHandler.retry(TaskService.updateStreamTaskStatus(streamTask, job.getName, streamTask.getSubmitUser), s"Task-Monitor-${job.getName}")
+        retryHandler.retry(TaskService.updateStreamTaskStatus(streamTask, job.getName), s"Task-Monitor-${job.getName}")
       } { ex =>
           error(s"Fetch StreamJob-${job.getName} failed, maybe the Linkis cluster is wrong, please be noticed!", ex)
         // 连续三次还是出现异常，说明Linkis的Manager已经不能正常提供服务，告警并不再尝试获取状态，等待下次尝试
@@ -85,13 +88,12 @@ class TaskMonitorService extends Logging {
       if(streamTask.getStatus == JobConf.JOBMANAGER_FLINK_JOB_STATUS_SIX.getValue) {
         warn(s"StreamJob-${job.getName} is failed, please be noticed.")
         // TODO Need to add restart feature if user sets the restart parameters in checkpoint module.
-        val alertMsg = s"您的 streamis 流式应用[${job.getName}]已经失败, 请您确认该流式应用的状况是否正常"
+        val alertMsg = s"您的 streamis 流式应用[${job.getName}]已经失败, 请您确认该流式应用的状态是否正常"
         val set = Sets.newHashSet(job.getCreateBy, job.getSubmitUser)
         val users = getAlertUsers(job)
         users.addAll(Lists.newArrayList(set))
         alert(jobService.getAlertLevel(job), alertMsg,users ,streamTask)
       }
-      TaskService.updateStreamTaskStatus(streamTask, job.getName, streamTask.getSubmitUser)
       streamTaskMapper.updateTask(streamTask)
     }
     info("All StreamTasks status have updated.")

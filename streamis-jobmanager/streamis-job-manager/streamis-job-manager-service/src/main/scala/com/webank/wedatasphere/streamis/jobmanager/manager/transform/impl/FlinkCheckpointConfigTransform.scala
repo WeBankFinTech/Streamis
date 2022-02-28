@@ -22,7 +22,7 @@ class FlinkCheckpointConfigTransform extends ConfigTransform {
     val productConfig = config.getProduceConfig
     if(productConfig == null || productConfig.isEmpty) return job
     productConfig.asScala.find(config => config.getKey == "wds.linkis.flink.checkpoint.interval"
-      && StringUtils.isNumeric(config.getValue) && config.getValue.toLong > 0).foreach { config =>
+      && StringUtils.isNumeric(config.getValue) && config.getValue.toLong > 0).map { config =>
       val startupMap = new util.HashMap[String, Any]
       startupMap.put("flink.app.checkpoint.enable", true)
       startupMap.put("flink.app.checkpoint.interval", config.getValue.toLong)
@@ -34,8 +34,7 @@ class FlinkCheckpointConfigTransform extends ConfigTransform {
         TaskUtils.addStartupMap(job.getParams, startupMap)
         job
       }
-    }
-    job
+    }.getOrElse(job)
   }
 
 }
