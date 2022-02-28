@@ -2,7 +2,7 @@ server:
   port: 9009
 spring:
   application:
-    name: cloud-streammanager-debug
+    name: streamis-job-manager
   mvc:
     servlet:
       path: /api/rest_j/v1
