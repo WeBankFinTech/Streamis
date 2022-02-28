@@ -27,12 +27,11 @@ Dimension节点、Transform节点、Sink节点 和 [Visualis](https://github.com
 
 ----
 
-## 与类似系统对比
+## Streamis 功能介绍
 
  
 | 功能模组 | 描述 | Streamis | 
  | :----: | :----: |-------|
- | UI | 集成便捷的管理界面和监控窗口| 已集成 |
  | 安装部署 | 部署难易程度和第三方依赖 | 一键部署，依赖Linkis Flink引擎 |
  | 开发中心| FlinkSQL 流式应用实时开发、调试 | 支持，需集成DSS | 
  | 生产中心 | 流式应用管理运维能力 | 支持 |
@@ -52,7 +51,7 @@ Dimension节点、Transform节点、Sink节点 和 [Visualis](https://github.com
 
 &nbsp; &nbsp; &nbsp; &nbsp;请参照 [编译指引](docs/zh_CN/0.1.0/development/Streamis编译文档.md) ，用于编译 Streamis。
 
-&nbsp; &nbsp; &nbsp; &nbsp;在安装Streamis之前，请先安装 Linkis1.0.3 和 DSS1.0.2，可参照：[DSS + Linkis 安装部署文档](https://github.com/WeBankFinTech/DataSphereStudio-Doc/blob/main/zh_CN/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/DSS%E5%8D%95%E6%9C%BA%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.md)
+&nbsp; &nbsp; &nbsp; &nbsp;在安装Streamis之前，请先安装 Linkis1.0.3 和 DSS1.0.1，可参照：[DSS + Linkis 安装部署文档](https://github.com/WeBankFinTech/DataSphereStudio-Doc/blob/main/zh_CN/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/DSS%E5%8D%95%E6%9C%BA%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.md)
 
 &nbsp; &nbsp; &nbsp; &nbsp;同时，请确保 Linkis Flink 引擎已可正常使用，可参照：[Linkis Flink 引擎插件安装文档](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/zh_CN/Deployment_Documents/EngineConnPlugin%E5%BC%95%E6%93%8E%E6%8F%92%E4%BB%B6%E5%AE%89%E8%A3%85%E6%96%87%E6%A1%A3.md)
 

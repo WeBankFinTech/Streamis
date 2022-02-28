@@ -15,10 +15,14 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity
 
+import org.apache.linkis.common.ServiceInstance
+
 
 trait LinkisJobInfo {
 
   def getId: String
+
+  def getECMInstance: ServiceInstance
 
   def getUser: String
 

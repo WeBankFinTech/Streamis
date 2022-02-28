@@ -66,4 +66,6 @@ object JobConf {
 
   val TASK_MONITOR_INTERVAL = CommonVars("wds.streamis.task.monitor.interval", new TimeType("1m"))
 
+  val TASK_SUBMIT_TIME_MAX = CommonVars("wds.streamis.task.submit.time.max", new TimeType("5m"))
+
 }

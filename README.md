@@ -26,7 +26,7 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 ----
 
-## Comparison With Existing Systems
+## Features
 
 &nbsp; &nbsp; &nbsp; &nbsp;Streamis is an open source project that leads the direction of streaming application development. There is no similar product in the open source community.
 
@@ -53,7 +53,7 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 &nbsp; &nbsp; &nbsp; &nbsp;Please refer to [Compilation guidelines](docs/en_US/0.1.0/StreamisCompiledDocument.md) used to compile Streamis.
 
-&nbsp; &nbsp; &nbsp; &nbsp;Before installing Streamis, please install Linkis1.0.3 and DSS1.0.2 first, please refer to:：[DSS deployment documents](https://github.com/WeBankFinTech/DataSphereStudio/blob/master/docs/en_US/ch1/DataSphereStudio_Compile_Manual.md) and [Linkis deployment documents](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/en_US/Deployment_Documents/Quick_Deploy_Linkis1.0.md)
+&nbsp; &nbsp; &nbsp; &nbsp;Before installing Streamis, please install Linkis1.0.3 and DSS1.0.1 first, please refer to:：[DSS deployment documents](https://github.com/WeBankFinTech/DataSphereStudio/blob/master/docs/en_US/ch1/DataSphereStudio_Compile_Manual.md) and [Linkis deployment documents](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/en_US/Deployment_Documents/Quick_Deploy_Linkis1.0.md)
 
 &nbsp; &nbsp; &nbsp; &nbsp;At the same time, please make sure that the Linkis Flink engine can be used normally, please refer to:[Linkis Flink Engine Plug-in Installation Document](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/en_US/Deployment_Documents/EngineConnPlugin_installation_document.md)
 
