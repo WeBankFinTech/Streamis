@@ -17,10 +17,13 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity
 
 import java.util
 
+import org.apache.linkis.common.ServiceInstance
+
 
 class FlinkJobInfo extends YarnJobInfo {
 
   private var id: String = _
+  private var ecmInstance: ServiceInstance = _
   private var user: String = _
   private var savepoint: String = _
   private var checkpoint: String = _
@@ -40,6 +43,9 @@ class FlinkJobInfo extends YarnJobInfo {
   override def getId: String = id
   def setId(id: String): Unit = this.id = id
 
+
+  override def getECMInstance: ServiceInstance = ecmInstance
+  def setECMInstance(ecmInstance: ServiceInstance): Unit = this.ecmInstance = ecmInstance
 
   override def getUser: String = user
   def setUser(user: String): Unit = this.user = user

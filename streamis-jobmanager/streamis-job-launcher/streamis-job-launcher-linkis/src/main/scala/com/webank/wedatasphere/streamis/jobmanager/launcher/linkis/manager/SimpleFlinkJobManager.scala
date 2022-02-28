@@ -17,50 +17,66 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager
 
 import java.util
 
-import org.apache.linkis.computation.client.once.simple.SimpleOnceJob
-import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
-import org.apache.linkis.computation.client.operator.impl.EngineConnApplicationInfoOperator
-import org.apache.linkis.computation.client.operator.impl.EngineConnLogOperator
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.core.{FlinkLogIterator, SimpleFlinkJobLogIterator}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{FlinkJobInfo, LaunchJob, LinkisJobInfo, LogRequestPayload}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
 import org.apache.linkis.common.utils.RetryHandler
+import org.apache.linkis.computation.client.once.simple.{SimpleOnceJob, SubmittableSimpleOnceJob}
+import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
+import org.apache.linkis.computation.client.operator.impl.{EngineConnApplicationInfoOperator, EngineConnLogOperator}
+import org.apache.linkis.httpclient.dws.DWSHttpClient
 import org.apache.linkis.ujes.client.exception.UJESJobException
 
+import scala.collection.JavaConverters.mapAsScalaMapConverter
 
 class SimpleFlinkJobManager extends FlinkJobManager {
 
   override def getName: String = LinkisJobManager.SIMPLE_FLINK
 
-  protected def buildOnceJob(job: LaunchJob): SubmittableOnceJob = SimpleOnceJob.builder().addExecuteUser(job.getSubmitUser).setLabels(job.getLabels)
-    .setJobContent(job.getJobContent).setParams(job.getParams).setSource(job.getSource).build()
+  protected def buildOnceJob(job: LaunchJob): SubmittableOnceJob = {
+    val builder = SimpleOnceJob.builder().addExecuteUser(job.getSubmitUser).setLabels(job.getLabels)
+      .setJobContent(job.getJobContent).setParams(job.getParams).setSource(job.getSource)
+    if(job.getLaunchConfigs != null) {
+      job.getLaunchConfigs.asScala.get(LaunchJob.LAUNCH_CONFIG_CREATE_SERVICE).foreach{ case createService: String => builder.setCreateService(createService)}
+      job.getLaunchConfigs.asScala.get(LaunchJob.LAUNCH_CONFIG_DESCRIPTION).foreach{ case desc: String => builder.setDescription(desc)}
+      job.getLaunchConfigs.asScala.get(LaunchJob.LAUNCH_CONFIG_MAX_SUBMIT_TIME).foreach{ case maxSubmitTime: Long => builder.setMaxSubmitTime(maxSubmitTime)}
+    }
+    builder.build()
+  }
 
-  override protected def createSubmittedOnceJob(id: String, user: String): OnceJob = SimpleOnceJob.build(id, user)
+  override protected def createSubmittedOnceJob(id: String): OnceJob = SimpleOnceJob.build(id, getJobInfo(id).getUser)
 
-  override protected def getStatus(id: String, user: String): String = getOnceJob(id, user) match {
+  override protected def getStatus(id: String): String = getOnceJob(id) match {
     case simpleOnceJob: SimpleOnceJob =>
       if (simpleOnceJob.isCompleted) deleteOnceJob(id)
       simpleOnceJob.getStatus
   }
 
-  override def getCheckpoints(id: String, user: String): LinkisJobInfo = throw new FlinkJobLaunchErrorException(30401, "Not support method")
+  override def getCheckpoints(id: String): LinkisJobInfo = throw new FlinkJobLaunchErrorException(30401, "Not support method")
 
-  override def triggerSavepoint(id: String, user: String): LinkisJobInfo = throw new FlinkJobLaunchErrorException(30401, "Not support method")
+  override def triggerSavepoint(id: String): LinkisJobInfo = throw new FlinkJobLaunchErrorException(30401, "Not support method")
 
-  override def createJobInfo(id: String, user: String): LinkisJobInfo = {
-    val nodeInfo = getOnceJob(id, user).getNodeInfo
+  override protected def createJobInfo(onceJob: SubmittableOnceJob, job: LaunchJob): LinkisJobInfo = {
+    val nodeInfo = onceJob.getNodeInfo
     val jobInfo = new FlinkJobInfo
-    jobInfo.setId(id)
-    jobInfo.setUser(user)
+    jobInfo.setId(onceJob.getId)
+    jobInfo.setUser(job.getSubmitUser)
+    onceJob match {
+      case simpleOnceJob: SubmittableSimpleOnceJob =>
+        jobInfo.setECMInstance(simpleOnceJob.getECMServiceInstance)
+      case _ =>
+    }
     fetchApplicationInfo(jobInfo)
     jobInfo.setResources(nodeInfo.get("nodeResource").asInstanceOf[util.Map[String, Object]])
     jobInfo
   }
 
+  override protected def createJobInfo(jobInfo: String): LinkisJobInfo = DWSHttpClient.jacksonJson.readValue(jobInfo, classOf[FlinkJobInfo])
+
   protected def fetchApplicationInfo(jobInfo: FlinkJobInfo): Unit = {
-    getOnceJob(jobInfo.getId, jobInfo.getUser).getOperator(EngineConnApplicationInfoOperator.OPERATOR_NAME) match {
+    getOnceJob(jobInfo.getId).getOperator(EngineConnApplicationInfoOperator.OPERATOR_NAME) match {
       case applicationInfoOperator: EngineConnApplicationInfoOperator =>
         val retryHandler = new RetryHandler {}
         retryHandler.setRetryNum(JobLauncherConfiguration.FETCH_FLINK_APPLICATION_INFO_MAX_TIMES.getValue)
@@ -73,12 +89,16 @@ class SimpleFlinkJobManager extends FlinkJobManager {
     }
   }
 
-  override def fetchLogs(id: String, user: String, requestPayload: LogRequestPayload): FlinkLogIterator = getOnceJob(id, user).getOperator(EngineConnLogOperator.OPERATOR_NAME) match {
+  override def fetchLogs(id: String, requestPayload: LogRequestPayload): FlinkLogIterator = getOnceJob(id).getOperator(EngineConnLogOperator.OPERATOR_NAME) match {
     case engineConnLogOperator: EngineConnLogOperator =>
+      val jobInfo = getJobInfo(id)
+      engineConnLogOperator.setECMServiceInstance(jobInfo.getECMInstance)
+      engineConnLogOperator.setEngineConnType(FlinkJobManager.FLINK_ENGINE_CONN_TYPE)
       val logIterator = new SimpleFlinkJobLogIterator(requestPayload, engineConnLogOperator)
       logIterator.init()
-      getJobInfo(id, user) match {
+      jobInfo match {
         case jobInfo: FlinkJobInfo => jobInfo.setLogPath(logIterator.getLogPath)
+        case _ =>
       }
       logIterator
   }

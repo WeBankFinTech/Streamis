@@ -30,9 +30,15 @@ trait LaunchJob {
 
   def getSource: util.Map[String, Any]
 
+  def getLaunchConfigs: util.Map[String, Any]
+
 }
 
 object LaunchJob {
+
+  val LAUNCH_CONFIG_CREATE_SERVICE = "createService"
+  val LAUNCH_CONFIG_DESCRIPTION = "description"
+  val LAUNCH_CONFIG_MAX_SUBMIT_TIME = "maxSubmitTime"
 
   def builder(): Builder = new Builder
 
@@ -42,6 +48,7 @@ object LaunchJob {
     private var jobContent: util.Map[String, Any] = _
     private var params: util.Map[String, Any] = _
     private var source: util.Map[String, Any] = _
+    private var launchConfigs: util.Map[String, Any] = _
 
     def setSubmitUser(submitUser: String): this.type = {
       this.submitUser = submitUser
@@ -68,9 +75,15 @@ object LaunchJob {
       this
     }
 
+    def setLaunchConfigs(launchConfigs: util.Map[String, Any]): this.type = {
+      this.launchConfigs = launchConfigs
+      this
+    }
+
     def setLaunchJob(launchJob: LaunchJob): this.type = {
       setSubmitUser(launchJob.getSubmitUser).setLabels(launchJob.getLabels)
-        .setJobContent(launchJob.getJobContent).setParams(launchJob.getParams).setSource(launchJob.getSource)
+        .setJobContent(launchJob.getJobContent).setParams(launchJob.getParams)
+        .setSource(launchJob.getSource).setLaunchConfigs(launchJob.getLaunchConfigs)
     }
 
     def build(): LaunchJob = new LaunchJob {
@@ -83,6 +96,8 @@ object LaunchJob {
       override def getParams: util.Map[String, Any] = params
 
       override def getSource: util.Map[String, Any] = source
+
+      override def getLaunchConfigs: util.Map[String, Any] = launchConfigs
 
       override def toString: String = s"LaunchJob(submitUser: $submitUser, labels: $labels, jobContent: $jobContent, params: $params, source: $source)"
     }
