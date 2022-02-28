@@ -44,7 +44,7 @@
     </modules>
 
     <properties>
-        <dss.version>1.0.0</dss.version>
+        <dss.version>1.0.1</dss.version>
         <linkis.version>1.0.3</linkis.version>
         <streamis.version>0.1.0</streamis.version>
         <scala.version>2.11.8</scala.version>
