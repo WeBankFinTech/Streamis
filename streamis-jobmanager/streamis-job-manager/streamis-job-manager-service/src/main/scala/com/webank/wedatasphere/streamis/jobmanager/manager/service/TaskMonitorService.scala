@@ -19,13 +19,14 @@ import java.util
 import java.util.Date
 import java.util.concurrent.{Future, TimeUnit}
 
-import com.google.common.collect.{Lists, Sets}
+import com.google.common.collect.Sets
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LinkisJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.{AlertLevel, Alerter}
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
 import javax.annotation.{PostConstruct, PreDestroy}
+import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.linkis.common.utils.{Logging, RetryHandler, Utils}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -79,22 +80,27 @@ class TaskMonitorService extends Logging {
         retryHandler.retry(TaskService.updateStreamTaskStatus(streamTask, job.getName), s"Task-Monitor-${job.getName}")
       } { ex =>
           error(s"Fetch StreamJob-${job.getName} failed, maybe the Linkis cluster is wrong, please be noticed!", ex)
-        // 连续三次还是出现异常，说明Linkis的Manager已经不能正常提供服务，告警并不再尝试获取状态，等待下次尝试
-        val users = getAlertUsers(job)
-        users.add(job.getCreateBy)
-        alert(jobService.getAlertLevel(job), "请求LinkisManager失败，Linkis集群出现异常，请关注！", users ,streamTask)
-        return
+        val errorMsg = ExceptionUtils.getRootCauseMessage(ex)
+        if(errorMsg != null && errorMsg.contains("Not exists EngineConn")) {
+          streamTask.setStatus(JobConf.JOBMANAGER_FLINK_JOB_STATUS_SIX.getValue)
+          streamTask.setErrDesc("Not exists EngineConn.")
+        } else {
+          // 连续三次还是出现异常，说明Linkis的Manager已经不能正常提供服务，告警并不再尝试获取状态，等待下次尝试
+          val users = getAlertUsers(job)
+          users.add(job.getCreateBy)
+          alert(jobService.getAlertLevel(job), "请求LinkisManager失败，Linkis集群出现异常，请关注！", users ,streamTask)
+          return
+        }
       }
+      streamTaskMapper.updateTask(streamTask)
       if(streamTask.getStatus == JobConf.JOBMANAGER_FLINK_JOB_STATUS_SIX.getValue) {
         warn(s"StreamJob-${job.getName} is failed, please be noticed.")
         // TODO Need to add restart feature if user sets the restart parameters in checkpoint module.
         val alertMsg = s"您的 streamis 流式应用[${job.getName}]已经失败, 请您确认该流式应用的状态是否正常"
-        val set = Sets.newHashSet(job.getCreateBy, job.getSubmitUser)
-        val users = getAlertUsers(job)
-        users.addAll(Lists.newArrayList(set))
-        alert(jobService.getAlertLevel(job), alertMsg,users ,streamTask)
+        val userList = Sets.newHashSet(job.getCreateBy, job.getSubmitUser)
+        userList.addAll(getAlertUsers(job))
+        alert(jobService.getAlertLevel(job), alertMsg, new util.ArrayList[String](userList), streamTask)
       }
-      streamTaskMapper.updateTask(streamTask)
     }
     info("All StreamTasks status have updated.")
   }
