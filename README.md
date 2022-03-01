@@ -35,15 +35,15 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 &nbsp; &nbsp; &nbsp; &nbsp;Supports multi-version management, full life cycle management, monitoring alarm, checkpoint and savepoint management capabilities of streaming jobs.
 
-![prod center](docs/images/生产中心.png)
+![prod center](docs/images/homePage_en.png)
 
 &nbsp; &nbsp; &nbsp; &nbsp;Running information page:
 
-![Running information](docs/images/流式作业运行情况.png)
+![Running information](docs/images/statusDetail_en.png)
 
 &nbsp; &nbsp; &nbsp; &nbsp;Configurations page：
 
-![Configurations](docs/images/流式应用配置.png)
+![Configurations](docs/images/config_en.png)
 
 &nbsp; &nbsp; &nbsp; &nbsp;For more features, please refer to: [User Manual](docs/en_US/userManual/StreamisUserManual.md).
 
@@ -72,9 +72,9 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 &nbsp; &nbsp; &nbsp; &nbsp;Please refer to [Compilation guidelines](docs/en_US/0.1.0/StreamisCompiledDocument.md) used to compile Streamis.
 
-&nbsp; &nbsp; &nbsp; &nbsp;Before installing Streamis, please install Linkis1.0.3 and DSS1.0.1 first, please refer to:：[DSS deployment documents](https://github.com/WeBankFinTech/DataSphereStudio/blob/master/docs/en_US/ch1/DataSphereStudio_Compile_Manual.md) and [Linkis deployment documents](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/en_US/Deployment_Documents/Quick_Deploy_Linkis1.0.md)
+&nbsp; &nbsp; &nbsp; &nbsp;Before installing Streamis, please install Linkis1.0.3 and DSS1.0.1 first, please refer to: [DSS deployment documents](https://github.com/WeBankFinTech/DataSphereStudio/blob/master/docs/en_US/ch1/DataSphereStudio_Compile_Manual.md) and [Linkis deployment documents](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/en_US/Deployment_Documents/Quick_Deploy_Linkis1.0.md)
 
-&nbsp; &nbsp; &nbsp; &nbsp;At the same time, please make sure that the Linkis Flink engine can be used normally, please refer to:[Linkis Flink Engine Plug-in Installation Document](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/en_US/Deployment_Documents/EngineConnPlugin_installation_document.md)
+&nbsp; &nbsp; &nbsp; &nbsp;At the same time, please make sure that the Linkis Flink engine can be used normally, please refer to: [Linkis Flink Engine Plug-in Installation Document](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/en_US/Deployment_Documents/EngineConnPlugin_installation_document.md)
 
 &nbsp; &nbsp; &nbsp; &nbsp;Finally, please refer to [Streamis Installation and Deployment Document](docs/en_US/0.1.0/StreamisDeployment.md) for installing and deploying Streamis.
 
@@ -82,7 +82,7 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 ## Examples and usage guidelines
 
-&nbsp; &nbsp; &nbsp; &nbsp;Please come [User documentation](docs/en_US/userManual/StreamisUserManual.md) ,Learn how to use Streamis quickly.
+&nbsp; &nbsp; &nbsp; &nbsp;Please visit to [User documentation](docs/en_US/userManual/StreamisUserManual.md), learn how to use Streamis quickly.
 
 ----
 
@@ -95,7 +95,9 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 | Development Center | FlinkSQL streaming application real-time development and debugging | Support, need to integrate DSS |
 |Production Center | Streaming Application Management Operation and Maintenance Capability | Support |
 | | Reuse Linkis computing governance capabilities | Support |
-| |Support FlinkSQL and FlinkJar package release | Support |
+| | Support FlinkSQL and FlinkJar package release | Support |
+| | Multi-version management capabilities | Support |
+| | Configuration and alert management capabilities | Support |
 | Service high availability | Multiple services, failure does not affect the use | Application high availability |
 | System Management | Node and Resource Management | Support |
 
