@@ -6,6 +6,11 @@ spring:
   mvc:
     servlet:
       path: /api/rest_j/v1
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 500MB
+      max-request-size: 500MB
 
 eureka:
   client:
