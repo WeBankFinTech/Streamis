@@ -37,7 +37,7 @@ VALUES ('0','p_develop_process','流式生产中心','Streamis Product Center','
 
 如果出现streamis的首页，则表示则表示 DSS 已经成功集成了 Streamis。如下图：
 
-![image-20211230173839138](../../../images/image-20211230173839138.png)
+![image-20211230173839138](../../../images/生产中心.png)
 
 
 
@@ -151,7 +151,7 @@ VALUES ('0','p_develop_process','流式生产中心','Streamis Product Center','
 
 ## 5.1 运行情况
 
-​	实时数据展示待二期开发。![image-20211231100653747](../../../images/image-20211231100653747.png)
+​	实时数据展示待二期开发。![image-20211231100653747](../../../images/流式作业运行情况.png)
 
 ## 5.2 执行历史
 
@@ -171,7 +171,7 @@ VALUES ('0','p_develop_process','流式生产中心','Streamis Product Center','
 
 给Streamis任务配置一些flink资源参数以及checkpoint的参数
 
-![image-20211231101503678](../../../images/image-20211231101503678.png)
+![image-20211231101503678](../../../images/流式应用配置.png)
 
 ## 5.4任务详情
 
