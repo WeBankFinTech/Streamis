@@ -15,9 +15,9 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.service.impl;
 
+import com.webank.wedatasphere.streamis.jobmanager.service.UserService;
 import org.apache.linkis.common.conf.Configuration;
 import org.apache.linkis.server.conf.ServerConfiguration;
-import com.webank.wedatasphere.streamis.jobmanager.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -25,26 +25,31 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-/**
- * Created by v_wbyynie on 2021/9/27.
- */
 @Service
 public class UserServiceImpl implements UserService {
+
     @Autowired
     private RestTemplate restTemplate;
+
     @Override
     public List<String> workspaceUserQuery(HttpServletRequest req,String workspaceId) {
-        String url = Configuration.getGateWayURL() + ServerConfiguration.BDP_SERVER_RESTFUL_URI().getValue() + "/dss/framework/workspace/getAllWorkspaceUsers?workspaceId=" + workspaceId;
+        String url = Configuration.getGateWayURL() + ServerConfiguration.BDP_SERVER_RESTFUL_URI().getValue() + "/dss/framework/workspace/getWorkspaceUsers?workspaceId=" + workspaceId;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Cookie", req.getHeader("Cookie"));
         HttpEntity<String> httpEntity = new HttpEntity<String>(headers);
         ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, Map.class);
-        LinkedHashMap<String, ArrayList> data = (LinkedHashMap<String, ArrayList>) response.getBody().get("data");
-        return data.get("users");
+        Map<String, List> data = (Map<String, List>) response.getBody().get("data");
+        List<Map<String, Object>> workspaceUsers = data.get("workspaceUsers");
+        if(workspaceUsers == null || workspaceUsers.isEmpty()) {
+            return new ArrayList<>();
+        } else {
+            return workspaceUsers.stream().map(user -> (String) user.get("name")).collect(Collectors.toList());
+        }
     }
+
 }
