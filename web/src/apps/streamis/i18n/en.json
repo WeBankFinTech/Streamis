@@ -28,7 +28,7 @@
         "success": "Success",
         "uploaded" : "Uploaded",
         "all": "All",
-        "stoped": "Stoped",
+        "stopped": "Stopped",
         "unstarted": "Unstarted"
       },
       "formItems": {
