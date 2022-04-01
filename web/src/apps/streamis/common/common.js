@@ -1,5 +1,5 @@
 export const jobStatuses = [
-  { name: 'stoped', code: 7, icon: 'md-close-circle', color: '#990033' },
+  { name: 'stopped', code: 7, icon: 'md-close-circle', color: '#990033' },
   { name: 'failure', code: 6, icon: 'md-close-circle', color: '#990033' },
   { name: 'running', code: 5, color: '#008000' },
   { name: 'slowTask', code: 4, icon: 'md-help-circle', color: '#6666FF' },

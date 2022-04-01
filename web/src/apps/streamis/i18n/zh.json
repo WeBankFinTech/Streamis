@@ -27,7 +27,7 @@
         "success": "已完成",
         "uploaded" : "已上传",
         "all": "全部",
-        "stoped": "已停止",
+        "stopped": "已停止",
         "unstarted": "未启动"
       },
       "formItems": {
