@@ -46,7 +46,7 @@ class SimpleFlinkJobManager extends FlinkJobManager {
     builder.build()
   }
 
-  override protected def createSubmittedOnceJob(id: String): OnceJob = SimpleOnceJob.build(id, getJobInfo(id).getUser)
+  override protected def createSubmittedOnceJob(id: String): OnceJob = SimpleOnceJob.build(id, onceJobIdToJobInfo.get(id).getUser)
 
   override protected def getStatus(id: String): String = getOnceJob(id) match {
     case simpleOnceJob: SimpleOnceJob =>
