@@ -15,14 +15,26 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.ConfigKeyVO
+import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.{ConfigKeyVO, ConfigRelationVO}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LaunchJob
+import org.springframework.beans.BeanUtils
 
-import scala.collection.convert.WrapAsScala._
+import scala.collection.JavaConverters._
 
 
 class ExtraConfigTransform extends ResourceConfigTransform {
 
-  override protected def transform(config: ConfigKeyVO, job: LaunchJob): LaunchJob = transformConfig(config.getParameterConfig, job)
+  override protected def transform(config: ConfigKeyVO, job: LaunchJob): LaunchJob = {
+    val newConfigs = config.getParameterConfig.asScala.map{config =>
+      val newConfig = new ConfigRelationVO
+      BeanUtils.copyProperties(config, newConfig)
+      newConfig.setKey(ExtraConfigTransform.FLINK_CONFIG_PREFIX + config.getKey)
+      newConfig
+    }.asJava
+    transformConfig(newConfigs, job)
+  }
 
+}
+object ExtraConfigTransform {
+  private val FLINK_CONFIG_PREFIX = "_FLINK_CONFIG_."
 }
