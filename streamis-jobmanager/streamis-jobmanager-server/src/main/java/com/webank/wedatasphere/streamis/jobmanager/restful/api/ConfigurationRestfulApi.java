@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.ConfigKeyVO;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.exception.ConfigurationException;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.ConfigurationService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.CookieUtils;
 import com.webank.wedatasphere.streamis.jobmanager.service.UserService;
@@ -65,7 +66,9 @@ public class ConfigurationRestfulApi {
     public Message updateFullTree(HttpServletRequest req, @RequestBody JsonNode json) throws IOException {
         String username = SecurityFilter.getLoginUsername(req);
         ConfigKeyVO fullTrees = mapper.readValue(json.get("fullTree").traverse(), ConfigKeyVO.class);
-        if (!jobService.isCreator(fullTrees.getJobId(), username)) {
+        // Accept the developer to modify
+        if (!jobService.isCreator(fullTrees.getJobId(), username) &&
+                !JobConf.STREAMIS_DEVELOPER().getValue().contains(username)) {
             return Message.error("you con not modify the config ,the job is not belong to you");
         }
         configurationService.addKeyValue(fullTrees);
@@ -76,8 +79,9 @@ public class ConfigurationRestfulApi {
     public Message saveFullTree(HttpServletRequest req, @RequestBody JsonNode json) throws IOException {
         String username = SecurityFilter.getLoginUsername(req);
         ConfigKeyVO fullTrees = mapper.readValue(json.get("fullTree").traverse(), ConfigKeyVO.class);
-
-        if (!jobService.isCreator(fullTrees.getJobId(), username)) {
+        // Accept the developer to modify
+        if (!jobService.isCreator(fullTrees.getJobId(), username) &&
+                !JobConf.STREAMIS_DEVELOPER().getValue().contains(username)) {
             return Message.error("you con not modify the config ,the job is not belong to you");
         }
         configurationService.addKeyValue(fullTrees);
