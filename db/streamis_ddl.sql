@@ -8,7 +8,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `linkis_stream_configuration_config_key`;
 CREATE TABLE `linkis_stream_configuration_config_key`  (
   `id` bigint(20) NOT NULL,
-  `key` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `key` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `name` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `description` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `default_value` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
@@ -31,13 +31,13 @@ CREATE TABLE `linkis_stream_configuration_config_key`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `linkis_stream_configuration_config_value`;
 CREATE TABLE `linkis_stream_configuration_config_value`  (
-  `id` bigint(20) NOT NULL,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `configkey_id` bigint(20) NULL DEFAULT NULL,
-  `config_value` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `config_value` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `type` int(10) NULL DEFAULT NULL,
   `job_id` bigint(20) NULL DEFAULT NULL,
   `job_name` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
-  `config_key` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `config_key` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `key`(`config_key`) USING BTREE,
   INDEX `keyid`(`configkey_id`) USING BTREE
