@@ -23,6 +23,8 @@ object JobConf {
 
   val STREAMIS_DEVELOPER = CommonVars("wds.streamis.developer", "enjoyyin")
 
+  val STREAMIS_DEFAULT_TENANT = CommonVars("wds.streamis.job.tenant.default", "")
+
   val JOBMANAGER_FLINK_JOB_STATUS_ZREO = CommonVars("wds.streamis.job.status.zero", 0,"Not Started")
 
   val JOBMANAGER_FLINK_JOB_STATUS_ONE = CommonVars("wds.streamis.job.status.one", 1,"Completed")
