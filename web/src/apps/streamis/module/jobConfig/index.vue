@@ -42,7 +42,7 @@
                         v-model="resourceConfig.jobManagerMemory"
                         type="number"
                       />
-                      <div class="unit">G</div>
+                      <div class="unit">M</div>
                     </div>
                   </FormItem>
                 </Col>
@@ -70,7 +70,7 @@
                         v-model="resourceConfig.taskManagerMemory"
                         type="number"
                       />
-                      <div class="unit">G</div>
+                      <div class="unit">M</div>
                     </div>
                   </FormItem>
                 </Col>

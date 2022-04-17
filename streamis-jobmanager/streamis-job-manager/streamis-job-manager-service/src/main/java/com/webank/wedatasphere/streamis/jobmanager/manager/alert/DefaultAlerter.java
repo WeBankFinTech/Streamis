@@ -19,6 +19,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamAlertMapper
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamAlertRecord;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,8 @@ public class DefaultAlerter implements Alerter{
 
     @Override
     public void alert(AlertLevel alertLevel, String alertMessage, List<String> alertUsers, StreamTask streamTask) {
-        LOG.info("alert in default alerter");
+        LOG.info("Alert info: Level={}, alertMessage={}, alertUsers={}", alertLevel.name(), alertMessage,
+                StringUtils.join(alertUsers, ","));
         for (String alertUser : alertUsers) {
             StreamAlertRecord streamAlertRecord = new StreamAlertRecord();
             streamAlertRecord.setAlertLevel(alertLevel.name());
