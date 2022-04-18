@@ -36,7 +36,7 @@ CREATE TABLE `linkis_stream_configuration_config_value`  (
   `config_value` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `type` int(10) NULL DEFAULT NULL,
   `job_id` bigint(20) NULL DEFAULT NULL,
-  `job_name` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `job_name` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `config_key` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `key`(`config_key`) USING BTREE,
@@ -129,8 +129,8 @@ DROP TABLE IF EXISTS `linkis_stream_job`;
 
 CREATE TABLE `linkis_stream_job` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `project_name` varchar(50) DEFAULT NULL,
-  `name` varchar(50) DEFAULT NULL,
+  `project_name` varchar(100) DEFAULT NULL,
+  `name` varchar(200) DEFAULT NULL,
   `status` tinyint(1) DEFAULT '0' COMMENT '1:已完成 ，2:等待重启 ，3:告警 ，4:慢任务 ，5:运行中 ，6:失败任务',
   `create_by` varchar(50) DEFAULT NULL,
   `create_time` datetime DEFAULT NULL,
@@ -182,7 +182,7 @@ DROP TABLE IF EXISTS `linkis_stream_project`;
 CREATE TABLE `linkis_stream_project` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `workspace_id` bigint(20) DEFAULT NULL,
-  `name` varchar(50) DEFAULT NULL,
+  `name` varchar(100) DEFAULT NULL,
   `create_by` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='项目表';
@@ -211,14 +211,14 @@ DROP TABLE IF EXISTS `linkis_stream_task`;
 CREATE TABLE `linkis_stream_task` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `job_version_id` bigint(20) NOT NULL,
-  `job_id` varchar(50) DEFAULT NULL,
+  `job_id` varchar(200) DEFAULT NULL,
   `version` varchar(50) DEFAULT NULL,
   `status` int(3) DEFAULT NULL,
   `start_time` datetime DEFAULT NULL,
   `last_update_time` datetime DEFAULT NULL,
   `err_desc` varchar(10240) DEFAULT NULL,
   `submit_user` varchar(50) DEFAULT NULL,
-  `linkis_job_id` varchar(50) DEFAULT NULL,
+  `linkis_job_id` varchar(200) DEFAULT NULL,
   `linkis_job_info` mediumtext,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='任务表';
