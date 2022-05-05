@@ -20,6 +20,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.Launch
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJob
 
 
+
 trait ConfigTransform extends Transform {
 
   override def transform(streamisTransformJob: StreamisTransformJob, job: LaunchJob): LaunchJob = transform(streamisTransformJob.getConfig, job)

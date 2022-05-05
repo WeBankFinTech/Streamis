@@ -106,5 +106,7 @@ abstract class AbstractJobContentParser extends JobContentParser with Logging {
 
 }
 object AbstractJobContentParser {
-  val PROJECT_FILE_REGEX = "([^-]+)-([^-]+)".r
+
+  val PROJECT_FILE_REGEX = "(^[^.]+)-([\\d]+?\\.[\\d]+?\\.[\\d]+)$".r
+
 }
