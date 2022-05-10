@@ -47,7 +47,16 @@ public class ConfigurationRestfulApi {
 
     ObjectMapper mapper = new ObjectMapper();
 
+    @RequestMapping(value = "/definitions", method = RequestMethod.GET)
+    public Message definitions(){
 
+        return null;
+    }
+
+    @RequestMapping(value = "/list/{jobId:\\w+")
+    public Message configList(){
+        return null;
+    }
     @RequestMapping(path = "/view", method = RequestMethod.GET)
     public Message getView(HttpServletRequest req, @RequestParam(value = "jobId", required = false) Long jobId) throws IOException, ConfigurationException {
         String username = SecurityFilter.getLoginUsername(req);
