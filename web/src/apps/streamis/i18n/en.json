@@ -189,7 +189,10 @@
         "latestLog": "View the latest log",
         "noLog": "NO logs",
         "onlyKeywords": "Please input onlyKeywords",
-        "ignoreKeywords": "Please input ignoreKeywords"
+        "ignoreKeywords": "Please input ignoreKeywords",
+        "logTypeKeywords": "Please select logType",
+        "clientLabel": "Client Log",
+        "yarnLabel": "Yarn Log"
       }
     }
   }
