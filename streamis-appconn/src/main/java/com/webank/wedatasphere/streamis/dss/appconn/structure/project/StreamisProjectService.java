@@ -1,29 +1,23 @@
 package com.webank.wedatasphere.streamis.dss.appconn.structure.project;
 
 import com.webank.wedatasphere.dss.standard.app.structure.project.*;
-import com.webank.wedatasphere.dss.standard.app.structure.project.ref.DSSProjectContentRequestRef;
 import com.webank.wedatasphere.streamis.dss.appconn.structure.ref.StreamisProjectContentReqRef;
-import com.webank.wedatasphere.streamis.dss.appconn.structure.ref.StreamisProjectUpdateReqRef;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Streamis project service
  */
 public class StreamisProjectService extends ProjectService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(StreamisProjectService.class);
     @Override
-    protected ProjectCreationOperation<DSSProjectContentRequestRef.DSSProjectContentRequestRefImpl> createProjectCreationOperation() {
-        //TODO create project create operation
-        return null;
+    protected ProjectCreationOperation createProjectCreationOperation() {
+        return new StreamisProjectCreationOperation();
     }
 
     @Override
-    protected ProjectUpdateOperation<StreamisProjectUpdateReqRef> createProjectUpdateOperation() {
-        //TODO create project update operation
-        return null;
+    protected ProjectUpdateOperation createProjectUpdateOperation() {
+        return new StreamisProjectUpdateOperation();
     }
+
 
     @Override
     protected ProjectDeletionOperation<?> createProjectDeletionOperation() {
