@@ -10,6 +10,15 @@
       <div>
         <Form ref="queryForm" inline>
           <FormItem>
+            <Select
+              v-model="query.logType"
+              @on-change="handleQuery"
+              :placeholder="$t('message.streamis.logDetail.logTypeKeywords')"
+            >
+              <Option v-for="item in logTypeList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+            </Select>
+          </FormItem>
+          <FormItem>
             <Input
               search
               v-model="query.ignoreKeywords"
@@ -86,8 +95,16 @@ export default {
     return {
       query: {
         ignoreKeywords: '',
-        onlyKeywords: ''
+        onlyKeywords: '',
+        logType: 'client'
       },
+      logTypeList: [{
+        label: this.$t('message.streamis.logDetail.clientLabel'),
+        value: 'client'
+      }, {
+        label: this.$t('message.streamis.logDetail.yarnLabel'),
+        value: 'yarn'
+      }],
       fromLine: 1,
       logs: '',
       spinShow: false
@@ -129,7 +146,8 @@ export default {
       this.spinShow = false
       this.query = {
         ignoreKeywords: '',
-        onlyKeywords: ''
+        onlyKeywords: '',
+        logType: 'client'
       }
       this.$emit('modalCancel')
     },
@@ -138,7 +156,8 @@ export default {
         this.fromLine = 1
         this.query = {
           ignoreKeywords: '',
-          onlyKeywords: ''
+          onlyKeywords: '',
+          logType: 'client'
         }
       } else if (type === 'next') {
         this.fromLine = this.fromLine + 100
