@@ -190,7 +190,10 @@
         "latestLog": "查看最新日志",
         "noLog": "没有日志信息",
         "onlyKeywords": "请输入需要查询的关键字",
-        "ignoreKeywords": "请输入需要排除的关键字"
+        "ignoreKeywords": "请输入需要排除的关键字",
+        "logTypeKeywords": "请选择日志类型",
+        "clientLabel": "客户端日志",
+        "yarnLabel": "Yarn日志"
       }
     }
   }
