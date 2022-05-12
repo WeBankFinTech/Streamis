@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.webank.wedatasphere.streamis.project.server.dao.StreamisProjectPrivilegeMapper">
+
+    <insert id="addProjectPrivilege" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.webank.wedatasphere.streamis.project.server.entity.CreateProjectPrivilege">
+        insert into linkis_stream_project_privilege (project_id,user_name,privilege) values
+        <foreach collection="userNames" separator="," item="userName" >
+            (
+            #{projectId},#{userName},#{privilege}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteProjectPrivilegeByProjectId">
+        delete from linkis_stream_project_privilege where projectId = #{projectId}
+    </delete>
+
+
+</mapper>
