@@ -40,7 +40,9 @@
         "startBtn": "Start",
         "configBtn": "Config",
         "saveBtn": "Save",
-        "updateBtn": "Update"
+        "updateBtn": "Update",
+        "batchAction": "batch Action",
+        "cancel": "cancel"
       },
       "jobListTableColumns":{
         "jobName": "Job name",
@@ -52,7 +54,11 @@
         "lastRelease": "Last release",
         "description": "Description",
         "operation": "Operation",
-        "upload": "Upload"
+        "upload": "Upload",
+        "stopTaskTitle": "Shutdown tasks",
+        "stopTaskContent": "Batch stopping tasks...",
+        "startTaskTitle": "Start tasks",
+        "startTaskContent": "Batch starting tasks..."
         
       },
       "versionDetail":{
