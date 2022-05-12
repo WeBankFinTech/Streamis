@@ -1,7 +1,5 @@
 package com.webank.wedatasphere.streamis.dss.appconn.structure.project;
 
-import com.webank.wedatasphere.dss.common.label.EnvDSSLabel;
-import com.webank.wedatasphere.dss.common.label.LabelRouteVO;
 import com.webank.wedatasphere.dss.common.utils.DSSCommonUtils;
 import com.webank.wedatasphere.dss.standard.app.sso.origin.request.action.DSSPostAction;
 import com.webank.wedatasphere.dss.standard.app.structure.AbstractStructureOperation;
@@ -13,6 +11,8 @@ import com.webank.wedatasphere.dss.standard.common.exception.operation.ExternalO
 import com.webank.wedatasphere.streamis.dss.appconn.StreamisAppConn;
 import com.webank.wedatasphere.streamis.dss.appconn.utils.StreamisCommonUtil;
 import org.apache.linkis.server.conf.ServerConfiguration;
+
+import java.util.List;
 
 public class StreamisProjectCreationOperation extends AbstractStructureOperation<DSSProjectContentRequestRef.DSSProjectContentRequestRefImpl, ProjectResponseRef>
         implements ProjectCreationOperation<DSSProjectContentRequestRef.DSSProjectContentRequestRefImpl> {
@@ -29,13 +29,15 @@ public class StreamisProjectCreationOperation extends AbstractStructureOperation
         String url = getBaseUrl() + PROJECT_CREATE_URL;
         DSSPostAction streamisPostAction = new DSSPostAction();
         streamisPostAction.setUser(dssProjectContentRequestRef.getDSSProject().getCreateBy());
-        streamisPostAction.addRequestPayload("name", dssProjectContentRequestRef.getName());
+        streamisPostAction.addRequestPayload("projectName",dssProjectContentRequestRef.getDSSProject().getName());
         streamisPostAction.addRequestPayload("description", dssProjectContentRequestRef.getDSSProject().getDescription());
-        streamisPostAction.addRequestPayload("pic", "6");
-        streamisPostAction.addRequestPayload("visibility", true);
-        LabelRouteVO routeVO = new LabelRouteVO();
-        routeVO.setRoute(((EnvDSSLabel) (dssProjectContentRequestRef.getDSSLabels().get(0))).getEnv());
-        streamisPostAction.addRequestPayload("labels", routeVO);
+        streamisPostAction.addRequestPayload("workspaceName", dssProjectContentRequestRef.getDSSProject().getWorkspaceName());
+        List<String> accessUsers = dssProjectContentRequestRef.getDSSProjectPrivilege().getAccessUsers();
+        List<String> editUsers = dssProjectContentRequestRef.getDSSProjectPrivilege().getEditUsers();
+        List<String> releaseUsers = dssProjectContentRequestRef.getDSSProjectPrivilege().getReleaseUsers();
+        streamisPostAction.addRequestPayload("accessUsers",accessUsers);
+        streamisPostAction.addRequestPayload("editUsers",editUsers);
+        streamisPostAction.addRequestPayload("releaseUsers",releaseUsers);
         ResponseRef responseRef = StreamisCommonUtil.getExternalResponseRef(dssProjectContentRequestRef, ssoRequestOperation, url, streamisPostAction);
         @SuppressWarnings("unchecked")
         Long projectId = DSSCommonUtils.parseToLong(responseRef.getValue("projectId"));
