@@ -239,4 +239,15 @@ CREATE TABLE `linkis_stream_alert_record` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `linkis_stream_project_privilege`;
+
+CREATE TABLE `linkis_stream_project_privilege` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `project_id` bigint(20) NOT NULL,
+  `user_name` varchar(100) NOT NULL,
+  `privilege` tinyint(1) DEFAULT '0' NOT NULL COMMENT '1:发布权限 ，2:编辑权限 ，3:查看权限 ，4:所有权限 ，5:发布编辑权限 ，6:发布查看权限 ，7:编辑查看权限 ',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='项目权限表';
+
+
 SET FOREIGN_KEY_CHECKS = 1;
