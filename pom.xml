@@ -47,7 +47,7 @@
     <properties>
         <linkis.version>1.1.1</linkis.version>
         <dss.version>1.1.0</dss.version>
-        <streamis.version>0.1.0</streamis.version>
+        <streamis.version>0.2.0</streamis.version>
         <scala.version>2.11.12</scala.version>
         <jdk.compile.version>1.8</jdk.compile.version>
         <maven.version>3.3.3</maven.version>
