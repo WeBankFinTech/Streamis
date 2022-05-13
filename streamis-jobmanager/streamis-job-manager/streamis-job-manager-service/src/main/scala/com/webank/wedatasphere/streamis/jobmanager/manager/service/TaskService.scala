@@ -15,12 +15,13 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
+
 import java.util
 import java.util.Date
-
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{FlinkJobInfo, LaunchJob, LogRequestPayload}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager.FlinkJobManager
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{FlinkJobInfo, LogRequestPayload}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.FlinkJobManager
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask
