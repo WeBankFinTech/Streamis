@@ -1,9 +1,39 @@
 <template>
   <div>
+    <Spin v-if="baseLoading" fix></Spin>
     <titleCard :title="$t('message.streamis.moduleName.jobList')">
       <div>
         <div>
-          <Form ref="queryForm" inline>
+          <Form v-if="isBatching" inline>
+            <FormItem>
+              <Button
+                type="primary"
+                @click="doRestart('snapshot')"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+              >
+                {{$t('message.streamis.formItems.snapshotRestart')}}
+              </Button>
+            </FormItem>
+            <FormItem>
+              <Button
+                type="primary"
+                @click="doRestart('direct')"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+              >
+                {{$t('message.streamis.formItems.directRestart')}}
+              </Button>
+            </FormItem>
+            <FormItem>
+              <Button
+                type="primary"
+                @click="hideButtons"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+              >
+                {{$t('message.streamis.formItems.cancel')}}
+              </Button>
+            </FormItem>
+          </Form>
+          <Form ref="queryForm" inline v-else>
             <FormItem>
               <Input
                 search
@@ -38,8 +68,18 @@
                 {{ $t('message.streamis.formItems.queryBtn') }}
               </Button>
             </FormItem>
+
+            <FormItem>
+              <Button
+                type="primary"
+                @click="showButtons"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+              >
+                {{$t('message.streamis.formItems.batchAction')}}
+              </Button>
+            </FormItem>
           </Form>
-          <Table :columns="columns" :data="tableDatas" :loading="loading">
+          <Table ref="list" :columns="columns" :data="tableDatas" :loading="loading" @on-selection-change="selectionChange">
             <template slot-scope="{ row, index }" slot="jobName">
               <div
                 class="jobName"
@@ -145,6 +185,27 @@
       @jarModalCancel="jarModalCancel"
       @jarUploadSuccess="jarUploadSuccess"
     />
+    <Modal
+      v-model="processModalVisable"
+      :title="modalTitle"
+      footer-hide
+      @on-visible-change="onClose"
+    >
+      <div class="wrap">
+        <Spin v-if="modalLoading" fix></Spin>
+        <div class="general">
+          <div class="bar"></div>
+          <div class="text">{{modalContent}}({{orderNum}}/{{selections.length}})"</div>
+        </div>
+        <div class="info">
+          <div v-for="item in failTasks" :key="item.taskId">
+            <span>{{item.taskName}}</span>,
+            <span>{{item.taskId}}</span>:
+            <span>{{item.info}}</span>
+          </div>
+        </div>
+      </div>
+    </Modal>
   </div>
 </template>
 <script>
@@ -214,6 +275,16 @@ export default {
         //   description: '这是一个FlinkSql测试JobD'
         // }
       ],
+      baseLoading: false,
+      modalLoading: false,
+      failTasks: [],
+      timer: null,
+      isBatching: false,
+      selections: [],
+      processModalVisable: false,
+      modalTitle: '',
+      modalContent: '',
+      orderNum: 0,
       columns: [
         {
           title: this.$t('message.streamis.jobListTableColumns.jobName'),
@@ -319,6 +390,7 @@ export default {
   },
   mounted() {
     this.getJobList()
+    // window.test = this;  
   },
   methods: {
     getJobList() {
@@ -491,6 +563,98 @@ export default {
       if (res && res.status !== 0 && res.message) {
         this.$Message.error(res.message)
       }
+    },
+    showButtons(val) {
+      console.log('showButtons', val)
+      this.columns.unshift({
+        type: 'selection',
+        width: 60,
+        align: 'center'
+      });
+      this.isBatching = true;
+    },
+    hideButtons(val) {
+      console.log('hideButtons', val)
+      this.$refs.list.selectAll(false);
+      this.selections = [];
+      this.columns.shift();
+      this.isBatching = false;
+    },
+    selectionChange(val) {
+      const selections = (val || []).filter(item => item.id);
+      console.log('selectionChange', selections);
+      this.selections = selections;
+    },
+    doRestart(type) {
+      console.log('doRestart', type);
+      // TODO: remote doRestart cgi
+      try {
+        this.baseLoading = true;
+        this.showProcessModal();
+        this.baseLoading = false;
+      } catch (error) {
+        console.warn(error)
+        this.baseLoading = false
+      }
+    },
+    showProcessModal() {
+      console.log('showProcessModal');
+      this.processModalVisable = true;
+      this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
+      this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
+      this.stopTasks();
+    },
+    stopTasks() {
+      console.log('stopTasks');
+      // TODO: remote stopTasks cgi
+      try {
+        this.modalLoading = true;
+        this.modalLoading = false;
+        if (Math.random()) {
+          this.failTasks = [{
+            taskId: 'testTaskId123456',
+            taskName: '任务任务任务123',
+            info: 'asdfasdfasdfasdfasdfasdfasdfadfasdfsafdafafdfasdfsadfasdfasdfdasfasd'
+          }];
+          this.orderNum = this.failTasks.length;
+        } else {
+          this.queryProcess()
+        }
+      } catch (error) {
+        console.warn(error);
+        this.modalLoading = false
+      }
+    },
+    queryProcess() {
+      console.log('queryProcess');
+      this.modalTitle = this.$t('message.streamis.jobListTableColumns.startTaskTitle');
+      this.modalContent = this.$t('message.streamis.jobListTableColumns.startTaskContent');
+      // TODO: remote queryProcess cgi
+      try {
+        this.modalLoading = true;
+        if (Math.random()) {
+          this.failTasks = [{
+            taskId: 'testTaskId123456',
+            taskName: '任务任务任务123',
+            info: 'asdfasdfasdfasdfasdfasdfasdfadfasdfsafdafafdfasdfsadfasdfasdfdasfasd'
+          }];
+        } else {
+          this.modalLoading = false;
+          this.timer = setTimeout(() => {
+            this.queryProcess();
+          }, 2500);
+        }
+      } catch (error) {
+        console.warn(error)
+        this.modalLoading = false
+      }
+    },
+    onClose(status) {
+      if (status) return;
+      clearTimeout(this.timer);
+      this.failTasks = [];
+      this.orderNum = 0;
+      this.getJobList()
     }
   }
 }
