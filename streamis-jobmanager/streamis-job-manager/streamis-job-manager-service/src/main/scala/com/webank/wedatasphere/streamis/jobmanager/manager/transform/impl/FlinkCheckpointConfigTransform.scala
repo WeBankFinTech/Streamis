@@ -2,7 +2,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
 import java.util
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.ConfigKeyVO
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LaunchJob
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.ConfigTransform
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.JobUtils
 import org.apache.commons.lang.StringUtils
