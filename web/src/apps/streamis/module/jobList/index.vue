@@ -191,10 +191,19 @@
       footer-hide
       @on-visible-change="onClose"
     >
-      <Spin v-if="modalLoading" fix></Spin>
       <div class="wrap">
-        <div class="bar"></div>
-        <div class="text">{{modalContent}}({{orderNum}}/{{selections.length}})"</div>
+        <Spin v-if="modalLoading" fix></Spin>
+        <div class="general">
+          <div class="bar"></div>
+          <div class="text">{{modalContent}}({{orderNum}}/{{selections.length}})"</div>
+        </div>
+        <div class="info">
+          <div v-for="item in failTasks" :key="item.taskId">
+            <span>{{item.taskName}}</span>,
+            <span>{{item.taskId}}</span>:
+            <span>{{item.info}}</span>
+          </div>
+        </div>
       </div>
     </Modal>
   </div>
