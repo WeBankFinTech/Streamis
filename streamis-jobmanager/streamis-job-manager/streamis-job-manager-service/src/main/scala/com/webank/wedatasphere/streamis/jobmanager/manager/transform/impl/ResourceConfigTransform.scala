@@ -18,7 +18,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 import java.util
 import org.apache.linkis.protocol.utils.TaskUtils
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.{ConfigKeyVO, ConfigRelationVO}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LaunchJob
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.ConfigTransform
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.JobUtils
 
