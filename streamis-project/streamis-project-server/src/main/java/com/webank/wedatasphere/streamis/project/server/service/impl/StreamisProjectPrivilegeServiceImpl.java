@@ -19,6 +19,7 @@ public class StreamisProjectPrivilegeServiceImpl implements StreamisProjectPrivi
     @Autowired
     private StreamisProjectPrivilegeMapper streamisProjectPrivilegeMapper;
 
+    // TODO wrap as privilege list to batch insert
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CreateProjectPrivilege addProjectPrivilege(Long projectId, CreateProjectRequest createProjectRequest) {
@@ -32,6 +33,10 @@ public class StreamisProjectPrivilegeServiceImpl implements StreamisProjectPrivi
         return createProjectPrivilege;
     }
 
+    // TODO
+    //  1) Select all project privileges 查询到改项目下所有的权限，用DSS传递过来的项目权限集减去该项目已有的权限集，得到需要插入的权限集。
+    //  2）反过来用该项目已有的权限集减去DSS传递过来的项目权限集，得到需要删除的权限集。
+    //  3）批量删除，批量插入。
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateProjectPrivilege(Long projectId, UpdateProjectRequest updateProjectRequest) {
