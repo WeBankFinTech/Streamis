@@ -13,6 +13,8 @@ import com.webank.wedatasphere.streamis.dss.appconn.StreamisAppConn;
 import com.webank.wedatasphere.streamis.dss.appconn.utils.StreamisCommonUtil;
 import org.apache.linkis.server.conf.ServerConfiguration;
 
+import java.util.List;
+
 public class StreamisProjectUpdateOperation extends AbstractStructureOperation<ProjectUpdateRequestRef.ProjectUpdateRequestRefImpl, ProjectResponseRef>
         implements ProjectUpdateOperation<ProjectUpdateRequestRef.ProjectUpdateRequestRefImpl> {
 
@@ -27,11 +29,16 @@ public class StreamisProjectUpdateOperation extends AbstractStructureOperation<P
     public ResponseRef updateProject(ProjectUpdateRequestRef.ProjectUpdateRequestRefImpl projectUpdateRequestRef) throws ExternalOperationFailedException {
         String url = getBaseUrl() + PROJECT_UPDATE_URL;
         DSSPutAction updateAction = new DSSPutAction();
-        LabelRouteVO routeVO = new LabelRouteVO();
-        routeVO.setRoute(((EnvDSSLabel) (projectUpdateRequestRef.getDSSLabels().get(0))).getEnv());
-        updateAction.addRequestPayload("labels", routeVO);
         updateAction.setUser(projectUpdateRequestRef.getUserName());
-        updateAction.setParameter("id", projectUpdateRequestRef.getRefProjectId());
+        updateAction.setParameter("projectId", projectUpdateRequestRef.getRefProjectId());
+        updateAction.setParameter("projectName", projectUpdateRequestRef.getProjectName());
+        updateAction.setParameter("description", projectUpdateRequestRef.getDSSProject().getDescription());
+        List<String> releaseUsers = projectUpdateRequestRef.getDSSProjectPrivilege().getReleaseUsers();
+        List<String> editUsers = projectUpdateRequestRef.getDSSProjectPrivilege().getEditUsers();
+        List<String> accessUsers = projectUpdateRequestRef.getDSSProjectPrivilege().getAccessUsers();
+        updateAction.addRequestPayload("accessUsers",accessUsers);
+        updateAction.addRequestPayload("editUsers",editUsers);
+        updateAction.addRequestPayload("releaseUsers",releaseUsers);
         return StreamisCommonUtil.getExternalResponseRef(projectUpdateRequestRef, ssoRequestOperation, url, updateAction);
     }
 
