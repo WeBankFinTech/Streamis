@@ -13,46 +13,17 @@
  * limitations under the License.
  */
 
-package com.webank.wedatasphere.streamis.jobmanager.launcher.job
+package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
+
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState, JobStateFetcher}
 
 /**
- * Basic job information
+ * Flink job state manager
  */
-trait JobInfo {
+class FlinkJobStateManager extends JobStateManager {
+  override def getOrCreateJobStateFetcher[T <: JobState](clazz: Class[T]): JobStateFetcher[T] = ???
 
-  /**
-   * Job Id
-   * @return
-   */
-  def getId: String
-
-  /**
-   * Creator
-   * @return
-   */
-  def getUser: String
-
-  /**
-   * Job status
-   * @return
-   */
-  def getStatus: String
-
-  def setStatus(status: String): Unit
-
-  /**
-   * Job log path
-   * @return
-   */
-  def getLogPath: String
-
-  def getResources: java.util.Map[String, Object]
-
-  def getCompletedMsg: String
-
-  /**
-   * Contains the check point and save points
-   * @return
-   */
-  def getJobStates: Array[String]
+  override def getJobState[T <: JobState](jobInfo: JobInfo): T = ???
 }
