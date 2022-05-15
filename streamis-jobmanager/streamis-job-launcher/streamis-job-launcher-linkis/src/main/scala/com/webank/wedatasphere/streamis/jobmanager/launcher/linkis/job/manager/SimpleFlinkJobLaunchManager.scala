@@ -16,11 +16,13 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.core.{FlinkLogIterator, SimpleFlinkJobLogIterator}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{FlinkJobInfo, LinkisJobInfo, LogRequestPayload}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo, LinkisJobLaunchManager}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.SimpleFlinkJobLaunchManager.INSTANCE_NAME
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.Savepoint
 import org.apache.linkis.common.utils.RetryHandler
 import org.apache.linkis.computation.client.once.simple.{SimpleOnceJob, SubmittableSimpleOnceJob}
 import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
@@ -31,9 +33,9 @@ import org.apache.linkis.ujes.client.exception.UJESJobException
 import java.util
 import scala.collection.JavaConverters.mapAsScalaMapConverter
 
-class SimpleFlinkJobManager extends FlinkJobManager {
+class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
 
-  override def getName: String = LinkisJobManager.SIMPLE_FLINK
+  override def getName: String = INSTANCE_NAME
 
   protected def buildOnceJob(job: LaunchJob): SubmittableOnceJob = {
     val builder = SimpleOnceJob.builder().addExecuteUser(job.getSubmitUser).setLabels(job.getLabels)
@@ -54,9 +56,9 @@ class SimpleFlinkJobManager extends FlinkJobManager {
       simpleOnceJob.getStatus
   }
 
-  override def getCheckpoints(id: String): LinkisJobInfo = throw new FlinkJobLaunchErrorException(30401, "Not support method")
+  override def getCheckpoints(id: String): Array[Savepoint] = throw new FlinkJobLaunchErrorException(30401, "Not support method")
 
-  override def triggerSavepoint(id: String): LinkisJobInfo = throw new FlinkJobLaunchErrorException(30401, "Not support method")
+  override def triggerSavepoint(id: String): Unit = throw new FlinkJobLaunchErrorException(30401, "Not support method")
 
   override protected def createJobInfo(onceJob: SubmittableOnceJob, job: LaunchJob): LinkisJobInfo = {
     val nodeInfo = onceJob.getNodeInfo
@@ -93,7 +95,7 @@ class SimpleFlinkJobManager extends FlinkJobManager {
     case engineConnLogOperator: EngineConnLogOperator =>
       val jobInfo = getJobInfo(id)
       engineConnLogOperator.setECMServiceInstance(jobInfo.getECMInstance)
-      engineConnLogOperator.setEngineConnType(FlinkJobManager.FLINK_ENGINE_CONN_TYPE)
+      engineConnLogOperator.setEngineConnType(FlinkJobLaunchManager.FLINK_ENGINE_CONN_TYPE)
       val logIterator = new SimpleFlinkJobLogIterator(requestPayload, engineConnLogOperator)
       logIterator.init()
       jobInfo match {
@@ -102,4 +104,8 @@ class SimpleFlinkJobManager extends FlinkJobManager {
       }
       logIterator
   }
+}
+object SimpleFlinkJobLaunchManager{
+
+  val INSTANCE_NAME = "simpleFlink";
 }
