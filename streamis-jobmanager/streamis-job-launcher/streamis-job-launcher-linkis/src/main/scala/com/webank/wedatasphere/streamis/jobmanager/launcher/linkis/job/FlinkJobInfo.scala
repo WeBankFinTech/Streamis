@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
-package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity
-
-import java.util
+package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job
 
 import org.apache.linkis.common.ServiceInstance
+
+import java.util
 
 
 class FlinkJobInfo extends YarnJobInfo {
@@ -69,4 +69,11 @@ class FlinkJobInfo extends YarnJobInfo {
   def setCompletedMsg(completedMsg: String): Unit = this.completedMsg = completedMsg
 
   override def toString: String = s"FlinkJobInfo(id: $id, status: $status, applicationId: $applicationId, applicationUrl: $applicationUrl, logPath: $logPath)"
+
+  /**
+   * Contains the check point and save points
+   *
+   * @return
+   */
+  override def getJobStates: Array[String] = ???
 }
