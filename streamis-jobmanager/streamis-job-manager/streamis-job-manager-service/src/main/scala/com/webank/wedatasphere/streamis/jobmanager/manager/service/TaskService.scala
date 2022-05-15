@@ -15,13 +15,15 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
+import com.webank.wedatasphere.streamis.jobmanager.launcher.JobLauncherAutoConfiguration
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobInfo, LaunchJob}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
 
 import java.util
 import java.util.Date
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{FlinkJobInfo, LogRequestPayload}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.FlinkJobManager
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.FlinkJobInfo
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.FlinkJobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask
@@ -38,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
+import javax.annotation.Resource
 import scala.collection.JavaConverters._
 
 
@@ -48,6 +51,8 @@ class TaskService extends Logging{
   @Autowired private var streamJobMapper:StreamJobMapper=_
   @Autowired private var streamisTransformJobBuilders: Array[StreamisTransformJobBuilder] = _
 
+  @Resource
+  private var jobLaunchManager: JobLaunchManager[_ <: JobInfo] = _
 
   /**
    * Execute Job(执行job)
@@ -77,10 +82,10 @@ class TaskService extends Logging{
     launchJob = Transform.getTransforms.foldLeft(launchJob)((job, transform) => transform.transform(transformJob, job))
     info(s"StreamJob-${job.getName} has transformed with launchJob $launchJob.")
     //TODO getLinkisJobManager should use jobManagerType to instance in future, since not only `simpleFlink` mode is supported in future.
-    val id = LinkisJobManager.getLinkisJobManager.launch(launchJob)
+    val id = jobLaunchManager.launch(launchJob)
     task.setLinkisJobId(id)
     info(s"StreamJob-${job.getName} has launched with id $id.")
-    TaskService.updateStreamTaskStatus(task, job.getName)
+    TaskService. updateStreamTaskStatus(task, job.getName)
     streamTaskMapper.updateTask(task)
   }
 
@@ -96,8 +101,8 @@ class TaskService extends Logging{
       throw new JobStopFailedErrorException(30355, s"StreamJob-${job.getName} has not bean started.")
     val oldTask = oldTasks.get(0)
     info(s"Try to stop StreamJob-${job.getName} with task(taskId: ${oldTask.getId}, linkisJobId: ${oldTask.getLinkisJobId}).")
-    TaskService.launchExistedStreamTask(oldTask)
-    LinkisJobManager.getLinkisJobManager.stop(oldTask.getLinkisJobId)
+    TaskService.loadStreamTask(oldTask)
+    jobLaunchManager.stop(oldTask.getLinkisJobId)
     info(s"StreamJob-${job.getName} has stopped with task(taskId: ${oldTask.getId}, linkisJobId: ${oldTask.getLinkisJobId}).")
     val taskModel = new StreamTask()
     taskModel.setId(oldTask.getId)
@@ -142,9 +147,9 @@ class TaskService extends Logging{
 
   def getRealtimeLog(jobId: Long, userName: String, requestPayload: LogRequestPayload): util.Map[String, Any] = {
     val streamTask = streamTaskMapper.getRunningTaskByJobId(jobId)
-    LinkisJobManager.getLinkisJobManager match {
-      case jobManager: FlinkJobManager =>
-        TaskService.launchExistedStreamTask(streamTask)
+    jobLaunchManager match {
+      case jobManager: FlinkJobLaunchManager =>
+        TaskService.loadStreamTask(streamTask)
         val logIterator = jobManager.fetchLogs(streamTask.getLinkisJobId, requestPayload)
         val returnMap = new util.HashMap[String, Any]
         returnMap.put("logPath", logIterator.getLogPath)
@@ -214,13 +219,17 @@ class TaskService extends Logging{
 
 object TaskService {
 
-  def launchExistedStreamTask(task: StreamTask): Unit = if (!LinkisJobManager.getLinkisJobManager.isExists(task.getLinkisJobId)) {
-    LinkisJobManager.getLinkisJobManager.launch(task.getLinkisJobId, task.getLinkisJobInfo)
+  def loadStreamTask(task: StreamTask): JobInfo = {
+    val jobLaunchManager = JobLaunchManager.getJobManager(JobLauncherAutoConfiguration.DEFAULT_JOB_LAUNCH_MANGER)
+    Option(jobLaunchManager.getJobInfo(task.getLinkisJobId)).getOrElse {
+      // connect the task
+      jobLaunchManager.connect(task.getLinkisJobId, task.getLinkisJobInfo)
+    }
   }
 
+
   def updateStreamTaskStatus(task: StreamTask, jobName: String)(implicit logger: Logger): Unit = {
-    launchExistedStreamTask(task)
-    val jobInfo = LinkisJobManager.getLinkisJobManager.getJobInfo(task.getLinkisJobId)
+    val jobInfo = loadStreamTask(task)
     logger.info(s"StreamJob-$jobName is ${jobInfo.getStatus} with $jobInfo.")
     task.setLastUpdateTime(new Date)
     task.setStatus(JobConf.linkisStatusToStreamisStatus(jobInfo.getStatus))
