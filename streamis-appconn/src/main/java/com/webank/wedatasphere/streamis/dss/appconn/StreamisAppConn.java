@@ -9,6 +9,7 @@ import org.apache.linkis.common.conf.CommonVars;
 
 public class StreamisAppConn extends AbstractOnlySSOAppConn implements ThirdlyAppConn {
 
+    // TODO use Constraints class to manage the constant value
     public static final String STREAMIS_APPCONN_NAME = CommonVars.apply("wds.dss.appconn.streamis.name", "Streamis").getValue();
 
     private StreamisStructureIntegrationStandard structureIntegrationStandard;
