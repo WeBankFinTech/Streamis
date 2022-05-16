@@ -114,7 +114,7 @@
                       :name="item"
                       :key="index"
                     >
-                      {{ item === 'savepoint' ? item : $t('message.streamis.jobMoudleRouter.' + item) }}
+                      {{ $t('message.streamis.jobMoudleRouter.' + item) }}
                     </DropdownItem>
                   </DropdownMenu>
                 </Dropdown>
@@ -132,7 +132,7 @@
             </template>
             <template slot-scope="{ row, index }" slot="operation">
               <div v-show="index !== 0">
-                <Button
+                <!-- <Button
                   type="primary"
                   v-show="row.status !== 5"
                   :loading="buttonLoading && choosedRowId === row.id"
@@ -140,16 +140,40 @@
                   @click="handleAction(row)"
                 >
                   {{ $t('message.streamis.formItems.startBtn') }}
-                </Button>
-                <Button
-                  type="primary"
-                  v-show="row.status === 5"
-                  :loading="buttonLoading && choosedRowId === row.id"
-                  style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
-                  @click="handleAction(row)"
-                >
-                  {{ $t('message.streamis.formItems.stopBtn') }}
-                </Button>
+                </Button> -->
+                <Poptip placement="top">
+                  <Button
+                    type="primary"
+                    v-show="row.status !== 5"
+                    :loading="buttonLoading && choosedRowId === row.id"
+                    style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
+                  >
+                    {{ $t('message.streamis.formItems.stopBtn') }}
+                  </Button>
+                  <div slot="content">
+                    <div class="btn-wrap">
+                      <Button
+                        class="btn"
+                        type="primary"
+                        :loading="buttonLoading && choosedRowId === row.id"
+                        style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
+                        @click="handleStop(row, 0)"
+                      >
+                        {{ $t('message.streamis.formItems.directStop') }}
+                      </Button>
+                      <Button
+                        class="btn"
+                        type="primary"
+                        :loading="buttonLoading && choosedRowId === row.id"
+                        style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
+                        @click="handleStop(row, 1)"
+                      >
+                        {{ $t('message.streamis.formItems.snapshotAndStop') }}
+                      </Button>
+                    </div>
+                  </div>
+                </Poptip>
+                    
                 <Button
                   type="primary"
                   @click="handleRouter(row, 'jobConfig')"
@@ -453,14 +477,37 @@ export default {
     handleUpload() {
       this.uploadVisible = true
     },
+    handleStop(data, type) {
+      console.log(data, type)
+      const { id } = data
+      const path = 'streamis/streamJobManager/job/execute'
+      const second = { jobId: id, type }
+      this.buttonLoading = true
+      this.choosedRowId = id
+      api
+        .fetch(path, second)
+        .then(res => {
+          console.log(res)
+          this.buttonLoading = false
+          this.choosedRowId = ''
+          if (res) {
+            this.$emit('refreshCoreIndex')
+            this.loading = false
+            this.getJobList()
+          }
+        })
+        .catch(e => {
+          console.log(e.message)
+          this.loading = false
+          this.buttonLoading = false
+          this.choosedRowId = ''
+        })
+    },
     handleAction(data) {
       console.log(data)
-      const { status, id } = data
-      const path =
-        status === 5
-          ? 'streamis/streamJobManager/job/stop?jobId=' + id
-          : 'streamis/streamJobManager/job/execute'
-      const second = status === 5 ? 'get' : { jobId: id }
+      const { id } = data
+      const path = 'streamis/streamJobManager/job/execute'
+      const second = { jobId: id }
       this.buttonLoading = true
       this.choosedRowId = id
       api
@@ -688,5 +735,13 @@ export default {
   font-size: 16px;
   cursor: pointer;
   padding: 0px 3px;
+}
+.btn-wrap {
+  display: flex;
+  flex-direction: column;
+  .btn {
+    display: block;
+    margin-bottom: 5px;
+  }
 }
 </style>
