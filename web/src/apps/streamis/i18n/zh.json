@@ -38,6 +38,8 @@
         "jobCreator": "提交人",
         "jobName": "作业名称",
         "stopBtn": "停止",
+        "directStop": "直接停止",
+        "snapshotAndStop": "快照并停止",
         "startBtn": "启动",
         "configBtn": "配置",
         "saveBtn": "保存",
@@ -77,7 +79,8 @@
         "paramsConfiguration": "参数配置",
         "alertConfiguration": "告警配置",
         "runningHistory": "运行历史",
-        "runningLogs": "运行日志"
+        "runningLogs": "运行日志",
+        "savepoint": "快照【savepoint】"
       },
       "jobSummary": {
         "resourceUse": "资源使用",
