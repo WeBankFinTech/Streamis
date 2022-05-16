@@ -6,14 +6,17 @@
 <mapper namespace="com.webank.wedatasphere.streamis.project.server.dao.StreamisProjectPrivilegeMapper">
 
     <insert id="addProjectPrivilege" useGeneratedKeys="true" keyProperty="id"
-            parameterType="com.webank.wedatasphere.streamis.project.server.entity.CreateProjectPrivilege">
-        insert into linkis_stream_project_privilege (project_id,user_name,privilege) values
-        <foreach collection="userNames" separator="," item="userName" >
-            (
-            #{projectId},#{userName},#{privilege}
-            )
+            parameterType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProjectPrivilege">
+        insert into linkis_stream_project_privilege (project_id,user_name,privilege)
+        values
+        <foreach collection="list" item="item" open='(' separator='),(' close=')' >
+            #{item.projectId}, #{item.userName}, #{item.privilege}
         </foreach>
     </insert>
+
+    <select id="findProjectPrivilegeByProjectId" resultType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProjectPrivilege">
+        select id,projectId,userName,privilege from linkis_stream_project_privilege where projectId = #{projectId}
+    </select>
 
     <delete id="deleteProjectPrivilegeByProjectId">
         delete from linkis_stream_project_privilege where projectId = #{projectId}
