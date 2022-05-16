@@ -132,7 +132,7 @@
             </template>
             <template slot-scope="{ row, index }" slot="operation">
               <div v-show="index !== 0">
-                <!-- <Button
+                <Button
                   type="primary"
                   v-show="row.status !== 5"
                   :loading="buttonLoading && choosedRowId === row.id"
@@ -140,11 +140,11 @@
                   @click="handleAction(row)"
                 >
                   {{ $t('message.streamis.formItems.startBtn') }}
-                </Button> -->
+                </Button>
                 <Poptip placement="top">
                   <Button
                     type="primary"
-                    v-show="row.status !== 5"
+                    v-show="row.status === 5"
                     :loading="buttonLoading && choosedRowId === row.id"
                     style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
                   >
