@@ -11,6 +11,7 @@ public class StreamisResponseRefBuilder extends ResponseRefBuilder.ExternalRespo
 
     @Override
     public StreamisResponseRefBuilder setResponseBody(String responseBody) {
+        // TODO reconstruct the response structure
         Map<String, Object> headerMap = (Map<String, Object>) responseMap.get("header");
         if (headerMap.containsKey("code")) {
             status = getInt(headerMap.get("code"));

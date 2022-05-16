@@ -15,8 +15,9 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
+
 import java.util
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisTransformJob, StreamisTransformJobContent}
 
 
