@@ -1,15 +1,17 @@
 package com.webank.wedatasphere.streamis.project.server.service;
 
-import com.webank.wedatasphere.streamis.project.server.entity.CreateProjectPrivilege;
+import com.webank.wedatasphere.streamis.project.server.entity.StreamisProjectPrivilege;
 import com.webank.wedatasphere.streamis.project.server.entity.request.CreateProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.entity.request.UpdateProjectRequest;
 
+import java.util.List;
+
 public interface StreamisProjectPrivilegeService {
 
-    CreateProjectPrivilege addProjectPrivilege(Long projectId, CreateProjectRequest createProjectRequest);
+    void addProjectPrivilege(List<StreamisProjectPrivilege> streamisProjectPrivilegeList);
 
-    void updateProjectPrivilege(Long projectId, UpdateProjectRequest updateProjectRequest);
+    void updateProjectPrivilege(List<StreamisProjectPrivilege> streamisProjectPrivilegeList);
 
-    void deleteProjectPrivilege(Long projectId);
+    void deleteProjectPrivilegeByProjectId(Long projectId);
 
 }

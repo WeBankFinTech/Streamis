@@ -40,12 +40,15 @@
         where name = #{name}
     </update>
 
-    <delete id="deleteProjectByName">
-        delete from streamis_stream_project where name = #{projectName}
+    <delete id="deleteProjectById">
+        delete from streamis_stream_project where id = #{id}
     </delete>
 
+    <select id="findProjectById" resultType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProject">
+        select id,name,description from streamis_stream_project where id = #{id}
+    </select>
 
     <select id="findProjectByName" resultType="java.lang.Long">
-        select id from streamis_stream_project where name = #{projectName}
+        select id from streamis_stream_project where name = #{name}
     </select>
 </mapper>
