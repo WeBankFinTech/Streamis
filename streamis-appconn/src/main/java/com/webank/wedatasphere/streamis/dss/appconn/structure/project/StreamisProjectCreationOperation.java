@@ -17,6 +17,7 @@ import java.util.List;
 public class StreamisProjectCreationOperation extends AbstractStructureOperation<DSSProjectContentRequestRef.DSSProjectContentRequestRefImpl, ProjectResponseRef>
         implements ProjectCreationOperation<DSSProjectContentRequestRef.DSSProjectContentRequestRefImpl> {
 
+    // TODO add to Constraints class
     private final static String PROJECT_CREATE_URL = "/api/rest_j/" + ServerConfiguration.BDP_SERVER_VERSION() + "/streamis/createProject";
 
     @Override
@@ -29,6 +30,8 @@ public class StreamisProjectCreationOperation extends AbstractStructureOperation
         String url = getBaseUrl() + PROJECT_CREATE_URL;
         DSSPostAction streamisPostAction = new DSSPostAction();
         streamisPostAction.setUser(dssProjectContentRequestRef.getDSSProject().getCreateBy());
+        // TODO validate the dssProjectContentRequestRef.getDSSProject() / dssProjectContentRequestRef.getDSSProjectPrivilege() if is Empty
+        // TODO define createProjectRequest  -> Map<String, Object> -> streamisPostAction.getRequestPayloads().putAll(..)
         streamisPostAction.addRequestPayload("projectName",dssProjectContentRequestRef.getDSSProject().getName());
         streamisPostAction.addRequestPayload("description", dssProjectContentRequestRef.getDSSProject().getDescription());
         streamisPostAction.addRequestPayload("workspaceName", dssProjectContentRequestRef.getDSSProject().getWorkspaceName());
@@ -39,6 +42,7 @@ public class StreamisProjectCreationOperation extends AbstractStructureOperation
         streamisPostAction.addRequestPayload("editUsers",editUsers);
         streamisPostAction.addRequestPayload("releaseUsers",releaseUsers);
         ResponseRef responseRef = StreamisCommonUtil.getExternalResponseRef(dssProjectContentRequestRef, ssoRequestOperation, url, streamisPostAction);
+        // TODO responseRef.getStatus ,if the status == 0, just return the responseRef else throw Exception
         @SuppressWarnings("unchecked")
         Long projectId = DSSCommonUtils.parseToLong(responseRef.getValue("projectId"));
         return ProjectResponseRef.newExternalBuilder()
