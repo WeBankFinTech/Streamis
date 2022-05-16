@@ -34,10 +34,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.apache.linkis</groupId>
-            <artifactId>linkis-mybatis</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
@@ -56,14 +52,6 @@
                 <artifactId>maven-jar-plugin</artifactId>
             </plugin>
         </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/java</directory>
-                <includes>
-                    <include>**/*.xml</include>
-                </includes>
-            </resource>
-        </resources>
         <finalName>${project.artifactId}-${project.version}</finalName>
     </build>
 </project>
