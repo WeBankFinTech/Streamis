@@ -1,0 +1,240 @@
+<template>
+  <div>
+    <Col span="25">
+      <div class="itemWrap" v-for="part in configs" :key="part.id">
+        <div class="normal" v-if="part.child_def && part.child_def.length">
+          <p>{{ part.name }}</p>
+          <div>
+            <Form :ref="part.key">
+              <FormItem v-for="def in part.child_def" :key="def.key" :label="def.name">
+                <div v-if="def.type === 'INPUT'">
+                  <Input v-model="valueMap[part.key][def.key]" :rules="{required: def.required, message: 'Error!', trigger: 'blur', pattern: new RegExp(def.validate_rule)}" />
+                </div>
+                <div v-else-if="def.type === 'NUMBER'">
+                  <Input v-model="valueMap[part.key][def.key]" type="number" :rules="{required: def.required, message: 'Error!', trigger: 'blur', pattern: new RegExp(def.validate_rule)}" />
+                </div>
+                <div v-else>
+                  <Select
+                    v-model="valueMap[part.key][def.key]"
+                    class="select"
+                  >
+                    <Option
+                      v-for="item in def.ref_values"
+                      :value="item"
+                      :key="item"
+                    >
+                      {{ item }}
+                    </Option>
+                  </Select>
+                </div>
+              </FormItem>
+            </Form>
+          </div>
+        </div>
+        <div class="canEdited" v-else-if="part.child_def">
+          <p>{{ part.name }}</p>
+          <div>
+            <Form ref="diyForm">
+              <Row v-for="(item, index) in diyMap[part.key]" :key="index">
+                <Col span="9">
+                  <FormItem>
+                    <div class="inputWrap">
+                      <div class="flinkIndex">{{ index + 1 }}</div>
+                      <Input v-model="item.key" />
+                      <div class="equity">=</div>
+                    </div>
+                  </FormItem>
+                </Col>
+                <Col span="5">
+                  <FormItem>
+                    <Input v-model="item.value" />
+                  </FormItem>
+                </Col>
+                <Col span="10">
+                  <div class="inputWrap">
+                    <div
+                      class="icon"
+                      v-show="diyMap[part.key].length !== 1"
+                      @click="removeParameter(index, part.key)"
+                    >
+                      <Icon type="md-close" />
+                    </div>
+                    <div
+                      class="icon"
+                      v-show="index + 1 === diyMap[part.key].length"
+                      @click="addParameter(part.key)"
+                    >
+                      <Icon type="md-add" />
+                    </div>
+                  </div>
+                </Col>
+              </Row>
+            </Form>
+          </div>
+        </div>
+        <div class="noChild" v-else>
+          <p>{{ part.name }}</p>
+        </div>
+      </div>
+    </Col>
+    <div class="saveBtn">
+      <Button
+        type="primary"
+        @click="handleSaveConfig()"
+        :loading="saveLoading"
+        style="width:100px;height:40px;background:rgba(22, 155, 213, 1);"
+      >
+        {{$t('message.streamis.formItems.saveBtn')}}
+      </Button>
+    </div>
+  </div>
+</template>
+<script>
+import api from '@/common/service/api'
+export default {
+  data() {
+    return {
+      configs: [],
+      valueMap: {},
+      diyMap: [{value: '', key: ''}],
+    }
+  },
+  mounted() {
+    this.getUsers()
+    this.getConfigs()
+    this.getValues()
+  },
+  methods: {
+    getUsers() {
+      api
+        .fetch('streamis/streamJobManager/config/getWorkspaceUsers', 'get')
+        .then(res => {
+          console.log(res)
+          if (res && res.users) {
+            this.users = res.users
+          }
+        })
+        .catch(e => console.warn(e))
+    },
+    getValues() {
+      api
+        .fetch(
+          '/api/rest_j/v1/streamis/streamJobManager/config/json/' + this.$route.params.id,
+          'get'
+        )
+        .then(res => {
+          this.valueMap = res.configuration;
+        })
+        .catch(e => console.warn(e))
+    },
+    getConfigs() {
+      api
+        .fetch(
+          '/api/rest_j/v1/streamis/streamJobManager/config/definitions?jobId=' +
+            this.$route.params.id,
+          'get'
+        )
+        .then(res => {
+          console.log(res)
+          let configs = res.def;
+          configs = configs.map(conf => {
+            if (!conf.child_def) return conf;
+            if (!conf.child_def.length) {
+              this.diyMap = {...this.diyMap, [conf.key]: [{value: '', key: ''}]};
+            }
+            conf.child_def = conf.child_def.map(def => {
+              if (def.validate_type !== 'Regex') def.validate_rule = '';
+              else def.validate_rule = def.validate_rule || '';
+              return def;
+            }).filter(def => ['SELECT', 'INPUT', 'NUMBER'].includes(def.type));
+            return conf;
+          });
+          this.configs = configs;
+        })
+        .catch(e => console.warn(e))
+    },
+    removeParameter(index, key) {
+      console.log('removeParameter', index)
+      this.diyMap = {...this.diyMap, [key]: this.diyMap[key].splice(index, 1)}
+    },
+    addParameter(key) {
+      console.log('addParameter')
+      this.diyMap = {...this.diyMap, [key]: this.diyMap[key].concat({value: '', key: ''})}
+    },
+    handleSaveConfig() {
+      console.log('handleSaveConfig')
+      this.saveLoading = true;
+      const configuration = { ...this.valueMap };
+      Object.keys(this.diyMap).forEach(key => {
+        configuration[key] = {};
+        this.diyMap[key].forEach(mapKey => {
+          configuration[key][mapKey.key] = mapKey.value;
+        })
+      });
+      api
+        .fetch(
+          `/api/rest_j/v1/streamis/streamJobManager/config/json/${this.$route.params.id}`,
+          { configuration }
+        )
+        .then(res => {
+          this.saveLoading = false
+          console.log(res)
+          if (res.errorMsg) {
+            this.$Message.error(res.errorMsg.desc)
+          } else {
+            this.$Message.success(this.$t('message.streamis.operationSuccess'))
+          }
+        })
+        .catch(e => {
+          console.log(e)
+          this.saveLoading = false
+        })
+    }
+  }
+}
+</script>
+<style lang="scss" scoped>
+.inputWrap {
+  display: flex;
+}
+.unit {
+  margin-left: 10px;
+}
+.itemWrap {
+  padding: 10px;
+  & > p {
+    font-weight: 700;
+    font-size: 16px;
+  }
+  & > div {
+    margin-left: 60px;
+    margin-top: 10px;
+  }
+}
+.flinkIndex {
+  margin-right: 10px;
+}
+.equity {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.icon {
+  font-size: 20px;
+  height: 30px;
+  margin-left: 10px;
+  cursor: pointer;
+  color: #666666;
+}
+.programArguement {
+  background: rgba(94, 94, 94, 1);
+  color: #fff;
+  padding: 10px 20px;
+  min-height: 64px;
+}
+.saveBtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+</style>

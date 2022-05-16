@@ -37,6 +37,8 @@
         "jobCreator": "Job Creator",
         "jobName": "Job name",
         "stopBtn": "Stop",
+        "directStop": "Stop directly",
+        "snapshotAndStop": "Snapshot and stop",
         "startBtn": "Start",
         "configBtn": "Config",
         "saveBtn": "Save",
@@ -78,7 +80,8 @@
         "paramsConfiguration": "Params configuration",
         "alertConfiguration": "Alert configuration",
         "runningHistory": "Running history",
-        "runningLogs": "Running logs"
+        "runningLogs": "Running logs",
+        "savepoint": "Snapshot Savepoint"
       },
       "jobSummary": {
         "resourceUse": "Resource use",
