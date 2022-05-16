@@ -13,13 +13,19 @@
  * limitations under the License.
  */
 
-package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity
+package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job
+
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
 
 
-trait YarnJobInfo extends LinkisJobInfo {
+trait LinkisJobLaunchManager extends JobLaunchManager[LinkisJobInfo]{
 
-  def getApplicationId: String
+  /**
+   * Exist launch manager
+   * @param id job id
+   * @return
+   */
+  def isExists(id: String): Boolean
 
-  def getApplicationUrl: String
 
 }

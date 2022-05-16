@@ -13,26 +13,46 @@
  * limitations under the License.
  */
 
-package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity
+package com.webank.wedatasphere.streamis.jobmanager.launcher.job
 
-import org.apache.linkis.common.ServiceInstance
+/**
+ * Basic job information
+ */
+trait JobInfo {
 
-
-trait LinkisJobInfo {
-
+  /**
+   * Job Id
+   * @return
+   */
   def getId: String
 
-  def getECMInstance: ServiceInstance
-
+  /**
+   * Creator
+   * @return
+   */
   def getUser: String
 
+  /**
+   * Job status
+   * @return
+   */
   def getStatus: String
+
   def setStatus(status: String): Unit
 
+  /**
+   * Job log path
+   * @return
+   */
   def getLogPath: String
 
   def getResources: java.util.Map[String, Object]
 
   def getCompletedMsg: String
 
+  /**
+   * Contains the check point and save points
+   * @return
+   */
+  def getJobStates: Array[String]
 }
