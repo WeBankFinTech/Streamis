@@ -3,9 +3,8 @@ package com.webank.wedatasphere.streamis.project.server.entity.request;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 
-
 @XmlRootElement
-public class DeleteProjectRequest {
+public class SearchProjectRequest {
 
     @NotNull(message = "streamis projetId can not null")
     private Long projectId;
