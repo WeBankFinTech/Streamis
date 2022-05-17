@@ -1,6 +1,7 @@
 package com.webank.wedatasphere.streamis.project.server.entity;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Description:
@@ -18,14 +19,13 @@ public class StreamisProject {
     private String tags;
     private String workspaceName;
     private Long dssProjectId;
+    private List<StreamisProjectPrivilege> projectPrivileges;
 
     public StreamisProject(String name, String description, String workspaceName){
         this.name = name;
         this.description = description;
         this.workspaceName = workspaceName;
     }
-
-
 
     public Long getId() {
         return id;
@@ -107,6 +107,11 @@ public class StreamisProject {
         this.dssProjectId = dssProjectId;
     }
 
+    public List<StreamisProjectPrivilege> getProjectPrivileges() {
+        return projectPrivileges;
+    }
 
-
+    public void setProjectPrivileges(List<StreamisProjectPrivilege> projectPrivileges) {
+        this.projectPrivileges = projectPrivileges;
+    }
 }
