@@ -3,13 +3,41 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf
 import org.apache.linkis.common.conf.CommonVars
 
 /**
- *
- * @date 2021-11-17
- * @author enjoyyin
- * @since 0.5.0
+ * Job Launcher configuration
  */
 object JobLauncherConfiguration {
 
-  val FETCH_FLINK_APPLICATION_INFO_MAX_TIMES = CommonVars("wds.streamis.application.info.fetch.max", 6)
+
+  val FLINK_FETCH_APPLICATION_INFO_MAX_TIMES: CommonVars[Int] = CommonVars("wds.streamis.application.info.fetch.max", 6)
+
+  val FLINK_STATE_DEFAULT_SCHEME: CommonVars[String] = CommonVars("wds.streamis.launch.flink.state.default.scheme", "hdfs")
+  /**
+   * Support schema protocols to store flink job states
+   */
+  val FLINK_STATE_SUPPORT_SCHEMES: CommonVars[String] = CommonVars("wds.streamis.launch.flink.state.support.schemas", "hdfs,file,viewfs,s3")
+
+  /**
+   * Authority(host) value to store flink job states
+   */
+  val FLINK_STATE_DEFAULT_AUTHORITY: CommonVars[String] = CommonVars("wds.streamis.launch.flink.state.authority", "")
+  /**
+   * Savepoint mode
+   */
+  val FLINK_TRIGGER_SAVEPOINT_MODE: CommonVars[String] = CommonVars("wds.streamis.launch.flink.savepoint.mode", "trigger")
+
+  /**
+   * Savepoint dir
+   */
+  val FLINK_SAVEPOINT_PATH: CommonVars[String] = CommonVars("wds.streamis.launch.flink.savepoint.dir", "/flink/flink-savepoints")
+
+  /**
+   * Checkpoint dir
+   */
+  val FLINk_CHECKPOINT_PATH: CommonVars[String] = CommonVars("wds.streamis.launch.flink.checkpoint.dir", "/flink/flink-checkpoints")
+  /**
+   * Variable: savepoint name
+   */
+  val VAR_FLINK_SAVEPOINT_NAME: CommonVars[String] = CommonVars("wds.streamis.launch.variable.flink.savepoint.name", "flink.app.savePointPath")
+
 
 }
