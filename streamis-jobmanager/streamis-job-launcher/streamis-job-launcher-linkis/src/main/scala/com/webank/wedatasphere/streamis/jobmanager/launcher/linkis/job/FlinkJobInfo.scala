@@ -23,6 +23,7 @@ import java.util
 class FlinkJobInfo extends YarnJobInfo {
 
   private var id: String = _
+  private var name: String = _
   private var ecmInstance: ServiceInstance = _
   private var user: String = _
   private var savepoint: String = _
@@ -76,4 +77,15 @@ class FlinkJobInfo extends YarnJobInfo {
    * @return
    */
   override def getJobStates: Array[String] = ???
+
+  /**
+   * Job name
+   *
+   * @return name
+   */
+  override def getName: String = name
+
+  def setName(name: String): Unit = {
+    this.name = name
+  }
 }

@@ -20,6 +20,12 @@ import java.util
 
 trait LaunchJob {
 
+  /**
+   * Job name
+   * @return
+   */
+  def getJobName: String
+
   def getSubmitUser: String
 
   def getLabels: util.Map[String, Any]
@@ -44,11 +50,17 @@ object LaunchJob {
 
   class Builder {
     private var submitUser: String = _
+    private var jobName: String =  _
     private var labels: util.Map[String, Any] = _
     private var jobContent: util.Map[String, Any] = _
     private var params: util.Map[String, Any] = _
     private var source: util.Map[String, Any] = _
     private var launchConfigs: util.Map[String, Any] = _
+
+    def setJobName(jobName: String): this.type = {
+      this.jobName = jobName
+      this
+    }
 
     def setSubmitUser(submitUser: String): this.type = {
       this.submitUser = submitUser
@@ -100,6 +112,13 @@ object LaunchJob {
       override def getLaunchConfigs: util.Map[String, Any] = launchConfigs
 
       override def toString: String = s"LaunchJob(submitUser: $submitUser, labels: $labels, jobContent: $jobContent, params: $params, source: $source)"
+
+      /**
+       * Job name
+       *
+       * @return
+       */
+      override def getJobName: String = jobName
     }
   }
 
