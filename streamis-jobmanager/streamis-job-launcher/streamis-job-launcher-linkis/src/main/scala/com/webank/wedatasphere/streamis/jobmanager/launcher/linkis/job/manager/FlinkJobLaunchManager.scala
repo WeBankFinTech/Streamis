@@ -21,8 +21,8 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.core.FlinkLogIterator
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.Checkpoint
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{LinkisJobInfo, LinkisJobLaunchManager}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.Savepoint
 import org.apache.linkis.common.utils.{Logging, Utils}
 import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
 import org.apache.linkis.computation.client.utils.LabelKeyUtils
@@ -32,6 +32,7 @@ import java.util
 
 trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
 
+  //TODO use guava cache instead of hash map
   protected val onceJobs = new util.HashMap[String, OnceJob]
 
   protected val onceJobIdToJobInfo = new util.HashMap[String, LinkisJobInfo]
@@ -64,14 +65,17 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
    * @param jobState job state used to launch
    * @return the job id.
    */
-  override def launch(job: LaunchJob, jobState: JobState): String = ???
+  override def launch(job: LaunchJob, jobState: JobState): String = {
+
+    null
+  }
 
   override def launch(job: LaunchJob): String = {
     job.getLabels.get(LabelKeyUtils.ENGINE_TYPE_LABEL_KEY) match {
       case engineConnType: String =>
         if(!engineConnType.toLowerCase.startsWith(FlinkJobLaunchManager.FLINK_ENGINE_CONN_TYPE))
-          throw new FlinkJobLaunchErrorException(30401, s"Only ${FlinkJobLaunchManager.FLINK_ENGINE_CONN_TYPE} job is supported to be launched to Linkis, but $engineConnType is found.")
-      case _ => throw new FlinkJobLaunchErrorException(30401, s"Not exists ${LabelKeyUtils.ENGINE_TYPE_LABEL_KEY}, StreamisJob cannot be submitted to Linkis successfully.")
+          throw new FlinkJobLaunchErrorException(30401, s"Only ${FlinkJobLaunchManager.FLINK_ENGINE_CONN_TYPE} job is supported to be launched to Linkis, but $engineConnType is found.", null)
+      case _ => throw new FlinkJobLaunchErrorException(30401, s"Not exists ${LabelKeyUtils.ENGINE_TYPE_LABEL_KEY}, StreamisJob cannot be submitted to Linkis successfully.", null)
     }
     val onceJob = buildOnceJob(job)
     onceJob.submit()
@@ -109,7 +113,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
       val jobInfo = onceJobIdToJobInfo.get(id)
       jobInfo.setStatus(getStatus(id))
       jobInfo
-    } else throw new FlinkJobLaunchErrorException(30402, "LinkisJobInfo is not exists, please launch it first.")
+    } else throw new FlinkJobLaunchErrorException(30402, "LinkisJobInfo is not exists or removed, please launch/reload it first.", null)
   }
 
   protected def getStatus(id: String): String
@@ -120,9 +124,16 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
    * @param id       job id
    * @param snapshot if do snapshot to save the job state
    */
-  override def stop(id: String, snapshot: Boolean): Unit = ???
+  override def stop(id: String, snapshot: Boolean): Unit = {
+    if (snapshot){
+       // Begin to call the savepoint operator
+       info(s"Trigger Savepoint operator for job [$id]")
+       triggerSavepoint(getJobInfo(id))
+    }
+    stop(getOnceJob(id))
+  }
 
-  override def stop(id: String): Unit = stop(getOnceJob(id))
+  override def stop(id: String): Unit = stop(id, false)
 
   def stop(onceJob: OnceJob): Unit = {
     onceJob.kill()
@@ -162,16 +173,16 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
 
   /**
    * Get check points
-   * @param id job id
+   * @param jobInfo linkis job info
    * @return
    */
-  def getCheckpoints(id: String): Array[Savepoint]
+  def getCheckpoints(jobInfo: LinkisJobInfo): Array[Checkpoint]
 
   /**
    * Trigger save point operation
-   * @param id job id
+   * @param jobInfo linkis job info
    */
-  def triggerSavepoint(id: String): Unit
+  def triggerSavepoint(jobInfo: LinkisJobInfo): Unit
 
 }
 object FlinkJobLaunchManager {

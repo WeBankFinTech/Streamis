@@ -21,6 +21,11 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.job
 trait JobInfo {
 
   /**
+   * Job name
+   * @return name
+   */
+  def getName: String
+  /**
    * Job Id
    * @return
    */
@@ -55,4 +60,5 @@ trait JobInfo {
    * @return
    */
   def getJobStates: Array[String]
+
 }

@@ -13,25 +13,19 @@
  * limitations under the License.
  */
 
-package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state
+package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.url;
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 
 /**
- * Hold the check point information
+ * URL stream handler for linkis client (cannot open connection)
  */
-class Checkpoint(location: String) extends GenericFlinkJobState(location) with JobState {
-
-  /**
-   * Record the sequence of checkpoint
-   */
-  private var order: Long = -1
-
-  def setOrder(order: Long): Unit = {
-    this.order = order
-  }
-
-  def getOrder: Long = {
-    this.order
-  }
+public class LinkisURLStreamHandler extends URLStreamHandler {
+    @Override
+    protected URLConnection openConnection(URL url) throws IOException {
+        throw new IllegalArgumentException("Cannot open connection for url [" + url.getPath() + "]");
+    }
 }
