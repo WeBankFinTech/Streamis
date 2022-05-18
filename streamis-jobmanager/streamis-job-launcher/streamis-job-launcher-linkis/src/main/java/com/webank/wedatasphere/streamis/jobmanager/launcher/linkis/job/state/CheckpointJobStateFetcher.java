@@ -1,6 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state;
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState;
+import org.apache.linkis.common.exception.WarnException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +15,10 @@ public class CheckpointJobStateFetcher extends AbstractLinkisJobStateFetcher<Job
     @Override
     public JobState getState(JobStateResult jobStateResult) {
         DirFileTree dirFileTrees = jobStateResult.getDirFileTrees();
+        if(dirFileTrees == null){
+            logger.warn("dirFileTrees in the results is null");
+            throw new WarnException(-1, "dirFileTrees in the results is null");
+        }
         String path = dirFileTrees.getPath();
         String name = dirFileTrees.getName();
         List<DirFileTree> childrenList = dirFileTrees.getChildren();
@@ -35,8 +40,8 @@ public class CheckpointJobStateFetcher extends AbstractLinkisJobStateFetcher<Job
             }
         }
         if(initModifytime.equals(lastchildren.getProperties().get("modifytime"))){
-            logger.warn("getCheckpoint is null");
-            return null;
+            logger.warn("childrenDirFileTrees have no leaf nodes, the obtained checkpoint is null");
+            throw new WarnException(-1, "childrenDirFileTrees have no leaf nodes, the obtained checkpoint is null");
         }
         Checkpoint checkpoint = new Checkpoint(lastchildren.getPath());
         checkpoint.setMetadataInfo(lastchildren);

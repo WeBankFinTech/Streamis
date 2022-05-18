@@ -18,6 +18,7 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateFetcher;
+import org.apache.linkis.common.exception.WarnException;
 import org.apache.linkis.httpclient.Client;
 import org.apache.linkis.httpclient.config.ClientConfig;
 import org.apache.linkis.httpclient.config.ClientConfigBuilder;
@@ -48,6 +49,7 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
 
     @Override
     public void init() {
+        logger.info("Initialize HttpClient start");
         TokenAuthenticationStrategy authenticationStrategy = new TokenAuthenticationStrategy();
         ClientConfig clientConfig = ClientConfigBuilder.newBuilder().addServerUrl("http://" + GATEWAY_ADDRESS)
                 .connectionTimeout(CONNECTION_TIMEOUT).discoveryEnabled(false)
@@ -58,7 +60,7 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
         DWSClientConfig dwsClientConfig = new DWSClientConfig(clientConfig);
         dwsClientConfig.setDWSVersion(DWS_VERSION);
         client = new DWSHttpClient(dwsClientConfig, DWS_CLIENTNAME);
-        logger.info("HttpClient init() finished ");
+        logger.info("Initialize HttpClient finished ");
     }
 
     @Override
@@ -67,14 +69,24 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
         getAction.setUser(jobInfo.getUser());
         getAction.setParameter("path", PATH_PREFIX+jobInfo.getId());
         Result result = client.execute(getAction);
+        logger.info("The return result of getState from linkis is {}",result);
         Checkpoint checkpoint;
         if(result instanceof JobStateResult){
             JobStateResult r = (JobStateResult) result;
-            if(r.getStatus()!= 0) throw new IllegalArgumentException(r.getMessage());
+            if(r.getStatus()!= 0) {
+                String errMsg = r.getMessage();
+                logger.error("getState failed, msg is {}", errMsg);
+                throw new WarnException(-1, "getState failed" + errMsg);
+            }
             return getState(r);
+        }else if(result != null){
+            logger.warn("result is not a correct type, result type is {}",
+                    result.getClass().getSimpleName());
+            throw new WarnException(-1, "result is not a correct type");
+        } else {
+            logger.warn("result is null");
+            throw new WarnException(-1, "result is null");
         }
-        logger.warn("getState() return result: {} is not JobStateResult type",result);
-        return null;
     }
 
     protected abstract T getState(JobStateResult jobStateResult);
