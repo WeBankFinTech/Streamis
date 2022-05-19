@@ -64,6 +64,28 @@
         WHERE id=#{id}
     </update>
 
+    <update id="updateTaskInStatus">
+        UPDATE linkis_stream_task
+        <trim prefix="set" suffixOverrides=",">
+            <if test="status != null">
+                status=#{task.status},
+            </if>
+            <if test="lastUpdateTime != null">
+                last_update_time=#{task.lastUpdateTime},
+            </if>
+            <if test="linkisJobId != null">
+                linkis_job_id=#{task.linkisJobId},
+            </if>
+            <if test="linkisJobInfo != null">
+                linkis_job_info=#{task.linkisJobInfo},
+            </if>
+            <if test="errDesc != null">
+                err_desc=#{task.errDesc},
+            </if>
+        </trim>
+        WHERE id=#{task.id} AND status = #{status};
+    </update>
+
     <select id="getByJobVersionId" resultMap="StreamTaskMap">
         SELECT `id`,`job_version_id`,`job_id`, status
         ,`start_time`,`last_update_time`,
@@ -80,6 +102,21 @@
         ORDER BY start_time DESC
     </select>
 
+    <select id="getLatestByJobVersionId" resultMap="StreamTaskMap">
+        SELECT `id`,`job_version_id`,`job_id`, status
+        ,`start_time`,`last_update_time`,
+        `err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`
+        FROM linkis_stream_task
+        <where>
+            <if test="jobVersionId != null">
+                AND job_version_id=#{jobVersionId}
+            </if>
+            <if test="version != null">
+                AND version=#{version}
+            </if>
+        </where>
+        ORDER BY start_time DESC LIMIT 1
+    </select>
     <select id="getRunningTaskByJobId" resultMap="StreamTaskMap">
         SELECT <include refid="StreamTask_Column"/>
         FROM linkis_stream_task

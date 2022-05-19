@@ -66,8 +66,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
    * @return the job id.
    */
   override def launch(job: LaunchJob, jobState: JobState): String = {
-
-    null
+    launch(job)
   }
 
   override def launch(job: LaunchJob): String = {
@@ -80,10 +79,13 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
     val onceJob = buildOnceJob(job)
     onceJob.submit()
     onceJobs synchronized onceJobs.put(onceJob.getId, onceJob)
-    val linkisJobInfo = Utils.tryCatch(createJobInfo(onceJob, job)){ t =>
-      error(s"${job.getSubmitUser} create jobInfo failed, now stop this EngineConn ${onceJob.getId}.")
-      stop(onceJob)
-      throw t
+    val linkisJobInfo = Utils.tryCatch(createJobInfo(onceJob, job)){
+      case e: FlinkJobLaunchErrorException =>
+        throw e
+      case t: Throwable =>
+        error(s"${job.getSubmitUser} create jobInfo failed, now stop this EngineConn ${onceJob.getId}.")
+        stop(onceJob)
+        throw new FlinkJobLaunchErrorException(-1, "Fail to obtain launched job info", t)
     }
     onceJobs synchronized onceJobIdToJobInfo.put(onceJob.getId, linkisJobInfo)
     onceJob.getId

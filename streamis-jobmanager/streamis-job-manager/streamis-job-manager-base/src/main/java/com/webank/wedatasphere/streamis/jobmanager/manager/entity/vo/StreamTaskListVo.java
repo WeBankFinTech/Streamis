@@ -16,7 +16,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo;
 
 
-public class StreamTaskListVO {
+public class StreamTaskListVo {
     private Long taskId;
     private Long jobVersionId;
     private String jobName;

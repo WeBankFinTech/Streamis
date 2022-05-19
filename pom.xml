@@ -107,6 +107,12 @@
                 <artifactId>linkis-mybatis</artifactId>
                 <version>${linkis.version}</version>
             </dependency>
+            <!--scheduler module-->
+            <dependency>
+                <groupId>org.apache.linkis</groupId>
+                <artifactId>linkis-scheduler</artifactId>
+                <version>${linkis.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.linkis</groupId>
                 <artifactId>linkis-module</artifactId>
