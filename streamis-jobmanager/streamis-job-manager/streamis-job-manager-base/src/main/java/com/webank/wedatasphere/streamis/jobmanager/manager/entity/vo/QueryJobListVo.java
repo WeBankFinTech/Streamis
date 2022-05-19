@@ -17,7 +17,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo;
 
 import java.util.Date;
 
-public class QueryJobListVO {
+public class QueryJobListVo {
     private Long id;
     private String name;
     private Long workspaceName;

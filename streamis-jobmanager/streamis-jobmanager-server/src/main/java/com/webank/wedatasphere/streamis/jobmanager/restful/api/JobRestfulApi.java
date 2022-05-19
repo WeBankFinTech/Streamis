@@ -24,7 +24,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.*;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;
-import com.webank.wedatasphere.streamis.jobmanager.manager.service.TaskService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamTaskService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.linkis.server.Message;
@@ -50,7 +50,7 @@ public class JobRestfulApi {
     @Autowired
     JobService jobService;
     @Autowired
-    TaskService taskService;
+    StreamTaskService streamTaskService;
 
     @RequestMapping(path = "/list", method = RequestMethod.GET)
     public Message getJobList(HttpServletRequest req,
@@ -67,7 +67,7 @@ public class JobRestfulApi {
         if (StringUtils.isEmpty(pageSize)) {
             pageSize = 20;
         }
-        PageInfo<QueryJobListVO> pageInfo;
+        PageInfo<QueryJobListVo> pageInfo;
         PageHelper.startPage(pageNow, pageSize);
         try {
             pageInfo = jobService.getByProList(projectName, jobName, jobStatus, jobCreator);
@@ -107,7 +107,7 @@ public class JobRestfulApi {
         if (!jobService.hasPermission(jobId, username)) {
             return Message.error("you have no permission of this job ,please ask for the job creator");
         }
-        VersionDetailVO versionDetailVO = jobService.versionDetail(jobId, version);
+        VersionDetailVo versionDetailVO = jobService.versionDetail(jobId, version);
         return Message.ok().data("detail", versionDetailVO);
     }
 
@@ -124,7 +124,7 @@ public class JobRestfulApi {
             return Message.error("you have no permission of this job ,please ask for the job creator");
         }
         try {
-            taskService.executeJob(jobId, userName);
+            streamTaskService.execute(jobId, 0L, userName, true);
         } catch (Exception e) {
             LOG.error("{} execute job {} failed!", userName, jobId, e);
             return Message.error(ExceptionUtils.getRootCauseMessage(e));
@@ -143,7 +143,7 @@ public class JobRestfulApi {
             return Message.error("you have no permission of this job ,please ask for the job creator");
         }
         try {
-            taskService.stopJob(jobId, userName);
+            streamTaskService.pause(jobId, 0L, userName);
         } catch (Exception e) {
             LOG.error("{} kill job {} failed!", userName, jobId, e);
             return Message.error(ExceptionUtils.getRootCauseMessage(e));
@@ -158,15 +158,15 @@ public class JobRestfulApi {
             JobExceptionManager.createException(30301, "jobId");
         }
         // TODO This is just sample datas, waiting for it completed. We have planned it to a later release, welcome all partners to join us to realize this powerful feature.
-        JobDetailsVO jobDetailsVO = new JobDetailsVO();
-        List<JobDetailsVO.DataNumberDTO> dataNumberDTOS = new ArrayList<>();
-        JobDetailsVO.DataNumberDTO dataNumberDTO = new JobDetailsVO.DataNumberDTO();
+        JobDetailsVo jobDetailsVO = new JobDetailsVo();
+        List<JobDetailsVo.DataNumberDTO> dataNumberDTOS = new ArrayList<>();
+        JobDetailsVo.DataNumberDTO dataNumberDTO = new JobDetailsVo.DataNumberDTO();
         dataNumberDTO.setDataName("kafka topic");
         dataNumberDTO.setDataNumber(109345);
         dataNumberDTOS.add(dataNumberDTO);
 
-        List<JobDetailsVO.LoadConditionDTO> loadConditionDTOs = new ArrayList<>();
-        JobDetailsVO.LoadConditionDTO loadConditionDTO = new JobDetailsVO.LoadConditionDTO();
+        List<JobDetailsVo.LoadConditionDTO> loadConditionDTOs = new ArrayList<>();
+        JobDetailsVo.LoadConditionDTO loadConditionDTO = new JobDetailsVo.LoadConditionDTO();
         loadConditionDTO.setType("jobManager");
         loadConditionDTO.setHost("localhost");
         loadConditionDTO.setMemory("1.5");
@@ -176,8 +176,8 @@ public class JobRestfulApi {
         loadConditionDTO.setGcTotalTime("2min");
         loadConditionDTOs.add(loadConditionDTO);
 
-        List<JobDetailsVO.RealTimeTrafficDTO> realTimeTrafficDTOS = new ArrayList<>();
-        JobDetailsVO.RealTimeTrafficDTO realTimeTrafficDTO = new JobDetailsVO.RealTimeTrafficDTO();
+        List<JobDetailsVo.RealTimeTrafficDTO> realTimeTrafficDTOS = new ArrayList<>();
+        JobDetailsVo.RealTimeTrafficDTO realTimeTrafficDTO = new JobDetailsVo.RealTimeTrafficDTO();
         realTimeTrafficDTO.setSourceKey("kafka topic");
         realTimeTrafficDTO.setSourceSpeed("100 Records/S");
         realTimeTrafficDTO.setTransformKey("transform");
@@ -186,7 +186,7 @@ public class JobRestfulApi {
         realTimeTrafficDTOS.add(realTimeTrafficDTO);
 
 
-        jobDetailsVO.setLinkisJobInfo(taskService.getTask(jobId,version));
+        jobDetailsVO.setLinkisJobInfo(streamTaskService.getTask(jobId,version));
         jobDetailsVO.setDataNumber(dataNumberDTOS);
         jobDetailsVO.setLoadCondition(loadConditionDTOs);
         jobDetailsVO.setRealTimeTraffic(realTimeTrafficDTOS);
@@ -207,7 +207,7 @@ public class JobRestfulApi {
         if (!jobService.hasPermission(jobId, username)) {
             return Message.error("you have no permission of this job ,please ask for the job creator");
         }
-        List<StreamTaskListVO> details = taskService.executeHistory(jobId, version);
+        List<StreamTaskListVo> details = streamTaskService.queryHistory(jobId, version);
         return Message.ok().data("details", details);
     }
 
@@ -221,7 +221,7 @@ public class JobRestfulApi {
         if (!jobService.hasPermission(jobId, username)) {
             return Message.error("you have no permission of this job ,please ask for the job creator");
         }
-        JobProgressVO jobProgressVO = taskService.getByJobStatus(jobId, version);
+        JobProgressVo jobProgressVO = streamTaskService.getByJobStatus(jobId, version);
         return Message.ok().data("taskId", jobProgressVO.getTaskId()).data("progress", jobProgressVO.getProgress());
     }
 
@@ -264,6 +264,6 @@ public class JobRestfulApi {
         payload.setLastRows(lastRows);
         payload.setOnlyKeywords(onlyKeywords);
         payload.setPageSize(pageSize);
-        return Message.ok().data("logs", taskService.getRealtimeLog(jobId, username, payload));
+        return Message.ok().data("logs", streamTaskService.getRealtimeLog(jobId, username, payload));
     }
 }

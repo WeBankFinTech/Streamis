@@ -12,26 +12,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.bulk;
 
-package com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo;
+/**
+ * Operation Result
+ * @param <T>
+ */
+public class BulkOperationResult<T> {
+    /**
+     * Operation status
+     */
+    protected String status;
 
-public class JobProgressVO {
-    private Long taskId;
-    private Integer progress;
+    /**
+     * Result entity
+     */
+    protected T result;
 
-    public Long getTaskId() {
-        return taskId;
+    public String getStatus() {
+        return status;
     }
 
-    public void setTaskId(Long taskId) {
-        this.taskId = taskId;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    public Integer getProgress() {
-        return progress;
+    public T getResult() {
+        return result;
     }
 
-    public void setProgress(Integer progress) {
-        this.progress = progress;
+    public void setResult(T result) {
+        this.result = result;
     }
 }
