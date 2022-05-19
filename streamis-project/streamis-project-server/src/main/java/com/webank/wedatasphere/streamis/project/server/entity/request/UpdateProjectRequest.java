@@ -14,6 +14,7 @@ public class UpdateProjectRequest {
     @NotNull(message = "projectName can not be null")
     private String projectName;
 
+    @NotNull(message = "description can not be null")
     private String description;
 
     private String creator;
