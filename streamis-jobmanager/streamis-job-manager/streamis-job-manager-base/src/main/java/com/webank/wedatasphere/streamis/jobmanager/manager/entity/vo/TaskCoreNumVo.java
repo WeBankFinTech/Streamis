@@ -18,7 +18,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo;
 /**
  * job核心指标
  */
-public class TaskCoreNumVO {
+public class TaskCoreNumVo {
     private Long projectId;
     private String projectName;
     //失败任务数目

@@ -13,15 +13,26 @@
  * limitations under the License.
  */
 
-package com.webank.wedatasphere.streamis.jobmanager.manager.exception
 
-import org.apache.linkis.common.exception.ErrorException
+package com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.exception;
 
+/**
+ * Schedule retry exception
+ *
+ */
+public class StreamisScheduleRetryException extends StreamisScheduleException{
 
-class JobExecuteFailedErrorException(errorCode: Int, errorMsg: String) extends ErrorException(errorCode, errorMsg)
+    private int retryNum = 0;
 
-class JobStopFailedErrorException(errorCode: Int, errorMsg: String) extends ErrorException(errorCode, errorMsg)
+    public int getRetryNum() {
+        return retryNum;
+    }
 
-class JobFetchFailedErrorException(errorCode: Int, errorMsg: String) extends ErrorException(errorCode, errorMsg)
+    public void setRetryNum(int retryNum) {
+        this.retryNum = retryNum;
+    }
 
-class JobCreateFailedErrorException(errorCode: Int, errorMsg: String) extends ErrorException(errorCode, errorMsg)
+    public StreamisScheduleRetryException(String desc, Throwable t) {
+        super(desc, t);
+    }
+}

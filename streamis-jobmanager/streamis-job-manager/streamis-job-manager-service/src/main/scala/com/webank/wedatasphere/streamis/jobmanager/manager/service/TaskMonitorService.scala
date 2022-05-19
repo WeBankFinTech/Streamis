@@ -77,12 +77,12 @@ class TaskMonitorService extends Logging {
       retryHandler.setRetryNum(3)
       retryHandler.setRetryMaxPeriod(2000)
       Utils.tryCatch {
-        retryHandler.retry(TaskService.updateStreamTaskStatus(streamTask, job.getName), s"Task-Monitor-${job.getName}")
+        retryHandler.retry(DefaultStreamTaskService.updateStreamTaskStatus(streamTask, job.getName), s"Task-Monitor-${job.getName}")
       } { ex =>
           error(s"Fetch StreamJob-${job.getName} failed, maybe the Linkis cluster is wrong, please be noticed!", ex)
         val errorMsg = ExceptionUtils.getRootCauseMessage(ex)
         if(errorMsg != null && errorMsg.contains("Not exists EngineConn")) {
-          streamTask.setStatus(JobConf.JOBMANAGER_FLINK_JOB_STATUS_SIX.getValue)
+          streamTask.setStatus(JobConf.FLINK_JOB_STATUS_FAILED.getValue)
           streamTask.setErrDesc("Not exists EngineConn.")
         } else {
           // 连续三次还是出现异常，说明Linkis的Manager已经不能正常提供服务，告警并不再尝试获取状态，等待下次尝试
@@ -93,7 +93,7 @@ class TaskMonitorService extends Logging {
         }
       }
       streamTaskMapper.updateTask(streamTask)
-      if(streamTask.getStatus == JobConf.JOBMANAGER_FLINK_JOB_STATUS_SIX.getValue) {
+      if(streamTask.getStatus == JobConf.FLINK_JOB_STATUS_FAILED.getValue) {
         warn(s"StreamJob-${job.getName} is failed, please be noticed.")
         // TODO Need to add restart feature if user sets the restart parameters in checkpoint module.
         val alertMsg = s"您的 streamis 流式应用[${job.getName}]已经失败, 请您确认该流式应用的状态是否正常"

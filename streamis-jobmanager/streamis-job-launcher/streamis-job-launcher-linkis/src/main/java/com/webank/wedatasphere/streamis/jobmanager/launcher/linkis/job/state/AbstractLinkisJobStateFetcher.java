@@ -26,7 +26,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateFe
  * 3) Destroy to close the http client when the system is closed
  * @param <T>
  */
-public class AbstractLinkisJobStateFetcher<T extends JobState> implements JobStateFetcher<T> {
+public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implements JobStateFetcher<T> {
     @Override
     public void init() {
 
@@ -34,11 +34,19 @@ public class AbstractLinkisJobStateFetcher<T extends JobState> implements JobSta
 
     @Override
     public T getState(JobInfo jobInfo) {
-        return null;
+        // Fetch and return FsStateInfo
+        FsStateInfo fsStateInfo = null;
+        return getState(fsStateInfo);
     }
 
     @Override
     public void destroy() {
+
+    }
+
+    protected abstract T getState(FsStateInfo fsStateInfo);
+
+    protected static class FsStateInfo{
 
     }
 }
