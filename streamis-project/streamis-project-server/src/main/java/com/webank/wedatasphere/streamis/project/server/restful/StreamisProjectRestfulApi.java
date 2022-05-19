@@ -17,6 +17,7 @@ import org.apache.linkis.server.security.SecurityFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -45,7 +46,7 @@ public class StreamisProjectRestfulApi {
     private StreamisProjectPrivilegeService projectPrivilegeService;
 
     @RequestMapping(path = "/createProject", method = RequestMethod.POST)
-    public Message createProject( HttpServletRequest request,@RequestBody CreateProjectRequest createProjectRequest){
+    public Message createProject( HttpServletRequest request,@Validated @RequestBody CreateProjectRequest createProjectRequest){
         String username = SecurityFilter.getLoginUsername(request);
         try{
             StreamisProject streamisProject = new StreamisProject(createProjectRequest.getProjectName(), createProjectRequest.getDescription(), null);
@@ -65,7 +66,7 @@ public class StreamisProjectRestfulApi {
     }
 
     @RequestMapping(path = "/updateProject", method = RequestMethod.PUT)
-    public Message updateProject( HttpServletRequest request, @RequestBody UpdateProjectRequest updateProjectRequest){
+    public Message updateProject( HttpServletRequest request, @Validated @RequestBody UpdateProjectRequest updateProjectRequest){
         String username = SecurityFilter.getLoginUsername(request);
         try{
             StreamisProject streamisProject = new StreamisProject(updateProjectRequest.getProjectName(), updateProjectRequest.getDescription(), null);
@@ -85,7 +86,7 @@ public class StreamisProjectRestfulApi {
     }
 
     @RequestMapping(path = "/deleteProject", method = RequestMethod.DELETE)
-    public Message deleteProject( HttpServletRequest request, @RequestBody DeleteProjectRequest deleteProjectRequest){
+    public Message deleteProject( HttpServletRequest request, @Validated @RequestBody DeleteProjectRequest deleteProjectRequest){
         String username = SecurityFilter.getLoginUsername(request);
         try{
             projectService.deleteProjectById(deleteProjectRequest.getProjectId());
@@ -97,7 +98,7 @@ public class StreamisProjectRestfulApi {
     }
 
     @RequestMapping(path = "/searchProject", method = RequestMethod.GET)
-    public Message searchProject( HttpServletRequest request, @RequestBody SearchProjectRequest searchProjectRequest){
+    public Message searchProject( HttpServletRequest request, @Validated @RequestBody SearchProjectRequest searchProjectRequest){
         String username = SecurityFilter.getLoginUsername(request);
         try{
             StreamisProject streamisProject = projectService.queryProject(searchProjectRequest.getProjectId());
