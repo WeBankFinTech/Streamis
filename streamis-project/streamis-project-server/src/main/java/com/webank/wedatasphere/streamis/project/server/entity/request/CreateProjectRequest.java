@@ -17,7 +17,6 @@ public class CreateProjectRequest {
     @NotNull(message = "description can not be null")
     private String description;
 
-    @NotNull(message = "workspaceName can not be null")
     private String workspaceName;
 
     private String tags;
