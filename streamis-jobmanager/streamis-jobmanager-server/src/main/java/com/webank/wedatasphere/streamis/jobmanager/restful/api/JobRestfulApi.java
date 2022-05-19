@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -79,17 +80,8 @@ public class JobRestfulApi {
     }
 
     @RequestMapping(path = "/createOrUpdate", method = RequestMethod.POST)
-    public Message createOrUpdate(HttpServletRequest req, @RequestBody MetaJsonInfo metaJsonInfo) throws Exception {
+    public Message createOrUpdate(HttpServletRequest req, @Validated @RequestBody MetaJsonInfo metaJsonInfo) throws Exception {
         String username = SecurityFilter.getLoginUsername(req);
-        if (org.apache.commons.lang.StringUtils.isBlank(metaJsonInfo.getJobName())) {
-            return Message.error("jobName is null");
-        }
-        if (org.apache.commons.lang.StringUtils.isBlank(metaJsonInfo.getJobType())) {
-            return Message.error("jobType is null");
-        }
-        if (org.apache.commons.lang.StringUtils.isBlank(metaJsonInfo.getProjectName())) {
-            return Message.error("projectName is null");
-        }
         StreamJobVersion job = jobService.createOrUpdate(username, metaJsonInfo);
         return Message.ok().data("jobId", job.getJobId());
     }
