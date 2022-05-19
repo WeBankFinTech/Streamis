@@ -15,6 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.entity;
 
+import javax.validation.constraints.NotBlank;
 import java.util.Map;
 
 /**
@@ -27,16 +28,19 @@ public class MetaJsonInfo {
     /**
      * 项目名
      */
+    @NotBlank(message = "projectName is null")
     private String projectName;
 
     /**
      * 作业名
      */
+    @NotBlank(message = "jobName is null")
     private String jobName;
 
     /**
      * 目前只支持flink.sql、flink.jar
      */
+    @NotBlank(message = "jobType is null")
     private String jobType;
 
     private String comment;

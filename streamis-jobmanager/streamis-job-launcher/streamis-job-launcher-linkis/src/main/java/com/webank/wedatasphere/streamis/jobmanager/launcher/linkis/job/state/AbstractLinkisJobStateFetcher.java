@@ -18,6 +18,20 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateFetcher;
+import org.apache.linkis.common.exception.WarnException;
+import org.apache.linkis.httpclient.Client;
+import org.apache.linkis.httpclient.config.ClientConfig;
+import org.apache.linkis.httpclient.config.ClientConfigBuilder;
+import org.apache.linkis.httpclient.dws.DWSHttpClient;
+import org.apache.linkis.httpclient.dws.authentication.TokenAuthenticationStrategy;
+import org.apache.linkis.httpclient.dws.config.DWSClientConfig;
+import org.apache.linkis.httpclient.response.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+
+import static com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.ClientConf.*;
 
 /**
  * Linkis Job state fetcher
@@ -26,27 +40,63 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateFe
  * 3) Destroy to close the http client when the system is closed
  * @param <T>
  */
+
 public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implements JobStateFetcher<T> {
+
+    private static final Logger logger = LoggerFactory.getLogger(AbstractLinkisJobStateFetcher.class);
+
+    Client client;
+
     @Override
     public void init() {
-
+        logger.info("Initialize HttpClient start");
+        TokenAuthenticationStrategy authenticationStrategy = new TokenAuthenticationStrategy();
+        ClientConfig clientConfig = ClientConfigBuilder.newBuilder().addServerUrl("http://" + GATEWAY_ADDRESS)
+                .connectionTimeout(CONNECTION_TIMEOUT).discoveryEnabled(false)
+                .loadbalancerEnabled(false).maxConnectionSize(MAX_CONNECTION)
+                .retryEnabled(false).readTimeout(READ_TIMEOUT)
+                .setAuthenticationStrategy(authenticationStrategy).
+                        setAuthTokenKey(TOKEN_KEY).setAuthTokenValue(TOKEN_VALUE).build();
+        DWSClientConfig dwsClientConfig = new DWSClientConfig(clientConfig);
+        dwsClientConfig.setDWSVersion(DWS_VERSION);
+        client = new DWSHttpClient(dwsClientConfig, DWS_CLIENTNAME);
+        logger.info("Initialize HttpClient finished ");
     }
 
     @Override
     public T getState(JobInfo jobInfo) {
-        // Fetch and return FsStateInfo
-        FsStateInfo fsStateInfo = null;
-        return getState(fsStateInfo);
+        JobStateGetAction getAction = new JobStateGetAction();
+        getAction.setUser(jobInfo.getUser());
+        getAction.setParameter("path", PATH_PREFIX+jobInfo.getId());
+        Result result = client.execute(getAction);
+        logger.info("The return result of getState from linkis is {}",result);
+        Checkpoint checkpoint;
+        if(result instanceof JobStateResult){
+            JobStateResult r = (JobStateResult) result;
+            if(r.getStatus()!= 0) {
+                String errMsg = r.getMessage();
+                logger.error("getState failed, msg is {}", errMsg);
+                throw new WarnException(-1, "getState failed" + errMsg);
+            }
+            return getState(r);
+        }else if(result != null){
+            logger.warn("result is not a correct type, result type is {}",
+                    result.getClass().getSimpleName());
+            throw new WarnException(-1, "result is not a correct type");
+        } else {
+            logger.warn("result is null");
+            throw new WarnException(-1, "result is null");
+        }
     }
+
+    protected abstract T getState(JobStateResult jobStateResult);
 
     @Override
     public void destroy() {
-
-    }
-
-    protected abstract T getState(FsStateInfo fsStateInfo);
-
-    protected static class FsStateInfo{
-
+        try {
+            client.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
