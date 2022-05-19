@@ -19,7 +19,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.LinkisJob
 
 import java.util.List;
 
-public class JobDetailsVO {
+public class JobDetailsVo {
 
     private List<RealTimeTrafficDTO> realTimeTraffic;
     private List<DataNumberDTO> dataNumber;

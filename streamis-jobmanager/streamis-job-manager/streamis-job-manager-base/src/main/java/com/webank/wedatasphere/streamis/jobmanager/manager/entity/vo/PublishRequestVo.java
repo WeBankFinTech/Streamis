@@ -15,7 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo;
 
-public class PublishRequestVO {
+public class PublishRequestVo {
 
     private Long projectId;
     /**

@@ -102,7 +102,8 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
         jobInfo.setECMInstance(simpleOnceJob.getECMServiceInstance)
       case _ =>
     }
-    fetchApplicationInfo(jobInfo)
+    Utils.tryCatch(fetchApplicationInfo(jobInfo)) { t =>
+      throw new FlinkJobLaunchErrorException(-1, "Unable to fetch the application info of launched job, maybe the engine has been shutdown", t)}
     jobInfo.setResources(nodeInfo.get("nodeResource").asInstanceOf[util.Map[String, Object]])
     jobInfo
   }
