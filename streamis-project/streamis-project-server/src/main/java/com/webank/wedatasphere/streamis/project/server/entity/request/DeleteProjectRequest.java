@@ -10,7 +10,6 @@ public class DeleteProjectRequest {
     @NotNull(message = "streamis projetId can not null")
     private Long projectId;
 
-    @NotNull(message = "streamis projetName can not null")
     private String projectName;
 
     public Long getProjectId() {
