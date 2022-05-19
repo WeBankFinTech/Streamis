@@ -6,7 +6,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class SearchProjectRequest {
 
-    @NotNull(message = "streamis projetId can not null")
     private Long projectId;
 
     @NotNull(message = "streamis projetName can not null")
