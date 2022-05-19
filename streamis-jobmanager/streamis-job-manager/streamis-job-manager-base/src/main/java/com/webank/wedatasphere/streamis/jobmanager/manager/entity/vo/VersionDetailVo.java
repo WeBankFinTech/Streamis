@@ -15,12 +15,10 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo;
 
-import java.util.Date;
-
 /**
  * Created by v_wbyynie on 2021/6/18.
  */
-public class VersionDetailVO {
+public class VersionDetailVo {
     private Long id;
     private String version;
     private String description;

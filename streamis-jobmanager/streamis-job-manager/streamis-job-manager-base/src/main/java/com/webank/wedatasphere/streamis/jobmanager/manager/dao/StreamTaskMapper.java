@@ -27,7 +27,16 @@ public interface StreamTaskMapper {
 
     void updateTask(StreamTask streamTask);
 
+    /**
+     * Update task which in specific status
+     * @param streamTask stream task
+     * @param status status
+     */
+    int updateTaskInStatus(@Param("task")StreamTask streamTask, @Param("status")Integer status);
+
     List<StreamTask> getByJobVersionId(@Param("jobVersionId") Long jobVersionId, @Param("version") String version);
+
+    StreamTask getLatestByJobVersionId(@Param("jobVersionId") Long jobVersionId, @Param("version") String version);
 
     StreamTask getRunningTaskByJobId(@Param("jobId") Long jobId);
 
@@ -38,4 +47,5 @@ public interface StreamTaskMapper {
     List<StreamTask> getTasksByStatus(List<Integer> status);
 
     String getTask(@Param("jobId") Long jobId, @Param("version") String version);
+
 }

@@ -16,7 +16,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
 import com.webank.wedatasphere.streamis.jobmanager.exception.ProjectException;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.TaskCoreNumVO;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.TaskCoreNumVo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.server.Message;
@@ -38,7 +38,7 @@ public class ProjectRestfulApi {
         if(StringUtils.isBlank(projectName)){
             throw new ProjectException("params cannot be empty!");
         }
-        TaskCoreNumVO taskCoreNumVO = jobService.countByCores(projectName);
+        TaskCoreNumVo taskCoreNumVO = jobService.countByCores(projectName);
         return Message.ok().data("taskCore",taskCoreNumVO);
     }
 }
