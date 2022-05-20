@@ -18,7 +18,8 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateFetcher;
-import org.apache.linkis.common.exception.WarnException;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobStateFetchException;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.StreamisJobLaunchException;
 import org.apache.linkis.httpclient.Client;
 import org.apache.linkis.httpclient.config.ClientConfig;
 import org.apache.linkis.httpclient.config.ClientConfigBuilder;
@@ -30,6 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 
 import static com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.ClientConf.*;
 
@@ -65,31 +68,71 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
 
     @Override
     public T getState(JobInfo jobInfo) {
-        JobStateGetAction getAction = new JobStateGetAction();
-        getAction.setUser(jobInfo.getUser());
-        getAction.setParameter("path", PATH_PREFIX+jobInfo.getId());
-        Result result = client.execute(getAction);
-        logger.info("The return result of getState from linkis is {}",result);
-        Checkpoint checkpoint;
-        if(result instanceof JobStateResult){
-            JobStateResult r = (JobStateResult) result;
-            if(r.getStatus()!= 0) {
-                String errMsg = r.getMessage();
-                logger.error("getState failed, msg is {}", errMsg);
-                throw new WarnException(-1, "getState failed" + errMsg);
+        try {
+            JobStateGetAction getAction = new JobStateGetAction();
+            getAction.setUser(jobInfo.getUser());
+            getAction.setParameter("path", PATH_PREFIX+jobInfo.getId());
+            Result result = client.execute(getAction);
+            logger.info("The return result of getState from linkis is {}",result);
+            if(result instanceof JobStateResult){
+                JobStateResult r = (JobStateResult) result;
+                if(r.getStatus()!= 0) {
+                    String errMsg = r.getMessage();
+                    logger.error("getState failed, msg is {}", errMsg);
+                    throw new FlinkJobStateFetchException(-1, "getState failed" + errMsg,null);
+                }
+                DirFileTree dirFileTrees = r.getDirFileTrees();
+                if(dirFileTrees == null){
+                    logger.warn("dirFileTrees in the results is null");
+                    throw new FlinkJobStateFetchException(-1, "dirFileTrees in the results is null",null);
+                }
+                JobStateFileInfo fileInfo = getJobStateFileInfo(dirFileTrees);
+                return getState(fileInfo);
+            }else if(result != null){
+                logger.warn("result is not a correct type, result type is {}",
+                        result.getClass().getSimpleName());
+                throw new FlinkJobStateFetchException(-1, "result is not a correct type",null);
+            } else {
+                logger.warn("result is null");
+                throw new FlinkJobStateFetchException(-1, "result is null",null);
             }
-            return getState(r);
-        }else if(result != null){
-            logger.warn("result is not a correct type, result type is {}",
-                    result.getClass().getSimpleName());
-            throw new WarnException(-1, "result is not a correct type");
-        } else {
-            logger.warn("result is null");
-            throw new WarnException(-1, "result is null");
+        } catch (FlinkJobStateFetchException e) {
+            e.printStackTrace();
+            throw new StreamisJobLaunchException.Runtime(e.getErrCode(),e.getMessage(),e.getCause());
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            throw new StreamisJobLaunchException.Runtime(-1,e.getMessage(),e.getCause());
         }
     }
 
-    protected abstract T getState(JobStateResult jobStateResult);
+    protected abstract boolean isMatch(String path);
+
+    protected abstract T getState(JobStateFileInfo pathInfo);
+
+    private JobStateFileInfo getJobStateFileInfo(DirFileTree dirFileTrees) throws FlinkJobStateFetchException {
+        List<DirFileTree> childrenList = dirFileTrees.getChildren();
+        DirFileTree lastChildren = new DirFileTree();
+        String initModifytime = "0";
+        lastChildren.getProperties().put("modifytime", initModifytime);
+        for (DirFileTree children:childrenList) {
+            String childrenPath = children.getPath();
+            if(!isMatch(childrenPath)) continue;
+            HashMap<String, String> properties = children.getProperties();
+            Boolean isLeaf = children.getIsLeaf();
+            if(isLeaf){
+                long modifytime = Long.parseLong(properties.get("modifytime"));
+                if(modifytime > Long.parseLong(lastChildren.getProperties().get("modifytime"))){
+                    lastChildren = children;
+                }
+            }
+        }
+        if(initModifytime.equals(lastChildren.getProperties().get("modifytime"))){
+            logger.warn("childrenDirFileTrees have no leaf nodes, the obtained checkpoint is null");
+            throw new FlinkJobStateFetchException(-1, "childrenDirFileTrees have no leaf nodes, the obtained checkpoint is null",null);
+        }
+        return new JobStateFileInfo(lastChildren.getName(), lastChildren.getPath(), lastChildren.getParentPath(),
+                Long.parseLong(lastChildren.getProperties().get("size")), Long.parseLong(lastChildren.getProperties().get("modifytime")));
+    }
 
     @Override
     public void destroy() {
