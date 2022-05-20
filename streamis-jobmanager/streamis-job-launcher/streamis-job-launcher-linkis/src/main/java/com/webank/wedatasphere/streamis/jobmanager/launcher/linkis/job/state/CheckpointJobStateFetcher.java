@@ -1,52 +1,32 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state;
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState;
-import org.apache.linkis.common.exception.WarnException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.JobStateConf.CHECKPOINT_PATH_PATTERN;
 
 public class CheckpointJobStateFetcher extends AbstractLinkisJobStateFetcher<JobState> {
 
     private static final Logger logger = LoggerFactory.getLogger(CheckpointJobStateFetcher.class);
 
     @Override
-    public JobState getState(JobStateResult jobStateResult) {
-        DirFileTree dirFileTrees = jobStateResult.getDirFileTrees();
-        if(dirFileTrees == null){
-            logger.warn("dirFileTrees in the results is null");
-            throw new WarnException(-1, "dirFileTrees in the results is null");
-        }
-        String path = dirFileTrees.getPath();
-        String name = dirFileTrees.getName();
-        List<DirFileTree> childrenList = dirFileTrees.getChildren();
-        DirFileTree lastchildren = new DirFileTree();
-        String initModifytime = "0";
-        lastchildren.getProperties().put("modifytime", initModifytime);
-        for (DirFileTree children:childrenList) {
-            String childrenPath = children.getPath();
-            String childrenName = children.getName();
-            HashMap<String, String> properties = children.getProperties();
-            String childrenParentPath = children.getParentPath();
-            Boolean isLeaf = children.getIsLeaf();
-            if(isLeaf){
-                long size = Long.parseLong(properties.get("size"));
-                long modifytime = Long.parseLong(properties.get("modifytime"));
-                if(modifytime > Long.parseLong(lastchildren.getProperties().get("modifytime"))){
-                    lastchildren = children;
-                }
-            }
-        }
-        if(initModifytime.equals(lastchildren.getProperties().get("modifytime"))){
-            logger.warn("childrenDirFileTrees have no leaf nodes, the obtained checkpoint is null");
-            throw new WarnException(-1, "childrenDirFileTrees have no leaf nodes, the obtained checkpoint is null");
-        }
-        Checkpoint checkpoint = new Checkpoint(lastchildren.getPath());
-        checkpoint.setMetadataInfo(lastchildren);
-        checkpoint.setTimestamp(Long.parseLong(lastchildren.getProperties().get("modifytime")));
+    public JobState getState(JobStateFileInfo pathInfo) {
+        Checkpoint checkpoint = new Checkpoint(pathInfo.getPath());
+        checkpoint.setMetadataInfo(pathInfo);
+        checkpoint.setTimestamp(pathInfo.getModifytime());
         logger.info("checkpoint info is {}",checkpoint);
         return checkpoint;
     }
+
+    @Override
+    protected boolean isMatch(String path) {
+        Pattern pattern = Pattern.compile(CHECKPOINT_PATH_PATTERN);
+        Matcher matcher = pattern.matcher(path);
+        return matcher.matches();
+    }
+
 }
