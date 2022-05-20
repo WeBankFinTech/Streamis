@@ -30,7 +30,7 @@ class GenericFlinkJobState(location: String) extends JobState{
   private var metadataInfo: Any = _
 
   override def getLocation: URI = URI.create(location)
-å
+
   override def getMetadataInfo: Any = {
     metadataInfo
   }
