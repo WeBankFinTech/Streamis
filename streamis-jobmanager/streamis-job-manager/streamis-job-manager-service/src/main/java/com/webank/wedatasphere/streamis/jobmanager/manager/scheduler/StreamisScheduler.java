@@ -16,14 +16,21 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.scheduler;
 
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.exception.StreamisScheduleException;
+import org.apache.commons.lang.StringUtils;
+import org.apache.linkis.common.conf.CommonVars;
 import org.apache.linkis.scheduler.AbstractScheduler;
 import org.apache.linkis.scheduler.SchedulerContext;
+import org.apache.linkis.scheduler.executer.ErrorExecuteResponse;
+import org.apache.linkis.scheduler.executer.ExecutorManager;
+import org.apache.linkis.scheduler.queue.ConsumerManager;
 import org.apache.linkis.scheduler.queue.Job;
 import org.apache.linkis.scheduler.queue.JobInfo;
 import org.apache.linkis.scheduler.queue.SchedulerEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Function;
@@ -35,9 +42,51 @@ public class StreamisScheduler extends AbstractScheduler implements FutureSchedu
 
     private static final Logger LOG = LoggerFactory.getLogger(StreamisScheduler.class);
 
+    public static class Constraints{
+
+        private static final CommonVars<String> TENANCY_PATTERN = CommonVars.apply("wds.streamis.job.scheduler.consumer.tenancies", "hadoop");
+
+        private static final CommonVars<Integer> GROUP_INIT_CAPACITY = CommonVars.apply("wds.streamis.job.scheduler.group.min.capacity", 1000);
+
+        private static final CommonVars<Integer> GROUP_MAX_CAPACITY = CommonVars.apply("wds.streamis.job.scheduler.group.max.capacity", 5000);
+
+        private static final CommonVars<Integer> GROUP_MAX_RUNNING_JOBS = CommonVars.apply("wds.streamis.job.scheduler.group.max.running-jobs", 30);
+    }
+    /**
+     * Scheduler context
+     */
+    private SchedulerContext schedulerContext;
+
+    /**
+     * Executor manager
+     */
+    private ExecutorManager executorManager;
+
+    /**
+     * Consumer manager
+     */
+    private ConsumerManager consumerManager;
+
     public StreamisScheduler(){
 
     }
+
+    public StreamisScheduler(ExecutorManager executorManager, ConsumerManager consumerManager){
+        this.executorManager = executorManager;
+        this.consumerManager = consumerManager;
+    }
+
+    @Override
+    public void init() {
+        TenancyGroupFactory groupFactory = new TenancyGroupFactory();
+        String tenancies = Constraints.TENANCY_PATTERN.getValue();
+        groupFactory.setTenancies(StringUtils.isNotBlank(tenancies)? Arrays.asList(tenancies.split(",")) : Collections.emptyList());
+        groupFactory.setDefaultInitCapacity(Constraints.GROUP_INIT_CAPACITY.getValue());
+        groupFactory.setDefaultMaxCapacity(Constraints.GROUP_MAX_CAPACITY.getValue());
+        groupFactory.setDefaultMaxRunningJobs(Constraints.GROUP_MAX_RUNNING_JOBS.getValue());
+        this.schedulerContext = new StreamisSchedulerContext(groupFactory, consumerManager, executorManager);
+    }
+
     @Override
     public String getName() {
         return "Streamis-Tenancy-Scheduler";
@@ -45,7 +94,7 @@ public class StreamisScheduler extends AbstractScheduler implements FutureSchedu
 
     @Override
     public SchedulerContext getSchedulerContext() {
-        return null;
+        return schedulerContext;
     }
 
     @Override
@@ -61,21 +110,14 @@ public class StreamisScheduler extends AbstractScheduler implements FutureSchedu
             StreamisSchedulerEvent schedulerEvent = (StreamisSchedulerEvent)event;
             // Set the completed future
             schedulerEvent.setCompleteFuture(completableFuture);
-            // Invoke the prepare method
-            JobInfo jobInfo = ((Job)event).getJobInfo();
-            try {
-                schedulerEvent.prepare(jobInfo);
-            }catch(Exception e){
+            if (event instanceof Job) {
+                // Invoke the prepare method
+                JobInfo jobInfo = ((Job) event).getJobInfo();
                 try {
-                    schedulerEvent.errorHandle(jobInfo, e);
-                }catch(Exception he){
-                    LOG.warn("Unable to process the error handler for scheduler event: [{}]", ((Job) event).getName(), he);
-                    // Ignore the exception
+                    schedulerEvent.prepare(jobInfo);
+                } catch (Exception e) {
+                    ((Job) event).transitionCompleted(new ErrorExecuteResponse(e.getMessage(), e));
                 }
-                if (e instanceof StreamisScheduleException){
-                    throw (StreamisScheduleException) e;
-                }
-                throw new StreamisScheduleException("Fail to invoke prepare method in scheduler event: [" + ((Job) event).getName() + "]", e);
             }
         } else{
             LOG.warn("Scheduler event type {} is not support future return", event.getClass().getCanonicalName());

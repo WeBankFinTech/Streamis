@@ -76,8 +76,13 @@ class FlinkJobInfo extends YarnJobInfo {
    *
    * @return
    */
-  override def getJobStates: Array[String] = ???
+  override def getJobStates: Array[String] = {
+    null
+  }
 
+  def setJobStates(jobStates: Array[String]): Unit = {
+
+  }
   /**
    * Job name
    *
