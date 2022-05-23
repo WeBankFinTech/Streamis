@@ -1,29 +1,31 @@
-/*
- * Copyright 2021 WeBank
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{Checkpoint, Savepoint}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.url.LinkisURLStreamHandlerFactory
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState, JobStateFetcher}
+import java.net.URL
+
 
 /**
  * Flink job state manager
  */
-class FlinkJobStateManager extends JobStateManager {
-  override def getOrCreateJobStateFetcher[T <: JobState](clazz: Class[T]): JobStateFetcher[T] = ???
+class FlinkJobStateManager extends AbstractJobStateManager {
+  /**
+   * State type => root path
+   */
+  val stateRootPath: Map[String, String] = Map(
+    classOf[Savepoint].getCanonicalName -> JobLauncherConfiguration.FLINK_SAVEPOINT_PATH.getValue,
+    classOf[Checkpoint].getCanonicalName -> JobLauncherConfiguration.FLINk_CHECKPOINT_PATH.getValue
+  )
+  // TODO register the fetcher
 
-  override def getJobState[T <: JobState](jobInfo: JobInfo): T = ???
+  override def getJobStateRootPath[T <: JobState](clazz: Class[T], schema: String): String = {
+     stateRootPath.getOrElse(clazz.getCanonicalName, "")
+  }
+}
+
+object FlinkJobStateManager{
+  // set urlStreamHandler use support schemas
+  URL.setURLStreamHandlerFactory(new LinkisURLStreamHandlerFactory(JobLauncherConfiguration.FLINK_STATE_SUPPORT_SCHEMES.getValue.split(","): _*))
 }
