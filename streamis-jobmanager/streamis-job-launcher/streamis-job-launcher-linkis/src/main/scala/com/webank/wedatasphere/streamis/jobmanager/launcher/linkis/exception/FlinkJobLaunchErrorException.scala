@@ -17,7 +17,24 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception
 
 import org.apache.linkis.common.exception.ErrorException
 
-
-class FlinkJobLaunchErrorException(errorCode: Int, errorMsg: String) extends ErrorException(errorCode, errorMsg) {
-
+/**
+ * Basic job launch exception
+ * @param errorCode error code
+ * @param errorMsg error message
+ */
+class FlinkJobLaunchErrorException(errorCode: Int, errorMsg: String, t: Throwable) extends ErrorException(errorCode, errorMsg){
+  this.initCause(t)
 }
+
+/**
+ * Exception in triggering savepoint
+ */
+class FlinkSavePointException(errorCode: Int, errorMsg: String, t: Throwable)
+  extends FlinkJobLaunchErrorException(errorCode, errorMsg, t)
+
+/**
+ * Exception in fetching job state
+ */
+class FlinkJobStateFetchException(errorCode: Int, errorMsg: String, t: Throwable)
+  extends FlinkJobLaunchErrorException(errorCode, errorMsg, t)
+

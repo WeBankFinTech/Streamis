@@ -78,7 +78,8 @@ class TaskService extends Logging{
     val transformJob = streamisTransformJobBuilders.find(_.canBuild(job)).map(_.build(job))
       .getOrElse(throw new TransformFailedErrorException(30408, s"Cannot find a TransformJobBuilder to build StreamJob ${job.getName}."))
     // To avoid the permission problem, use the creator to submit job
-    var launchJob = LaunchJob.builder().setSubmitUser(job.getCreateBy).build()
+    // Use {projectName}.{jobName} as the launch job name
+    var launchJob = LaunchJob.builder().setJobName(s"${job.getProjectName}.${job.getName}").setSubmitUser(job.getCreateBy).build()
     launchJob = Transform.getTransforms.foldLeft(launchJob)((job, transform) => transform.transform(transformJob, job))
     info(s"StreamJob-${job.getName} has transformed with launchJob $launchJob.")
     //TODO getLinkisJobManager should use jobManagerType to instance in future, since not only `simpleFlink` mode is supported in future.
