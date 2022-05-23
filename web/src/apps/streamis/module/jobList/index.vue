@@ -8,7 +8,7 @@
             <FormItem>
               <Button
                 type="primary"
-                @click="doRestart('snapshot')"
+                @click="doRestart(true)"
                 style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.snapshotRestart')}}
@@ -17,7 +17,7 @@
             <FormItem>
               <Button
                 type="primary"
-                @click="doRestart('direct')"
+                @click="doRestart(false)"
                 style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.directRestart')}}
@@ -141,7 +141,7 @@
                 >
                   {{ $t('message.streamis.formItems.startBtn') }}
                 </Button>
-                <Poptip placement="top">
+                <Poptip placement="top" v-model="poptipVisible">
                   <Button
                     type="primary"
                     v-show="row.status === 5"
@@ -212,6 +212,7 @@
     <Modal
       v-model="processModalVisable"
       :title="modalTitle"
+      width="800"
       footer-hide
       @on-visible-change="onClose"
     >
@@ -219,14 +220,22 @@
         <Spin v-if="modalLoading" fix></Spin>
         <div class="general">
           <div class="bar"></div>
-          <div class="text">{{modalContent}}({{orderNum}}/{{selections.length}})"</div>
+          <div class="text">{{modalContent}}({{orderNum}}/{{selections.length}})</div>
         </div>
-        <div class="info">
+        <div class="info" v-if="failTasks.length">
           <div v-for="item in failTasks" :key="item.taskId">
             <span>{{item.taskName}}</span>,
-            <span>{{item.taskId}}</span>:
+            <span style="margin-right: 32px;">{{item.taskId}}:</span>
             <span>{{item.info}}</span>
           </div>
+        </div>
+        <div v-if="isFinish" style="text-align: center;">
+          <Button
+            type="primary"
+            @click="onClose"
+          >
+            {{ $t('message.streamis.formItems.confirmBtn') }}
+          </Button>
         </div>
       </div>
     </Modal>
@@ -306,6 +315,7 @@ export default {
       isBatching: false,
       selections: [],
       processModalVisable: false,
+      isFinish: false,
       modalTitle: '',
       modalContent: '',
       orderNum: 0,
@@ -405,6 +415,7 @@ export default {
       },
       loading: false,
       buttonLoading: false,
+      poptipVisible: false,
       choosedRowId: '',
       modalVisible: false,
       versionDatas: [],
@@ -480,15 +491,15 @@ export default {
     handleStop(data, type) {
       console.log(data, type)
       const { id } = data
-      const path = 'streamis/streamJobManager/job/execute'
-      const second = { jobId: id, type }
+      const path = 'streamis/streamJobManager/job/stop'
       this.buttonLoading = true
       this.choosedRowId = id
       api
-        .fetch(path, second)
+        .fetch(path, { jobId: id, snapshot: !!type }, 'get')
         .then(res => {
           console.log(res)
           this.buttonLoading = false
+          this.poptipVisible = false
           this.choosedRowId = ''
           if (res) {
             this.$emit('refreshCoreIndex')
@@ -500,6 +511,7 @@ export default {
           console.log(e.message)
           this.loading = false
           this.buttonLoading = false
+          this.poptipVisible = false
           this.choosedRowId = ''
         })
     },
@@ -632,72 +644,72 @@ export default {
       console.log('selectionChange', selections);
       this.selections = selections;
     },
-    doRestart(type) {
-      console.log('doRestart', type);
-      // TODO: remote doRestart cgi
-      try {
-        this.baseLoading = true;
-        this.showProcessModal();
-        this.baseLoading = false;
-      } catch (error) {
-        console.warn(error)
-        this.baseLoading = false
-      }
-    },
-    showProcessModal() {
-      console.log('showProcessModal');
+    async doRestart(snapshot) {
+      console.log('doRestart', snapshot);
       this.processModalVisable = true;
       this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
       this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
-      this.stopTasks();
+      this.restartTasks(snapshot);
     },
-    stopTasks() {
-      console.log('stopTasks');
-      // TODO: remote stopTasks cgi
+    async restartTasks(snapshot) {
+      console.log('restartTasks');
       try {
         this.modalLoading = true;
+        const bulk_sbj = this.selections.map(item => +item.id);
+        const res = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot });
+        console.log('pause result', res);
+        if (!res.result || !res.result.Success || !res.result.Success.count || !res.result.Failed || !res.result.Failed.count || !res.result.Failed.data) throw new Error('后台返回异常');
         this.modalLoading = false;
-        if (Math.random()) {
-          this.failTasks = [{
-            taskId: 'testTaskId123456',
-            taskName: '任务任务任务123',
-            info: 'asdfasdfasdfasdfasdfasdfasdfadfasdfsafdafafdfasdfsadfasdfasdfdasfasd'
-          }];
-          this.orderNum = this.failTasks.length;
-        } else {
-          this.queryProcess()
-        }
+        this.failTasks = res.result.Failed.data.map(item => ({
+          taskId: item.jobId,
+          taskName: item.scheduleId,
+          info: item.message,
+        }));
+        this.orderNum = this.selections.length;
+        if (this.failTasks.length) return;
+        const result = await api.fetch('streamis/streamJobManager/job/bulk/execution', { bulk_sbj });
+        console.log('start result', result);
+        this.queryProcess(bulk_sbj);
       } catch (error) {
         console.warn(error);
         this.modalLoading = false
       }
     },
-    queryProcess() {
+    async queryProcess(id_list) {
       console.log('queryProcess');
       this.modalTitle = this.$t('message.streamis.jobListTableColumns.startTaskTitle');
       this.modalContent = this.$t('message.streamis.jobListTableColumns.startTaskContent');
-      // TODO: remote queryProcess cgi
+      this.orderNum = 0;
+      this.failTasks = [];
       try {
         this.modalLoading = true;
-        if (Math.random()) {
-          this.failTasks = [{
-            taskId: 'testTaskId123456',
-            taskName: '任务任务任务123',
-            info: 'asdfasdfasdfasdfasdfasdfasdfadfasdfsafdafafdfasdfsadfasdfasdfdasfasd'
-          }];
-        } else {
-          this.modalLoading = false;
+        const res = await api.fetch('streamis/streamJobManager/job/status', { id_list }, 'put');
+        if (!res.result || !Array.isArray(res.result)) throw new Error('后台返回异常');
+        res.result.forEach((item) => {
+          if ([1, 6, 7].includes(item.statusCode)) this.orderNum++;
+        })
+        this.failTasks = res.result.filter(item => [6, 7].includes(item.statusCode)).map(item => ({
+          taskId: item.jobId,
+          taskName: item.status,
+          info: item.message,
+        }));
+        if (this.orderNum < this.selections.length) {
           this.timer = setTimeout(() => {
             this.queryProcess();
           }, 2500);
+        } else {
+          this.modalLoading = false;
+          this.timer = null;
+          this.isFinish = true;
         }
       } catch (error) {
         console.warn(error)
         this.modalLoading = false
       }
     },
-    onClose(status) {
-      if (status) return;
+    onClose() {
+      this.processModalVisable = false;
+      this.isFinish = false;
       clearTimeout(this.timer);
       this.failTasks = [];
       this.orderNum = 0;
@@ -742,6 +754,14 @@ export default {
   .btn {
     display: block;
     margin-bottom: 5px;
+  }
+}
+.wrap {
+  .general {
+    margin-bottom: 32px;
+    .text {
+      font-weight: bold;
+    }
   }
 }
 </style>
