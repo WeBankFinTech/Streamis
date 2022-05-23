@@ -47,12 +47,6 @@ public class ConfigurationRestfulApi {
 
     ObjectMapper mapper = new ObjectMapper();
 
-    @RequestMapping(value = "/definitions", method = RequestMethod.GET)
-    public Message definitions(){
-
-        return null;
-    }
-
     @RequestMapping(value = "/list/{jobId:\\w+")
     public Message configList(){
         return null;

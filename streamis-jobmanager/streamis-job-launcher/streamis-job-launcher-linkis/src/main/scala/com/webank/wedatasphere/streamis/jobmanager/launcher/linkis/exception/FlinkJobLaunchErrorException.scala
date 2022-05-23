@@ -38,3 +38,6 @@ class FlinkSavePointException(errorCode: Int, errorMsg: String, t: Throwable)
 class FlinkJobStateFetchException(errorCode: Int, errorMsg: String, t: Throwable)
   extends FlinkJobLaunchErrorException(errorCode, errorMsg, t)
 
+class FlinkJobLogFetchException(errorCode: Int,  errorMsg: String, t: Throwable)
+  extends FlinkJobLaunchErrorException(errorCode, errorMsg, t)
+

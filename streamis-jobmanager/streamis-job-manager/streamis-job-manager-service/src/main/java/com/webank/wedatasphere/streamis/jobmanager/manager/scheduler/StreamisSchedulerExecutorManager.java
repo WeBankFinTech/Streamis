@@ -87,6 +87,7 @@ public class StreamisSchedulerExecutorManager extends ExecutorManager {
             if (executeRequest instanceof AbstractStreamisSchedulerEvent.LocalExecuteRequest){
                 try {
                     ((AbstractStreamisSchedulerEvent.LocalExecuteRequest) executeRequest).localExecute();
+                    return new SuccessExecuteResponse();
                 } catch (StreamisScheduleException e) {
                     if (e instanceof StreamisScheduleRetryException){
                         e.setErrCode(LinkisJobRetryException.JOB_RETRY_ERROR_CODE());
@@ -96,8 +97,9 @@ public class StreamisSchedulerExecutorManager extends ExecutorManager {
                 } catch (Exception e){
                     return new ErrorExecuteResponse("Scheduling with unknown exception, message: [" + e.getMessage() + "]", e);
                 }
+            }else{
+                return new ErrorExecuteResponse("Unsupported execute request: code: [" + executeRequest.code() + "]", null);
             }
-            return new ErrorExecuteResponse("Unsupported execute request: code: [" + executeRequest.code() + "]", null);
         }
 
         @Override
