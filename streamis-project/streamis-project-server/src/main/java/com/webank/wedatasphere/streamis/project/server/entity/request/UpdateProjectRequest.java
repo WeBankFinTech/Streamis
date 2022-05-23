@@ -8,11 +8,13 @@ import java.util.List;
 @XmlRootElement
 public class UpdateProjectRequest {
 
+    @NotNull(message = "projectId can not be null")
     private Long projectId;
 
     @NotNull(message = "projectName can not be null")
     private String projectName;
 
+    @NotNull(message = "description can not be null")
     private String description;
 
     private String creator;
