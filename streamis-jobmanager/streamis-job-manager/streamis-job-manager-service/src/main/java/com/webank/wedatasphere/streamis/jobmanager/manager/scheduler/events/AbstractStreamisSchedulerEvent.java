@@ -19,6 +19,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.StreamisSch
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.exception.StreamisScheduleException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.exception.StreamisScheduleRetryException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.linkis.scheduler.executer.CompletedExecuteResponse;
 import org.apache.linkis.scheduler.executer.ErrorExecuteResponse;
 import org.apache.linkis.scheduler.executer.ExecuteRequest;
 import org.apache.linkis.scheduler.listener.JobListener;
@@ -32,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -69,6 +69,11 @@ public abstract class AbstractStreamisSchedulerEvent extends Job implements Stre
             @Override
             public void onJobInited(Job job) {
                 // Ignore init
+            }
+
+            @Override
+            public void onJobRunning(Job job) {
+                // Ignore job running
                 if (!initialized.get()){
                     try {
                         prepare(getJobInfo());
@@ -80,18 +85,13 @@ public abstract class AbstractStreamisSchedulerEvent extends Job implements Stre
             }
 
             @Override
-            public void onJobRunning(Job job) {
-                // Ignore job running
-            }
-
-            @Override
             public void onJobScheduled(Job job) {
                 // Ignore job scheduled
             }
 
             @Override
             public void onJobCompleted(Job job) {
-                JobInfo jobInfo = getJobInfo();
+                setProgress(1.0f);
                 if (getState() == SchedulerEventState.Failed()){
                     ErrorExecuteResponse response = getErrorResponse();
                     try {
@@ -100,17 +100,20 @@ public abstract class AbstractStreamisSchedulerEvent extends Job implements Stre
                             extraMessage = response.message();
                             t = response.t();
                         }
-                        errorHandle(jobInfo, t);
+                        errorHandle(getJobInfo(), t);
                     }catch(Exception e){
                         LOG.warn("Unable to process the error handler for scheduler event: [{}]", getName(), e);
                         // Ignore
                     }
+                }else {
+                    // Empty the message
+                    extraMessage = null;
                 }
                 if (Objects.nonNull(completeFuture)){
                     completeFuture.complete(job);
                 }
                 try {
-                    postHandle(jobInfo);
+                    postHandle(getJobInfo());
                 } catch (StreamisScheduleException e) {
                     // Convert to runtime exception
                     throw new StreamisScheduleException.Runtime(e.getMessage(), e.getCause());
@@ -145,7 +148,7 @@ public abstract class AbstractStreamisSchedulerEvent extends Job implements Stre
 
     @Override
     public String getName() {
-        return "Streamis-schedule-event-" + getId();
+        return "streamis-schedule-event-" + getId();
     }
 
     @Override
@@ -216,5 +219,10 @@ public abstract class AbstractStreamisSchedulerEvent extends Job implements Stre
                 throw e;
             }
         }
+    }
+
+    @Override
+    public void transitionCompleted(CompletedExecuteResponse executeCompleted) {
+        super.transitionCompleted(executeCompleted);
     }
 }

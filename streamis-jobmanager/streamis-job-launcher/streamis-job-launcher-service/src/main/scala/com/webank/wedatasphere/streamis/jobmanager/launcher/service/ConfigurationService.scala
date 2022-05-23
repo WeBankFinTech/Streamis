@@ -15,7 +15,6 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.service
 
-import java.util
 
 import org.apache.linkis.common.utils.Logging
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.ConfigConf

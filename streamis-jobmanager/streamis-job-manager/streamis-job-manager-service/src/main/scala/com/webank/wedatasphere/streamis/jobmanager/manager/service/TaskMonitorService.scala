@@ -19,11 +19,15 @@ import java.util
 import java.util.Date
 import java.util.concurrent.{Future, TimeUnit}
 import com.google.common.collect.Sets
+import com.webank.wedatasphere.streamis.jobmanager.launcher.JobLauncherAutoConfiguration
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.LinkisJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.{AlertLevel, Alerter}
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
+import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils
 
 import javax.annotation.{PostConstruct, PreDestroy}
 import org.apache.commons.lang.exception.ExceptionUtils
@@ -62,6 +66,7 @@ class TaskMonitorService extends Logging {
 
   def doMonitor(): Unit = {
     info("Try to update all StreamTasks status.")
+    val jobLaunchManager = JobLaunchManager.getJobManager(JobLauncherAutoConfiguration.DEFAULT_JOB_LAUNCH_MANGER)
     val status = util.Arrays.asList(JobConf.NOT_COMPLETED_STATUS_ARRAY.map(c => new Integer(c.getValue)) :_*)
     val streamTasks = streamTaskMapper.getTasksByStatus(status)
     if(streamTasks == null || streamTasks.isEmpty) {
@@ -77,7 +82,7 @@ class TaskMonitorService extends Logging {
       retryHandler.setRetryNum(3)
       retryHandler.setRetryMaxPeriod(2000)
       Utils.tryCatch {
-        retryHandler.retry(DefaultStreamTaskService.updateStreamTaskStatus(streamTask, job.getName), s"Task-Monitor-${job.getName}")
+        retryHandler.retry(refresh(streamTask, jobLaunchManager), s"Task-Monitor-${job.getName}")
       } { ex =>
           error(s"Fetch StreamJob-${job.getName} failed, maybe the Linkis cluster is wrong, please be noticed!", ex)
         val errorMsg = ExceptionUtils.getRootCauseMessage(ex)
@@ -105,13 +110,22 @@ class TaskMonitorService extends Logging {
     info("All StreamTasks status have updated.")
   }
 
+  /**
+   * Refresh streamis task
+   * @param streamTask stream task
+   * @param jobLaunchManager launch manager
+   */
+  protected def refresh(streamTask: StreamTask, jobLaunchManager: JobLaunchManager[_ <: JobInfo]): Unit ={
+    val jobClient = jobLaunchManager.connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
+    StreamTaskUtils.refreshInfo(streamTask, jobClient.getJobInfo(true))
+  }
+
   protected def getAlertUsers(job: StreamJob): util.List[String] = {
     var users = jobService.getAlertUsers(job)
     if (users == null) {
-      users = util.Arrays.asList(JobConf.STREAMIS_DEVELOPER.getValue.split(","):_*)
-    }else {
-      users.addAll(util.Arrays.asList(JobConf.STREAMIS_DEVELOPER.getValue.split(","):_*))
+      users = new util.ArrayList[String]()
     }
+    users.addAll(util.Arrays.asList(JobConf.STREAMIS_DEVELOPER.getValue.split(","):_*))
     users
   }
 

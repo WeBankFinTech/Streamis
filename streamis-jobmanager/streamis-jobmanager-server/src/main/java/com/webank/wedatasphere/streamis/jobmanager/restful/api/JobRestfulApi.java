@@ -41,12 +41,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RequestMapping(path = "/streamis/streamJobManager/job")
 @RestController
 public class JobRestfulApi {
 
-    private final Logger LOG = LoggerFactory.getLogger(JobRestfulApi.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JobRestfulApi.class);
 
     @Autowired
     JobService jobService;
@@ -90,10 +91,10 @@ public class JobRestfulApi {
     public Message version(HttpServletRequest req, @RequestParam(value = "jobId", required = false) Long jobId,
                            @RequestParam(value = "version", required = false) String version) throws JobException {
         if (jobId == null) {
-            JobExceptionManager.createException(30301, "jobId");
+            throw JobExceptionManager.createException(30301, "jobId");
         }
         if (StringUtils.isEmpty(version)) {
-            JobExceptionManager.createException(30301, "version");
+            throw JobExceptionManager.createException(30301, "version");
         }
         String username = SecurityFilter.getLoginUsername(req);
         if (!jobService.hasPermission(jobId, username)) {
@@ -108,7 +109,7 @@ public class JobRestfulApi {
     public Message executeJob(HttpServletRequest req, @RequestBody Map<String, Object> json) throws JobException {
         String userName = SecurityFilter.getLoginUsername(req);
         if (!json.containsKey("jobId") || json.get("jobId") == null) {
-            JobExceptionManager.createException(30301, "jobId");
+            throw JobExceptionManager.createException(30301, "jobId");
         }
         long jobId = Long.parseLong(json.get("jobId").toString());
         LOG.info("{} try to execute job {}.", userName, jobId);
@@ -125,7 +126,9 @@ public class JobRestfulApi {
     }
 
     @RequestMapping(path = "/stop", method = RequestMethod.GET)
-    public Message killJob(HttpServletRequest req, @RequestParam(value = "jobId", required = false) Long jobId) throws JobException {
+    public Message killJob(HttpServletRequest req,
+                           @RequestParam(value = "jobId", required = false) Long jobId,
+                           @RequestParam(value = "snapshot", required = false) Boolean snapshot) throws JobException {
         String userName = SecurityFilter.getLoginUsername(req);
         if (jobId == null) {
             JobExceptionManager.createException(30301, "jobId");
@@ -135,7 +138,7 @@ public class JobRestfulApi {
             return Message.error("you have no permission of this job ,please ask for the job creator");
         }
         try {
-            streamTaskService.pause(jobId, 0L, userName);
+            streamTaskService.pause(jobId, 0L, userName, Objects.nonNull(snapshot)? snapshot : false);
         } catch (Exception e) {
             LOG.error("{} kill job {} failed!", userName, jobId, e);
             return Message.error(ExceptionUtils.getRootCauseMessage(e));
@@ -187,14 +190,15 @@ public class JobRestfulApi {
     }
 
     @RequestMapping(path = "/execute/history", method = RequestMethod.GET)
-    public Message executeHistoryJob(HttpServletRequest req, @RequestParam(value = "jobId", required = false) Long jobId,
+    public Message executeHistoryJob(HttpServletRequest req,
+                                     @RequestParam(value = "jobId", required = false) Long jobId,
                                      @RequestParam(value = "version", required = false) String version) throws IOException, JobException {
         String username = SecurityFilter.getLoginUsername(req);
         if (jobId == null) {
-            JobExceptionManager.createException(30301, "jobId");
+            throw JobExceptionManager.createException(30301, "jobId");
         }
         if (StringUtils.isEmpty(version)) {
-            JobExceptionManager.createException(30301, "version");
+            throw JobExceptionManager.createException(30301, "version");
         }
         if (!jobService.hasPermission(jobId, username)) {
             return Message.error("you have no permission of this job ,please ask for the job creator");
@@ -208,12 +212,12 @@ public class JobRestfulApi {
                                @RequestParam(value = "version", required = false) String version) throws IOException, JobException {
         String username = SecurityFilter.getLoginUsername(req);
         if (jobId == null) {
-            JobExceptionManager.createException(30301, "jobId");
+            throw JobExceptionManager.createException(30301, "jobId");
         }
         if (!jobService.hasPermission(jobId, username)) {
             return Message.error("you have no permission of this job ,please ask for the job creator");
         }
-        JobProgressVo jobProgressVO = streamTaskService.getByJobStatus(jobId, version);
+        JobProgressVo jobProgressVO = streamTaskService.getProgress(jobId, version);
         return Message.ok().data("taskId", jobProgressVO.getTaskId()).data("progress", jobProgressVO.getProgress());
     }
 
@@ -237,14 +241,16 @@ public class JobRestfulApi {
     }
 
     @RequestMapping(path = "/logs", method = RequestMethod.GET)
-    public Message getLog(HttpServletRequest req, @RequestParam(value = "jobId", required = false) Long jobId,
+    public Message getLog(HttpServletRequest req,
+                          @RequestParam(value = "jobId", required = false) Long jobId,
+                          @RequestParam(value = "taskId", required = false) Long taskId,
                           @RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize,
                           @RequestParam(value = "fromLine", defaultValue = "1") Integer fromLine,
                           @RequestParam(value = "ignoreKeywords", required = false) String ignoreKeywords,
                           @RequestParam(value = "onlyKeywords", required = false) String onlyKeywords,
                           @RequestParam(value = "lastRows", defaultValue = "0") Integer lastRows) throws JobException {
         if (jobId == null) {
-            JobExceptionManager.createException(30301, "jobId");
+            throw JobExceptionManager.createException(30301, "jobId");
         }
         String username = SecurityFilter.getLoginUsername(req);
         if (!jobService.hasPermission(jobId, username)) {
@@ -256,6 +262,27 @@ public class JobRestfulApi {
         payload.setLastRows(lastRows);
         payload.setOnlyKeywords(onlyKeywords);
         payload.setPageSize(pageSize);
-        return Message.ok().data("logs", streamTaskService.getRealtimeLog(jobId, username, payload));
+        return Message.ok().data("logs", streamTaskService.getRealtimeLog(jobId, null != taskId? taskId : 0L, username, payload));
+    }
+
+    /**
+     * Refresh the job status
+     * @return
+     */
+    @RequestMapping(path = "/status", method = RequestMethod.PUT)
+    public Message status(@RequestBody Map<String, List<Object>> requestMap){
+        List<Object> jobIds = requestMap.get("id_list");
+        if (Objects.isNull(jobIds) || jobIds.isEmpty()){
+            return Message.error("The list of job id which to refresh the status cannot be null or empty");
+        }
+        Message result = Message.ok("success");
+        try{
+            result.data("result", this.streamTaskService.getStatusList(jobIds));
+        }catch (Exception e){
+            String message = "Fail to refresh the status of jobs(刷新/获得任务状态失败), message: " + e.getMessage();
+            LOG.warn(message, e);
+            result = Message.error(message, e);
+        }
+        return result;
     }
 }
