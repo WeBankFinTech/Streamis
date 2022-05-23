@@ -1,11 +1,10 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state;
 
 import org.apache.linkis.httpclient.dws.annotation.DWSHttpMessageResult;
-import org.apache.linkis.httpclient.dws.response.DWSResult;
 import org.slf4j.Logger;
 
 @DWSHttpMessageResult("/api/rest_j/v\\d+/filesystem/getDirFileTrees")
-public class JobStateResult implements DWSResult {
+public class JobStateResult extends AbstractJobStateResult {
 
     private DirFileTree dirFileTrees;
 
@@ -21,4 +20,5 @@ public class JobStateResult implements DWSResult {
     public Logger logger() {
         return null;
     }
+
 }
