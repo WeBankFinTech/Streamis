@@ -15,10 +15,12 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
+import com.sun.xml.bind.v2.runtime.unmarshaller.LocatorEx.Snapshot
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.FlinkJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobProgressVo, StreamTaskListVo}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{ExecResultVo, JobProgressVo, JobStatusVo, PauseResultVo, StreamTaskListVo}
 
 import java.util
 import java.util.concurrent.Future
@@ -41,15 +43,32 @@ trait StreamTaskService {
    def asyncExecute(jobId: Long, taskId: Long, execUser: String, restore: Boolean = false): Future[String]
 
   /**
+   * Bulk executing
+   * @param jobIds jobIds
+   * @param taskIds taskIds
+   * @param execUser execUser
+   * @param restore restore from job state
+   */
+   def bulkExecute(jobIds: util.List[Long], taskIds: util.List[Long], execUser: String, restore: Boolean = false): util.List[ExecResultVo]
+  /**
    * Sync to pause job(task)
    * @param jobId job id
    * @param taskId task id
    * @param operator user name
    */
-   def pause(jobId: Long, taskId: Long, operator: String): Unit
+   def pause(jobId: Long, taskId: Long, operator: String, snapshot: Boolean): Unit
 
-   def asyncPause(jobId: Long, taskId: Long, operator: String): Future[_]
+   def asyncPause(jobId: Long, taskId: Long, operator: String, snapshot: Boolean): Future[String]
 
+  /**
+   * Bulk pausing
+   * @param jobIds jobIds
+   * @param taskIds taskIds
+   * @param operator operator
+   * @param snapshot snapshot
+   * @return
+   */
+   def bulkPause(jobIds: util.List[Long], taskIds: util.List[Long], operator: String, snapshot: Boolean): util.List[PauseResultVo]
   /**
    * Just launch task by task id
    * @param taskId task id
@@ -65,11 +84,12 @@ trait StreamTaskService {
    def createTask(jobId: Long, status: Int, creator: String): StreamTask
 
   /**
-   * Update the status of latest task by job id
+   * Update the task status
    * @param jobId job id
    * @param status status code
+   * @return task id of latest task
    */
-   def updateTaskStatus(jobId: Long, status: Int) : Unit
+   def transitionTaskStatus(jobId: Long, taskId: Long, status: Int) : Long
   /**
    * Query the task history list
    * @param jobId job id
@@ -85,16 +105,21 @@ trait StreamTaskService {
    * @param requestPayload request payload
    * @return
    */
-   def getRealtimeLog(jobId: Long, operator: String, requestPayload: LogRequestPayload): util.Map[String, Any]
+   def getRealtimeLog(jobId: Long, taskId: Long, operator: String, requestPayload: LogRequestPayload): util.Map[String, Any]
 
   /**
-   * Fetch job status(the status of latest task)
+   * Fetch the progress(job progress/the progress of latest task) by job id and version
    * @param jobId job id
    * @param version version
    * @return
    */
-   def getByJobStatus(jobId: Long, version: String): JobProgressVo
+   def getProgress(jobId: Long, version: String): JobProgressVo
 
+  /**
+   * Fetch the status list by job id list
+   * @param jobIds job ids
+   */
+   def getStatusList(jobIds: util.List[Long]): util.List[JobStatusVo]
   /**
    * Get latest task info by job id and version number
    * @param jobId job id
@@ -102,4 +127,8 @@ trait StreamTaskService {
    * @return
    */
    def getTask(jobId: Long, version: String): FlinkJobInfo
+
+
+   def getStateInfo(taskId: Long): JobState
+
 }

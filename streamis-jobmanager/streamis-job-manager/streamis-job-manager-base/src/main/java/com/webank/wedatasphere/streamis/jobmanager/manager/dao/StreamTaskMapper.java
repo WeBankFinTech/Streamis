@@ -36,7 +36,20 @@ public interface StreamTaskMapper {
 
     List<StreamTask> getByJobVersionId(@Param("jobVersionId") Long jobVersionId, @Param("version") String version);
 
+    /**
+     * Get latest task by job version id
+     * @param jobVersionId job version id
+     * @param version version number
+     * @return stream task
+     */
     StreamTask getLatestByJobVersionId(@Param("jobVersionId") Long jobVersionId, @Param("version") String version);
+
+    /**
+     * Get latest task by job id
+     * @param jobId job id
+     * @return stream task
+     */
+    StreamTask getLatestByJobId(@Param("jobId") Long jobId);
 
     StreamTask getRunningTaskByJobId(@Param("jobId") Long jobId);
 
@@ -47,5 +60,12 @@ public interface StreamTaskMapper {
     List<StreamTask> getTasksByStatus(List<Integer> status);
 
     String getTask(@Param("jobId") Long jobId, @Param("version") String version);
+
+    /**
+     * Get status info of tasks by job ids
+     * @param jobIds job ids
+     * @return list
+     */
+    List<StreamTask> getStatusInfoByJobIds(@Param("jobIds")List<Long> jobIds);
 
 }
