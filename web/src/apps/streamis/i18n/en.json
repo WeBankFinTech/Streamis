@@ -38,12 +38,15 @@
         "jobName": "Job name",
         "stopBtn": "Stop",
         "directStop": "Stop directly",
+        "directRestart": "Restart directly",
+        "snapshotRestart": "Restart and snapshot",
         "snapshotAndStop": "Snapshot and stop",
         "startBtn": "Start",
         "configBtn": "Config",
         "saveBtn": "Save",
         "updateBtn": "Update",
         "batchAction": "batch Action",
+        "confirmBtn": "confirm",
         "cancel": "cancel"
       },
       "jobListTableColumns":{
