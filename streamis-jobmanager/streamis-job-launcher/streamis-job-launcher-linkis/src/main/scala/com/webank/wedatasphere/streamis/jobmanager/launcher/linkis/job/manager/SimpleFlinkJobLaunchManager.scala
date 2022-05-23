@@ -15,12 +15,12 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.core.{FlinkLogIterator, SimpleFlinkJobLogIterator}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkJobLaunchErrorException, FlinkSavePointException}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo, LinkisJobLaunchManager}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobClient, FlinkJobInfo, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.SimpleFlinkJobLaunchManager.INSTANCE_NAME
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.operator.FlinkTriggerSavepointOperator
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{Checkpoint, Savepoint}
@@ -51,44 +51,8 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
     builder.build()
   }
 
-  override protected def createSubmittedOnceJob(id: String): OnceJob = SimpleOnceJob.build(id, onceJobIdToJobInfo.get(id).getUser)
+  override protected def createSubmittedOnceJob(id: String, jobInfo: LinkisJobInfo): OnceJob = SimpleOnceJob.build(id, jobInfo.getUser)
 
-  override protected def getStatus(id: String): String = getOnceJob(id) match {
-    case simpleOnceJob: SimpleOnceJob =>
-      if (simpleOnceJob.isCompleted) deleteOnceJob(id)
-      simpleOnceJob.getStatus
-  }
-
-  override def getCheckpoints(jobInfo: LinkisJobInfo): Array[Checkpoint] = throw new FlinkJobLaunchErrorException(30401, "Not support method", null)
-
-  /**
-   * Trigger save point operator
-   * @param jobInfo linkis job info
-   */
-  override def triggerSavepoint(jobInfo: LinkisJobInfo): Unit = {
-    Utils.tryCatch{
-      getOnceJob(jobInfo.getId).getOperator(FlinkTriggerSavepointOperator.OPERATOR_NAME) match{
-        case savepointOperator: FlinkTriggerSavepointOperator => {
-          // TODO Get scheme information from job info
-          val savepointURI: URI = this.jobStateManager.getJobStateDir(classOf[Savepoint],
-            JobLauncherConfiguration.FLINK_STATE_DEFAULT_SCHEME.getValue, JobLauncherConfiguration.FLINK_STATE_DEFAULT_AUTHORITY.getValue, jobInfo.getName)
-          savepointOperator.setSavepointDir(savepointURI.toString)
-          savepointOperator.setMode(JobLauncherConfiguration.FLINK_TRIGGER_SAVEPOINT_MODE.getValue)
-          Option(savepointOperator()) match {
-            case Some(savepoint: Savepoint) =>
-              // TODO store into job Info
-            case _ => throw new FlinkSavePointException(-1, "The response savepoint info is empty", null)
-          }
-        }
-      }
-    }{
-      case se: FlinkSavePointException =>
-        throw se
-      case e: Exception =>
-        // TODO defined the code for savepoint exception
-        throw new FlinkSavePointException(-1, "Fail to trigger savepoint operator", e)
-    }
-  }
 
   override protected def createJobInfo(onceJob: SubmittableOnceJob, job: LaunchJob): LinkisJobInfo = {
     val nodeInfo = onceJob.getNodeInfo
@@ -102,7 +66,7 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
         jobInfo.setECMInstance(simpleOnceJob.getECMServiceInstance)
       case _ =>
     }
-    Utils.tryCatch(fetchApplicationInfo(jobInfo)) { t =>
+    Utils.tryCatch(fetchApplicationInfo(onceJob, jobInfo)) { t =>
       throw new FlinkJobLaunchErrorException(-1, "Unable to fetch the application info of launched job, maybe the engine has been shutdown", t)}
     jobInfo.setResources(nodeInfo.get("nodeResource").asInstanceOf[util.Map[String, Object]])
     jobInfo
@@ -110,8 +74,8 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
 
   override protected def createJobInfo(jobInfo: String): LinkisJobInfo = DWSHttpClient.jacksonJson.readValue(jobInfo, classOf[FlinkJobInfo])
 
-  protected def fetchApplicationInfo(jobInfo: FlinkJobInfo): Unit = {
-    getOnceJob(jobInfo.getId).getOperator(EngineConnApplicationInfoOperator.OPERATOR_NAME) match {
+  protected def fetchApplicationInfo(onceJob: OnceJob, jobInfo: FlinkJobInfo): Unit = {
+    onceJob.getOperator(EngineConnApplicationInfoOperator.OPERATOR_NAME) match {
       case applicationInfoOperator: EngineConnApplicationInfoOperator =>
         val retryHandler = new RetryHandler {}
         retryHandler.setRetryNum(JobLauncherConfiguration.FLINK_FETCH_APPLICATION_INFO_MAX_TIMES.getValue)
@@ -124,18 +88,15 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
     }
   }
 
-  override def fetchLogs(id: String, requestPayload: LogRequestPayload): FlinkLogIterator = getOnceJob(id).getOperator(EngineConnLogOperator.OPERATOR_NAME) match {
-    case engineConnLogOperator: EngineConnLogOperator =>
-      val jobInfo = getJobInfo(id)
-      engineConnLogOperator.setECMServiceInstance(jobInfo.getECMInstance)
-      engineConnLogOperator.setEngineConnType(FlinkJobLaunchManager.FLINK_ENGINE_CONN_TYPE)
-      val logIterator = new SimpleFlinkJobLogIterator(requestPayload, engineConnLogOperator)
-      logIterator.init()
-      jobInfo match {
-        case jobInfo: FlinkJobInfo => jobInfo.setLogPath(logIterator.getLogPath)
-        case _ =>
-      }
-      logIterator
+  /**
+   * Create job client
+   *
+   * @param onceJob once job
+   * @param jobInfo job info
+   * @return
+   */
+  override protected def createJobClient(onceJob: OnceJob, jobInfo: LinkisJobInfo): JobClient[LinkisJobInfo] = {
+    new FlinkJobClient(onceJob, jobInfo, this.jobStateManager)
   }
 }
 object SimpleFlinkJobLaunchManager{

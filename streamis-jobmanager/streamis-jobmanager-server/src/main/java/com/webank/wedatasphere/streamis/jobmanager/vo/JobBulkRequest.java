@@ -12,36 +12,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.bulk;
+
+package com.webank.wedatasphere.streamis.jobmanager.vo;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Operation Result
- * @param <T>
+ * Bulk request for job restful api
  */
-public class BulkOperationResult<T> {
-    /**
-     * Operation status
-     */
-    protected String status;
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class JobBulkRequest extends BaseBulkRequest<List<Object>>{
 
-    /**
-     * Result entity
-     */
-    protected T result;
-
-    public String getStatus() {
-        return status;
+    public enum IdType {
+        JOB, TASK
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public JobBulkRequest(){
+        this.bulkSubjectType = IdType.JOB.name();
+        this.bulkSubject = new ArrayList<>();
     }
 
-    public T getResult() {
-        return result;
-    }
-
-    public void setResult(T result) {
-        this.result = result;
-    }
 }
