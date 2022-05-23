@@ -2,15 +2,15 @@ package com.webank.wedatasphere.streamis.project.server.entity;
 
 import java.util.List;
 
-public class CreateProjectPrivilege {
+public class StreamisProjectPrivilege {
     private Long id;
     private Long projectId;
-    private List<String> userNames;
+    private String userName;
     private int privilege;
 
-    public CreateProjectPrivilege(Long projectId, List<String> userNames, int privilege) {
+    public StreamisProjectPrivilege(Long projectId, String userName, int privilege) {
         this.projectId = projectId;
-        this.userNames = userNames;
+        this.userName = userName;
         this.privilege = privilege;
     }
 
@@ -30,12 +30,12 @@ public class CreateProjectPrivilege {
         this.projectId = projectId;
     }
 
-    public List<String> getUserNames() {
-        return userNames;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setUserNames(List<String> userNames) {
-        this.userNames = userNames;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public int getPrivilege() {
