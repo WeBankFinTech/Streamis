@@ -130,8 +130,7 @@ export default {
     getConfigs() {
       api
         .fetch(
-          '/api/rest_j/v1/streamis/streamJobManager/config/definitions?jobId=' +
-            this.$route.params.id,
+          '/api/rest_j/v1/streamis/streamJobManager/config/definitions',
           'get'
         )
         .then(res => {
