@@ -40,9 +40,12 @@
         "stopBtn": "停止",
         "directStop": "直接停止",
         "snapshotAndStop": "快照并停止",
+        "directRestart": "直接重启",
+        "snapshotRestart": "快照重启",
         "startBtn": "启动",
         "configBtn": "配置",
         "saveBtn": "保存",
+        "confirmBtn": "确认",
         "updateBtn": "更新"
       },
       "jobListTableColumns":{
