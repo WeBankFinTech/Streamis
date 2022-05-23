@@ -13,19 +13,28 @@
  * limitations under the License.
  */
 
-package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job
+package com.webank.wedatasphere.streamis.jobmanager.vo;
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
+import com.fasterxml.jackson.annotation.JsonInclude;
 
+/**
+ * Bulk pausing
+ */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class JobBulkPauseRequest extends JobBulkRequest{
+    /**
+     * Is snapshot
+     */
+    private boolean snapshot = false;
 
-trait LinkisJobLaunchManager extends JobLaunchManager[LinkisJobInfo]{
+    public JobBulkPauseRequest(){
+        super();
+    }
+    public boolean isSnapshot() {
+        return snapshot;
+    }
 
-  /**
-   * Exist launch manager
-   * @param id job id
-   * @return
-   */
-  def isExists(id: String): Boolean
-
-
+    public void setSnapshot(boolean snapshot) {
+        this.snapshot = snapshot;
+    }
 }
