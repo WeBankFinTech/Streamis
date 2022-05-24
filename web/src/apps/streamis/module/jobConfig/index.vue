@@ -127,6 +127,14 @@ export default {
         .then(res => {
           this.returnMap = res;
           this.valueMap = {...this.valueMap, ...res};
+          Object.keys(this.diyMap).forEach(key => {
+            if (Object.keys(this.valueMap).includes(key)) {
+              this.diyMap = {
+                ...this.diyMap,
+                [key]: Object.keys(this.valueMap[key]).map(k => ({key: k, value: this.valueMap[key][k]}))
+              }
+            }
+          })
         })
         .catch(e => console.warn(e))
     },
