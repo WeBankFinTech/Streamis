@@ -8,6 +8,7 @@
             <FormItem>
               <Button
                 type="primary"
+                :disabled="!selections.length"
                 @click="doRestart(true)"
                 style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
               >
@@ -17,6 +18,7 @@
             <FormItem>
               <Button
                 type="primary"
+                :disabled="!selections.length"
                 @click="doRestart(false)"
                 style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
               >
@@ -141,7 +143,7 @@
                 >
                   {{ $t('message.streamis.formItems.startBtn') }}
                 </Button>
-                <Poptip placement="top" v-model="poptipVisible">
+                <Poptip placement="top" v-model="row.poptipVisible">
                   <Button
                     type="primary"
                     v-show="row.status === 5"
@@ -232,7 +234,7 @@
         <div v-if="isFinish" style="text-align: center;">
           <Button
             type="primary"
-            @click="onClose"
+            @click="onClose()"
           >
             {{ $t('message.streamis.formItems.confirmBtn') }}
           </Button>
@@ -425,7 +427,6 @@ export default {
   },
   mounted() {
     this.getJobList()
-    // window.test = this;  
   },
   methods: {
     getJobList() {
@@ -467,8 +468,8 @@ export default {
               }
             })
             datas.unshift({})
-            this.tableDatas = datas
-            console.log(JSON.stringify(datas))
+            this.tableDatas = datas.map(r => ({...r, poptipVisible: false}))
+            // console.log(JSON.stringify(datas))
             this.pageData.total = parseInt(res.totalPage)
             this.loading = false
           }
@@ -499,7 +500,7 @@ export default {
         .then(res => {
           console.log(res)
           this.buttonLoading = false
-          this.poptipVisible = false
+          data.poptipVisible = false
           this.choosedRowId = ''
           if (res) {
             this.$emit('refreshCoreIndex')
@@ -511,7 +512,7 @@ export default {
           console.log(e.message)
           this.loading = false
           this.buttonLoading = false
-          this.poptipVisible = false
+          data.poptipVisible = false
           this.choosedRowId = ''
         })
     },
@@ -654,25 +655,25 @@ export default {
     async restartTasks(snapshot) {
       console.log('restartTasks');
       try {
-        this.modalLoading = true;
+        // this.modalLoading = true;
         const bulk_sbj = this.selections.map(item => +item.id);
         const res = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot });
         console.log('pause result', res);
-        if (!res.result || !res.result.Success || !res.result.Success.count || !res.result.Failed || !res.result.Failed.count || !res.result.Failed.data) throw new Error('后台返回异常');
-        this.modalLoading = false;
+        // if (!res.result || !res.result.Success || !res.result.Success.count || !res.result.Failed || !res.result.Failed.count || !res.result.Failed.data) throw new Error('后台返回异常');
+        // this.modalLoading = false;
         this.failTasks = res.result.Failed.data.map(item => ({
           taskId: item.jobId,
           taskName: item.scheduleId,
           info: item.message,
         }));
-        this.orderNum = this.selections.length;
+        this.orderNum = this.selections.length - this.failTasks.length;
         if (this.failTasks.length) return;
         const result = await api.fetch('streamis/streamJobManager/job/bulk/execution', { bulk_sbj });
         console.log('start result', result);
         this.queryProcess(bulk_sbj);
       } catch (error) {
         console.warn(error);
-        this.modalLoading = false
+        // this.modalLoading = false
       }
     },
     async queryProcess(id_list) {
@@ -682,11 +683,11 @@ export default {
       this.orderNum = 0;
       this.failTasks = [];
       try {
-        this.modalLoading = true;
+        // this.modalLoading = true;
         const res = await api.fetch('streamis/streamJobManager/job/status', { id_list }, 'put');
         if (!res.result || !Array.isArray(res.result)) throw new Error('后台返回异常');
         res.result.forEach((item) => {
-          if ([1, 6, 7].includes(item.statusCode)) this.orderNum++;
+          if ([1, 5, 6, 7].includes(item.statusCode)) this.orderNum++;
         })
         this.failTasks = res.result.filter(item => [6, 7].includes(item.statusCode)).map(item => ({
           taskId: item.jobId,
@@ -695,24 +696,26 @@ export default {
         }));
         if (this.orderNum < this.selections.length) {
           this.timer = setTimeout(() => {
-            this.queryProcess();
+            this.queryProcess(id_list);
           }, 2500);
         } else {
-          this.modalLoading = false;
+          // this.modalLoading = false;
           this.timer = null;
           this.isFinish = true;
         }
       } catch (error) {
         console.warn(error)
-        this.modalLoading = false
+        // this.modalLoading = false
       }
     },
-    onClose() {
+    onClose(status) {
+      if (status) return;
       this.processModalVisable = false;
       this.isFinish = false;
       clearTimeout(this.timer);
       this.failTasks = [];
       this.orderNum = 0;
+      this.hideButtons();
       this.getJobList()
     }
   }
