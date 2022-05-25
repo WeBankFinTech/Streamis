@@ -62,6 +62,8 @@
         "upload": "Upload",
         "stopTaskTitle": "Shutdown tasks",
         "stopTaskContent": "Batch stopping tasks...",
+        "endTaskTitle": "Finish tasks",
+        "failInfo": "Exception info",
         "startTaskTitle": "Start tasks",
         "startTaskContent": "Batch starting tasks..."
         
