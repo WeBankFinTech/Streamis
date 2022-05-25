@@ -226,7 +226,7 @@
         </div>
         <div class="info" v-if="failTasks.length">
           <h4>{{$t('message.streamis.jobListTableColumns.failInfo')}}:</h4>
-          <div v-for="item in failTasks" :key="item.taskId">
+          <div v-for="item in failTasks" :key="item.taskId" style="margin-bottom: 32px;">
             <span>{{item.taskName}}</span>,
             <span style="margin-right: 32px;">{{item.taskId}}:</span>
             <span>{{item.info}}</span>
@@ -668,7 +668,12 @@ export default {
           info: item.message,
         }));
         this.orderNum = this.selections.length - this.failTasks.length;
-        if (this.failTasks.length) return;
+        if (this.failTasks.length) {
+          this.isFinish = true;
+          this.modalTitle = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+          this.modalContent = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+          return;
+        }
         const result = await api.fetch('streamis/streamJobManager/job/bulk/execution', { bulk_sbj });
         console.log('start result', result);
         this.queryProcess(bulk_sbj);
