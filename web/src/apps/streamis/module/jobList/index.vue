@@ -137,18 +137,18 @@
                 <Button
                   type="primary"
                   v-show="row.status !== 5"
-                  :loading="buttonLoading && choosedRowId === row.id"
+                  :loading="row.buttonLoading"
                   style="height:22px;background:#008000;margin-right: 5px; font-size:10px;"
-                  @click="handleAction(row)"
+                  @click="handleAction(row, index)"
                 >
                   {{ $t('message.streamis.formItems.startBtn') }}
                 </Button>
-                <Poptip placement="top" v-model="row.poptipVisible" :disabled="buttonLoading && choosedRowId === row.id">
+                <Poptip placement="top" v-model="row.poptipVisible" :disabled="row.buttonLoading">
                   <Button
                     type="primary"
                     v-show="row.status === 5"
-                    :disabled="buttonLoading && choosedRowId === row.id"
-                    :loading="buttonLoading && choosedRowId === row.id"
+                    :disabled="row.buttonLoading"
+                    :loading="row.buttonLoading"
                     style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
                   >
                     {{ $t('message.streamis.formItems.stopBtn') }}
@@ -158,18 +158,18 @@
                       <Button
                         class="btn"
                         type="primary"
-                        :disabled="buttonLoading && choosedRowId === row.id"
+                        :disabled="row.buttonLoading"
                         style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
-                        @click="handleStop(row, 0)"
+                        @click="handleStop(row, 0, index)"
                       >
                         {{ $t('message.streamis.formItems.directStop') }}
                       </Button>
                       <Button
                         class="btn"
                         type="primary"
-                        :disabled="buttonLoading && choosedRowId === row.id"
+                        :disabled="row.buttonLoading"
                         style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
-                        @click="handleStop(row, 1)"
+                        @click="handleStop(row, 1, index)"
                       >
                         {{ $t('message.streamis.formItems.snapshotAndStop') }}
                       </Button>
@@ -491,18 +491,19 @@ export default {
     handleUpload() {
       this.uploadVisible = true
     },
-    handleStop(data, type) {
+    handleStop(data, type, index) {
       console.log(data, type)
       const { id } = data
       const path = 'streamis/streamJobManager/job/stop'
-      this.buttonLoading = true
+      data.buttonLoading = true
       this.choosedRowId = id
       data.poptipVisible = false
+      this.$set(this.tableDatas, index, data)
       api
         .fetch(path, { jobId: id, snapshot: !!type }, 'get')
         .then(res => {
           console.log(res)
-          this.buttonLoading = false
+          data.buttonLoading = false
           this.choosedRowId = ''
           if (res) {
             this.$emit('refreshCoreIndex')
@@ -513,22 +514,23 @@ export default {
         .catch(e => {
           console.log(e.message)
           this.loading = false
-          this.buttonLoading = false
+          data.buttonLoading = false
           this.choosedRowId = ''
         })
     },
-    handleAction(data) {
+    handleAction(data, index) {
       console.log(data)
       const { id } = data
       const path = 'streamis/streamJobManager/job/execute'
       const second = { jobId: id }
-      this.buttonLoading = true
+      data.buttonLoading = true
       this.choosedRowId = id
+      this.$set(this.tableDatas, index, data)
       api
         .fetch(path, second)
         .then(res => {
           console.log(res)
-          this.buttonLoading = false
+          data.buttonLoading = false
           this.choosedRowId = ''
           if (res) {
             this.$emit('refreshCoreIndex')
@@ -539,15 +541,34 @@ export default {
         .catch(e => {
           console.log(e.message)
           this.loading = false
-          this.buttonLoading = false
+          data.buttonLoading = false
           this.choosedRowId = ''
         })
     },
     handleConfig(data) {
       console.log(data)
     },
+    stopSavepoint(data) {
+      console.log(data)
+      this.loading = true
+      api
+        .fetch(
+          'streamis/streamJobManager/job/snapshot/' + data.id,
+          {},
+          'put'
+        )
+        .then(res => {
+          console.log(res)
+          if (res) this.loading = false
+        })
+        .catch(e => {
+          console.log(e)
+          this.loading = false
+        })
+    },
     handleRouter(rowData, moduleName) {
       if(moduleName === 'savepoint'){
+        this.stopSavepoint(rowData);
         return;
       }
       console.log(rowData)
