@@ -21,6 +21,8 @@
       "jobStatus": {
         "failure": "失败任务",
         "running": "运行中",
+        "stopping": "停止中",
+        "starting": "启动中",
         "slowTask": "慢任务",
         "alert": "告警",
         "waitRestart": "等待重启",

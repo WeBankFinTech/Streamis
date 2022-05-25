@@ -89,7 +89,8 @@ export default {
     visible: Boolean,
     datas: Array,
     fromHistory: Boolean,
-    projectName: String
+    projectName: String,
+    taskId: Number
   },
   data() {
     return {
@@ -111,13 +112,14 @@ export default {
     }
   },
   methods: {
-    getDatas() {
+    getDatas(taskId) {
       // const logs = new Array(1000).fill(
       //   'pps/pps/streamis/module/versionDetailtreamis/module/versionDetailpps/streamis/module/versionDetailpps/streamis/module/versionDetailpps/streamis/module/versionDetailpps/streamis/module/versionDetail'
       // )
       // this.logs = logs.join('\n')
       const { id } = this.$route.params || {}
       let queries = `?jobId=${id}&fromLine=${this.fromLine}&pageSize=100`
+      if (taskId || this.taskId) queries += `&taskId=${taskId || this.taskId}`;
       Object.keys(this.query).forEach(key => {
         const value = this.query[key]
         if (value) {
