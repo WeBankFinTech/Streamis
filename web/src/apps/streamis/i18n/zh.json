@@ -61,6 +61,8 @@
         "upload": "导入",
         "stopTaskTitle": "停止任务中",
         "stopTaskContent": "正在批量停止任务中...",
+        "endTaskTitle": "任务完成",
+        "failInfo": "异常信息",
         "startTaskTitle": "启动任务中",
         "startTaskContent": "正在批量启动任务..."
         
