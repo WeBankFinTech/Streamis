@@ -81,7 +81,7 @@
               </Button>
             </FormItem>
           </Form>
-          <Table ref="list" :columns="columns" :data="tableDatas" :loading="loading" @on-selection-change="selectionChange">
+          <Table ref="list" :columns="columns" :data="tableDatas" :loading="loading" @on-selection-change="selectionChange" class="table">
             <template slot-scope="{ row, index }" slot="jobName">
               <div
                 class="jobName"
@@ -772,6 +772,17 @@ export default {
     margin-bottom: 32px;
     .text {
       font-weight: bold;
+    }
+  }
+}
+.table {
+  /deep/ .ivu-table-tbody {
+    tr:first-child {
+      td:first-child {
+        div:first-child {
+          visibility: hidden;
+        }
+      }
     }
   }
 }
