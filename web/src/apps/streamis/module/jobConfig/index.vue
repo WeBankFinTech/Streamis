@@ -170,8 +170,10 @@ export default {
         .catch(e => console.warn(e))
     },
     removeParameter(index, key) {
-      console.log('removeParameter', index)
-      this.diyMap = {...this.diyMap, [key]: this.diyMap[key].splice(index, 1)}
+      console.log('removeParameter', index);
+      const keyValue = this.diyMap[key];
+      keyValue.splice(index, 1)
+      this.diyMap = {...this.diyMap, [key]: keyValue}
     },
     addParameter(key) {
       console.log('addParameter')
