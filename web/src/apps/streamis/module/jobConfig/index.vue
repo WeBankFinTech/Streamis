@@ -183,12 +183,18 @@ export default {
       console.log('handleSaveConfig')
       this.saveLoading = true;
       const configuration = { ...this.valueMap };
+      let warning = false;
       Object.keys(this.diyMap).forEach(key => {
         configuration[key] = {};
         this.diyMap[key].forEach(mapKey => {
+          if (configuration[key][mapKey.key]) warning = true;
           configuration[key][mapKey.key] = mapKey.value;
         })
       });
+      if (warning) {
+        this.saveLoading = false;
+        return this.$Message.error({ content: '自定义字段名称不能重复' });
+      }
       api
         .fetch(
           `streamis/streamJobManager/config/json/${this.$route.params.id}`,
