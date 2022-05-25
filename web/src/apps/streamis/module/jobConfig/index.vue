@@ -129,9 +129,11 @@ export default {
           this.valueMap = {...this.valueMap, ...res};
           Object.keys(this.diyMap).forEach(key => {
             if (Object.keys(this.valueMap).includes(key)) {
+              let keyValue = Object.keys(this.valueMap[key]).map(k => ({key: k, value: this.valueMap[key][k]}));
+              if (!keyValue.length) keyValue = [{value: '', key: ''}];
               this.diyMap = {
                 ...this.diyMap,
-                [key]: Object.keys(this.valueMap[key]).map(k => ({key: k, value: this.valueMap[key][k]}))
+                [key]: keyValue
               }
             }
           })

@@ -225,6 +225,7 @@
           <div class="text">{{modalContent}}({{orderNum}}/{{selections.length}})</div>
         </div>
         <div class="info" v-if="failTasks.length">
+          <h4>{{$t('message.streamis.jobListTableColumns.failInfo')}}:</h4>
           <div v-for="item in failTasks" :key="item.taskId">
             <span>{{item.taskName}}</span>,
             <span style="margin-right: 32px;">{{item.taskId}}:</span>
@@ -637,7 +638,7 @@ export default {
       console.log('hideButtons', val)
       this.$refs.list.selectAll(false);
       this.selections = [];
-      this.columns.shift();
+      this.columns = this.columns.filter(col => col.type !== 'selection');
       this.isBatching = false;
     },
     selectionChange(val) {
@@ -702,6 +703,8 @@ export default {
           // this.modalLoading = false;
           this.timer = null;
           this.isFinish = true;
+          this.modalTitle = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+          this.modalContent = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
         }
       } catch (error) {
         console.warn(error)
