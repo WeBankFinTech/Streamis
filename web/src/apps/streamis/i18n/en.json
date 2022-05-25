@@ -22,6 +22,8 @@
       "jobStatus": {
         "failure": "Failure",
         "running": "Runnning",
+        "stopping": "Stopping",
+        "starting": "Starting",
         "slowTask": "Slow task",
         "alert": "Alert",
         "waitRestart": "Wait restart",

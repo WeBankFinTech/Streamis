@@ -143,10 +143,11 @@
                 >
                   {{ $t('message.streamis.formItems.startBtn') }}
                 </Button>
-                <Poptip placement="top" v-model="row.poptipVisible">
+                <Poptip placement="top" v-model="row.poptipVisible" :disabled="buttonLoading && choosedRowId === row.id">
                   <Button
                     type="primary"
                     v-show="row.status === 5"
+                    :disabled="buttonLoading && choosedRowId === row.id"
                     :loading="buttonLoading && choosedRowId === row.id"
                     style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
                   >
@@ -157,7 +158,7 @@
                       <Button
                         class="btn"
                         type="primary"
-                        :loading="buttonLoading && choosedRowId === row.id"
+                        :disabled="buttonLoading && choosedRowId === row.id"
                         style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
                         @click="handleStop(row, 0)"
                       >
@@ -166,7 +167,7 @@
                       <Button
                         class="btn"
                         type="primary"
-                        :loading="buttonLoading && choosedRowId === row.id"
+                        :disabled="buttonLoading && choosedRowId === row.id"
                         style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
                         @click="handleStop(row, 1)"
                       >
@@ -496,12 +497,12 @@ export default {
       const path = 'streamis/streamJobManager/job/stop'
       this.buttonLoading = true
       this.choosedRowId = id
+      data.poptipVisible = false
       api
         .fetch(path, { jobId: id, snapshot: !!type }, 'get')
         .then(res => {
           console.log(res)
           this.buttonLoading = false
-          data.poptipVisible = false
           this.choosedRowId = ''
           if (res) {
             this.$emit('refreshCoreIndex')
@@ -513,7 +514,6 @@ export default {
           console.log(e.message)
           this.loading = false
           this.buttonLoading = false
-          data.poptipVisible = false
           this.choosedRowId = ''
         })
     },
