@@ -15,6 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events;
 
+import com.ctc.wstx.util.StringUtil;
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.StreamisSchedulerEvent;
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.exception.StreamisScheduleException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.exception.StreamisScheduleRetryException;
@@ -29,8 +30,11 @@ import org.apache.linkis.scheduler.queue.SchedulerEvent;
 import org.apache.linkis.scheduler.queue.SchedulerEventState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cglib.proxy.UndeclaredThrowableException;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -63,6 +67,11 @@ public abstract class AbstractStreamisSchedulerEvent extends Job implements Stre
      * Tenancy name
      */
     private String tenancy;
+
+    /**
+     * ResultSet
+     */
+    protected Map<String, Object> resultSet = new HashMap<>();
 
     public AbstractStreamisSchedulerEvent(){
         setJobListener(new JobListener() {
@@ -97,8 +106,16 @@ public abstract class AbstractStreamisSchedulerEvent extends Job implements Stre
                     try {
                         Throwable t = null;
                         if (Objects.nonNull(response)){
-                            extraMessage = response.message();
                             t = response.t();
+                            extraMessage = response.message();
+                            if (t instanceof UndeclaredThrowableException){
+                                t = ((UndeclaredThrowableException)t).getUndeclaredThrowable();
+                                if (StringUtils.isBlank(extraMessage)){
+                                    extraMessage = t.getMessage();
+                                } else {
+                                    extraMessage += t.getMessage();
+                                }
+                            }
                         }
                         errorHandle(getJobInfo(), t);
                     }catch(Exception e){
@@ -153,7 +170,7 @@ public abstract class AbstractStreamisSchedulerEvent extends Job implements Stre
 
     @Override
     public JobInfo getJobInfo() {
-        return new JobInfo(getId(), this.extraMessage, this.getState().toString(), this.getProgress(), null);
+        return new StreamisEventInfo(this);
     }
 
     @Override
@@ -224,5 +241,23 @@ public abstract class AbstractStreamisSchedulerEvent extends Job implements Stre
     @Override
     public void transitionCompleted(CompletedExecuteResponse executeCompleted) {
         super.transitionCompleted(executeCompleted);
+    }
+
+    /**
+     * Extend jobInfo
+     */
+    public static class StreamisEventInfo extends JobInfo{
+
+        private AbstractStreamisSchedulerEvent event;
+
+        public StreamisEventInfo(AbstractStreamisSchedulerEvent event) {
+            super(event.getId(), event.extraMessage, event.getState().toString(), event.getProgress(), "");
+            this.event = event;
+        }
+
+        public Map<String, Object> getResultSet() {
+            return event.resultSet;
+        }
+
     }
 }

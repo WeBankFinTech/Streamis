@@ -94,6 +94,11 @@ public class JobConfDefinition {
      */
     private Long parentRef;
 
+    /**
+     * Is required
+     */
+    private boolean required;
+
     public JobConfDefinition(){
 
     }
@@ -224,5 +229,13 @@ public class JobConfDefinition {
 
     public void setUnit(String unit) {
         this.unit = unit;
+    }
+
+    public boolean isRequired() {
+        return required;
+    }
+
+    public void setRequired(boolean required) {
+        this.required = required;
     }
 }

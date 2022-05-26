@@ -116,7 +116,7 @@ object JobConfValueUtils{
       case (key, value) => {
         Option(definitionMap.get(key)) match {
           case Some(definition) => if (definition.getLevel == 0){
-            configValues.addAll(deserializeInnerObj(key, value, definition.getId.toString, definitionMap))
+            configValues.addAll(deserializeInnerObj(key, value, null, definitionMap))
           }
         }
       }

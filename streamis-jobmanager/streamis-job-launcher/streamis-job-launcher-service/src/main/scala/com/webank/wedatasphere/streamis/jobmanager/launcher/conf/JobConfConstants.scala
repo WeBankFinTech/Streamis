@@ -18,7 +18,7 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.conf
 import org.apache.linkis.common.conf.CommonVars
 
 
-object ConfigConf {
+object JobConfConstants {
 
   val JOBMANAGER_FLINK_RESOURCE = CommonVars("wds.linkis.flink.resource", 1)
 
@@ -36,12 +36,12 @@ object ConfigConf {
 
   val JOBMANAGER_FLINK_AUTHORITY_VISIBLE = CommonVars("wds.linkis.flink.authority.visible", "wds.linkis.flink.authority.visible")
 
-  val JOBMANAGER_FLINK_ALERT_USER = CommonVars("wds.linkis.flink.alert.failure.user", "wds.linkis.flink.alert.failure.user")
+  val JOB_CONF_ALERT_USER: CommonVars[String] = CommonVars("wds.linkis.flink.alert.failure.user", "wds.linkis.flink.alert.failure.user")
 
-  val JOBMANAGER_FLINK_AUTHORITY_AUTHOR = CommonVars("wds.linkis.flink.authority.author", "wds.linkis.flink.authority.author")
+  val JOB_CONF_AUTHORITY_AUTHOR: CommonVars[String] = CommonVars("wds.linkis.flink.authority.author", "wds.linkis.flink.authority.author")
 
-  val JOBMANAGER_FLINK_ALERT_RULE = CommonVars("wds.linkis.flink.alert.rule", "wds.linkis.flink.alert.rule")
+  val JOB_CONF_ALERT_RULE: CommonVars[String] = CommonVars("wds.linkis.flink.alert.rule", "wds.linkis.flink.alert.rule")
 
-  val JOBMANAGER_FLINK_ALERT_LEVEL = CommonVars("wds.linkis.flink.alert.level", "wds.linkis.flink.alert.level")
+  val JOB_CONF_ALERT_LEVEL: CommonVars[String] = CommonVars("wds.linkis.flink.alert.level", "wds.linkis.flink.alert.level")
 
 }

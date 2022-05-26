@@ -95,7 +95,7 @@ object LaunchJob {
     def setLaunchJob(launchJob: LaunchJob): this.type = {
       setSubmitUser(launchJob.getSubmitUser).setLabels(launchJob.getLabels)
         .setJobContent(launchJob.getJobContent).setParams(launchJob.getParams)
-        .setSource(launchJob.getSource).setLaunchConfigs(launchJob.getLaunchConfigs)
+        .setSource(launchJob.getSource).setLaunchConfigs(launchJob.getLaunchConfigs).setJobName(launchJob.getJobName)
     }
 
     def build(): LaunchJob = new LaunchJob {
