@@ -157,9 +157,9 @@ export default {
       if (type === 'more') {
         this.fromLine = 1
         this.query = {
+          ...this.query,
           ignoreKeywords: '',
           onlyKeywords: '',
-          logType: 'client'
         }
       } else if (type === 'next') {
         this.fromLine = this.fromLine + 100
