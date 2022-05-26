@@ -45,11 +45,25 @@ public interface StreamTaskMapper {
     StreamTask getLatestByJobVersionId(@Param("jobVersionId") Long jobVersionId, @Param("version") String version);
 
     /**
-     * Get latest task by job id
+     * Get the latest task by job id
      * @param jobId job id
      * @return stream task
      */
     StreamTask getLatestByJobId(@Param("jobId") Long jobId);
+
+    /**
+     * Get the latest task(launched) by job id
+     * @param jobId job id
+     * @return stream task
+     */
+    StreamTask getLatestLaunchedById(@Param("jobId") Long jobId);
+    /**
+     * Get earlier task list by job id
+     * @param jobId job id
+     * @param count the max number of task
+     * @return
+     */
+    List<StreamTask> getEarlierByJobId(@Param("jobId") Long jobId, @Param("count") Integer count);
 
     StreamTask getRunningTaskByJobId(@Param("jobId") Long jobId);
 

@@ -17,7 +17,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
 import java.util
 import org.apache.linkis.protocol.utils.TaskUtils
-import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.{ConfigKeyVO, ConfigRelationVO}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.{JobConfValueSet, ConfigRelationVO}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.ConfigTransform
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.JobUtils
@@ -27,7 +27,7 @@ import scala.collection.convert.WrapAsScala._
 
 class ResourceConfigTransform extends ConfigTransform {
 
-  override protected def transform(config: ConfigKeyVO, job: LaunchJob): LaunchJob =
+  override protected def transform(config: JobConfValueSet, job: LaunchJob): LaunchJob =
     transformConfig(config.getResourceConfig, job)
 
   protected def transformConfig(getConfig: => util.List[ConfigRelationVO], job: LaunchJob): LaunchJob = {

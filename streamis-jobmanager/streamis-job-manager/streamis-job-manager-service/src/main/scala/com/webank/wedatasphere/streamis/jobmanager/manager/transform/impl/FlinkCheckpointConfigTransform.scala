@@ -1,7 +1,8 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.JobConfValueSet
+
 import java.util
-import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.ConfigKeyVO
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.ConfigTransform
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.JobUtils
@@ -18,7 +19,7 @@ import scala.collection.JavaConverters._
  */
 class FlinkCheckpointConfigTransform extends ConfigTransform {
 
-  override protected def transform(config: ConfigKeyVO, job: LaunchJob): LaunchJob = {
+  override protected def transform(config: JobConfValueSet, job: LaunchJob): LaunchJob = {
     val productConfig = config.getProduceConfig
     if(productConfig == null || productConfig.isEmpty) return job
     productConfig.asScala.find(config => config.getKey == "wds.linkis.flink.checkpoint.interval"
