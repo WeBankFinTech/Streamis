@@ -48,7 +48,9 @@
         "configBtn": "配置",
         "saveBtn": "保存",
         "confirmBtn": "确认",
-        "updateBtn": "更新"
+        "updateBtn": "更新",
+        "notEmpty": "不能为空",
+        "wrongFormat": "格式错误"
       },
       "jobListTableColumns":{
         "jobName": "作业名称",
