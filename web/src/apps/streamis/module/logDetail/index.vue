@@ -58,12 +58,13 @@
           <Button
             type="primary"
             @click="handleMore('pre')"
-            :disabled="fromLine === 1"
+            :disabled="fromLine === 1 || endLine <= 100"
           >
             {{ $t('message.streamis.logDetail.pre') }}
           </Button>
           <Button
             type="primary"
+            :disabled="endLine === fromLine"
             @click="handleMore('next')"
             style="margin-left: 30px;"
           >
@@ -107,6 +108,7 @@ export default {
         value: 'yarn'
       }],
       fromLine: 1,
+      endLine: 0,
       logs: '',
       spinShow: false
     }
@@ -132,6 +134,8 @@ export default {
         .then(res => {
           this.spinShow = false
           if (res && res.logs) {
+            this.endLine = res.logs.endLine;
+            if (this.endLine <= 100) this.fromLine = this.endLine;
             this.logs = res.logs.logs.join('\n')
           } else {
             this.logs = ''
@@ -162,7 +166,8 @@ export default {
           onlyKeywords: '',
         }
       } else if (type === 'next') {
-        this.fromLine = this.fromLine + 100
+        if (this.endLine - this.fromLine >= 100 ) this.fromLine = this.fromLine + 100;
+        else this.fromLine = this.endLine;
       } else {
         this.fromLine = this.fromLine > 100 ? this.fromLine - 100 : 1
       }

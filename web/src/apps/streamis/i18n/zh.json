@@ -65,6 +65,7 @@
         "stopTaskContent": "正在批量停止任务中...",
         "endTaskTitle": "任务完成",
         "failInfo": "异常信息",
+        "snapshotInfo": "快照路径",
         "startTaskTitle": "启动任务中",
         "startTaskContent": "正在批量启动任务..."
         

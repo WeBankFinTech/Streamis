@@ -66,6 +66,7 @@
         "stopTaskContent": "Batch stopping tasks...",
         "endTaskTitle": "Finish tasks",
         "failInfo": "Exception info",
+        "snapshotInfo": "Snapshot info",
         "startTaskTitle": "Start tasks",
         "startTaskContent": "Batch starting tasks..."
         
