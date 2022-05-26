@@ -1,14 +1,14 @@
-package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state;
+package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.client;
 
 import java.util.HashMap;
 import java.util.List;
 
-public class DirFileTree {
+public class StateFileTree {
 
     private String name;
     private String path;
     private HashMap<String, String> properties;
-    private List<DirFileTree> children;
+    private List<StateFileTree> children;
     private Boolean isLeaf = false;
     private String parentPath;
 
@@ -52,11 +52,11 @@ public class DirFileTree {
         this.properties = properties;
     }
 
-    public List<DirFileTree> getChildren() {
+    public List<StateFileTree> getChildren() {
         return children;
     }
 
-    public void setChildren(List<DirFileTree> children) {
+    public void setChildren(List<StateFileTree> children) {
         this.children = children;
     }
 }
