@@ -58,7 +58,7 @@
           <Button
             type="primary"
             @click="handleMore('pre')"
-            :disabled="fromLine === 1 || endLine <= 100"
+            :disabled="fromLine === 1"
           >
             {{ $t('message.streamis.logDetail.pre') }}
           </Button>
