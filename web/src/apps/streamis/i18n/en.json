@@ -62,6 +62,7 @@
         "description": "Description",
         "operation": "Operation",
         "upload": "Upload",
+        "snapTitle": "savepoint",
         "stopTaskTitle": "Shutdown tasks",
         "stopTaskContent": "Batch stopping tasks...",
         "endTaskTitle": "Finish tasks",

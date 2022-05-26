@@ -61,6 +61,7 @@
         "description": "描述",
         "operation": "操作",
         "upload": "导入",
+        "snapTitle": "快照【savepoint】",
         "stopTaskTitle": "停止任务中",
         "stopTaskContent": "正在批量停止任务中...",
         "endTaskTitle": "任务完成",
