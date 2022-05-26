@@ -251,6 +251,21 @@
         </div>
       </div>
     </Modal>
+    <Modal
+      v-model="snapModalVisable"
+      :title="snapTitle"
+      width="800"
+      footer-hide
+    >
+      <div class="wrap">
+        <div class="info">
+          <h4>{{$t('message.streamis.jobListTableColumns.snapshotInfo')}}</h4>
+          <div>
+            {{snapshotPath}}
+          </div>
+        </div>
+      </div>
+    </Modal>
   </div>
 </template>
 <script>
@@ -330,6 +345,9 @@ export default {
       processModalVisable: false,
       isFinish: false,
       modalTitle: '',
+      snapTitle: '',
+      snapshotPath: '',
+      snapModalVisable: false,
       modalContent: '',
       orderNum: 0,
       columns: [
@@ -568,7 +586,13 @@ export default {
         )
         .then(res => {
           console.log(res)
-          if (res) this.loading = false
+          if (res) {
+            this.loading = false
+            this.snapModalVisable = true;
+            this.snapTitle = this.$t('message.streamis.jobListTableColumns.snapTitle');
+            this.snapshotPath = res.path;
+            this.getJobList();
+          }
         })
         .catch(e => {
           console.log(e)
