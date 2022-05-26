@@ -49,7 +49,7 @@
     </select>
 
     <select id="getConfValuesByJobId" resultMap="ConfigValue">
-        SELECT * FROM `linkis_stream_job_config` WHERE job_id = #{jobId}；
+        SELECT * FROM `linkis_stream_job_config` WHERE job_id = #{jobId};
     </select>
 
     <delete id="deleteConfValuesByJobId">
@@ -59,7 +59,7 @@
     <insert id="batchInsertValues">
         INSERT INTO `linkis_stream_job_config`(`job_id`, `job_name`, `key`, `value`, `ref_def_id`) VALUES
         <foreach collection="values" item="item" open="" close="" separator=",">
-            (#{item.jobId}, #{item.jobName}, #{item.key}, #{item.value}, #{ref_def_id})
+            (#{item.jobId}, #{item.jobName}, #{item.key}, #{item.value}, #{item.referDefId})
         </foreach>
     </insert>
 </mapper>

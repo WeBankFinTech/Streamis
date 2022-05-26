@@ -17,10 +17,10 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.service
 
 
 import org.apache.linkis.common.utils.Logging
-import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.ConfigConf
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.ConfigMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.dto.ConfigKeyValueDTO
-import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.{ConfigKeyVO, ConfigRelationVO}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.{JobConfValueSet, ConfigRelationVO}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.{ConfigKeyValue, JobUserRole}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.exception.ConfigurationException
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper
@@ -41,7 +41,7 @@ class ConfigurationService extends Logging {
   @Autowired private var streamJobMapper: StreamJobMapper = _
 
   @Transactional(rollbackFor = Array(classOf[Exception]))
-  def addKeyValue(vo: ConfigKeyVO): Unit = {
+  def addKeyValue(vo: JobConfValueSet): Unit = {
 
     val job = streamJobMapper.getJobById(vo.getJobId)
     if (job == null) throw new ConfigurationException(s"no such job,jobId is : ${vo.getJobId} ")
@@ -56,7 +56,7 @@ class ConfigurationService extends Logging {
         keyValue.setJobId(vo.getJobId)
         keyValue.setConfigValue(f.getValue)
         keyValue.setJobName(job.getName)
-        keyValue.setType(ConfigConf.JOBMANAGER_FLINK_RESOURCE.getValue)
+        keyValue.setType(JobConfConstants.JOBMANAGER_FLINK_RESOURCE.getValue)
         configMapper.insertValue(keyValue)
       })
     }
@@ -69,14 +69,14 @@ class ConfigurationService extends Logging {
         keyValue.setJobId(vo.getJobId)
         keyValue.setConfigValue(f.getValue)
         keyValue.setJobName(job.getName)
-        keyValue.setType(ConfigConf.JOBMANAGER_FLINK_PRODUCE.getValue)
+        keyValue.setType(JobConfConstants.JOBMANAGER_FLINK_PRODUCE.getValue)
         configMapper.insertValue(keyValue)
       })
     }
 
     if (!CollectionUtils.isEmpty(vo.getAlarmConfig)) {
       vo.getAlarmConfig.asScala.groupBy(_.getConfigkeyId).map(_._2.head).foreach(f => {
-        if (ConfigConf.JOBMANAGER_FLINK_ALERT_RULE.getValue.equals(f.getKey) && !StringUtils.isEmpty(f.getValue)) {
+        if (JobConfConstants.JOB_CONF_ALERT_RULE.getValue.equals(f.getKey) && !StringUtils.isEmpty(f.getValue)) {
           val strings: Array[String] = f.getValue.split(",")
           for (i <- strings.indices) {
             val value = new ConfigKeyValue()
@@ -85,7 +85,7 @@ class ConfigurationService extends Logging {
             value.setConfigValue(strings(i))
             value.setJobId(vo.getJobId)
             value.setJobName(job.getName)
-            value.setType(ConfigConf.JOBMANAGER_FLINK_ALERT.getValue)
+            value.setType(JobConfConstants.JOBMANAGER_FLINK_ALERT.getValue)
             configMapper.insertValue(value)
           }
         } else {
@@ -95,7 +95,7 @@ class ConfigurationService extends Logging {
           value.setConfigValue(f.getValue)
           value.setJobId(vo.getJobId)
           value.setJobName(job.getName)
-          value.setType(ConfigConf.JOBMANAGER_FLINK_ALERT.getValue)
+          value.setType(JobConfConstants.JOBMANAGER_FLINK_ALERT.getValue)
           configMapper.insertValue(value)
         }
       })
@@ -110,7 +110,7 @@ class ConfigurationService extends Logging {
         keyValue.setJobId(vo.getJobId)
         keyValue.setConfigValue(f.getValue)
         keyValue.setJobName(job.getName)
-        keyValue.setType(ConfigConf.JOBMANAGER_FLINK_CUSTOM.getValue)
+        keyValue.setType(JobConfConstants.JOBMANAGER_FLINK_CUSTOM.getValue)
         configMapper.insertValue(keyValue)
       })
     }
@@ -120,7 +120,7 @@ class ConfigurationService extends Logging {
       keyValue.setConfigKey(f.getKey)
       keyValue.setJobId(vo.getJobId)
       keyValue.setConfigValue(f.getValue)
-      keyValue.setType(ConfigConf.JOBMANAGER_FLINK_AUTHORITY.getValue)
+      keyValue.setType(JobConfConstants.JOBMANAGER_FLINK_AUTHORITY.getValue)
       keyValue.setConfigkeyId(f.getConfigkeyId)
       keyValue.setJobName(job.getName)
       configMapper.insertValue(keyValue)
@@ -129,7 +129,7 @@ class ConfigurationService extends Logging {
   }
 
 
-  def getFullTree(jobId: Long): ConfigKeyVO = {
+  def getFullTree(jobId: Long): JobConfValueSet = {
 
     val configValues = configMapper.getConfigKeyValues(null, jobId).asScala
 
@@ -153,7 +153,7 @@ class ConfigurationService extends Logging {
     }
 
     val vo = configKeyValueToVO(jobId, dtos)
-    val jobKeyTypes = configMapper.getConfigKeyValues(ConfigConf.JOBMANAGER_FLINK_CUSTOM.getValue, jobId)
+    val jobKeyTypes = configMapper.getConfigKeyValues(JobConfConstants.JOBMANAGER_FLINK_CUSTOM.getValue, jobId)
     if (jobKeyTypes != null && jobKeyTypes.size() > 0) {
       vo.setParameterConfig(jobKeyTypes.asScala.map(m => {
         val vo = new ConfigRelationVO()
@@ -165,7 +165,7 @@ class ConfigurationService extends Logging {
       }).asJava)
     } else {
       val configKeys = configMapper.getConfigKey.asScala
-      vo.setParameterConfig(configKeys.groupBy(_.getType).filter(f => f._1.equals(ConfigConf.JOBMANAGER_FLINK_CUSTOM.getValue)).flatMap(_._2)
+      vo.setParameterConfig(configKeys.groupBy(_.getType).filter(f => f._1.equals(JobConfConstants.JOBMANAGER_FLINK_CUSTOM.getValue)).flatMap(_._2)
       .toList.map(m => {
         val vo = new ConfigRelationVO()
         vo.setConfigkeyId(m.getId)
@@ -180,9 +180,9 @@ class ConfigurationService extends Logging {
   }
 
 
-  private def configKeyValueToVO(jobId: Long, dtos: List[ConfigKeyValueDTO]): ConfigKeyVO = {
-    val statusTwo = ConfigConf.JOBMANAGER_FLINK_CUSTOM_STATUS_TWO.getValue
-    val configVO = new ConfigKeyVO()
+  private def configKeyValueToVO(jobId: Long, dtos: List[ConfigKeyValueDTO]): JobConfValueSet = {
+    val statusTwo = JobConfConstants.JOBMANAGER_FLINK_CUSTOM_STATUS_TWO.getValue
+    val configVO = new JobConfValueSet()
 
     val groupDDs = dtos.groupBy(_.getType).map(m => {
       (m._1, m._2.sortBy(_.getSort).map(p => {
@@ -191,7 +191,7 @@ class ConfigurationService extends Logging {
 
         if (p.getStatus.equals(statusTwo)) {
           val lists = p.getDefaultValue.split(",").map(f => {
-            if (p.getKey.equals(ConfigConf.JOBMANAGER_FLINK_ALERT_RULE.getValue) && p.getValue != null) {
+            if (p.getKey.equals(JobConfConstants.JOB_CONF_ALERT_RULE.getValue) && p.getValue != null) {
               val s = p.getValue.split(",")
               if (s.contains(f)) new ConfigRelationVO.ValueList(f, true)
               else new ConfigRelationVO.ValueList(f, false)
@@ -205,11 +205,11 @@ class ConfigurationService extends Logging {
       }))
     })
 
-    configVO.setResourceConfig(groupDDs.filter(f => f._1.equals(ConfigConf.JOBMANAGER_FLINK_RESOURCE.getValue)).flatMap(_._2).toList.asJava)
-    configVO.setProduceConfig(groupDDs.filter(f => f._1.equals(ConfigConf.JOBMANAGER_FLINK_PRODUCE.getValue)).flatMap(_._2).toList.asJava)
-    configVO.setAlarmConfig(groupDDs.filter(f => f._1.equals(ConfigConf.JOBMANAGER_FLINK_ALERT.getValue)).flatMap(_._2).toList.asJava)
-    configVO.setParameterConfig(groupDDs.filter(f => f._1.equals(ConfigConf.JOBMANAGER_FLINK_CUSTOM.getValue)).flatMap(_._2).toList.asJava)
-    configVO.setPermissionConfig(groupDDs.filter(f => f._1.equals(ConfigConf.JOBMANAGER_FLINK_AUTHORITY.getValue)).flatMap(_._2).toList.asJava)
+    configVO.setResourceConfig(groupDDs.filter(f => f._1.equals(JobConfConstants.JOBMANAGER_FLINK_RESOURCE.getValue)).flatMap(_._2).toList.asJava)
+    configVO.setProduceConfig(groupDDs.filter(f => f._1.equals(JobConfConstants.JOBMANAGER_FLINK_PRODUCE.getValue)).flatMap(_._2).toList.asJava)
+    configVO.setAlarmConfig(groupDDs.filter(f => f._1.equals(JobConfConstants.JOBMANAGER_FLINK_ALERT.getValue)).flatMap(_._2).toList.asJava)
+    configVO.setParameterConfig(groupDDs.filter(f => f._1.equals(JobConfConstants.JOBMANAGER_FLINK_CUSTOM.getValue)).flatMap(_._2).toList.asJava)
+    configVO.setPermissionConfig(groupDDs.filter(f => f._1.equals(JobConfConstants.JOBMANAGER_FLINK_AUTHORITY.getValue)).flatMap(_._2).toList.asJava)
     configVO
   }
 
