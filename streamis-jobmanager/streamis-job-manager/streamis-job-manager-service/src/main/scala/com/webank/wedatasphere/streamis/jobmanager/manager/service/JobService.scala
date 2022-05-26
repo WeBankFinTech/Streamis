@@ -19,7 +19,7 @@ import java.util
 import java.util.Date
 
 import com.github.pagehelper.PageInfo
-import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.ConfigConf
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.ConfigMapper
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
 import org.apache.linkis.common.exception.ErrorException
@@ -222,7 +222,7 @@ class JobService extends Logging {
     val values = configMapper.getConfigKeyValues(null, jobId)
     if (CollectionUtils.isEmpty(values)) return false
     val configValues = values.asScala
-    val list = configValues.groupBy(_.getConfigKey).filter(f => f._1.equals(ConfigConf.JOBMANAGER_FLINK_AUTHORITY_VISIBLE.getValue)).toList
+    val list = configValues.groupBy(_.getConfigKey).filter(f => f._1.equals(JobConfConstants.JOBMANAGER_FLINK_AUTHORITY_VISIBLE.getValue)).toList
     if (list.size <= 0) return false
     val value = list.head._2.head.getConfigValue
     if (StringUtils.isBlank(value)) return false
@@ -234,7 +234,7 @@ class JobService extends Logging {
     val values = configMapper.getConfigKeyValues(null, job.getId)
     if (CollectionUtils.isEmpty(values)) return null
     val configValues = values.asScala
-    val list = configValues.groupBy(_.getConfigKey).filter(f => f._1.equals(ConfigConf.JOBMANAGER_FLINK_ALERT_USER.getValue)).toList
+    val list = configValues.groupBy(_.getConfigKey).filter(f => f._1.equals(JobConfConstants.JOB_CONF_ALERT_USER.getValue)).toList
     if (list.size <= 0) return null
     val value = list.head._2.head.getConfigValue
     if (StringUtils.isBlank(value)) return null
@@ -245,7 +245,7 @@ class JobService extends Logging {
     val values = configMapper.getConfigKeyValues(null, job.getId)
     if (CollectionUtils.isEmpty(values)) return AlertLevel.MINOR
     val configValues = values.asScala
-    val list = configValues.groupBy(_.getConfigKey).filter(f => f._1.equals(ConfigConf.JOBMANAGER_FLINK_ALERT_LEVEL.getValue)).toList
+    val list = configValues.groupBy(_.getConfigKey).filter(f => f._1.equals(JobConfConstants.JOB_CONF_ALERT_LEVEL.getValue)).toList
     if (list.size <= 0) return AlertLevel.MINOR
     val value = list.head._2.head.getConfigValue
     if (StringUtils.isBlank(value)) return AlertLevel.MINOR

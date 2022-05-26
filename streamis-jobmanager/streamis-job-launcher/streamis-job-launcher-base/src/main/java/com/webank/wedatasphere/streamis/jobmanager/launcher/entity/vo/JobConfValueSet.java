@@ -18,7 +18,7 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo;
 import java.util.List;
 
 
-public class ConfigKeyVO {
+public class JobConfValueSet {
 
     private Long jobId;
 

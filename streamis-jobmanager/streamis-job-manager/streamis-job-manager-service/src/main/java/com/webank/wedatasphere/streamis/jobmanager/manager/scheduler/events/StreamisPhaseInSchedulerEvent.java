@@ -21,6 +21,7 @@ import org.apache.linkis.scheduler.queue.JobInfo;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -45,7 +46,8 @@ public class StreamisPhaseInSchedulerEvent extends AbstractStreamisSchedulerEven
 
     @Override
     public void schedule(JobInfo jobInfo) throws StreamisScheduleException {
-        this.scheduleCommand.schedule(this.context, jobInfo);
+        Map<String, Object> resultSet = this.scheduleCommand.schedule(this.context, jobInfo);
+        Optional.ofNullable(resultSet).ifPresent( result -> super.resultSet.putAll(result));
     }
 
     @Override
@@ -73,7 +75,14 @@ public class StreamisPhaseInSchedulerEvent extends AbstractStreamisSchedulerEven
             // No operation
         }
 
-        void schedule(StateContext context, JobInfo jobInfo) throws StreamisScheduleException;
+        /**
+         * Schedule and return the resultSet
+         * @param context context
+         * @param jobInfo job info
+         * @return resultSet
+         * @throws StreamisScheduleException
+         */
+        Map<String, Object> schedule(StateContext context, JobInfo jobInfo) throws StreamisScheduleException;
 
         default void onErrorHandle(StateContext context, JobInfo scheduleJob, Throwable t){
             // No operation
@@ -93,6 +102,10 @@ public class StreamisPhaseInSchedulerEvent extends AbstractStreamisSchedulerEven
 
         public void addVar(String name, Object value){
             variables.put(name, value);
+        }
+
+        public Object getVar(String name){
+            return variables.get(name);
         }
 
         @SuppressWarnings("unchecked")
