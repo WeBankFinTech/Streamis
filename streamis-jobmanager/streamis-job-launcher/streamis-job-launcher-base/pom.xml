@@ -34,6 +34,10 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.linkis</groupId>
+            <artifactId>linkis-common</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

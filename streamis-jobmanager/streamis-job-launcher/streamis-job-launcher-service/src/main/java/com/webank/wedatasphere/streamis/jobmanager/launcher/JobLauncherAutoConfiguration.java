@@ -37,7 +37,7 @@ public class JobLauncherAutoConfiguration {
 
     public static final String DEFAULT_JOB_LAUNCH_MANGER = SimpleFlinkJobLaunchManager$.MODULE$.INSTANCE_NAME();
 
-    @Bean
+    @Bean(initMethod = "init", destroyMethod = "destroy")
     @ConditionalOnMissingBean(JobLaunchManager.class)
     @SuppressWarnings("unchecked")
     public JobLaunchManager<? extends JobInfo> defaultJobLaunchManager(){
