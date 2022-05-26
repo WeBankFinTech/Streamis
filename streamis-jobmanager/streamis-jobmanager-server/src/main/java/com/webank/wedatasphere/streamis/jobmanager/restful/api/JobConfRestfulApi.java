@@ -67,7 +67,13 @@ public class JobConfRestfulApi {
             });
 
             List<JobConfDefinitionVo> def =
-                    definitionRelation.values().stream().filter(definitionVo -> definitionVo.getLevel() == 0).collect(Collectors.toList());
+                    definitionRelation.values().stream().filter(definitionVo -> definitionVo.getLevel() == 0)
+                            .sorted((o1, o2) -> o2.getSort() - o1.getSort()).collect(Collectors.toList());
+            def.forEach(definitionVo -> {
+                if (Objects.isNull(definitionVo.getChildDef())){
+                    definitionVo.setChildDef(Collections.emptyList());
+                }
+            });
             result.data("def", def);
         }catch(Exception e){
             String message = "Fail to obtain StreamJob configuration definitions(获取任务配置定义集失败), message: " + e.getMessage();

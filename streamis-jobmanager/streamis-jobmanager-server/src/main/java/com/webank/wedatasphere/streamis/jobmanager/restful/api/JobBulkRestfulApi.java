@@ -22,8 +22,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequestMapping(path = "/streamis/streamJobManager/job/bulk")
 @RestController
@@ -48,7 +50,7 @@ public class JobBulkRestfulApi {
      */
     @RequestMapping(value = "/execution", method = RequestMethod.POST)
     public Message bulkExecution(@RequestBody JobBulkRequest execBulkRequest, HttpServletRequest request){
-        List<Object> subjectIds = execBulkRequest.getBulkSubject();
+        List<Long> subjectIds = execBulkRequest.getBulkSubject();
         if (subjectIds.isEmpty()){
             return Message.error("The list of jobId/taskId cannot be empty for bulk execution");
         }
@@ -65,9 +67,9 @@ public class JobBulkRestfulApi {
                      throw new JobExecuteErrorException(-1, "Have no permission to execute StreamJob [" + jobId + "]");
                  }
              }
-              execResults = streamTaskService.bulkExecute(execBulkRequest.getBulkSubject(), Collections.emptyList(), username, true);
+              execResults = streamTaskService.bulkExecute(new ArrayList<>(execBulkRequest.getBulkSubject()), Collections.emptyList(), username, true);
           } else {
-              execResults = streamTaskService.bulkExecute(Collections.emptyList(), execBulkRequest.getBulkSubject(), username, true);
+              execResults = streamTaskService.bulkExecute(Collections.emptyList(), new ArrayList<>(execBulkRequest.getBulkSubject()), username, true);
           }
           // Convert to bulk response
           BulkResponse<ExecResultVo> response = new BulkResponse<>(execResult -> {
@@ -77,6 +79,10 @@ public class JobBulkRestfulApi {
               }
               return BaseBulkRequest.BulkStatus.Success.name();
           }, execResults);
+          String[] necessaryStatus = new String[]{BaseBulkRequest.BulkStatus.Failed.name(), BaseBulkRequest.BulkStatus.Success.name()};
+          for (String necessary : necessaryStatus){
+              response.getResult().computeIfAbsent(necessary, key -> new BulkResponse.ResultStatistic<>());
+          }
           result.data("total", response.getTotal()).data("result", response.getResult());
         }catch (Exception e){
             String message = "Fail to bulk execute job/task(批量执行任务/作业失败), message: " + e.getMessage();
@@ -94,7 +100,7 @@ public class JobBulkRestfulApi {
      */
     @RequestMapping(value = "/pause", method = RequestMethod.POST)
     public Message bulkPause(@RequestBody JobBulkPauseRequest pauseRequest, HttpServletRequest request){
-        List<Object> subjectIds = pauseRequest.getBulkSubject();
+        List<Long> subjectIds = pauseRequest.getBulkSubject();
         if (subjectIds.isEmpty()){
             return Message.error("The list of jobId/taskId cannot be empty for bulk pause");
         }
@@ -107,16 +113,16 @@ public class JobBulkRestfulApi {
             List<PauseResultVo> pauseResults;
             // TODO Check the permission of task id
             if (JobBulkRequest.IdType.JOB.name().equals(pauseRequest.getBulkSubjectType())){
-                for(Object jobId : pauseRequest.getBulkSubject()){
-                    if (!jobService.hasPermission(Long.parseLong(jobId.toString()), username)){
+                for(Long jobId : pauseRequest.getBulkSubject()){
+                    if (!jobService.hasPermission(jobId, username)){
                         throw new JobExecuteErrorException(-1, "Have no permission to execute StreamJob [" + jobId + "]");
                     }
                 }
-                pauseResults = streamTaskService.bulkPause(pauseRequest.getBulkSubject(),
+                pauseResults = streamTaskService.bulkPause(new ArrayList<>(pauseRequest.getBulkSubject()),
                         Collections.emptyList(), username, pauseRequest.isSnapshot());
             } else {
                 pauseResults = streamTaskService.bulkPause(Collections.emptyList(),
-                        pauseRequest.getBulkSubject(), username, pauseRequest.isSnapshot());
+                        new ArrayList<>(pauseRequest.getBulkSubject()), username, pauseRequest.isSnapshot());
             }
             // Convert to bulk response
             BulkResponse<PauseResultVo> response = new BulkResponse<>(pauseResult -> {
@@ -126,6 +132,10 @@ public class JobBulkRestfulApi {
                 }
                 return BaseBulkRequest.BulkStatus.Success.name();
             }, pauseResults);
+            String[] necessaryStatus = new String[]{BaseBulkRequest.BulkStatus.Failed.name(), BaseBulkRequest.BulkStatus.Success.name()};
+            for (String necessary : necessaryStatus){
+                response.getResult().computeIfAbsent(necessary, key -> new BulkResponse.ResultStatistic<>());
+            }
             result.data("total", response.getTotal()).data("result", response.getResult());
         } catch (Exception e){
             String message = "Fail to bulk pause job/task(批量停止任务/作业失败), message: " + e.getMessage();

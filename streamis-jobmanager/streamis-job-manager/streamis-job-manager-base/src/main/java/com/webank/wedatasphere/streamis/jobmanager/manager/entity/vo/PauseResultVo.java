@@ -28,6 +28,11 @@ public class PauseResultVo extends ScheduleResultVo {
      */
     private Long taskId;
 
+    /**
+     * Snapshot path
+     */
+    private String snapshotPath;
+
     public PauseResultVo(){
     }
 
@@ -49,5 +54,13 @@ public class PauseResultVo extends ScheduleResultVo {
 
     public void setTaskId(Long taskId) {
         this.taskId = taskId;
+    }
+
+    public String getSnapshotPath() {
+        return snapshotPath;
+    }
+
+    public void setSnapshotPath(String snapshotPath) {
+        this.snapshotPath = snapshotPath;
     }
 }

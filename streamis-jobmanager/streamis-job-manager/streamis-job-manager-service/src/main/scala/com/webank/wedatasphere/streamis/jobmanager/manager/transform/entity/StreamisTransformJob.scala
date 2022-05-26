@@ -15,7 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.ConfigKeyVO
+import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.JobConfValueSet
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion}
 
 
@@ -25,7 +25,7 @@ trait StreamisTransformJob {
 
   def getStreamJobVersion: StreamJobVersion
 
-  def getConfig: ConfigKeyVO
+  def getConfig: JobConfValueSet
 
   def getStreamisJobEngineConn: StreamisJobEngineConn
 
