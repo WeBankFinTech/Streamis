@@ -18,8 +18,10 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState, JobStateFetcher}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobStateFetchException
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.AbstractJobStateManager.WINDOWS_ROOT_DIR_REGEX
+import org.apache.linkis.common.utils.Utils
 
 import java.net.{URI, URL, URLConnection, URLStreamHandler}
 import java.util.concurrent.ConcurrentHashMap
@@ -33,26 +35,33 @@ abstract class AbstractJobStateManager extends JobStateManager {
   /**
    * Hold the job state fetcher with its type
    */
-  private val jobStateFetcherHolder: ConcurrentHashMap[String, JobStateFetcher[_ <: JobState]]
+  protected val jobStateFetcherHolder: ConcurrentHashMap[String, JobStateFetcher[_ <: JobState]]
         = new ConcurrentHashMap[String, JobStateFetcher[_ <: JobState]]()
 
   /**
    * Fetcher loaders
    */
-  private val stateFetcherLoaders: util.Map[String, ()=> JobStateFetcher[_ <: JobState]] = new util.HashMap[String, () => JobStateFetcher[_ <: JobState]]()
+  protected val stateFetcherLoaders: util.Map[String, ()=> JobStateFetcher[_ <: JobState]] = new util.HashMap[String, () => JobStateFetcher[_ <: JobState]]()
 
-  override def getOrCreateJobStateFetcher[T <: JobState](clazz: Class[T]): JobStateFetcher[T] = {
+  override def getOrCreateJobStateFetcher[T <: JobState](clazz: Class[_]): JobStateFetcher[T] = {
     val stateType = clazz.getCanonicalName
     val loader = Option(stateFetcherLoaders.get(stateType))
     if (loader.isEmpty){
       throw new FlinkJobStateFetchException(-1, s"Cannot find the fetcher loader for [$stateType]", null)
     }
     jobStateFetcherHolder.computeIfAbsent(stateType, new util.function.Function[String, JobStateFetcher[_ <: JobState]]{
-      override def apply(t: String): JobStateFetcher[_ <: JobState] = loader.get.apply()
+      override def apply(t: String): JobStateFetcher[_ <: JobState] = {
+        val fetcher = loader.get.apply()
+        Utils.tryCatch(fetcher.init()){
+          case e: Exception =>
+            throw new FlinkJobStateFetchException(-1, s"Unable to init the state fetcher [${fetcher.getClass.getName}", e)
+        }
+        fetcher
+      }
     }).asInstanceOf[JobStateFetcher[T]]
   }
 
-  override def getJobState[T <: JobState](clazz: Class[T], jobInfo: JobInfo): T = Option(getOrCreateJobStateFetcher(clazz)) match {
+  override def getJobState[T <: JobState](clazz: Class[_], jobInfo: JobInfo): T = Option(getOrCreateJobStateFetcher[T](clazz)) match {
     case Some(jobStateFetcher: JobStateFetcher[T]) =>jobStateFetcher.getState(jobInfo)
     case _ => null.asInstanceOf[T]
   }
@@ -64,14 +73,19 @@ abstract class AbstractJobStateManager extends JobStateManager {
    * @param builder job state fetcher loader/builder
    * @tparam T
    */
-  override def registerJobStateFetcher[T <: JobState](clazz: Class[T], builder: () => JobStateFetcher[T]): Unit = {
+  override def registerJobStateFetcher(clazz: Class[_], builder: () => JobStateFetcher[_ <: JobState]): Unit = {
     stateFetcherLoaders.put(clazz.getCanonicalName, builder)
   }
 
-  override def getJobStateDir[T <: JobState](clazz: Class[T], scheme: String, relativePath: String): URI = {
+  override def getJobStateDir[T <: JobState](clazz: Class[_], scheme: String, relativePath: String): URI = {
     getJobStateDir(clazz, scheme, null, relativePath)
   }
 
+
+  override def getJobStateDir[T <: JobState](clazz: Class[_], relativePath: String): URI = {
+    getJobStateDir(clazz, JobLauncherConfiguration.FLINK_STATE_DEFAULT_SCHEME.getValue,
+      JobLauncherConfiguration.FLINK_STATE_DEFAULT_AUTHORITY.getValue, relativePath)
+  }
 
   /**
    * Get job state directory uri
@@ -83,7 +97,7 @@ abstract class AbstractJobStateManager extends JobStateManager {
    * @tparam T
    * @return
    */
-  override def getJobStateDir[T <: JobState](clazz: Class[T], scheme: String, authority: String, relativePath: String): URI = {
+  override def getJobStateDir[T <: JobState](clazz: Class[_], scheme: String, authority: String, relativePath: String): URI = {
     // To Support all schema
     new URI(scheme, authority, normalizePath(getJobStateRootPath(clazz, scheme) + "/" + relativePath), null, null)
   }
@@ -96,7 +110,7 @@ abstract class AbstractJobStateManager extends JobStateManager {
     if (path.endsWith("/") && !(path == "/") && !WINDOWS_ROOT_DIR_REGEX.pattern.matcher(path).matches()) path = path.substring(0, path.length - "/".length)
     path
   }
-  def getJobStateRootPath[T <: JobState](clazz: Class[T], schema: String): String
+  def getJobStateRootPath[T <: JobState](clazz: Class[_], schema: String): String
 }
 
 object AbstractJobStateManager{

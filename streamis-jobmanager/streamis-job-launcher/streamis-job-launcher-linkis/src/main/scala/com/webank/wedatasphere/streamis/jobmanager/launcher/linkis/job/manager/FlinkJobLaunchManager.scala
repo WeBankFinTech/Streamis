@@ -18,11 +18,13 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration.VAR_FLINK_SAVEPOINT_PATH
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.LinkisJobInfo
 import org.apache.linkis.common.utils.{Logging, Utils}
 import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
 import org.apache.linkis.computation.client.utils.LabelKeyUtils
+import org.apache.linkis.protocol.utils.TaskUtils
 
 
 
@@ -35,7 +37,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
   protected def createSubmittedOnceJob(id: String, jobInfo: LinkisJobInfo): OnceJob
 
 
-  protected def createJobInfo(onceJob: SubmittableOnceJob, job: LaunchJob): LinkisJobInfo
+  protected def createJobInfo(onceJob: SubmittableOnceJob, job: LaunchJob, jobState: JobState): LinkisJobInfo
 
   protected def createJobInfo(jobInfo: String): LinkisJobInfo
 
@@ -47,10 +49,12 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
    * @return the job id.
    */
   override def launch(job: LaunchJob, jobState: JobState): JobClient[LinkisJobInfo] = {
-    launch(job)
-  }
-
-  override def launch(job: LaunchJob): JobClient[LinkisJobInfo] = {
+    // Transform the JobState into the params in LaunchJob
+    Option(jobState).foreach(state => {
+      val startUpParams = TaskUtils.getStartupMap(job.getParams)
+      startUpParams.putIfAbsent(VAR_FLINK_SAVEPOINT_PATH.getValue,
+        state.getLocation.toString)
+    })
     job.getLabels.get(LabelKeyUtils.ENGINE_TYPE_LABEL_KEY) match {
       case engineConnType: String =>
         if(!engineConnType.toLowerCase.startsWith(FlinkJobLaunchManager.FLINK_ENGINE_CONN_TYPE))
@@ -60,7 +64,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
     Utils.tryCatch {
       val onceJob = buildOnceJob(job)
       onceJob.submit()
-      val jobInfo = Utils.tryCatch(createJobInfo(onceJob, job)) {
+      val jobInfo = Utils.tryCatch(createJobInfo(onceJob, job, jobState)) {
         case e: FlinkJobLaunchErrorException =>
           throw e
         case t: Throwable =>
@@ -74,7 +78,10 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
       case t: Throwable =>
         throw new FlinkJobLaunchErrorException(-1, s"Exception in submitting Flink job to Linkis remote server, message: ${t.getMessage}", t)
     }
+  }
 
+  override def launch(job: LaunchJob): JobClient[LinkisJobInfo] = {
+    launch(job, null)
   }
 
 
