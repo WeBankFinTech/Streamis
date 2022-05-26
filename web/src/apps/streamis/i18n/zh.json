@@ -21,6 +21,8 @@
       "jobStatus": {
         "failure": "失败任务",
         "running": "运行中",
+        "stopping": "停止中",
+        "starting": "启动中",
         "slowTask": "慢任务",
         "alert": "告警",
         "waitRestart": "等待重启",
@@ -40,9 +42,12 @@
         "stopBtn": "停止",
         "directStop": "直接停止",
         "snapshotAndStop": "快照并停止",
+        "directRestart": "直接重启",
+        "snapshotRestart": "快照重启",
         "startBtn": "启动",
         "configBtn": "配置",
         "saveBtn": "保存",
+        "confirmBtn": "确认",
         "updateBtn": "更新"
       },
       "jobListTableColumns":{
@@ -56,8 +61,12 @@
         "description": "描述",
         "operation": "操作",
         "upload": "导入",
+        "snapTitle": "快照【savepoint】",
         "stopTaskTitle": "停止任务中",
         "stopTaskContent": "正在批量停止任务中...",
+        "endTaskTitle": "任务完成",
+        "failInfo": "异常信息",
+        "snapshotInfo": "快照路径",
         "startTaskTitle": "启动任务中",
         "startTaskContent": "正在批量启动任务..."
         
