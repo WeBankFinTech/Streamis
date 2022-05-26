@@ -15,6 +15,8 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.job
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState, JobStateInfo}
+
 /**
  * Basic job information
  */
@@ -59,6 +61,6 @@ trait JobInfo {
    * Contains the check point and save points
    * @return
    */
-  def getJobStates: Array[String]
+  def getJobStates: Array[JobStateInfo]
 
 }

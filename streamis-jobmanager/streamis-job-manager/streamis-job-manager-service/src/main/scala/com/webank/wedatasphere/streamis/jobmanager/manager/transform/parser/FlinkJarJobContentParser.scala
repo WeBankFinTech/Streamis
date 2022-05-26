@@ -20,7 +20,7 @@ import org.apache.linkis.common.utils.JsonUtils
 import org.apache.linkis.manager.label.entity.engine.RunType
 import org.apache.linkis.manager.label.entity.engine.RunType.RunType
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion, StreamisFile}
-import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteFailedErrorException
+import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteErrorException
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisJarTransformJobContent, StreamisTransformJobContent}
 import org.apache.commons.lang.StringUtils
 import org.springframework.stereotype.Component
@@ -40,12 +40,12 @@ class FlinkJarJobContentParser extends AbstractJobContentParser {
       case mainClassJar: String =>
         val file = dealStreamisFile(job, jobVersion, mainClassJar, "main.class.jar")
         transformJobContent.setMainClassJar(file)
-      case _ => throw new JobExecuteFailedErrorException(30500, "main.class.jar is needed.")
+      case _ => throw new JobExecuteErrorException(30500, "main.class.jar is needed.")
     }
     jobContent.get("main.class") match {
       case mainClass: String =>
         transformJobContent.setMainClass(mainClass)
-      case _ => throw new JobExecuteFailedErrorException(30500, "main.class is needed.")
+      case _ => throw new JobExecuteErrorException(30500, "main.class is needed.")
     }
     jobContent.get("args") match {
       case args: util.List[String] =>

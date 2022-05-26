@@ -1,7 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobInfo, LaunchJob}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, JobInfo, LaunchJob}
 
 import java.util.concurrent.ConcurrentHashMap
 
@@ -11,12 +11,22 @@ import java.util.concurrent.ConcurrentHashMap
 trait JobLaunchManager[T <: JobInfo] {
 
   /**
+   * Init method
+   */
+  def init(): Unit
+
+  /**
+   * Destroy method
+   */
+  def destroy(): Unit
+
+  /**
    * Manager name
    * @return
    */
   def getName: String
 
-  def launch(job: LaunchJob): String
+  def launch(job: LaunchJob): JobClient[T]
 
   /**
    * This method is used to launch a new job.
@@ -24,7 +34,7 @@ trait JobLaunchManager[T <: JobInfo] {
    * @param jobState job state used to launch
    * @return the job id.
    */
-  def launch(job: LaunchJob, jobState: JobState): String
+  def launch(job: LaunchJob, jobState: JobState): JobClient[T]
   /**
    * Connect the job which already launched in another process,
    * if the job has been stored in process, just return the job info
@@ -32,29 +42,15 @@ trait JobLaunchManager[T <: JobInfo] {
    * @param jobInfo job info
    * @return
    */
-  def connect(id: String, jobInfo: String): T
+  def connect(id: String, jobInfo: String): JobClient[T]
 
-  def connect(id: String, jobInfo: T): Unit
+  def connect(id: String, jobInfo: T): JobClient[T]
   /**
    * Job state manager(store the state information, example: Checkpoint/Savepoint)
    * @return state manager instance
    */
   def getJobStateManager: JobStateManager
 
-  /**
-   * Stop a launched job by id, You should use [[launch()]] method before use this method.
-   * @param id job id
-   * @param snapshot if do snapshot to save the job state
-   */
-  def stop(id: String, snapshot: Boolean): Unit
-
-  def stop(id: String): Unit
-  /**
-   * get jo info of a launched Job by JobId.
-   * You should use [[launch()]] method before use this method.
-   * @param id launched job id
-   */
-  def getJobInfo(id: String): T
 }
 object JobLaunchManager{
 
