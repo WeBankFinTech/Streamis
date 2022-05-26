@@ -19,6 +19,7 @@ trait FlinkLogIterator extends Iterator[String] with Closeable {
   def init(): Unit
   def getLogPath: String
   def getLogs: util.ArrayList[String]
+  def getEndLine: Long
 }
 
 class SimpleFlinkJobLogIterator(override val requestPayload: LogRequestPayload,
@@ -28,6 +29,7 @@ class SimpleFlinkJobLogIterator(override val requestPayload: LogRequestPayload,
   private var index = 0
   private var logPath: String = _
   private var isClosed = true
+  private var endLine = 0
 
   override def init(): Unit = {
     engineConnLogOperator.setPageSize(requestPayload.getPageSize)
@@ -38,6 +40,7 @@ class SimpleFlinkJobLogIterator(override val requestPayload: LogRequestPayload,
     val engineConnLog = engineConnLogOperator()
     logs = engineConnLog.logs
     logPath = engineConnLog.logPath
+    endLine = engineConnLog.endLine
   }
 
   override def close(): Unit = isClosed = true
@@ -64,4 +67,6 @@ class SimpleFlinkJobLogIterator(override val requestPayload: LogRequestPayload,
   override def getLogPath: String = logPath
 
   override def getLogs: util.ArrayList[String] = logs
+
+  override def getEndLine: Long = endLine
 }
