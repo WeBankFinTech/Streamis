@@ -102,7 +102,7 @@ export default {
       ],
       modalVisible: false,
       logVisible: false,
-      taskId: '',
+      taskId: 0,
       versionDatas: [],
       jobId: this.$route.params.id,
       fromHistory: true
@@ -156,7 +156,7 @@ export default {
       console.log(row)
       this.$refs['logDetail'].getDatas(row.taskId)
       this.logVisible = true;
-      this.taskId = row.taskId;
+      this.taskId = +row.taskId;
     },
     modalCancel() {
       this.modalVisible = false

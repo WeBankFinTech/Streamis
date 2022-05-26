@@ -1,12 +1,12 @@
 <template>
   <div>
     <Col span="25">
-      <div class="itemWrap" v-for="part in configs" :key="part.id">
+      <div class="itemWrap" v-for="(part, index) in configs" :key="index">
         <div class="normal" v-if="part.child_def && part.child_def.length">
           <h3>{{ part.name }}</h3>
           <div>
             <Form :ref="part.key">
-              <FormItem v-for="def in part.child_def" :key="def.key" :label="def.name">
+              <FormItem v-for="(def, index) in part.child_def" :key="index" :label="def.name">
                 <div v-if="def.type === 'INPUT'" :data-part="part.key" :data-def="def.key">
                   <Input v-model="valueMap[part.key][def.key]" :rules="{required: def.required, message: 'Error!', trigger: 'blur', pattern: new RegExp(def.validate_rule)}" />
                 </div>
@@ -19,9 +19,9 @@
                     class="select"
                   >
                     <Option
-                      v-for="item in def.ref_values"
+                      v-for="(item, index) in def.ref_values"
                       :value="item"
-                      :key="item"
+                      :key="index"
                     >
                       {{ item }}
                     </Option>
@@ -186,7 +186,7 @@ export default {
       let warning = false;
       Object.keys(this.diyMap).forEach(key => {
         configuration[key] = {};
-        this.diyMap[key].forEach(mapKey => {
+        (this.diyMap[key] || []).forEach(mapKey => {
           if (configuration[key][mapKey.key]) warning = true;
           configuration[key][mapKey.key] = mapKey.value;
         })
