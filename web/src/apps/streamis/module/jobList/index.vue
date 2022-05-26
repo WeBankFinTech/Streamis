@@ -225,6 +225,14 @@
           <div class="bar"></div>
           <div class="text">{{modalContent}}({{orderNum}}/{{selections.length}})</div>
         </div>
+        <div class="info" v-if="snapPaths.length">
+          <h4>{{$t('message.streamis.jobListTableColumns.snapshotInfo')}}:</h4>
+          <div v-for="item in snapPaths" :key="item.taskId" style="margin-bottom: 32px;">
+            <span>{{item.taskName}}</span>,
+            <span style="margin-right: 32px;">{{item.taskId}}:</span>
+            <span>{{item.info}}</span>
+          </div>
+        </div>
         <div class="info" v-if="failTasks.length">
           <h4>{{$t('message.streamis.jobListTableColumns.failInfo')}}:</h4>
           <div v-for="item in failTasks" :key="item.taskId" style="margin-bottom: 32px;">
@@ -315,6 +323,7 @@ export default {
       baseLoading: false,
       modalLoading: false,
       failTasks: [],
+      snapPaths: [],
       timer: null,
       isBatching: false,
       selections: [],
@@ -681,8 +690,15 @@ export default {
         const bulk_sbj = this.selections.map(item => +item.id);
         const res = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot });
         console.log('pause result', res);
-        // if (!res.result || !res.result.Success || !res.result.Success.count || !res.result.Failed || !res.result.Failed.count || !res.result.Failed.data) throw new Error('后台返回异常');
+        if (!res.result || !res.result.Success || !res.result.Failed) throw new Error('后台返回异常');
         // this.modalLoading = false;
+        if (snapshot) {
+          this.snapPaths = res.result.Success.data.map(item => ({
+            taskId: item.jobId,
+            taskName: item.scheduleId,
+            info: item.snapshotPath,
+          }));
+        }
         this.failTasks = res.result.Failed.data.map(item => ({
           taskId: item.jobId,
           taskName: item.scheduleId,
