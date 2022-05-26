@@ -25,19 +25,29 @@ import java.net.URI
 trait JobStateManager {
 
   /**
+   * Init method
+   */
+  def init(): Unit
+
+  /**
+   * Destroy method
+   */
+  def destroy(): Unit
+
+  /**
    * Register job state fetcher
    * @param clazz clazz
    * @param builder job state fetcher
    * @tparam T
    */
-  def registerJobStateFetcher[T <: JobState](clazz: Class[T],  builder: () => JobStateFetcher[T]): Unit
+  def registerJobStateFetcher(clazz: Class[_],  builder: () => JobStateFetcher[_ <: JobState]): Unit
   /**
    * Job state fetcher
    * @param clazz clazz
    * @tparam T name
    * @return
    */
-  def getOrCreateJobStateFetcher[T <: JobState](clazz: Class[T]): JobStateFetcher[T]
+  def getOrCreateJobStateFetcher[T <: JobState](clazz: Class[_]): JobStateFetcher[T]
 
   /**
    * Get job state
@@ -45,11 +55,12 @@ trait JobStateManager {
    * @tparam T name
    * @return
    */
-  def getJobState[T <: JobState](clazz: Class[T], jobInfo: JobInfo): T
+  def getJobState[T <: JobState](clazz: Class[_], jobInfo: JobInfo): T
 
 
-  def getJobStateDir[T <: JobState](clazz: Class[T], scheme: String, relativePath: String): URI
+  def getJobStateDir[T <: JobState](clazz: Class[_], scheme: String, relativePath: String): URI
 
+  def getJobStateDir[T <: JobState](clazz: Class[_], relativePath: String): URI
   /**
    * Get job state directory uri
    * @param clazz clazz
@@ -59,7 +70,7 @@ trait JobStateManager {
    * @tparam T
    * @return
    */
-  def getJobStateDir[T <: JobState](clazz: Class[T], scheme: String, authority: String, relativePath: String): URI
+  def getJobStateDir[T <: JobState](clazz: Class[_], scheme: String, authority: String, relativePath: String): URI
 }
 
 

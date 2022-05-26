@@ -56,9 +56,9 @@ trait StreamTaskService {
    * @param taskId task id
    * @param operator user name
    */
-   def pause(jobId: Long, taskId: Long, operator: String, snapshot: Boolean): Unit
+   def pause(jobId: Long, taskId: Long, operator: String, snapshot: Boolean): PauseResultVo
 
-   def asyncPause(jobId: Long, taskId: Long, operator: String, snapshot: Boolean): Future[String]
+   def asyncPause(jobId: Long, taskId: Long, operator: String, snapshot: Boolean): Future[PauseResultVo]
 
   /**
    * Bulk pausing
@@ -107,6 +107,14 @@ trait StreamTaskService {
    */
    def getRealtimeLog(jobId: Long, taskId: Long, operator: String, requestPayload: LogRequestPayload): util.Map[String, Any]
 
+  /**
+   * Do snapshot
+   * @param jobId job id
+   * @param taskId task id
+   * @param operator operator
+   * @return snapshot url
+   */
+   def snapshot(jobId: Long, taskId: Long, operator: String): String
   /**
    * Fetch the progress(job progress/the progress of latest task) by job id and version
    * @param jobId job id

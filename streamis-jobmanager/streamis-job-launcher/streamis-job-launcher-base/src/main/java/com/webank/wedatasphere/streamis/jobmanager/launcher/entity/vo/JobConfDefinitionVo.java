@@ -87,6 +87,8 @@ public class JobConfDefinitionVo {
     @JsonProperty("child_def")
     private List<JobConfDefinitionVo> childDef;
 
+    private boolean required;
+
     public JobConfDefinitionVo(){
 
     }
@@ -104,6 +106,8 @@ public class JobConfDefinitionVo {
         this.level = definition.getLevel();
         this.defaultValue = definition.getDefaultValue();
         this.refValues = definition.getRefValues();
+        this.required = definition.isRequired();
+        this.unit = definition.getUnit();
     }
 
     public String getKey() {
@@ -216,5 +220,13 @@ public class JobConfDefinitionVo {
 
     public void setUnit(String unit) {
         this.unit = unit;
+    }
+
+    public boolean isRequired() {
+        return required;
+    }
+
+    public void setRequired(boolean required) {
+        this.required = required;
     }
 }

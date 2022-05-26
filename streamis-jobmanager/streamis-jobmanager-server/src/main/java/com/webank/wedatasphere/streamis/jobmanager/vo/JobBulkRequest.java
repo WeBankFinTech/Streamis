@@ -24,7 +24,7 @@ import java.util.List;
  * Bulk request for job restful api
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class JobBulkRequest extends BaseBulkRequest<List<Object>>{
+public class JobBulkRequest extends BaseBulkRequest<List<Long>>{
 
     public enum IdType {
         JOB, TASK

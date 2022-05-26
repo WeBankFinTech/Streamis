@@ -11,6 +11,16 @@ import java.util.concurrent.ConcurrentHashMap
 trait JobLaunchManager[T <: JobInfo] {
 
   /**
+   * Init method
+   */
+  def init(): Unit
+
+  /**
+   * Destroy method
+   */
+  def destroy(): Unit
+
+  /**
    * Manager name
    * @return
    */

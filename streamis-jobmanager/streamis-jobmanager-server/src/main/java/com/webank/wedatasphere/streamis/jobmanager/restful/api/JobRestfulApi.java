@@ -19,7 +19,12 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.FlinkJobInfo;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.Checkpoint;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.Savepoint;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.*;
@@ -27,21 +32,19 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamTaskService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @RequestMapping(path = "/streamis/streamJobManager/job")
 @RestController
@@ -50,9 +53,12 @@ public class JobRestfulApi {
     private static final Logger LOG = LoggerFactory.getLogger(JobRestfulApi.class);
 
     @Autowired
-    JobService jobService;
+    private JobService jobService;
     @Autowired
-    StreamTaskService streamTaskService;
+    private StreamTaskService streamTaskService;
+
+    @Resource
+    private JobLaunchManager<? extends JobInfo> jobLaunchManager;
 
     @RequestMapping(path = "/list", method = RequestMethod.GET)
     public Message getJobList(HttpServletRequest req,
@@ -63,10 +69,10 @@ public class JobRestfulApi {
                               @RequestParam(value = "jobStatus", required = false) Integer jobStatus,
                               @RequestParam(value = "jobCreator", required = false) String jobCreator) {
         String username = SecurityFilter.getLoginUsername(req);
-        if (StringUtils.isEmpty(pageNow)) {
+        if (Objects.isNull(pageNow)) {
             pageNow = 1;
         }
-        if (StringUtils.isEmpty(pageSize)) {
+        if (Objects.isNull(pageSize)) {
             pageSize = 20;
         }
         PageInfo<QueryJobListVo> pageInfo;
@@ -138,12 +144,12 @@ public class JobRestfulApi {
             return Message.error("you have no permission of this job ,please ask for the job creator");
         }
         try {
-            streamTaskService.pause(jobId, 0L, userName, Objects.nonNull(snapshot)? snapshot : false);
+            PauseResultVo resultVo = streamTaskService.pause(jobId, 0L, userName, Objects.nonNull(snapshot)? snapshot : false);
+            return snapshot? Message.ok().data("path", resultVo.getSnapshotPath()) : Message.ok();
         } catch (Exception e) {
             LOG.error("{} kill job {} failed!", userName, jobId, e);
             return Message.error(ExceptionUtils.getRootCauseMessage(e));
         }
-        return Message.ok();
     }
 
     @RequestMapping(path = "/details", method = RequestMethod.GET)
@@ -248,10 +254,12 @@ public class JobRestfulApi {
                           @RequestParam(value = "fromLine", defaultValue = "1") Integer fromLine,
                           @RequestParam(value = "ignoreKeywords", required = false) String ignoreKeywords,
                           @RequestParam(value = "onlyKeywords", required = false) String onlyKeywords,
+                          @RequestParam(value = "logType", required = false) String logType,
                           @RequestParam(value = "lastRows", defaultValue = "0") Integer lastRows) throws JobException {
         if (jobId == null) {
             throw JobExceptionManager.createException(30301, "jobId");
         }
+        logType = StringUtils.isBlank(logType) ? "client" : logType;
         String username = SecurityFilter.getLoginUsername(req);
         if (!jobService.hasPermission(jobId, username)) {
             return Message.error("you have no permission of this job ,please ask for the job creator");
@@ -261,23 +269,24 @@ public class JobRestfulApi {
         payload.setIgnoreKeywords(ignoreKeywords);
         payload.setLastRows(lastRows);
         payload.setOnlyKeywords(onlyKeywords);
+        payload.setLogType(logType);
         payload.setPageSize(pageSize);
         return Message.ok().data("logs", streamTaskService.getRealtimeLog(jobId, null != taskId? taskId : 0L, username, payload));
     }
 
     /**
      * Refresh the job status
-     * @return
+     * @return status list
      */
     @RequestMapping(path = "/status", method = RequestMethod.PUT)
-    public Message status(@RequestBody Map<String, List<Object>> requestMap){
-        List<Object> jobIds = requestMap.get("id_list");
+    public Message status(@RequestBody Map<String, List<Long>> requestMap){
+        List<Long> jobIds = requestMap.get("id_list");
         if (Objects.isNull(jobIds) || jobIds.isEmpty()){
             return Message.error("The list of job id which to refresh the status cannot be null or empty");
         }
         Message result = Message.ok("success");
         try{
-            result.data("result", this.streamTaskService.getStatusList(jobIds));
+            result.data("result", this.streamTaskService.getStatusList(new ArrayList<>(jobIds)));
         }catch (Exception e){
             String message = "Fail to refresh the status of jobs(刷新/获得任务状态失败), message: " + e.getMessage();
             LOG.warn(message, e);
@@ -285,4 +294,26 @@ public class JobRestfulApi {
         }
         return result;
     }
+
+    /**
+     * Do snapshot
+     * @return path message
+     */
+    @RequestMapping(path = "/snapshot/{jobId:\\w+}", method = RequestMethod.PUT)
+    public Message snapshot(@PathVariable("jobId")Long jobId, HttpServletRequest request){
+        Message result = Message.ok();
+        try{
+            String username = SecurityFilter.getLoginUsername(request);
+            if (!jobService.hasPermission(jobId, username)){
+                return Message.error("You have no permission to do snapshot for this job ,please ask for the job creator");
+            }
+            result.data("path", streamTaskService.snapshot(jobId, 0L, username));
+        }catch (Exception e){
+            String message = "Fail to do a snapshot operation (快照生成失败), message: " + e.getMessage();
+            LOG.warn(message, e);
+            result = Message.error(message, e);
+        }
+        return result;
+    }
+
 }

@@ -15,7 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.{ConfigKeyVO, ConfigRelationVO}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.{JobConfValueSet, ConfigRelationVO}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 import org.springframework.beans.BeanUtils
 
@@ -24,7 +24,7 @@ import scala.collection.JavaConverters._
 
 class ExtraConfigTransform extends ResourceConfigTransform {
 
-  override protected def transform(config: ConfigKeyVO, job: LaunchJob): LaunchJob = {
+  override protected def transform(config: JobConfValueSet, job: LaunchJob): LaunchJob = {
     val newConfigs = config.getParameterConfig.asScala.map{config =>
       val newConfig = new ConfigRelationVO
       BeanUtils.copyProperties(config, newConfig)
