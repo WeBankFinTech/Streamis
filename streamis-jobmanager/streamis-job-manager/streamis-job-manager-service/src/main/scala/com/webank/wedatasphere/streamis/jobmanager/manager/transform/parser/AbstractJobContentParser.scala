@@ -22,7 +22,7 @@ import org.apache.linkis.common.conf.Configuration
 import org.apache.linkis.common.utils.{JsonUtils, Logging}
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion, StreamisFile}
-import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteFailedErrorException
+import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteErrorException
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.{BMLService, StreamiFileService}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import org.apache.commons.io.IOUtils
@@ -44,12 +44,12 @@ abstract class AbstractJobContentParser extends JobContentParser with Logging {
     case AbstractJobContentParser.PROJECT_FILE_REGEX(name, version) =>
       val file = streamiFileService.getFile(projectName, name, version)
       if(file == null)
-        throw new JobExecuteFailedErrorException(30500, s"Not exists file $fileName.")
+        throw new JobExecuteErrorException(30500, s"Not exists file $fileName.")
       file
     case _ =>
       val files = streamiFileService.listFileVersions(projectName, fileName)
       if(files == null || files.isEmpty)
-        throw new JobExecuteFailedErrorException(30500, s"Not exists file $fileName.")
+        throw new JobExecuteErrorException(30500, s"Not exists file $fileName.")
       files.get(0)
   }
 
@@ -84,7 +84,7 @@ abstract class AbstractJobContentParser extends JobContentParser with Logging {
         val resourceMap = JsonUtils.jackson.readValue(streamisFile.getStorePath, classOf[util.Map[String, String]])
         op(resourceMap.get("resourceId"), resourceMap.get("version"))
       case _ =>
-        throw new JobExecuteFailedErrorException(30500, s"Not supported storeType ${streamisFile.getStoreType}.")
+        throw new JobExecuteErrorException(30500, s"Not supported storeType ${streamisFile.getStoreType}.")
     }
   }
 
@@ -95,7 +95,7 @@ abstract class AbstractJobContentParser extends JobContentParser with Logging {
     getFile(job, jobVersion, fileName, readBMLFile(jobVersion.getCreateBy, _, _))
 
   protected def readBMLFile(userName: String, resourceId: String, version: String): InputStream = {
-    if(StringUtils.isBlank(resourceId)) throw new JobExecuteFailedErrorException(30500, "Not exists resourceId.")
+    if(StringUtils.isBlank(resourceId)) throw new JobExecuteErrorException(30500, "Not exists resourceId.")
     bmlService.get(userName, resourceId, version)
   }
 

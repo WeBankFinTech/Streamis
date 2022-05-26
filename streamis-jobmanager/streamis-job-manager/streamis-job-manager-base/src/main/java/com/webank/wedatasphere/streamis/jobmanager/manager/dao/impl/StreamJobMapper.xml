@@ -31,7 +31,7 @@
         <result column="job_type" property="jobType" jdbcType="VARCHAR"/>
     </resultMap>
 
-    <resultMap id="StreamJobVOMap" type="com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.QueryJobListVO">
+    <resultMap id="StreamJobVOMap" type="com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.QueryJobListVo">
         <id column="id" property="id" jdbcType="BIGINT"/>
         <result column="workspace_name" property="workspaceName" jdbcType="VARCHAR"/>
         <result column="project_name" property="projectName" jdbcType="VARCHAR"/>
@@ -124,6 +124,11 @@
         from linkis_stream_job_version where job_id=#{jobId} order by version desc
     </select>
 
+    <!--Get the latest job version-->
+    <select id="getLatestJobVersion" resultMap="StreamJobVersionMap">
+        SELECT * FROM linkis_stream_job_version WHERE job_id=#{jobId} ORDER BY version desc LIMIT 1
+    </select>
+
     <select id="getJobVersionById" resultMap="StreamJobVersionMap">
         select
         *
@@ -135,7 +140,7 @@
     </select>
 
     <select id="getVersionDetail"
-            resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.VersionDetailVO">
+            resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.VersionDetailVo">
         SELECT j.id,v.version,j.description,DATE_FORMAT(v.create_time,"%Y-%m-%d %H:%i:%s") AS releaseTime,j.create_by AS createBy,j.project_name
         FROM `linkis_stream_job` j , linkis_stream_job_version v
         WHERE v.job_id = j.id AND j.id = #{jobId} AND v.version=#{version}
@@ -156,6 +161,16 @@
         ORDER BY l.create_time DESC LIMIT 1
     </select>
 
+    <select id="queryAndLockJobInCondition" parameterType="java.lang.String"
+            resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
+        SELECT <include refid="Job_Column"/> FROM
+        linkis_stream_job WHERE project_name = #{projectName} AND `name` = #{jobName} FOR UPDATE;
+    </select>
+
+    <select id="queryAndLockJobById" resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
+        SELECT <include refid="Job_Column"/> FROM
+        linkis_stream_job WHERE id = #{jobId};
+    </select>
 
     <insert id="insertJob" useGeneratedKeys="true" keyProperty="id"
             parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
