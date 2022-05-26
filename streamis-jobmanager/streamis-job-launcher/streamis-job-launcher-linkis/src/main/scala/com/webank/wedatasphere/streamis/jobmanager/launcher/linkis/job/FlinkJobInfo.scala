@@ -15,7 +15,9 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState, JobStateInfo}
 import org.apache.linkis.common.ServiceInstance
+import org.apache.linkis.httpclient.dws.DWSHttpClient
 
 import java.util
 
@@ -34,7 +36,7 @@ class FlinkJobInfo extends YarnJobInfo {
   private var logPath: String = _
   private var resources: java.util.Map[String, Object] = _
   private var completedMsg: String = _
-
+  private var jobStates: Array[JobStateInfo] = _
   override def getApplicationId: String = applicationId
   def setApplicationId(applicationId: String): Unit = this.applicationId = applicationId
 
@@ -76,12 +78,12 @@ class FlinkJobInfo extends YarnJobInfo {
    *
    * @return
    */
-  override def getJobStates: Array[String] = {
-    null
+  override def getJobStates: Array[JobStateInfo] = {
+    jobStates
   }
 
-  def setJobStates(jobStates: Array[String]): Unit = {
-
+  def setJobStates(jobStates: Array[JobStateInfo]): Unit = {
+    this.jobStates = jobStates
   }
   /**
    * Job name
@@ -92,5 +94,12 @@ class FlinkJobInfo extends YarnJobInfo {
 
   def setName(name: String): Unit = {
     this.name = name
+  }
+}
+
+object FlinkJobInfo{
+  def main(args: Array[String]): Unit = {
+    val jobInfo = "{\"jobStates:\":{\"location\":\"xx\"}"
+    DWSHttpClient.jacksonJson.readValue(jobInfo, classOf[FlinkJobInfo])
   }
 }
