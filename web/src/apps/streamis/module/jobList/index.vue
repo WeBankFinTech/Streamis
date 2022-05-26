@@ -8,7 +8,8 @@
             <FormItem>
               <Button
                 type="primary"
-                @click="doRestart('snapshot')"
+                :disabled="!selections.length"
+                @click="doRestart(true)"
                 style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.snapshotRestart')}}
@@ -17,7 +18,8 @@
             <FormItem>
               <Button
                 type="primary"
-                @click="doRestart('direct')"
+                :disabled="!selections.length"
+                @click="doRestart(false)"
                 style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.directRestart')}}
@@ -79,7 +81,7 @@
               </Button>
             </FormItem>
           </Form>
-          <Table ref="list" :columns="columns" :data="tableDatas" :loading="loading" @on-selection-change="selectionChange">
+          <Table ref="list" :columns="columns" :data="tableDatas" :loading="loading" @on-selection-change="selectionChange" :class="{table: isBatching}">
             <template slot-scope="{ row, index }" slot="jobName">
               <div
                 class="jobName"
@@ -135,17 +137,18 @@
                 <Button
                   type="primary"
                   v-show="row.status !== 5"
-                  :loading="buttonLoading && choosedRowId === row.id"
+                  :loading="row.buttonLoading"
                   style="height:22px;background:#008000;margin-right: 5px; font-size:10px;"
-                  @click="handleAction(row)"
+                  @click="handleAction(row, index)"
                 >
                   {{ $t('message.streamis.formItems.startBtn') }}
                 </Button>
-                <Poptip placement="top">
+                <Poptip placement="top" v-model="row.poptipVisible" :disabled="row.buttonLoading">
                   <Button
                     type="primary"
                     v-show="row.status === 5"
-                    :loading="buttonLoading && choosedRowId === row.id"
+                    :disabled="row.buttonLoading"
+                    :loading="row.buttonLoading"
                     style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
                   >
                     {{ $t('message.streamis.formItems.stopBtn') }}
@@ -155,18 +158,18 @@
                       <Button
                         class="btn"
                         type="primary"
-                        :loading="buttonLoading && choosedRowId === row.id"
+                        :disabled="row.buttonLoading"
                         style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
-                        @click="handleStop(row, 0)"
+                        @click="handleStop(row, 0, index)"
                       >
                         {{ $t('message.streamis.formItems.directStop') }}
                       </Button>
                       <Button
                         class="btn"
                         type="primary"
-                        :loading="buttonLoading && choosedRowId === row.id"
+                        :disabled="row.buttonLoading"
                         style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
-                        @click="handleStop(row, 1)"
+                        @click="handleStop(row, 1, index)"
                       >
                         {{ $t('message.streamis.formItems.snapshotAndStop') }}
                       </Button>
@@ -212,6 +215,7 @@
     <Modal
       v-model="processModalVisable"
       :title="modalTitle"
+      width="800"
       footer-hide
       @on-visible-change="onClose"
     >
@@ -219,13 +223,45 @@
         <Spin v-if="modalLoading" fix></Spin>
         <div class="general">
           <div class="bar"></div>
-          <div class="text">{{modalContent}}({{orderNum}}/{{selections.length}})"</div>
+          <div class="text">{{modalContent}}({{orderNum}}/{{selections.length}})</div>
         </div>
-        <div class="info">
-          <div v-for="item in failTasks" :key="item.taskId">
+        <div class="info" v-if="snapPaths.length">
+          <h4>{{$t('message.streamis.jobListTableColumns.snapshotInfo')}}:</h4>
+          <div v-for="item in snapPaths" :key="item.taskId" style="margin-bottom: 32px;">
             <span>{{item.taskName}}</span>,
-            <span>{{item.taskId}}</span>:
+            <span style="margin-right: 32px;">{{item.taskId}}:</span>
             <span>{{item.info}}</span>
+          </div>
+        </div>
+        <div class="info" v-if="failTasks.length">
+          <h4>{{$t('message.streamis.jobListTableColumns.failInfo')}}:</h4>
+          <div v-for="item in failTasks" :key="item.taskId" style="margin-bottom: 32px;">
+            <span>{{item.taskName}}</span>,
+            <span style="margin-right: 32px;">{{item.taskId}}:</span>
+            <span>{{item.info}}</span>
+          </div>
+        </div>
+        <div v-if="isFinish" style="text-align: center;">
+          <Button
+            type="primary"
+            @click="onClose()"
+          >
+            {{ $t('message.streamis.formItems.confirmBtn') }}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+    <Modal
+      v-model="snapModalVisable"
+      :title="snapTitle"
+      width="800"
+      footer-hide
+    >
+      <div class="wrap">
+        <div class="info">
+          <h4>{{$t('message.streamis.jobListTableColumns.snapshotInfo')}}</h4>
+          <div>
+            {{snapshotPath}}
           </div>
         </div>
       </div>
@@ -302,11 +338,16 @@ export default {
       baseLoading: false,
       modalLoading: false,
       failTasks: [],
+      snapPaths: [],
       timer: null,
       isBatching: false,
       selections: [],
       processModalVisable: false,
+      isFinish: false,
       modalTitle: '',
+      snapTitle: '',
+      snapshotPath: '',
+      snapModalVisable: false,
       modalContent: '',
       orderNum: 0,
       columns: [
@@ -405,6 +446,7 @@ export default {
       },
       loading: false,
       buttonLoading: false,
+      poptipVisible: false,
       choosedRowId: '',
       modalVisible: false,
       versionDatas: [],
@@ -414,7 +456,6 @@ export default {
   },
   mounted() {
     this.getJobList()
-    // window.test = this;  
   },
   methods: {
     getJobList() {
@@ -456,8 +497,8 @@ export default {
               }
             })
             datas.unshift({})
-            this.tableDatas = datas
-            console.log(JSON.stringify(datas))
+            this.tableDatas = datas.map(r => ({...r, poptipVisible: false}))
+            // console.log(JSON.stringify(datas))
             this.pageData.total = parseInt(res.totalPage)
             this.loading = false
           }
@@ -477,18 +518,19 @@ export default {
     handleUpload() {
       this.uploadVisible = true
     },
-    handleStop(data, type) {
+    handleStop(data, type, index) {
       console.log(data, type)
       const { id } = data
-      const path = 'streamis/streamJobManager/job/execute'
-      const second = { jobId: id, type }
-      this.buttonLoading = true
+      const path = 'streamis/streamJobManager/job/stop'
+      data.buttonLoading = true
       this.choosedRowId = id
+      data.poptipVisible = false
+      this.$set(this.tableDatas, index, data)
       api
-        .fetch(path, second)
+        .fetch(path, { jobId: id, snapshot: !!type }, 'get')
         .then(res => {
           console.log(res)
-          this.buttonLoading = false
+          data.buttonLoading = false
           this.choosedRowId = ''
           if (res) {
             this.$emit('refreshCoreIndex')
@@ -499,22 +541,23 @@ export default {
         .catch(e => {
           console.log(e.message)
           this.loading = false
-          this.buttonLoading = false
+          data.buttonLoading = false
           this.choosedRowId = ''
         })
     },
-    handleAction(data) {
+    handleAction(data, index) {
       console.log(data)
       const { id } = data
       const path = 'streamis/streamJobManager/job/execute'
       const second = { jobId: id }
-      this.buttonLoading = true
+      data.buttonLoading = true
       this.choosedRowId = id
+      this.$set(this.tableDatas, index, data)
       api
         .fetch(path, second)
         .then(res => {
           console.log(res)
-          this.buttonLoading = false
+          data.buttonLoading = false
           this.choosedRowId = ''
           if (res) {
             this.$emit('refreshCoreIndex')
@@ -525,15 +568,40 @@ export default {
         .catch(e => {
           console.log(e.message)
           this.loading = false
-          this.buttonLoading = false
+          data.buttonLoading = false
           this.choosedRowId = ''
         })
     },
     handleConfig(data) {
       console.log(data)
     },
+    stopSavepoint(data) {
+      console.log(data)
+      this.loading = true
+      api
+        .fetch(
+          'streamis/streamJobManager/job/snapshot/' + data.id,
+          {},
+          'put'
+        )
+        .then(res => {
+          console.log(res)
+          if (res) {
+            this.loading = false
+            this.snapModalVisable = true;
+            this.snapTitle = this.$t('message.streamis.jobListTableColumns.snapTitle');
+            this.snapshotPath = res.path;
+            this.getJobList();
+          }
+        })
+        .catch(e => {
+          console.log(e)
+          this.loading = false
+        })
+    },
     handleRouter(rowData, moduleName) {
       if(moduleName === 'savepoint'){
+        this.stopSavepoint(rowData);
         return;
       }
       console.log(rowData)
@@ -624,7 +692,7 @@ export default {
       console.log('hideButtons', val)
       this.$refs.list.selectAll(false);
       this.selections = [];
-      this.columns.shift();
+      this.columns = this.columns.filter(col => col.type !== 'selection');
       this.isBatching = false;
     },
     selectionChange(val) {
@@ -632,75 +700,91 @@ export default {
       console.log('selectionChange', selections);
       this.selections = selections;
     },
-    doRestart(type) {
-      console.log('doRestart', type);
-      // TODO: remote doRestart cgi
-      try {
-        this.baseLoading = true;
-        this.showProcessModal();
-        this.baseLoading = false;
-      } catch (error) {
-        console.warn(error)
-        this.baseLoading = false
-      }
-    },
-    showProcessModal() {
-      console.log('showProcessModal');
+    async doRestart(snapshot) {
+      console.log('doRestart', snapshot);
       this.processModalVisable = true;
       this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
       this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
-      this.stopTasks();
+      this.restartTasks(snapshot);
     },
-    stopTasks() {
-      console.log('stopTasks');
-      // TODO: remote stopTasks cgi
+    async restartTasks(snapshot) {
+      console.log('restartTasks');
       try {
-        this.modalLoading = true;
-        this.modalLoading = false;
-        if (Math.random()) {
-          this.failTasks = [{
-            taskId: 'testTaskId123456',
-            taskName: '任务任务任务123',
-            info: 'asdfasdfasdfasdfasdfasdfasdfadfasdfsafdafafdfasdfsadfasdfasdfdasfasd'
-          }];
-          this.orderNum = this.failTasks.length;
-        } else {
-          this.queryProcess()
+        // this.modalLoading = true;
+        const bulk_sbj = this.selections.map(item => +item.id);
+        const res = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot });
+        console.log('pause result', res);
+        if (!res.result || !res.result.Success || !res.result.Failed) throw new Error('后台返回异常');
+        // this.modalLoading = false;
+        if (snapshot) {
+          this.snapPaths = res.result.Success.data.map(item => ({
+            taskId: item.jobId,
+            taskName: item.scheduleId,
+            info: item.snapshotPath,
+          }));
         }
+        this.failTasks = res.result.Failed.data.map(item => ({
+          taskId: item.jobId,
+          taskName: item.scheduleId,
+          info: item.message,
+        }));
+        this.orderNum = this.selections.length - this.failTasks.length;
+        if (this.failTasks.length) {
+          this.isFinish = true;
+          this.modalTitle = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+          this.modalContent = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+          return;
+        }
+        const result = await api.fetch('streamis/streamJobManager/job/bulk/execution', { bulk_sbj });
+        console.log('start result', result);
+        this.queryProcess(bulk_sbj);
       } catch (error) {
         console.warn(error);
-        this.modalLoading = false
+        // this.modalLoading = false
       }
     },
-    queryProcess() {
+    async queryProcess(id_list) {
       console.log('queryProcess');
       this.modalTitle = this.$t('message.streamis.jobListTableColumns.startTaskTitle');
       this.modalContent = this.$t('message.streamis.jobListTableColumns.startTaskContent');
-      // TODO: remote queryProcess cgi
+      this.orderNum = 0;
+      this.failTasks = [];
       try {
-        this.modalLoading = true;
-        if (Math.random()) {
-          this.failTasks = [{
-            taskId: 'testTaskId123456',
-            taskName: '任务任务任务123',
-            info: 'asdfasdfasdfasdfasdfasdfasdfadfasdfsafdafafdfasdfsadfasdfasdfdasfasd'
-          }];
-        } else {
-          this.modalLoading = false;
+        // this.modalLoading = true;
+        const res = await api.fetch('streamis/streamJobManager/job/status', { id_list }, 'put');
+        if (!res.result || !Array.isArray(res.result)) throw new Error('后台返回异常');
+        res.result.forEach((item) => {
+          if ([1, 5, 6, 7].includes(item.statusCode)) this.orderNum++;
+        })
+        this.failTasks = res.result.filter(item => [6, 7].includes(item.statusCode)).map(item => ({
+          taskId: item.jobId,
+          taskName: item.status,
+          info: item.message,
+        }));
+        if (this.orderNum < this.selections.length) {
           this.timer = setTimeout(() => {
-            this.queryProcess();
+            this.queryProcess(id_list);
           }, 2500);
+        } else {
+          // this.modalLoading = false;
+          this.timer = null;
+          this.isFinish = true;
+          this.modalTitle = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+          this.modalContent = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
         }
       } catch (error) {
         console.warn(error)
-        this.modalLoading = false
+        // this.modalLoading = false
       }
     },
     onClose(status) {
       if (status) return;
+      this.processModalVisable = false;
+      this.isFinish = false;
       clearTimeout(this.timer);
       this.failTasks = [];
       this.orderNum = 0;
+      this.hideButtons();
       this.getJobList()
     }
   }
@@ -742,6 +826,25 @@ export default {
   .btn {
     display: block;
     margin-bottom: 5px;
+  }
+}
+.wrap {
+  .general {
+    margin-bottom: 32px;
+    .text {
+      font-weight: bold;
+    }
+  }
+}
+.table {
+  /deep/ .ivu-table-tbody {
+    tr:first-child {
+      td:first-child {
+        div:first-child {
+          visibility: hidden;
+        }
+      }
+    }
   }
 }
 </style>
