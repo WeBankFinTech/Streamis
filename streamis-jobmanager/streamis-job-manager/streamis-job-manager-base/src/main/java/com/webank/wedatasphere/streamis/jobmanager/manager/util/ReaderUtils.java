@@ -19,7 +19,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.PublishRequestVO;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.PublishRequestVo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileExceptionManager;
 import org.apache.commons.lang.StringUtils;
@@ -53,7 +53,7 @@ public class ReaderUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(ReaderUtils.class);
 
-    public PublishRequestVO parseFile(String dirPath) throws IOException, FileException {
+    public PublishRequestVo parseFile(String dirPath) throws IOException, FileException {
         getBasePath(dirPath);
         try (InputStream inputStream = generateInputStream(basePath)) {
             return read(inputStream);
@@ -151,7 +151,7 @@ public class ReaderUtils {
         return IoUtils.generateInputInputStream(basePath + File.separator + metaFileJsonName);
     }
 
-    private PublishRequestVO read(InputStream inputStream) throws IOException, FileException {
+    private PublishRequestVo read(InputStream inputStream) throws IOException, FileException {
         try (InputStreamReader streamReader = new InputStreamReader(inputStream);
              BufferedReader reader = new BufferedReader(streamReader);) {
             return readFile(reader);
@@ -160,9 +160,9 @@ public class ReaderUtils {
         }
     }
 
-    private PublishRequestVO readFile(BufferedReader reader) throws IOException, FileException {
+    private PublishRequestVo readFile(BufferedReader reader) throws IOException, FileException {
         String line = null;
-        PublishRequestVO publishRequestVO = new PublishRequestVO();
+        PublishRequestVo publishRequestVO = new PublishRequestVo();
         while ((line = reader.readLine()) != null) {
             String[] lineArray = line.split(":");
             if (lineArray.length <= 1) {
@@ -225,12 +225,12 @@ public class ReaderUtils {
         return new File(path).exists();
     }
 
-    private void setProjectName(String name, PublishRequestVO publishRequestVO) {
+    private void setProjectName(String name, PublishRequestVo publishRequestVO) {
         publishRequestVO.setProjectName(name);
         LOG.info("Successfully set Project name(完成设置项目的名称):{}", name);
     }
 
-    private void setExecutionCode(PublishRequestVO publishRequestVO) throws IOException, FileException {
+    private void setExecutionCode(PublishRequestVo publishRequestVO) throws IOException, FileException {
         String sqlFilePath = getSqlFileAbsolutePath(basePath);
         if (StringUtils.isBlank(sqlFilePath)) {
             throw FileExceptionManager.createException(30603, "sql");

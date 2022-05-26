@@ -17,7 +17,7 @@ package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.ConfigKeyVO;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.JobConfValueSet;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.exception.ConfigurationException;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.ConfigurationService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf;
@@ -27,17 +27,21 @@ import com.webank.wedatasphere.streamis.jobmanager.service.UserService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 
 @RequestMapping(path = "/streamis/streamJobManager/config")
 @RestController
 public class ConfigurationRestfulApi {
+    private static final Logger LOG = LoggerFactory.getLogger(ConfigurationRestfulApi.class);
     @Autowired
     ConfigurationService configurationService;
     @Autowired
@@ -46,12 +50,6 @@ public class ConfigurationRestfulApi {
     JobService jobService;
 
     ObjectMapper mapper = new ObjectMapper();
-
-    @RequestMapping(value = "/definitions", method = RequestMethod.GET)
-    public Message definitions(){
-
-        return null;
-    }
 
     @RequestMapping(value = "/list/{jobId:\\w+")
     public Message configList(){
@@ -67,14 +65,14 @@ public class ConfigurationRestfulApi {
         if (!jobService.hasPermission(jobId, username)) {
             return Message.error("you have no permission of this job ,please ask for the job creator");
         }
-        ConfigKeyVO fullTree = configurationService.getFullTree(jobId);
+        JobConfValueSet fullTree = configurationService.getFullTree(jobId);
         return Message.ok().data("fullTree", fullTree);
     }
 
     @RequestMapping(path = "/update", method = RequestMethod.POST)
     public Message updateFullTree(HttpServletRequest req, @RequestBody JsonNode json) throws IOException {
         String username = SecurityFilter.getLoginUsername(req);
-        ConfigKeyVO fullTrees = mapper.readValue(json.get("fullTree").traverse(), ConfigKeyVO.class);
+        JobConfValueSet fullTrees = mapper.readValue(json.get("fullTree").traverse(), JobConfValueSet.class);
         // Accept the developer to modify
         if (!jobService.isCreator(fullTrees.getJobId(), username) &&
                 !JobConf.STREAMIS_DEVELOPER().getValue().contains(username)) {
@@ -87,7 +85,7 @@ public class ConfigurationRestfulApi {
     @RequestMapping(path = "/add", method = RequestMethod.POST)
     public Message saveFullTree(HttpServletRequest req, @RequestBody JsonNode json) throws IOException {
         String username = SecurityFilter.getLoginUsername(req);
-        ConfigKeyVO fullTrees = mapper.readValue(json.get("fullTree").traverse(), ConfigKeyVO.class);
+        JobConfValueSet fullTrees = mapper.readValue(json.get("fullTree").traverse(), JobConfValueSet.class);
         // Accept the developer to modify
         if (!jobService.isCreator(fullTrees.getJobId(), username) &&
                 !JobConf.STREAMIS_DEVELOPER().getValue().contains(username)) {
@@ -100,14 +98,15 @@ public class ConfigurationRestfulApi {
     @RequestMapping(path = "/getWorkspaceUsers", method = RequestMethod.GET)
     public Message getWorkspaceUsers(HttpServletRequest req) {
         //获取工作空间
+        List<String> userList = new ArrayList<>();
         String workspaceId = CookieUtils.getCookieWorkspaceId(req);
-        if (StringUtils.isBlank(workspaceId)) {
-            return Message.error("无法获取到工作空间ID，请检查!");
+        if (StringUtils.isNotBlank(workspaceId)) {
+            String userName = SecurityFilter.getLoginUsername(req);
+            userList.addAll(userService.workspaceUserQuery(req, workspaceId));
+        } else {
+            LOG.warn("Cannot find the workspaceID from DSS，perhaps the cookie value has been lost in request from: {}", req.getLocalAddr());
         }
-        String userName = SecurityFilter.getLoginUsername(req);
-        List<String> list = userService.workspaceUserQuery(req, workspaceId);
-        return Message.ok().data("users", list);
-
+        return Message.ok().data("users", userList);
     }
 
 }
