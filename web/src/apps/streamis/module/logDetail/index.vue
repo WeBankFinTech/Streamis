@@ -134,8 +134,10 @@ export default {
         .then(res => {
           this.spinShow = false
           if (res && res.logs) {
-            this.endLine = res.logs.endLine;
-            if (this.endLine <= 100) this.fromLine = this.endLine;
+            if (res.logs.endLine <= this.fromLine) {
+              this.fromLine = res.logs.endLine;
+              this.endLine = res.logs.endLine;
+            }
             this.logs = res.logs.logs.join('\n')
           } else {
             this.logs = ''
@@ -166,8 +168,7 @@ export default {
           onlyKeywords: '',
         }
       } else if (type === 'next') {
-        if (this.endLine - this.fromLine >= 100 ) this.fromLine = this.fromLine + 100;
-        else this.fromLine = this.endLine;
+        this.fromLine = this.fromLine + 100;
       } else {
         this.fromLine = this.fromLine > 100 ? this.fromLine - 100 : 1
       }
