@@ -58,12 +58,13 @@
           <Button
             type="primary"
             @click="handleMore('pre')"
-            :disabled="fromLine === 1"
+            :disabled="fromLine === 1 || endLine <= 100"
           >
             {{ $t('message.streamis.logDetail.pre') }}
           </Button>
           <Button
             type="primary"
+            :disabled="endLine === fromLine"
             @click="handleMore('next')"
             style="margin-left: 30px;"
           >
@@ -89,7 +90,8 @@ export default {
     visible: Boolean,
     datas: Array,
     fromHistory: Boolean,
-    projectName: String
+    projectName: String,
+    taskId: Number
   },
   data() {
     return {
@@ -106,18 +108,20 @@ export default {
         value: 'yarn'
       }],
       fromLine: 1,
+      endLine: 0,
       logs: '',
       spinShow: false
     }
   },
   methods: {
-    getDatas() {
+    getDatas(taskId) {
       // const logs = new Array(1000).fill(
       //   'pps/pps/streamis/module/versionDetailtreamis/module/versionDetailpps/streamis/module/versionDetailpps/streamis/module/versionDetailpps/streamis/module/versionDetailpps/streamis/module/versionDetail'
       // )
       // this.logs = logs.join('\n')
       const { id } = this.$route.params || {}
       let queries = `?jobId=${id}&fromLine=${this.fromLine}&pageSize=100`
+      if (taskId || this.taskId) queries += `&taskId=${taskId || this.taskId}`;
       Object.keys(this.query).forEach(key => {
         const value = this.query[key]
         if (value) {
@@ -130,6 +134,10 @@ export default {
         .then(res => {
           this.spinShow = false
           if (res && res.logs) {
+            if (res.logs.endLine <= this.fromLine) {
+              this.fromLine = res.logs.endLine;
+              this.endLine = res.logs.endLine;
+            }
             this.logs = res.logs.logs.join('\n')
           } else {
             this.logs = ''
@@ -155,12 +163,12 @@ export default {
       if (type === 'more') {
         this.fromLine = 1
         this.query = {
+          ...this.query,
           ignoreKeywords: '',
           onlyKeywords: '',
-          logType: 'client'
         }
       } else if (type === 'next') {
-        this.fromLine = this.fromLine + 100
+        this.fromLine = this.fromLine + 100;
       } else {
         this.fromLine = this.fromLine > 100 ? this.fromLine - 100 : 1
       }
