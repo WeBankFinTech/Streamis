@@ -33,11 +33,10 @@ object JobLauncherConfiguration {
   /**
    * Checkpoint dir
    */
-  val FLINk_CHECKPOINT_PATH: CommonVars[String] = CommonVars("wds.streamis.launch.flink.checkpoint.dir", "/flink/flink-checkpoints")
+  val FLINK_CHECKPOINT_PATH: CommonVars[String] = CommonVars("wds.streamis.launch.flink.checkpoint.dir", "/flink/flink-checkpoints")
+
   /**
-   * Variable: savepoint name
+   * Variable: savepoint path
    */
-  val VAR_FLINK_SAVEPOINT_NAME: CommonVars[String] = CommonVars("wds.streamis.launch.variable.flink.savepoint.name", "flink.app.savePointPath")
-
-
+  val VAR_FLINK_SAVEPOINT_PATH: CommonVars[String] = CommonVars("wds.streamis.launch.variable.flink.savepoint.path", "flink.app.savePointPath")
 }

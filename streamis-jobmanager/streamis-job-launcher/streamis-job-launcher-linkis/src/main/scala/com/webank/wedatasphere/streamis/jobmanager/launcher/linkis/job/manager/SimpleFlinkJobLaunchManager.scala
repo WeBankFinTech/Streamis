@@ -15,6 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState, JobStateInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.core.{FlinkLogIterator, SimpleFlinkJobLogIterator}
@@ -54,7 +55,7 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
   override protected def createSubmittedOnceJob(id: String, jobInfo: LinkisJobInfo): OnceJob = SimpleOnceJob.build(id, jobInfo.getUser)
 
 
-  override protected def createJobInfo(onceJob: SubmittableOnceJob, job: LaunchJob): LinkisJobInfo = {
+  override protected def createJobInfo(onceJob: SubmittableOnceJob, job: LaunchJob, jobState: JobState): LinkisJobInfo = {
     val nodeInfo = onceJob.getNodeInfo
     val jobInfo = new FlinkJobInfo
     // Escape the job name
@@ -69,6 +70,13 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
     Utils.tryCatch(fetchApplicationInfo(onceJob, jobInfo)) { t =>
       throw new FlinkJobLaunchErrorException(-1, "Unable to fetch the application info of launched job, maybe the engine has been shutdown", t)}
     jobInfo.setResources(nodeInfo.get("nodeResource").asInstanceOf[util.Map[String, Object]])
+    // Set job state info into
+//    Option(jobState).foreach(state => {
+//      val stateInfo = new JobStateInfo
+//      stateInfo.setTimestamp(state.getTimestamp)
+//      stateInfo.setLocation(state.getLocation.toString)
+//      jobInfo.setJobStates(Array(stateInfo))
+//    })
     jobInfo
   }
 
@@ -96,7 +104,28 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
    * @return
    */
   override protected def createJobClient(onceJob: OnceJob, jobInfo: LinkisJobInfo): JobClient[LinkisJobInfo] = {
-    new FlinkJobClient(onceJob, jobInfo, this.jobStateManager)
+    jobInfo match {
+      case flinkJobInfo: FlinkJobInfo =>
+        new FlinkJobClient(onceJob, flinkJobInfo, this.jobStateManager).asInstanceOf[JobClient[LinkisJobInfo]]
+      case _ => null
+    }
+  }
+
+  /**
+   * Init method
+   */
+  override def init(): Unit = {
+    // Init the job state manager
+     getJobStateManager.init()
+  }
+
+
+  /**
+   * Destroy method
+   */
+  override def destroy(): Unit = {
+    // Destroy the job state manager
+    getJobStateManager.destroy()
   }
 }
 object SimpleFlinkJobLaunchManager{
