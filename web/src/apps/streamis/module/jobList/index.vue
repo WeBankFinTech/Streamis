@@ -81,7 +81,7 @@
               </Button>
             </FormItem>
           </Form>
-          <Table ref="list" :columns="columns" :data="tableDatas" :loading="loading" @on-selection-change="selectionChange" class="table">
+          <Table ref="list" :columns="columns" :data="tableDatas" :loading="loading" @on-selection-change="selectionChange" :class="{table: isBatching}">
             <template slot-scope="{ row, index }" slot="jobName">
               <div
                 class="jobName"
