@@ -3,7 +3,7 @@
     <div class="itemWrap" v-if="!isSql">
       <p>{{ $t('message.streamis.jobDetail.flinkJarPac') }}</p>
       <div>
-        <Table :columns="columns" :data="jarData.mainClassJar" border>
+        <Table :columns="columns" :data="jarData.mainClassJar || []" border>
           <template slot-scope="{ row }" slot="operation">
             <div>
               <a
@@ -37,7 +37,7 @@
       <div>
         <Table
           :columns="columns.filter(item => item.key !== 'mainClass')"
-          :data="jarData.dependencyJars"
+          :data="jarData.dependencyJars || []"
           border
         >
           <template slot-scope="{ row }" slot="operation">
@@ -65,7 +65,7 @@
       <div>
         <Table
           :columns="columns.filter(item => item.key !== 'mainClass')"
-          :data="jarData.resources"
+          :data="jarData.resources || []"
           border
         >
           <template slot-scope="{ row }" slot="operation">
