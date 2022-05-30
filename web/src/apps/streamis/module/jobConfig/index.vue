@@ -100,7 +100,6 @@ export default {
   mounted() {
     this.getUsers()
     this.getConfigs()
-    window.test = this;
   },
   methods: {
     getUsers() {
@@ -121,17 +120,18 @@ export default {
           'get'
         )
         .then(res => {
+          const valueMap = this.valueMap;
           Object.keys(res || {}).forEach(key => {
-            this.valueMap[key] = {};
+            valueMap[key] = {};
             Object.keys(res[key]).forEach(k => {
               const formatKey = k.replace(/\./g, '/');
-              this.valueMap[key][formatKey] = res[key][k];
+              valueMap[key][formatKey] = res[key][k];
             })
           })
           Object.keys(this.diyMap).forEach(key => {
-            if (Object.keys(this.valueMap).includes(key)) {
-              let keyValue = Object.keys(this.valueMap[key] || {}).map(k => ({key: k.replace(/\//g, '.'), value: this.valueMap[key][k]}));
-              this.valueMap[key] = {};
+            if (Object.keys(valueMap).includes(key)) {
+              let keyValue = Object.keys(valueMap[key] || {}).map(k => ({key: k.replace(/\//g, '.'), value: valueMap[key][k]}));
+              valueMap[key] = {};
               if (!keyValue.length) keyValue = [{value: '', key: ''}];
               this.diyMap = {
                 ...this.diyMap,
@@ -139,6 +139,7 @@ export default {
               }
             }
           })
+          this.valueMap = cloneDeep(valueMap);
         })
         .catch(e => console.warn(e))
     },
@@ -151,9 +152,11 @@ export default {
         .then(res => {
           console.log(res)
           let configs = res.def;
+          const valueMap = {};
+          const rule = {};
           configs = configs.map(conf => {
-            this.valueMap[conf.key] = {};
-            this.rule[conf.key] = {};
+            valueMap[conf.key] = {};
+            rule[conf.key] = {};
             if (!conf.child_def) return conf;
             if (!conf.child_def.length) {
               this.diyMap = {...this.diyMap, [conf.key]: [{value: '', key: ''}]};
@@ -164,7 +167,7 @@ export default {
               const defaultValue = def.default_value || '';
               const defKey = def.key.replace(/\./g, '/');
               def.key = defKey;
-              this.valueMap[conf.key][defKey] = defaultValue;
+              valueMap[conf.key][defKey] = defaultValue;
               const rules = [{required: def.required, message: this.$t('message.streamis.formItems.notEmpty'), trigger: 'blur'}];
               if (def.type !== 'SELECT') {
                 if (def.validate_rule) rules.push({
@@ -172,11 +175,13 @@ export default {
                   message: this.$t('message.streamis.formItems.wrongFormat'),
                 })
               }
-              this.rule[conf.key][defKey] = rules;
+              rule[conf.key][defKey] = rules;
               return def;
-            }).filter(def => ['SELECT', 'INPUT', 'NUMBER'].includes(def.type));
+            }).filter(def => ['SELECT', 'INPUT', 'NUMBER'].includes(def.type)).filter(def => !!def.visiable);
             return conf;
           });
+          this.valueMap = cloneDeep(valueMap);
+          this.rule = cloneDeep(rule);
           this.configs = configs;
           this.getValues()
         })
@@ -212,14 +217,20 @@ export default {
         })
       });
       let warning = false;
+      let emptyWarning = false;
       Object.keys(this.diyMap).forEach(key => {
         configuration[key] = {};
         (this.diyMap[key] || []).forEach(mapKey => {
+          emptyWarning = !mapKey.key || !mapKey.key.trim();
           if (configuration[key][mapKey.key]) warning = true;
-          configuration[key][mapKey.key] = mapKey.value;
+          configuration[key][mapKey.key] = mapKey.value || '';
         })
       });
       console.log('configuration', configuration, this.valueMap)
+      if (emptyWarning) {
+        this.saveLoading = false;
+        return this.$Message.error({ content: '请删除多余自定义字段，key值不能为空' });
+      }
       if (warning) {
         this.saveLoading = false;
         return this.$Message.error({ content: '自定义字段名称不能重复' });

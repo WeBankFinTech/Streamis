@@ -543,6 +543,7 @@ export default {
           this.loading = false
           data.buttonLoading = false
           this.choosedRowId = ''
+          this.getJobList()
         })
     },
     handleAction(data, index) {
@@ -570,6 +571,7 @@ export default {
           this.loading = false
           data.buttonLoading = false
           this.choosedRowId = ''
+          this.getJobList()
         })
     },
     handleConfig(data) {
