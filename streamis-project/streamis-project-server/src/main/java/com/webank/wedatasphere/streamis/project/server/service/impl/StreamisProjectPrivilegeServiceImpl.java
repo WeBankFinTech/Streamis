@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.project.server.service.impl;
 
+import com.webank.wedatasphere.streamis.project.server.constant.ProjectUserPrivilegeEnum;
 import com.webank.wedatasphere.streamis.project.server.dao.StreamisProjectPrivilegeMapper;
 import com.webank.wedatasphere.streamis.project.server.entity.StreamisProjectPrivilege;
 import com.webank.wedatasphere.streamis.project.server.service.StreamisProjectPrivilegeService;
@@ -37,11 +38,15 @@ public class StreamisProjectPrivilegeServiceImpl implements StreamisProjectPrivi
         if(CollectionUtils.isEmpty(dssPrivilegeList)) {
             return;
         }
-        List streamisAllPrivilegeList = streamisProjectPrivilegeMapper.findProjectPrivilegeByProjectId(dssPrivilegeList.get(0).getProjectId());
-        List<StreamisProjectPrivilege> addPrivilegeList = (ArrayList)CollectionUtils.subtract(dssPrivilegeList, streamisAllPrivilegeList);
-        List<StreamisProjectPrivilege> subPrivilegeList = (ArrayList)CollectionUtils.subtract(streamisAllPrivilegeList, dssPrivilegeList);
-        addProjectPrivilege(addPrivilegeList);
-        deleteProjectPrivilegeByProjectId(dssPrivilegeList.get(0).getProjectId());
+        List<StreamisProjectPrivilege> streamisAllPrivilegeList = streamisProjectPrivilegeMapper.findProjectPrivilegeByProjectId(dssPrivilegeList.get(0).getProjectId());
+        List<StreamisProjectPrivilege> addPrivilegeList = (ArrayList<StreamisProjectPrivilege>)(CollectionUtils.subtract(dssPrivilegeList, streamisAllPrivilegeList));
+        List<StreamisProjectPrivilege> delPrivilegeList = (ArrayList<StreamisProjectPrivilege>) CollectionUtils.subtract(streamisAllPrivilegeList, dssPrivilegeList);
+        if(!CollectionUtils.isEmpty(addPrivilegeList)) {
+            streamisProjectPrivilegeMapper.addProjectPrivilege(addPrivilegeList);
+        }
+        if(!CollectionUtils.isEmpty(delPrivilegeList)) {
+            streamisProjectPrivilegeMapper.deleteProjectPrivilege(delPrivilegeList);
+        }
         LOGGER.info("projectId {} ends to update privilege", dssPrivilegeList.get(0).getProjectId());
     }
 
@@ -50,5 +55,31 @@ public class StreamisProjectPrivilegeServiceImpl implements StreamisProjectPrivi
     public void deleteProjectPrivilegeByProjectId(Long projectId) {
         streamisProjectPrivilegeMapper.deleteProjectPrivilegeByProjectId(projectId);
         LOGGER.info("projectId {} ends to delete privilege", projectId );
+    }
+
+    @Override
+    public List<StreamisProjectPrivilege> getProjectPrivilege(Long projectId, String username) {
+        return streamisProjectPrivilegeMapper.getProjectPrivilege(projectId, username);
+    }
+
+    @Override
+    public boolean hasReleaseProjectPrivilege(Long projectId, String username) {
+        StreamisProjectPrivilege streamisProjectPrivilege = new StreamisProjectPrivilege(projectId, username, ProjectUserPrivilegeEnum.RELEASE.getRank());
+        long count = streamisProjectPrivilegeMapper.selectPrivilegeCount(streamisProjectPrivilege);
+        return count != 0;
+    }
+
+    @Override
+    public boolean hasEditProjectPrivilege(Long projectId, String username) {
+        StreamisProjectPrivilege streamisProjectPrivilege = new StreamisProjectPrivilege(projectId, username, ProjectUserPrivilegeEnum.EDIT.getRank());
+        long count = streamisProjectPrivilegeMapper.selectPrivilegeCount(streamisProjectPrivilege);
+        return count != 0;
+    }
+
+    @Override
+    public boolean hasAccessProjectPrivilege(Long projectId, String username) {
+        StreamisProjectPrivilege streamisProjectPrivilege = new StreamisProjectPrivilege(projectId, username, ProjectUserPrivilegeEnum.ACCESS.getRank());
+        long count = streamisProjectPrivilegeMapper.selectPrivilegeCount(streamisProjectPrivilege);
+        return count != 0;
     }
 }
