@@ -1,7 +1,5 @@
 package com.webank.wedatasphere.streamis.project.server.service.impl;
 
-
-import com.webank.wedatasphere.streamis.project.common.CreateStreamProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.dao.StreamisProjectMapper;
 import com.webank.wedatasphere.streamis.project.server.entity.StreamisProject;
 import com.webank.wedatasphere.streamis.project.server.entity.StreamisProjectPrivilege;
@@ -29,6 +27,7 @@ public class StreamisProjectServiceImpl implements StreamisProjectService {
     @Autowired
     private StreamisProjectMapper streamisProjectMapper;
 
+    @Autowired
     private StreamisProjectPrivilegeService streamisProjectPrivilegeService;
 
     @Override
@@ -40,25 +39,9 @@ public class StreamisProjectServiceImpl implements StreamisProjectService {
         }
         streamisProjectMapper.createProject(streamisProject);
         List<StreamisProjectPrivilege> projectPrivileges = streamisProject.getProjectPrivileges();
-        projectPrivileges.forEach(privilege->{
-            privilege.setProjectId(streamisProject.getId());
-        });
+        for (StreamisProjectPrivilege privilege : projectPrivileges) privilege.setProjectId(streamisProject.getId());
         streamisProjectPrivilegeService.addProjectPrivilege(projectPrivileges);
         LOGGER.info("user {} ends to create project {} and id is {}", streamisProject.getCreateBy(), streamisProject.getName(), streamisProject.getId());
-        return streamisProject;
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public StreamisProject createProject(CreateStreamProjectRequest createStreamProjectRequest) throws StreamisProjectErrorException {
-        LOGGER.info("user {} starts to create project {}", createStreamProjectRequest.createBy(), createStreamProjectRequest.projectName());
-        if (!CollectionUtils.isEmpty(streamisProjectMapper.findProjectByName(createStreamProjectRequest.projectName()))) {
-            throw new StreamisProjectErrorException(600500, "the project name is exist");
-        }
-        StreamisProject streamisProject = new StreamisProject(createStreamProjectRequest.projectName(), createStreamProjectRequest.description(), null);
-        streamisProject.setCreateBy(createStreamProjectRequest.createBy());
-        streamisProjectMapper.createProject(streamisProject);
-        LOGGER.info("user {} ends to create project {} and id is {}", createStreamProjectRequest.createBy(), createStreamProjectRequest.projectName(), streamisProject.getId());
         return streamisProject;
     }
 
@@ -67,7 +50,7 @@ public class StreamisProjectServiceImpl implements StreamisProjectService {
     public void updateProject(StreamisProject streamisProject) throws StreamisProjectErrorException {
         LOGGER.info("User {} begins to update project {}", streamisProject.getLastUpdateBy(), streamisProject.getName());
         List<Long> list = streamisProjectMapper.findProjectByName(streamisProject.getName());
-        if (!CollectionUtils.isEmpty(list) && list.get(0) != streamisProject.getId()) {
+        if (!CollectionUtils.isEmpty(list) && !list.get(0).equals(streamisProject.getId())) {
             throw new StreamisProjectErrorException(600500, "the project name is exist");
         }
         streamisProjectMapper.updateProject(streamisProject);
@@ -77,7 +60,7 @@ public class StreamisProjectServiceImpl implements StreamisProjectService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteProjectById(Long projectId) throws StreamisProjectErrorException {
+    public void deleteProjectById(Long projectId) {
         streamisProjectMapper.deleteProjectById(projectId);
         streamisProjectPrivilegeService.deleteProjectPrivilegeByProjectId(projectId);
         LOGGER.info("delete projectId {}", projectId);
@@ -85,8 +68,7 @@ public class StreamisProjectServiceImpl implements StreamisProjectService {
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public StreamisProject queryProject(Long projectId) throws StreamisProjectErrorException {
-        StreamisProject streamisProjectList = streamisProjectMapper.findProjectById(projectId);
-        return streamisProjectList;
+    public StreamisProject queryProject(Long projectId) {
+        return streamisProjectMapper.findProjectById(projectId);
     }
 }
