@@ -10,26 +10,21 @@ import com.webank.wedatasphere.streamis.dss.appconn.structure.ref.StreamisProjec
  */
 public class StreamisProjectService extends ProjectService {
 
-    // TODO use the StreamisProjectContentReqRef as parameter type
     @Override
     protected ProjectCreationOperation<DSSProjectContentRequestRef.DSSProjectContentRequestRefImpl> createProjectCreationOperation() {
         return new StreamisProjectCreationOperation();
     }
 
-    // TODO use the StreamisProjectUpdateReqRef as parameter type
     @Override
     protected ProjectUpdateOperation<StreamisProjectUpdateReqRef> createProjectUpdateOperation() {
         return new StreamisProjectUpdateOperation();
     }
 
-
-    // TODO deletion operation
     @Override
     protected ProjectDeletionOperation<StreamisProjectContentReqRef> createProjectDeletionOperation() {
         return new StreamisPrejectDeleteOperation();
     }
 
-    // TODO query operation
     @Override
     protected ProjectSearchOperation<StreamisProjectContentReqRef> createProjectSearchOperation() {
         return new StreamisProjectSearchOperation();
