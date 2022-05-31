@@ -33,6 +33,13 @@ public interface StreamJobConfMapper {
     List<JobConfDefinition> loadAllDefinitions();
 
     /**
+     * Get raw value
+     * @param jobId job id
+     * @param key key
+     * @return
+     */
+    String getRawConfValue(@Param("jobId")Long jobId, @Param("key")String key);
+    /**
      * Get config values by job id
      * @param jobId job id
      * @return

@@ -15,6 +15,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.service
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.JobConfDefinition
+import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.JobConfValueSet
 
 import java.util
 /**
@@ -41,4 +42,25 @@ trait StreamJobConfService {
    * @return
    */
   def getJobConfig(jobId: Long): util.Map[String, Any]
+
+  /**
+   * Query the job value
+   * @param jobId job id
+   * @param configKey config key
+   * @return
+   */
+  def getJobConfValue(jobId: Long, configKey: String): String
+
+  /**
+   * Get job configuration value set
+   * @param jobId job id
+   * @return
+   */
+  def getJobConfValueSet(jobId: Long): JobConfValueSet
+
+  /**
+   * Save job configuration value set
+   * @param valueSet value set
+   */
+  def saveJobConfValueSet(valueSet: JobConfValueSet): Unit
 }
