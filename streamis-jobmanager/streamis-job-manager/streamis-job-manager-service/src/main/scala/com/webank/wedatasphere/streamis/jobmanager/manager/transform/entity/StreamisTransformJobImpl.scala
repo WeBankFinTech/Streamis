@@ -15,15 +15,16 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.JobConfValueSet
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion}
+
+import java.util
 
 
 class StreamisTransformJobImpl extends StreamisTransformJob {
 
   private var streamJob: StreamJob = _
   private var streamJobVersion: StreamJobVersion = _
-  private var config: JobConfValueSet = _
+  private var configMap: util.Map[String, Any] = _
   private var streamisJobEngineConn: StreamisJobEngineConn = _
   private var streamisTransformJobContent: StreamisTransformJobContent = _
 
@@ -33,13 +34,16 @@ class StreamisTransformJobImpl extends StreamisTransformJob {
   override def getStreamJobVersion: StreamJobVersion = streamJobVersion
   def setStreamJobVersion(streamJobVersion: StreamJobVersion): Unit = this.streamJobVersion = streamJobVersion
 
-  override def getConfig: JobConfValueSet = config
-  def setConfig(config: JobConfValueSet): Unit = this.config = config
-
   override def getStreamisJobEngineConn: StreamisJobEngineConn = streamisJobEngineConn
   def setStreamisJobEngineConn(streamisJobEngineConn: StreamisJobEngineConn): Unit = this.streamisJobEngineConn = streamisJobEngineConn
 
   override def getStreamisTransformJobContent: StreamisTransformJobContent = streamisTransformJobContent
   def setStreamisTransformJobContent(streamisTransformJobContent: StreamisTransformJobContent): Unit =
     this.streamisTransformJobContent = streamisTransformJobContent
+
+  override def getConfigMap: util.Map[String, Any] =this.configMap
+
+  def setConfigMap(mapValue: util.Map[String, Any]): Unit = {
+    this.configMap = mapValue
+  }
 }
