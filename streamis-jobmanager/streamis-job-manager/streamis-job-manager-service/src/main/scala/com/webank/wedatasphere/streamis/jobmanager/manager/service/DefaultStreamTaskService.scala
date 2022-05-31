@@ -15,6 +15,8 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
+import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobInfo, LaunchJob}
@@ -61,6 +63,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   @Resource
   private var jobLaunchManager: JobLaunchManager[_ <: JobInfo] = _
 
+  @Resource
+  private var streamJobConfMapper: StreamJobConfMapper = _
   /**
    * Scheduler
    */
@@ -632,9 +636,13 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           val stateList: util.List[JobState] = new util.ArrayList[JobState]()
           // First to fetch the latest Savepoint information
           Option(jobStateManager.getJobState[Savepoint](classOf[Savepoint], jobInfo)).foreach(savepoint => stateList.add(savepoint))
-          // TODO determinate if need the checkpoint information
-          // Then to fetch the latest Checkpoint information
-          Option(jobStateManager.getJobState[Checkpoint](classOf[Checkpoint], jobInfo)).foreach(checkpoint => stateList.add(checkpoint))
+          // Determinate if need the checkpoint information
+          this.streamJobConfMapper.getRawConfValue(task.getJobId, JobConfKeyConstants.CHECKPOINT_SWITCH.getValue) match {
+            case "ON" =>
+              // Then to fetch the latest Checkpoint information
+              Option(jobStateManager.getJobState[Checkpoint](classOf[Checkpoint], jobInfo)).foreach(checkpoint => stateList.add(checkpoint))
+            case _ =>
+          }
           // Fetch the job state info in jobInfo at last
 //          Option(jobInfo.getJobStates).foreach(states => states.foreach(state => {
 //            val savepoint = new Savepoint(state.getLocation)

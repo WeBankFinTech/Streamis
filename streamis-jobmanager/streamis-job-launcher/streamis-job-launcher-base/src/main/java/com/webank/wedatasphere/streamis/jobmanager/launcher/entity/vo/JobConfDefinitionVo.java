@@ -3,8 +3,12 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.JobConfDefinition;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * According to JobConfDefinition
@@ -79,7 +83,7 @@ public class JobConfDefinitionVo {
      * Refer values
      */
     @JsonProperty("ref_values")
-    private String refValues;
+    private List<String> refValues = new ArrayList<>();
 
     /**
      * Children definition
@@ -105,7 +109,9 @@ public class JobConfDefinitionVo {
         this.visiable = definition.getVisiable();
         this.level = definition.getLevel();
         this.defaultValue = definition.getDefaultValue();
-        this.refValues = definition.getRefValues();
+        if (StringUtils.isNotBlank(definition.getRefValues())){
+            this.refValues = Arrays.asList(definition.getRefValues().split(","));
+        }
         this.required = definition.isRequired();
         this.unit = definition.getUnit();
     }
@@ -198,11 +204,11 @@ public class JobConfDefinitionVo {
         this.defaultValue = defaultValue;
     }
 
-    public String getRefValues() {
+    public List<String> getRefValues() {
         return refValues;
     }
 
-    public void setRefValues(String refValues) {
+    public void setRefValues(List<String> refValues) {
         this.refValues = refValues;
     }
 
