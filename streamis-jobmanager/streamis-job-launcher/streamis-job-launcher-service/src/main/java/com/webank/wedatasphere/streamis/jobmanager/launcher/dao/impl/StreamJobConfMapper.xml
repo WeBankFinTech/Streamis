@@ -48,6 +48,9 @@
         SELECT * FROM `linkis_stream_job_config_def`;
     </select>
 
+    <select id="getRawConfValue" resultType="String">
+        SELECT `value` FROM `linkis_stream_job_config` WHERE job_id = #{jobId} AND `key` = #{key};
+    </select>
     <select id="getConfValuesByJobId" resultMap="ConfigValue">
         SELECT * FROM `linkis_stream_job_config` WHERE job_id = #{jobId};
     </select>
