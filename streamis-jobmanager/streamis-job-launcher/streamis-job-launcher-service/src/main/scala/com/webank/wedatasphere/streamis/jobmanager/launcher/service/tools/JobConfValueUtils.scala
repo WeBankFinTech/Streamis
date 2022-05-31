@@ -40,8 +40,8 @@ object JobConfValueUtils{
      // Init a value map to store relation of config values
      val relationMap: util.Map[String, Any] = new util.HashMap[String, Any]()
      configValues.asScala.foreach(keyValue => {
-       Option(keyValue.getReferDefId) match {
-         case Some(refDefId) => {
+       val refDefId = keyValue.getReferDefId
+       if (null != refDefId) {
            Option(relationMap.get(refDefId.toString)) match {
              case Some(value: util.Map[String, Any]) => {
                // Put the value into relation
@@ -54,8 +54,8 @@ object JobConfValueUtils{
              case _ =>
                // Set the value/relation recursively
                var definition = definitionMap.get(refDefId.toString)
-               var value: Any = if (StringUtils.isBlank(definition.getType) ||
-                      definition.getType.equalsIgnoreCase("NONE")) {
+               var value: Any = if (null != definition && (StringUtils.isBlank(definition.getType) ||
+                      definition.getType.equalsIgnoreCase("NONE"))) {
                   val relation = new util.HashMap[String, Any]()
                   relation.put(keyValue.getKey, keyValue.getValue)
                   relation
@@ -89,8 +89,7 @@ object JobConfValueUtils{
                }
            }
          }
-       }
-     })
+       })
      // Filter the root configuration
      relationMap.asScala
        .filter(entry=> definitionMap.get(entry._1).getLevel == 0).map{
@@ -118,6 +117,7 @@ object JobConfValueUtils{
           case Some(definition) => if (definition.getLevel == 0){
             configValues.addAll(deserializeInnerObj(key, value, null, definitionMap))
           }
+          case _ =>
         }
       }
     }
