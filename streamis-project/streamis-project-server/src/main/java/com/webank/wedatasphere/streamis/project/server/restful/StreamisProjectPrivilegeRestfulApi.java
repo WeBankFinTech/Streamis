@@ -20,9 +20,9 @@ import java.util.List;
 
 @RequestMapping(path = "/streamis/project/projectPrivilege")
 @RestController
-public class StreamisProjectPrivilegeRestfulAPI {
+public class StreamisProjectPrivilegeRestfulApi {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StreamisProjectPrivilegeRestfulAPI.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StreamisProjectPrivilegeRestfulApi.class);
 
     @Autowired
     private StreamisProjectPrivilegeService projectPrivilegeService;
@@ -46,7 +46,7 @@ public class StreamisProjectPrivilegeRestfulAPI {
         try {
             boolean hasReleaseProjectPrivilege = projectPrivilegeService.hasReleaseProjectPrivilege(projectId, username);
             return StreamisProjectRestfulUtils.dealOk("Successfully obtained the release privilege",
-                    new Pair<>("editorPrivilege", hasReleaseProjectPrivilege));
+                    new Pair<>("releasePrivilege", hasReleaseProjectPrivilege));
         } catch (Exception e) {
             LOGGER.error("failed to obtain the release privilege for user {}", username, e);
             return StreamisProjectRestfulUtils.dealError("failed to obtain the release privilege, reason is:" + ExceptionUtils.getRootCauseMessage(e));
