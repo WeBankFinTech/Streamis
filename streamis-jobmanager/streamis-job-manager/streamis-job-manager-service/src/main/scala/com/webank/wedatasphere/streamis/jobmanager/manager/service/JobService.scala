@@ -17,10 +17,9 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import java.util
 import java.util.Date
-
 import com.github.pagehelper.PageInfo
-import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfConstants
-import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.ConfigMapper
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
+import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
 import org.apache.linkis.common.exception.ErrorException
 import org.apache.linkis.common.utils.Logging
@@ -36,7 +35,6 @@ import org.apache.commons.lang.StringUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.util.CollectionUtils
 
 import scala.collection.JavaConverters._
 
@@ -48,7 +46,7 @@ class JobService extends Logging {
   @Autowired private var streamTaskMapper: StreamTaskMapper = _
   @Autowired private var bmlService: BMLService = _
   @Autowired private var jobContentParsers: Array[JobContentParser] = _
-  @Autowired private var configMapper: ConfigMapper = _
+  @Autowired private var streamJobConfService: StreamJobConfService = _
   @Autowired private var streamAlertMapper:StreamAlertMapper = _
 
 
@@ -219,37 +217,22 @@ class JobService extends Logging {
     val job = streamJobMapper.getJobById(jobId)
     if (job == null) return false
     if (username.equals(job.getCreateBy)) return true
-    val values = configMapper.getConfigKeyValues(null, jobId)
-    if (CollectionUtils.isEmpty(values)) return false
-    val configValues = values.asScala
-    val list = configValues.groupBy(_.getConfigKey).filter(f => f._1.equals(JobConfConstants.JOBMANAGER_FLINK_AUTHORITY_VISIBLE.getValue)).toList
-    if (list.size <= 0) return false
-    val value = list.head._2.head.getConfigValue
-    if (StringUtils.isBlank(value)) return false
-    val names = value.split(",").toList
+    val authors = this.streamJobConfService.getJobConfValue(jobId, JobConfKeyConstants.AUTHORITY_AUTHOR_VISIBLE.getValue)
+    if (StringUtils.isBlank(authors)) return false
+    val names = authors.split(",").toList
     names.contains(username)
   }
 
   def getAlertUsers(job: StreamJob): util.List[String] = {
-    val values = configMapper.getConfigKeyValues(null, job.getId)
-    if (CollectionUtils.isEmpty(values)) return null
-    val configValues = values.asScala
-    val list = configValues.groupBy(_.getConfigKey).filter(f => f._1.equals(JobConfConstants.JOB_CONF_ALERT_USER.getValue)).toList
-    if (list.size <= 0) return null
-    val value = list.head._2.head.getConfigValue
-    if (StringUtils.isBlank(value)) return null
-    value.split(",").toList.asJava
+    val alertUsers = this.streamJobConfService.getJobConfValue(job.getId, JobConfKeyConstants.ALERT_USER.getValue)
+    if (StringUtils.isBlank(alertUsers)) return null
+    alertUsers.split(",").toList.asJava
   }
 
   def getAlertLevel(job: StreamJob): AlertLevel = {
-    val values = configMapper.getConfigKeyValues(null, job.getId)
-    if (CollectionUtils.isEmpty(values)) return AlertLevel.MINOR
-    val configValues = values.asScala
-    val list = configValues.groupBy(_.getConfigKey).filter(f => f._1.equals(JobConfConstants.JOB_CONF_ALERT_LEVEL.getValue)).toList
-    if (list.size <= 0) return AlertLevel.MINOR
-    val value = list.head._2.head.getConfigValue
-    if (StringUtils.isBlank(value)) return AlertLevel.MINOR
-    AlertLevel.valueOf(value)
+    val level = this.streamJobConfService.getJobConfValue(job.getId, JobConfKeyConstants.ALERT_LEVEL.getValue)
+    if (StringUtils.isBlank(level)) return AlertLevel.MINOR
+    AlertLevel.valueOf(level)
   }
 
   def isCreator(jobId: Long, username: String): Boolean = {
