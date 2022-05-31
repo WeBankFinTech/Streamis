@@ -8,9 +8,9 @@ import com.webank.wedatasphere.streamis.project.server.entity.request.CreateProj
 import com.webank.wedatasphere.streamis.project.server.entity.request.DeleteProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.entity.request.SearchProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.entity.request.UpdateProjectRequest;
-import com.webank.wedatasphere.streamis.project.server.service.StreamisProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.project.server.service.StreamisProjectService;
 import com.webank.wedatasphere.streamis.project.server.utils.StreamisProjectRestfulUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.math3.util.Pair;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
@@ -43,8 +43,6 @@ public class StreamisProjectRestfulApi {
     @Autowired
     private StreamisProjectService projectService;
 
-    private StreamisProjectPrivilegeService projectPrivilegeService;
-
     @RequestMapping(path = "/createProject", method = RequestMethod.POST)
     public Message createProject( HttpServletRequest request,@Validated @RequestBody CreateProjectRequest createProjectRequest){
         String username = SecurityFilter.getLoginUsername(request);
@@ -57,11 +55,11 @@ public class StreamisProjectRestfulApi {
             privilegeList.addAll(createStreamisProjectPrivilege(streamisProject.getId(),createProjectRequest.getAccessUsers(),ProjectUserPrivilegeEnum.ACCESS.getRank()));
             streamisProject.setProjectPrivileges(privilegeList);
             streamisProject = projectService.createProject(streamisProject);
-            return StreamisProjectRestfulUtils.dealOk("创建工程成功",
+            return StreamisProjectRestfulUtils.dealOk("create project success",
                     new Pair<>("projectName", streamisProject.getName()), new Pair<>("projectId", streamisProject.getId()));
-        }catch(final Throwable t){
-            LOGGER.error("failed to create project for user {}", username, t);
-            return StreamisProjectRestfulUtils.dealError("创建工程失败,原因是:" + t.getMessage());
+        }catch(Exception e){
+            LOGGER.error("failed to create project for user {}", username, e);
+            return StreamisProjectRestfulUtils.dealError("failed to create project,reason is:" + ExceptionUtils.getRootCauseMessage(e));
         }
     }
 
@@ -78,10 +76,10 @@ public class StreamisProjectRestfulApi {
             privilegeList.addAll(createStreamisProjectPrivilege(streamisProject.getId(),updateProjectRequest.getAccessUsers(),ProjectUserPrivilegeEnum.ACCESS.getRank()));
             streamisProject.setProjectPrivileges(privilegeList);
             projectService.updateProject(streamisProject);
-            return StreamisProjectRestfulUtils.dealOk("更新工程成功");
-        }catch(final Throwable t){
-            LOGGER.error("failed to update project for user {}", username, t);
-            return StreamisProjectRestfulUtils.dealError("更新工程失败,原因是:" + t.getMessage());
+            return StreamisProjectRestfulUtils.dealOk("update project success");
+        }catch(Exception e){
+            LOGGER.error("failed to update project for user {}", username, e);
+            return StreamisProjectRestfulUtils.dealError("failed to update project,reason is:" + ExceptionUtils.getRootCauseMessage(e));
         }
     }
 
@@ -90,10 +88,10 @@ public class StreamisProjectRestfulApi {
         String username = SecurityFilter.getLoginUsername(request);
         try{
             projectService.deleteProjectById(deleteProjectRequest.getProjectId());
-            return StreamisProjectRestfulUtils.dealOk("删除工程成功");
-        }catch(final Throwable t){
-            LOGGER.error("failed to delete project for user {}", username, t);
-            return StreamisProjectRestfulUtils.dealError("删除工程失败,原因是:" + t.getMessage());
+            return StreamisProjectRestfulUtils.dealOk("delete project success");
+        }catch(Exception e){
+            LOGGER.error("failed to delete project for user {}", username, e);
+            return StreamisProjectRestfulUtils.dealError("failed to delete project,reason is:" + ExceptionUtils.getRootCauseMessage(e));
         }
     }
 
@@ -102,11 +100,11 @@ public class StreamisProjectRestfulApi {
         String username = SecurityFilter.getLoginUsername(request);
         try{
             StreamisProject streamisProject = projectService.queryProject(searchProjectRequest.getProjectId());
-            return StreamisProjectRestfulUtils.dealOk("查找工程成功",
+            return StreamisProjectRestfulUtils.dealOk("search project success",
                     new Pair<>("projectName", streamisProject.getName()), new Pair<>("projectId", streamisProject.getId()));
-        }catch(final Throwable t){
-            LOGGER.error("failed to delete project for user {}", username, t);
-            return StreamisProjectRestfulUtils.dealError("删除工程失败,原因是:" + t.getMessage());
+        }catch(Exception e){
+            LOGGER.error("failed to search project for user {}", username, e);
+            return StreamisProjectRestfulUtils.dealError("failed to search project,reason is:" + ExceptionUtils.getRootCauseMessage(e));
         }
     }
 
