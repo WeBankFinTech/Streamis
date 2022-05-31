@@ -5,28 +5,23 @@
         <div class="normal" v-if="part.child_def && part.child_def.length">
           <h3>{{ part.name }}</h3>
           <div>
-            <Form :ref="part.key">
-              <FormItem v-for="(def, index) in part.child_def" :key="index" :label="def.name">
-                <div v-if="def.type === 'INPUT'" :data-part="part.key" :data-def="def.key">
-                  <Input v-model="valueMap[part.key][def.key]" :rules="{required: def.required, message: 'Error!', trigger: 'blur', pattern: new RegExp(def.validate_rule)}" />
-                </div>
-                <div v-else-if="def.type === 'NUMBER'" :data-part="part.key" :data-def="def.key">
-                  <Input v-model="valueMap[part.key][def.key]" type="number" :rules="{required: def.required, message: 'Error!', trigger: 'blur', pattern: new RegExp(def.validate_rule)}" />
-                </div>
-                <div v-else>
-                  <Select
-                    v-model="valueMap[part.key][def.key]"
-                    class="select"
+            <Form v-if="valueMap[part.key]" :model="valueMap[part.key]" :ref="part.key" :rules="rule[part.key]">
+              <FormItem v-for="(def, index) in part.child_def" :key="index" :label="def.name" :prop="def.key" :data-prop="def.key">
+                <Input v-if="def.type === 'INPUT' || def.type === 'NUMBER'" v-model="valueMap[part.key][def.key]" />
+                <!-- <Input v-else-if="def.type === 'NUMBER'" v-model="valueMap[part.key][def.key]" type="number" /> -->
+                <Select
+                  v-else
+                  v-model="valueMap[part.key][def.key]"
+                  class="select"
+                >
+                  <Option
+                    v-for="(item, index) in def.ref_values"
+                    :value="item"
+                    :key="index"
                   >
-                    <Option
-                      v-for="(item, index) in def.ref_values"
-                      :value="item"
-                      :key="index"
-                    >
-                      {{ item }}
-                    </Option>
-                  </Select>
-                </div>
+                    {{ item }}
+                  </Option>
+                </Select>
               </FormItem>
             </Form>
           </div>
@@ -34,7 +29,7 @@
         <div class="canEdited" v-else-if="part.child_def">
           <h3>{{ part.name }}</h3>
           <div>
-            <Form ref="diyForm">
+            <Form>
               <Row v-for="(item, index) in diyMap[part.key]" :key="index">
                 <Col span="9">
                   <FormItem>
@@ -91,20 +86,20 @@
 </template>
 <script>
 import api from '@/common/service/api'
+import { cloneDeep } from 'lodash';
 export default {
   data() {
     return {
       configs: [],
       valueMap: {},
-      returnMap: {},
       diyMap: {},
       saveLoading: false,
+      rule: {},
     }
   },
   mounted() {
     this.getUsers()
     this.getConfigs()
-    window.test = this;
   },
   methods: {
     getUsers() {
@@ -125,11 +120,18 @@ export default {
           'get'
         )
         .then(res => {
-          this.returnMap = res;
-          this.valueMap = {...this.valueMap, ...res};
+          const valueMap = this.valueMap;
+          Object.keys(res || {}).forEach(key => {
+            valueMap[key] = {};
+            Object.keys(res[key]).forEach(k => {
+              const formatKey = k.replace(/\./g, '/');
+              valueMap[key][formatKey] = res[key][k];
+            })
+          })
           Object.keys(this.diyMap).forEach(key => {
-            if (Object.keys(this.valueMap).includes(key)) {
-              let keyValue = Object.keys(this.valueMap[key] || {}).map(k => ({key: k, value: this.valueMap[key][k]}));
+            if (Object.keys(valueMap).includes(key)) {
+              let keyValue = Object.keys(valueMap[key] || {}).map(k => ({key: k.replace(/\//g, '.'), value: valueMap[key][k]}));
+              valueMap[key] = {};
               if (!keyValue.length) keyValue = [{value: '', key: ''}];
               this.diyMap = {
                 ...this.diyMap,
@@ -137,6 +139,7 @@ export default {
               }
             }
           })
+          this.valueMap = cloneDeep(valueMap);
         })
         .catch(e => console.warn(e))
     },
@@ -149,8 +152,11 @@ export default {
         .then(res => {
           console.log(res)
           let configs = res.def;
+          const valueMap = {};
+          const rule = {};
           configs = configs.map(conf => {
-            this.valueMap[conf.key] = {};
+            valueMap[conf.key] = {};
+            rule[conf.key] = {};
             if (!conf.child_def) return conf;
             if (!conf.child_def.length) {
               this.diyMap = {...this.diyMap, [conf.key]: [{value: '', key: ''}]};
@@ -159,11 +165,23 @@ export default {
               if (def.validate_type !== 'Regex') def.validate_rule = '';
               else def.validate_rule = def.validate_rule || '';
               const defaultValue = def.default_value || '';
-              this.valueMap[conf.key][def.key] = def.type === "NUMBER" ? +defaultValue : defaultValue;
+              const defKey = def.key.replace(/\./g, '/');
+              def.key = defKey;
+              valueMap[conf.key][defKey] = defaultValue;
+              const rules = [{required: def.required, message: this.$t('message.streamis.formItems.notEmpty'), trigger: 'blur'}];
+              if (def.type !== 'SELECT') {
+                if (def.validate_rule) rules.push({
+                  pattern: new RegExp(def.validate_rule),
+                  message: this.$t('message.streamis.formItems.wrongFormat'),
+                })
+              }
+              rule[conf.key][defKey] = rules;
               return def;
-            }).filter(def => ['SELECT', 'INPUT', 'NUMBER'].includes(def.type));
+            }).filter(def => ['SELECT', 'INPUT', 'NUMBER'].includes(def.type)).filter(def => !!def.visiable);
             return conf;
           });
+          this.valueMap = cloneDeep(valueMap);
+          this.rule = cloneDeep(rule);
           this.configs = configs;
           this.getValues()
         })
@@ -179,18 +197,40 @@ export default {
       console.log('addParameter')
       this.diyMap = {...this.diyMap, [key]: this.diyMap[key].concat({value: '', key: ''})}
     },
-    handleSaveConfig() {
+    async handleSaveConfig() {
       console.log('handleSaveConfig')
+      this.valueMap = cloneDeep(this.valueMap);
+      const flags = await Promise.all(Object.keys(this.$refs).map(async ref => {
+        const ele = this.$refs[ref][0];
+        if (typeof ele.validate === 'function') return ele.validate();
+        else return true;
+      }));
+      console.log('flags', flags);
+      if (!flags.every(Boolean)) return;
       this.saveLoading = true;
-      const configuration = { ...this.valueMap };
+      const configuration = {};
+      Object.keys(this.valueMap).forEach(key => {
+        configuration[key] = {};
+        Object.keys(this.valueMap[key]).forEach(k => {
+          const formatKey = k.replace(/\//g, '.');
+          configuration[key][formatKey] = this.valueMap[key][k];
+        })
+      });
       let warning = false;
+      let emptyWarning = false;
       Object.keys(this.diyMap).forEach(key => {
         configuration[key] = {};
         (this.diyMap[key] || []).forEach(mapKey => {
+          emptyWarning = !mapKey.key || !mapKey.key.trim();
           if (configuration[key][mapKey.key]) warning = true;
-          configuration[key][mapKey.key] = mapKey.value;
+          configuration[key][mapKey.key] = mapKey.value || '';
         })
       });
+      console.log('configuration', configuration, this.valueMap)
+      if (emptyWarning) {
+        this.saveLoading = false;
+        return this.$Message.error({ content: '请删除多余自定义字段，key值不能为空' });
+      }
       if (warning) {
         this.saveLoading = false;
         return this.$Message.error({ content: '自定义字段名称不能重复' });

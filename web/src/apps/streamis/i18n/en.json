@@ -49,7 +49,9 @@
         "updateBtn": "Update",
         "batchAction": "batch Action",
         "confirmBtn": "confirm",
-        "cancel": "cancel"
+        "cancel": "cancel",
+        "notEmpty": "Not empty",
+        "wrongFormat": "Wrong format"
       },
       "jobListTableColumns":{
         "jobName": "Job name",
