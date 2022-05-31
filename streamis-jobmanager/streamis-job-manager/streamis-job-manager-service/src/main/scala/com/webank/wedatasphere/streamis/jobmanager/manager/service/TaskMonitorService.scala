@@ -98,7 +98,7 @@ class TaskMonitorService extends Logging {
           // 连续三次还是出现异常，说明Linkis的Manager已经不能正常提供服务，告警并不再尝试获取状态，等待下次尝试
           val users = getAlertUsers(job)
           users.add(job.getCreateBy)
-          alert(jobService.getAlertLevel(job), s"请求LinkisManager失败，Linkis集群出现异常，请关注！影响任务 [${job.getName}]", users, streamTask)
+          alert(jobService.getAlertLevel(job), s"请求LinkisManager失败，Linkis集群出现异常，请关注！影响任务[${job.getName}]", users, streamTask)
         }
       }
       }
@@ -108,14 +108,15 @@ class TaskMonitorService extends Logging {
         var extraMessage = ""
         Option(jobInfo) match {
           case Some(flinkJobInfo: FlinkJobInfo) =>
-            extraMessage = s" applicationId: ${flinkJobInfo.getApplicationId}"
+            extraMessage = s",${flinkJobInfo.getApplicationId}"
           case _ =>
         }
         // TODO Need to add restart feature if user sets the restart parameters in checkpoint module.
-        val alertMsg = s"您的 streamis 流式应用[name: ${job.getName}${extraMessage}]已经失败, 请您登陆Streamis查看应用日志, 现将自动拉起该应用"
+        val alertMsg = s"您的 streamis 流式应用[${job.getName}${extraMessage}]已经失败, 请您登陆Streamis查看应用日志, 现将自动拉起该应用"
         Utils.tryCatch{
           info(s"Start to reLaunch the StreamisJob [${job.getName}], now to submit and schedule it...")
-          val future: Future[String] = streamTaskService.asyncExecute(job.getId, 0L, job.getCreateBy, true)
+          // Use submit user to start job
+          val future: Future[String] = streamTaskService.asyncExecute(job.getId, 0L, job.getSubmitUser, true)
         }{
           case e:Exception =>
             warn(s"Fail to reLaunch the StreamisJob [${job.getName}]", e)
