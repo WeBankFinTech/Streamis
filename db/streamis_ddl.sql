@@ -252,4 +252,9 @@ CREATE TABLE `linkis_stream_project_privilege` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='项目权限表';
 
 
+ALTER TABLE `linkis_stream_project` ADD create_time datetime null;
+ALTER TABLE `linkis_stream_project` ADD last_update_by varchar(50) null;
+ALTER TABLE `linkis_stream_project` ADD last_update_time datetime null;
+
+
 SET FOREIGN_KEY_CHECKS = 1;

@@ -27,4 +27,12 @@ public class DeleteProjectRequest {
     public void setProjectName(String projectName) {
         this.projectName = projectName;
     }
+
+    @Override
+    public String toString() {
+        return "DeleteProjectRequest{" +
+                "projectId=" + projectId +
+                ", projectName='" + projectName + '\'' +
+                '}';
+    }
 }
