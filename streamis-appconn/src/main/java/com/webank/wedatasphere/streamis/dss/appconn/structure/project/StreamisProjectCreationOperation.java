@@ -2,6 +2,7 @@ package com.webank.wedatasphere.streamis.dss.appconn.structure.project;
 
 import com.webank.wedatasphere.dss.common.entity.project.DSSProject;
 import com.webank.wedatasphere.dss.common.utils.DSSCommonUtils;
+import com.webank.wedatasphere.dss.standard.app.sso.Workspace;
 import com.webank.wedatasphere.dss.standard.app.sso.origin.request.action.DSSPostAction;
 import com.webank.wedatasphere.dss.standard.app.structure.AbstractStructureOperation;
 import com.webank.wedatasphere.dss.standard.app.structure.project.ProjectCreationOperation;
@@ -12,8 +13,6 @@ import com.webank.wedatasphere.dss.standard.common.entity.ref.InternalResponseRe
 import com.webank.wedatasphere.dss.standard.common.exception.operation.ExternalOperationFailedException;
 import com.webank.wedatasphere.streamis.dss.appconn.exception.StreamisAppConnErrorException;
 import com.webank.wedatasphere.streamis.dss.appconn.utils.StreamisCommonUtil;
-
-import java.util.List;
 
 import static com.webank.wedatasphere.streamis.dss.appconn.constraints.Constraints.API_REQUEST_PREFIX;
 import static com.webank.wedatasphere.streamis.dss.appconn.constraints.Constraints.STREAMIS_APPCONN_NAME;
@@ -33,24 +32,21 @@ public class StreamisProjectCreationOperation extends AbstractStructureOperation
         DSSPostAction streamisPostAction = new DSSPostAction();
         streamisPostAction.setUser(dssProjectContentRequestRef.getUserName());
         DSSProject dssProject = dssProjectContentRequestRef.getDSSProject();
+        Workspace workspace = dssProjectContentRequestRef.getWorkspace();
         DSSProjectPrivilege dssProjectPrivilege = dssProjectContentRequestRef.getDSSProjectPrivilege();
         if(dssProject == null || dssProjectPrivilege == null){
             //TODO error code need to amend
             throw new StreamisAppConnErrorException(-1, "the dssProject or dssProjectPrivilege is null");
         }
-        streamisPostAction.addRequestPayload("projectName",dssProjectContentRequestRef.getDSSProject().getName());
-        streamisPostAction.addRequestPayload("description", dssProjectContentRequestRef.getDSSProject().getDescription());
-        List<String> releaseUsers = dssProjectContentRequestRef.getDSSProjectPrivilege().getReleaseUsers();
-        List<String> editUsers = dssProjectContentRequestRef.getDSSProjectPrivilege().getEditUsers();
-        List<String> accessUsers = dssProjectContentRequestRef.getDSSProjectPrivilege().getAccessUsers();
-        streamisPostAction.addRequestPayload("releaseUsers",releaseUsers);
-        streamisPostAction.addRequestPayload("editUsers",editUsers);
-        streamisPostAction.addRequestPayload("accessUsers",accessUsers);
+        streamisPostAction.addRequestPayload("projectName",dssProject.getName());
+        streamisPostAction.addRequestPayload("workspaceId", workspace==null?null:workspace.getWorkspaceId());
+        streamisPostAction.addRequestPayload("releaseUsers",dssProjectPrivilege.getReleaseUsers());
+        streamisPostAction.addRequestPayload("editUsers",dssProjectPrivilege.getEditUsers());
+        streamisPostAction.addRequestPayload("accessUsers",dssProjectPrivilege.getAccessUsers());
         InternalResponseRef responseRef = StreamisCommonUtil.getInternalResponseRef(dssProjectContentRequestRef, ssoRequestOperation, projectUrl, streamisPostAction);
-        @SuppressWarnings("unchecked")
         Long projectId = DSSCommonUtils.parseToLong(responseRef.getData().get("projectId"));
         return ProjectResponseRef.newExternalBuilder()
-                .setRefProjectId(projectId.longValue()).success();
+                .setRefProjectId(projectId).success();
     }
 
     @Override
