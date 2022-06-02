@@ -29,9 +29,12 @@ public class StreamisProjectSearchOperation extends AbstractStructureOperation<S
         getAction.setUser(streamisProjectContentReqRef.getUserName());
         getAction.setParameter("projectName",streamisProjectContentReqRef.getProjectName());
         InternalResponseRef responseRef = StreamisCommonUtil.getInternalResponseRef(streamisProjectContentReqRef, ssoRequestOperation, projectUrl, getAction);
+        if(responseRef.getData().get("projectId")==null){
+            return ProjectResponseRef.newExternalBuilder().success();
+        }
         Long projectId = DSSCommonUtils.parseToLong(responseRef.getData().get("projectId"));
         return ProjectResponseRef.newExternalBuilder()
-                .setRefProjectId(projectId.longValue()).success();
+                .setRefProjectId(projectId).success();
     }
 
     @Override
