@@ -29,7 +29,7 @@ public class StreamisProjectPrivilegeServiceImpl implements StreamisProjectPrivi
             return;
         }
         streamisProjectPrivilegeMapper.addProjectPrivilege(projectPrivilegeList);
-        LOGGER.info("project ends to add privilege");
+        LOGGER.info("create project privilege finish and projectId is {}",projectPrivilegeList.get(0).getProjectId());
     }
 
     @Override
@@ -45,16 +45,16 @@ public class StreamisProjectPrivilegeServiceImpl implements StreamisProjectPrivi
             streamisProjectPrivilegeMapper.addProjectPrivilege(addPrivilegeList);
         }
         if(!CollectionUtils.isEmpty(delPrivilegeList)) {
-            streamisProjectPrivilegeMapper.deleteProjectPrivilege(delPrivilegeList);
+            streamisProjectPrivilegeMapper.deleteProjectPrivilegeById(delPrivilegeList);
         }
-        LOGGER.info("projectId {} ends to update privilege", dssPrivilegeList.get(0).getProjectId());
+        LOGGER.info("update project privilege finish and projectId is {}", dssPrivilegeList.get(0).getProjectId());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteProjectPrivilegeByProjectId(Long projectId) {
         streamisProjectPrivilegeMapper.deleteProjectPrivilegeByProjectId(projectId);
-        LOGGER.info("projectId {} ends to delete privilege", projectId );
+        LOGGER.info("delete privilege finish and projectId is {}", projectId );
     }
 
     @Override
