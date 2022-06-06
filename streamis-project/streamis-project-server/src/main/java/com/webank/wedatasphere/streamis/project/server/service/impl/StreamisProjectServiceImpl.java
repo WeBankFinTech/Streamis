@@ -34,28 +34,28 @@ public class StreamisProjectServiceImpl implements StreamisProjectService {
     @Transactional(rollbackFor = Exception.class)
     public StreamisProject createProject(StreamisProject streamisProject) throws StreamisProjectErrorException {
         LOGGER.info("user {} starts to create project {}", streamisProject.getCreateBy(), streamisProject.getName());
-        if (!CollectionUtils.isEmpty(streamisProjectMapper.findProjectByName(streamisProject.getName()))) {
+        if (!CollectionUtils.isEmpty(streamisProjectMapper.findProjectIdByName(streamisProject.getName()))) {
             throw new StreamisProjectErrorException(600500, "the project name is exist");
         }
         streamisProjectMapper.createProject(streamisProject);
         List<StreamisProjectPrivilege> projectPrivileges = streamisProject.getProjectPrivileges();
         for (StreamisProjectPrivilege privilege : projectPrivileges) privilege.setProjectId(streamisProject.getId());
         streamisProjectPrivilegeService.addProjectPrivilege(projectPrivileges);
-        LOGGER.info("user {} ends to create project {} and id is {}", streamisProject.getCreateBy(), streamisProject.getName(), streamisProject.getId());
+        LOGGER.info("user {} create project {} finished and id is {}", streamisProject.getCreateBy(), streamisProject.getName(), streamisProject.getId());
         return streamisProject;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateProject(StreamisProject streamisProject) throws StreamisProjectErrorException {
-        LOGGER.info("User {} begins to update project {}", streamisProject.getLastUpdateBy(), streamisProject.getName());
-        List<Long> list = streamisProjectMapper.findProjectByName(streamisProject.getName());
+        LOGGER.info("User {} begins to update project {}", streamisProject.getLastUpdateBy(), streamisProject.getId());
+        List<Long> list = streamisProjectMapper.findProjectIdByName(streamisProject.getName());
         if (!CollectionUtils.isEmpty(list) && !list.get(0).equals(streamisProject.getId())) {
             throw new StreamisProjectErrorException(600500, "the project name is exist");
         }
         streamisProjectMapper.updateProject(streamisProject);
         streamisProjectPrivilegeService.updateProjectPrivilege(streamisProject.getProjectPrivileges());
-        LOGGER.info("user {} ends to update, project name is {} and id is {}",streamisProject.getLastUpdateBy(),streamisProject.getName(),streamisProject.getId());
+        LOGGER.info("user {} update project finished and name is {} and id is {}",streamisProject.getLastUpdateBy(),streamisProject.getName(),streamisProject.getId());
     }
 
     @Override
@@ -63,12 +63,12 @@ public class StreamisProjectServiceImpl implements StreamisProjectService {
     public void deleteProjectById(Long projectId) {
         streamisProjectMapper.deleteProjectById(projectId);
         streamisProjectPrivilegeService.deleteProjectPrivilegeByProjectId(projectId);
-        LOGGER.info("delete projectId {}", projectId);
+        LOGGER.info("delete projectId {} finished", projectId);
     }
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public StreamisProject queryProject(Long projectId) {
-        return streamisProjectMapper.findProjectById(projectId);
+    public List<Long> queryProject(String projectName) {
+        return streamisProjectMapper.findProjectIdByName(projectName);
     }
 }

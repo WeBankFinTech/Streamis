@@ -33,7 +33,7 @@ public class StreamisPrejectDeleteOperation extends AbstractStructureOperation<S
     @Override
     public void init() {
         super.init();
-        projectUrl = mergeBaseUrl(mergeUrl(API_REQUEST_PREFIX, "createProject"));
+        projectUrl = mergeBaseUrl(mergeUrl(API_REQUEST_PREFIX, "deleteProject"));
     }
 
 }

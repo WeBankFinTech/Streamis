@@ -15,7 +15,7 @@ public interface StreamisProjectPrivilegeMapper {
 
     void deleteProjectPrivilegeByProjectId(Long projectId);
 
-    void deleteProjectPrivilege(@Param("list") List<StreamisProjectPrivilege> projectPrivilegeList);
+    void deleteProjectPrivilegeById(@Param("list") List<StreamisProjectPrivilege> projectPrivilegeList);
 
     List<StreamisProjectPrivilege> getProjectPrivilege(Long projectId, String userName);
 
