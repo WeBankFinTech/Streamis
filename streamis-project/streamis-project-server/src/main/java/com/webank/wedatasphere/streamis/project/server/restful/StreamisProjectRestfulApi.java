@@ -5,8 +5,6 @@ import com.webank.wedatasphere.streamis.project.server.constant.ProjectUserPrivi
 import com.webank.wedatasphere.streamis.project.server.entity.StreamisProject;
 import com.webank.wedatasphere.streamis.project.server.entity.StreamisProjectPrivilege;
 import com.webank.wedatasphere.streamis.project.server.entity.request.CreateProjectRequest;
-import com.webank.wedatasphere.streamis.project.server.entity.request.DeleteProjectRequest;
-import com.webank.wedatasphere.streamis.project.server.entity.request.SearchProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.entity.request.UpdateProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.service.StreamisProjectService;
 import com.webank.wedatasphere.streamis.project.server.utils.StreamisProjectRestfulUtils;
@@ -18,10 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -34,7 +29,7 @@ import static com.webank.wedatasphere.streamis.project.server.utils.StreamisProj
  * this is the restful class for streamis project
  */
 
-@RequestMapping(path = "/streamis")
+@RequestMapping(path = "/streamis/project")
 @RestController
 public class StreamisProjectRestfulApi {
 
@@ -45,9 +40,10 @@ public class StreamisProjectRestfulApi {
 
     @RequestMapping(path = "/createProject", method = RequestMethod.POST)
     public Message createProject( HttpServletRequest request,@Validated @RequestBody CreateProjectRequest createProjectRequest){
+        LOGGER.info("enter createProject, requestBody is {}",createProjectRequest.toString());
         String username = SecurityFilter.getLoginUsername(request);
         try{
-            StreamisProject streamisProject = new StreamisProject(createProjectRequest.getProjectName(), createProjectRequest.getDescription(), null);
+            StreamisProject streamisProject = new StreamisProject(createProjectRequest.getProjectName(), createProjectRequest.getWorkspaceId());
             streamisProject.setCreateBy(username);
             List<StreamisProjectPrivilege> privilegeList = new ArrayList<>();
             privilegeList.addAll(createStreamisProjectPrivilege(streamisProject.getId(),createProjectRequest.getReleaseUsers(),ProjectUserPrivilegeEnum.RELEASE.getRank()));
@@ -65,11 +61,12 @@ public class StreamisProjectRestfulApi {
 
     @RequestMapping(path = "/updateProject", method = RequestMethod.PUT)
     public Message updateProject( HttpServletRequest request, @Validated @RequestBody UpdateProjectRequest updateProjectRequest){
+        LOGGER.info("enter updateProject, requestBody is {}",updateProjectRequest.toString());
         String username = SecurityFilter.getLoginUsername(request);
         try{
-            StreamisProject streamisProject = new StreamisProject(updateProjectRequest.getProjectName(), updateProjectRequest.getDescription(), null);
+            StreamisProject streamisProject = new StreamisProject(updateProjectRequest.getProjectName(), updateProjectRequest.getWorkspaceId());
             streamisProject.setId(updateProjectRequest.getProjectId());
-            streamisProject.setCreateBy(username);
+            streamisProject.setLastUpdateBy(username);
             List<StreamisProjectPrivilege> privilegeList = new ArrayList<>();
             privilegeList.addAll(createStreamisProjectPrivilege(streamisProject.getId(),updateProjectRequest.getReleaseUsers(),ProjectUserPrivilegeEnum.RELEASE.getRank()));
             privilegeList.addAll(createStreamisProjectPrivilege(streamisProject.getId(),updateProjectRequest.getEditUsers(), ProjectUserPrivilegeEnum.EDIT.getRank()));
@@ -84,10 +81,11 @@ public class StreamisProjectRestfulApi {
     }
 
     @RequestMapping(path = "/deleteProject", method = RequestMethod.DELETE)
-    public Message deleteProject( HttpServletRequest request, @Validated @RequestBody DeleteProjectRequest deleteProjectRequest){
+    public Message deleteProject( HttpServletRequest request, @RequestParam(value = "projectId", required = false) Long projectId){
+        LOGGER.info("enter deleteProject, requestParam projectId is {}",projectId);
         String username = SecurityFilter.getLoginUsername(request);
         try{
-            projectService.deleteProjectById(deleteProjectRequest.getProjectId());
+            projectService.deleteProjectById(projectId);
             return StreamisProjectRestfulUtils.dealOk("delete project success");
         }catch(Exception e){
             LOGGER.error("failed to delete project for user {}", username, e);
@@ -96,12 +94,13 @@ public class StreamisProjectRestfulApi {
     }
 
     @RequestMapping(path = "/searchProject", method = RequestMethod.GET)
-    public Message searchProject( HttpServletRequest request, @Validated @RequestBody SearchProjectRequest searchProjectRequest){
+    public Message searchProject( HttpServletRequest request,@RequestParam(value = "projectName", required = false) String projectName){
+        LOGGER.info("enter deleteProject, requestParam projectName is {}",projectName);
         String username = SecurityFilter.getLoginUsername(request);
         try{
-            StreamisProject streamisProject = projectService.queryProject(searchProjectRequest.getProjectId());
+            List<Long> projectIds = projectService.queryProject(projectName);
             return StreamisProjectRestfulUtils.dealOk("search project success",
-                    new Pair<>("projectName", streamisProject.getName()), new Pair<>("projectId", streamisProject.getId()));
+                    new Pair<>("projectId", projectIds.isEmpty()?null:projectIds.get(0)));
         }catch(Exception e){
             LOGGER.error("failed to search project for user {}", username, e);
             return StreamisProjectRestfulUtils.dealError("failed to search project,reason is:" + ExceptionUtils.getRootCauseMessage(e));
