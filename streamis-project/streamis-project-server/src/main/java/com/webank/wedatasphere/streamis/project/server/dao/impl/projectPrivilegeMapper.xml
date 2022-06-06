@@ -22,10 +22,10 @@
         delete from linkis_stream_project_privilege where project_id = #{projectId}
     </delete>
 
-    <delete id="deleteProjectPrivilege" parameterType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProjectPrivilege" >
+    <delete id="deleteProjectPrivilegeById" parameterType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProjectPrivilege" >
         delete from linkis_stream_project_privilege where id in
         <foreach collection="list" item="item" open='(' separator="," close=')'>
-            id = #{item.id}
+            #{item.id}
         </foreach>
     </delete>
 

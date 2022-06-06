@@ -11,20 +11,19 @@ public class StreamisProject {
 
     private Long id;
     private String name;
-    private String description;
+    private Long workspaceId;
     private String createBy;
     private Date createTime;
     private String lastUpdateBy;
     private Date lastUpdateTime;
-    private String tags;
-    private String workspaceName;
-    private Long dssProjectId;
     private List<StreamisProjectPrivilege> projectPrivileges;
 
-    public StreamisProject(String name, String description, String workspaceName){
+    public StreamisProject() {
+    }
+
+    public StreamisProject(String name, Long workspaceId){
         this.name = name;
-        this.description = description;
-        this.workspaceName = workspaceName;
+        this.workspaceId = workspaceId;
     }
 
     public Long getId() {
@@ -43,12 +42,12 @@ public class StreamisProject {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
+    public Long getWorkspaceId() {
+        return workspaceId;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setWorkspaceId(Long workspaceId) {
+        this.workspaceId = workspaceId;
     }
 
     public String getCreateBy() {
@@ -81,30 +80,6 @@ public class StreamisProject {
 
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
-    }
-
-    public String getTags() {
-        return tags;
-    }
-
-    public void setTags(String tags) {
-        this.tags = tags;
-    }
-
-    public String getWorkspaceName() {
-        return workspaceName;
-    }
-
-    public void setWorkspaceName(String workspaceName) {
-        this.workspaceName = workspaceName;
-    }
-
-    public Long getDssProjectId() {
-        return dssProjectId;
-    }
-
-    public void setDssProjectId(Long dssProjectId) {
-        this.dssProjectId = dssProjectId;
     }
 
     public List<StreamisProjectPrivilege> getProjectPrivileges() {
