@@ -99,27 +99,27 @@ class DefaultStreamJobConfService extends StreamJobConfService with Logging{
      val definitionMap: util.Map[String, JobConfDefinition] = this.streamJobConfMapper.loadAllDefinitions()
         .asScala.map(definition => (definition.getKey, definition)).toMap.asJava
      configValues.addAll(convertToConfigValue(
-       valueSet.getResourceConfig, definitionMap, Option(definitionMap.get(JobConfKeyConstants.GROUP_RESOURCE)) match {
+       valueSet.getResourceConfig, definitionMap, Option(definitionMap.get(JobConfKeyConstants.GROUP_RESOURCE.getValue)) match {
          case Some(definition) => definition.getId
          case _ => 0
        }))
      configValues.addAll(convertToConfigValue(
-       valueSet.getParameterConfig, definitionMap, Option(definitionMap.get(JobConfKeyConstants.GROUP_FLINK_EXTRA)) match {
+       valueSet.getParameterConfig, definitionMap, Option(definitionMap.get(JobConfKeyConstants.GROUP_FLINK_EXTRA.getValue)) match {
          case Some(definition) => definition.getId
          case _ => 0
        }))
     configValues.addAll(convertToConfigValue(
-      valueSet.getProduceConfig, definitionMap, Option(definitionMap.get(JobConfKeyConstants.GROUP_PRODUCE)) match {
+      valueSet.getProduceConfig, definitionMap, Option(definitionMap.get(JobConfKeyConstants.GROUP_PRODUCE.getValue)) match {
         case Some(definition) => definition.getId
         case _ => 0
       }))
     configValues.addAll(convertToConfigValue(
-      valueSet.getPermissionConfig, definitionMap, Option(definitionMap.get(JobConfKeyConstants.GROUP_PERMISSION)) match {
+      valueSet.getPermissionConfig, definitionMap, Option(definitionMap.get(JobConfKeyConstants.GROUP_PERMISSION.getValue)) match {
         case Some(definition) => definition.getId
         case _ => 0
       }))
     configValues.addAll(convertToConfigValue(
-      valueSet.getAlarmConfig, definitionMap, Option(definitionMap.get(JobConfKeyConstants.GROUP_ALERT)) match {
+      valueSet.getAlarmConfig, definitionMap, Option(definitionMap.get(JobConfKeyConstants.GROUP_ALERT.getValue)) match {
         case Some(definition) => definition.getId
         case _ => 0
       }))

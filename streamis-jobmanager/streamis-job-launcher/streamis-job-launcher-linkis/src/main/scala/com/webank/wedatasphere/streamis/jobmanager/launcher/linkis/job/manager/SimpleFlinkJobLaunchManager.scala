@@ -68,7 +68,12 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
       case _ =>
     }
     Utils.tryCatch(fetchApplicationInfo(onceJob, jobInfo)) { t =>
-      throw new FlinkJobLaunchErrorException(-1, "Unable to fetch the application info of launched job, maybe the engine has been shutdown", t)}
+      val message = s"Unable to fetch the application info of launched job [${job.getJobName}], maybe the engine has been shutdown"
+      error(message, t)
+      // Mark failed
+      jobInfo.setStatus("failed")
+      jobInfo.setCompletedMsg(message)
+    }
     jobInfo.setResources(nodeInfo.get("nodeResource").asInstanceOf[util.Map[String, Object]])
     // Set job state info into
 //    Option(jobState).foreach(state => {
