@@ -69,14 +69,15 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
           throw e
         case t: Throwable =>
           error(s"${job.getSubmitUser} create jobInfo failed, now stop this EngineConn ${onceJob.getId}.")
-          onceJob.kill()
+          Utils.tryAndWarn(onceJob.kill())
           throw new FlinkJobLaunchErrorException(-1, "Fail to obtain launched job info", t)
       }
       createJobClient(onceJob, jobInfo)
     }{
       case e: FlinkJobLaunchErrorException => throw e
       case t: Throwable =>
-        throw new FlinkJobLaunchErrorException(-1, s"Exception in submitting Flink job to Linkis remote server, message: ${t.getMessage}", t)
+        error(s"Server Exception in submitting Flink job [${job.getJobName}] to Linkis remote server", t)
+        throw new FlinkJobLaunchErrorException(-1, s"Exception in submitting Flink job to Linkis remote server (提交至Linkis服务失败，请检查服务及网络)", t)
     }
   }
 
