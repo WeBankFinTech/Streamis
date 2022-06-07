@@ -25,6 +25,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{Ch
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobClient, FlinkJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.SpringContextHolder
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
+import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf.FLINK_JOB_STATUS_FAILED
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{ExecResultVo, JobProgressVo, JobStatusVo, PauseResultVo, ScheduleResultVo, StreamTaskListVo}
@@ -553,12 +554,17 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     val jobClient = jobLaunchManager.launch(launchJob, state)
     // Refresh and store the information from JobClient
     Utils.tryCatch {
-      val jobInfo = jobClient.getJobInfo(false)
+      // Refresh the job info(If the job shutdown immediately)
+      val jobInfo = jobClient.getJobInfo(true)
+      info(s"StreamJob [${streamJob.getName}] has launched with linkis_id ${jobInfo.getId}. now to examine its status")
       streamTask.setLinkisJobId(jobInfo.getId)
-      info(s"StreamJob [${streamJob.getName}] has launched with linkis_id ${jobInfo.getId}.")
       StreamTaskUtils.refreshInfo(streamTask, jobInfo)
-      info(s"StreamJob [${streamJob.getName}] is ${jobInfo.getStatus} with $jobInfo.")
+      // First to store the launched task info
       streamTaskMapper.updateTask(streamTask)
+      info(s"StreamJob [${streamJob.getName}] is ${jobInfo.getStatus} with $jobInfo.")
+      if (FLINK_JOB_STATUS_FAILED.getValue == streamTask.getStatus){
+         throw new JobExecuteErrorException(-1, s"(提交流式应用状态失败, 请检查日志), errorDesc: ${streamTask.getErrDesc}")
+      }
     }{case e: Exception =>
       val message = s"Error occurred when to refresh and store the info of StreamJob [${streamJob.getName}] with JobClient"
       warn(s"$message, stop and destroy the Client connection.")
