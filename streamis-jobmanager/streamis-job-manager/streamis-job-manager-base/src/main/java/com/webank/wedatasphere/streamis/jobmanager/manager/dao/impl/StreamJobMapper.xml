@@ -101,6 +101,8 @@
         LEFT JOIN (SELECT MAX(start_time) start_time, MAX(VERSION) VERSION,job_id FROM linkis_stream_task GROUP BY job_id) tt
         ON tt.job_id = l.job_id AND tt.version = l.version
         LEFT JOIN linkis_stream_task t ON tt.job_id = t.job_id AND tt.start_time = t.start_time
+        LEFT JOIN linkis_stream_project lsp ON lsp.name = j.project_name
+        LEFT JOIN linkis_stream_project_privilege lspp ON lspp.project_id =lsp.id where lspp.privilege in (1,2) or lspp.privilege is NULL
         ) aa
         <where>
             <if test="projectName != null and projectName!=''">
