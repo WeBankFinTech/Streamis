@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-@Service
+@Service("jobManagerPrivilegeServiceImpl")
 public class ProjectPrivilegeServiceImpl implements ProjectPrivilegeService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProjectPrivilegeServiceImpl.class);
