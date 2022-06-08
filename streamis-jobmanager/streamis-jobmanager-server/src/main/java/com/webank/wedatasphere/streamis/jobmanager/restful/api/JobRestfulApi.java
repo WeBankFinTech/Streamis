@@ -136,8 +136,9 @@ public class JobRestfulApi {
                            @RequestParam(value = "jobId", required = false) Long jobId,
                            @RequestParam(value = "snapshot", required = false) Boolean snapshot) throws JobException {
         String userName = SecurityFilter.getLoginUsername(req);
+        snapshot = !Objects.isNull(snapshot) && snapshot;
         if (jobId == null) {
-            JobExceptionManager.createException(30301, "jobId");
+            throw JobExceptionManager.createException(30301, "jobId");
         }
         LOG.info("{} try to kill job {}.", userName, jobId);
         if (!jobService.hasPermission(jobId, userName)) {

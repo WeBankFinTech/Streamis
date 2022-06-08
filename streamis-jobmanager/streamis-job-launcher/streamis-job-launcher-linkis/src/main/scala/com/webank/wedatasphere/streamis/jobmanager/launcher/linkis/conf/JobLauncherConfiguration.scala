@@ -39,4 +39,9 @@ object JobLauncherConfiguration {
    * Variable: savepoint path
    */
   val VAR_FLINK_SAVEPOINT_PATH: CommonVars[String] = CommonVars("wds.streamis.launch.variable.flink.savepoint.path", "flink.app.savePointPath")
+
+  /**
+   * Variable: flink app
+   */
+  val VAR_FLINK_APP_NAME: CommonVars[String] = CommonVars("wds.streamis.launch.variable.flink.app.name", "flink.app.name")
 }
