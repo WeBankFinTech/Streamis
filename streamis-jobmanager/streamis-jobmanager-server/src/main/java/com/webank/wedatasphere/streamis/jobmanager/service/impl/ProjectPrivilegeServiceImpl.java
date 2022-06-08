@@ -1,6 +1,6 @@
-package com.webank.wedatasphere.streamis.projectmanager.service.impl;
+package com.webank.wedatasphere.streamis.jobmanager.service.impl;
 
-import com.webank.wedatasphere.streamis.projectmanager.service.ProjectPrivilegeService;
+import com.webank.wedatasphere.streamis.jobmanager.service.ProjectPrivilegeService;
 import org.apache.linkis.common.conf.Configuration;
 import org.apache.linkis.server.conf.ServerConfiguration;
 import org.slf4j.Logger;
