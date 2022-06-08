@@ -15,4 +15,4 @@ VALUES(@dss_appconn_id, 1, 'Streamis', 'Streamis', 'Streaming application develo
 
 INSERT INTO `dss_appconn_instance`
 (appconn_id, label, url, enhance_json, homepage_uri)
-VALUES(@dss_appconn_id, 'DEV', 'http://127.0.0.1:8088/', '', '#/workspaceHome?workspaceId=224');
+VALUES(@dss_appconn_id, 'DEV', 'http://127.0.0.1:9188/', '', '#/workspaceHome?workspaceId=224');
