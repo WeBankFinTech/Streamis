@@ -38,7 +38,7 @@
     </update>
 
     <delete id="deleteProjectById">
-        delete from linkis_stream_project where id = #{id}
+        update linkis_stream_project set is_deleted = 1 where id = #{id}
     </delete>
 
     <select id="findProjectById" resultType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProject">
