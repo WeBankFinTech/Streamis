@@ -18,7 +18,7 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration.VAR_FLINK_SAVEPOINT_PATH
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration.{VAR_FLINK_APP_NAME, VAR_FLINK_SAVEPOINT_PATH}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.LinkisJobInfo
 import org.apache.linkis.common.utils.{Logging, Utils}
@@ -54,6 +54,13 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
       val startUpParams = TaskUtils.getStartupMap(job.getParams)
       startUpParams.putIfAbsent(VAR_FLINK_SAVEPOINT_PATH.getValue,
         state.getLocation.toString)
+    })
+    TaskUtils.getStartupMap(job.getParams).put(VAR_FLINK_APP_NAME.getValue,
+      Option(job.getJobName) match {
+        case None => "EngineConn-Flink"
+        case Some(jobName) =>
+          val index = jobName.lastIndexOf(".")
+          if (index > 0) jobName.substring(0, index) else jobName
     })
     job.getLabels.get(LabelKeyUtils.ENGINE_TYPE_LABEL_KEY) match {
       case engineConnType: String =>
