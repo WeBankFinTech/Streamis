@@ -22,6 +22,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.service.BMLService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.ZipHelper;
+import com.webank.wedatasphere.streamis.jobmanager.service.ProjectPrivilegeService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -56,6 +57,9 @@ public class UploadRestfulApi {
     @Autowired
     private BMLService bmlService;
 
+    @Autowired
+    private ProjectPrivilegeService projectPrivilegeService;
+
     @RequestMapping(path = "/upload", method = RequestMethod.POST)
     public Message uploadJar(HttpServletRequest request,
                              @RequestParam(name = "projectName", required = false) String projectName,
@@ -65,6 +69,8 @@ public class UploadRestfulApi {
         if (files == null || files.size() <= 0) {
             throw JobExceptionManager.createException(30300, "uploaded files");
         }
+        if (!projectPrivilegeService.hasEditPrivilege(request,projectName)) return Message.error("the current user has no operation permission");
+
         //Only uses 1st file(只取第一个文件)
         MultipartFile p = files.get(0);
         String fileName = new String(p.getOriginalFilename().getBytes("ISO8859-1"), StandardCharsets.UTF_8);
