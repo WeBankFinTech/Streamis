@@ -18,13 +18,8 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState, JobStateInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.core.{FlinkLogIterator, SimpleFlinkJobLogIterator}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkJobLaunchErrorException, FlinkSavePointException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobClient, FlinkJobInfo, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.SimpleFlinkJobLaunchManager.INSTANCE_NAME
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.operator.FlinkTriggerSavepointOperator
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{Checkpoint, Savepoint}
 import org.apache.commons.lang.StringEscapeUtils
 import org.apache.linkis.common.utils.{RetryHandler, Utils}
 import org.apache.linkis.computation.client.once.simple.{SimpleOnceJob, SubmittableSimpleOnceJob}
@@ -33,7 +28,6 @@ import org.apache.linkis.computation.client.operator.impl.{EngineConnApplication
 import org.apache.linkis.httpclient.dws.DWSHttpClient
 import org.apache.linkis.ujes.client.exception.UJESJobException
 
-import java.net.URI
 import java.util
 import scala.collection.JavaConverters.mapAsScalaMapConverter
 
@@ -68,7 +62,12 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
       case _ =>
     }
     Utils.tryCatch(fetchApplicationInfo(onceJob, jobInfo)) { t =>
-      throw new FlinkJobLaunchErrorException(-1, "Unable to fetch the application info of launched job, maybe the engine has been shutdown", t)}
+      val message = s"Unable to fetch the application info of launched job [${job.getJobName}], maybe the engine has been shutdown"
+      error(message, t)
+      // Mark failed
+      jobInfo.setStatus("failed")
+      jobInfo.setCompletedMsg(message)
+    }
     jobInfo.setResources(nodeInfo.get("nodeResource").asInstanceOf[util.Map[String, Object]])
     // Set job state info into
 //    Option(jobState).foreach(state => {
