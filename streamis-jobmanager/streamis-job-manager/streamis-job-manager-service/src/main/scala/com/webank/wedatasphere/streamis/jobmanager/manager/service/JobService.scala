@@ -50,8 +50,8 @@ class JobService extends Logging {
   @Autowired private var streamAlertMapper:StreamAlertMapper = _
 
 
-  def getByProList(projectName: String, jobName: String, jobStatus: Integer, jobCreator: String): PageInfo[QueryJobListVo] = {
-    val streamJobList = streamJobMapper.getJobLists(projectName, jobName, jobStatus, jobCreator)
+  def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String): PageInfo[QueryJobListVo] = {
+    val streamJobList = streamJobMapper.getJobLists(projectName, userName, jobName, jobStatus, jobCreator)
     if (streamJobList != null && !streamJobList.isEmpty) {
       val pageInfo = new PageInfo[QueryJobListVo](streamJobList)
       return pageInfo
@@ -62,8 +62,8 @@ class JobService extends Logging {
   /**
    * COre indicator(核心指标)
    */
-  def countByCores(projectName: String): TaskCoreNumVo = {
-    val jobs = streamJobMapper.getJobLists(projectName, null, null, null)
+  def countByCores(projectName: String, userName: String): TaskCoreNumVo = {
+    val jobs = streamJobMapper.getJobLists(projectName, userName, null, null, null)
     val taskNum = new TaskCoreNumVo()
     taskNum.setProjectName(projectName)
     if (jobs != null && !jobs.isEmpty) {

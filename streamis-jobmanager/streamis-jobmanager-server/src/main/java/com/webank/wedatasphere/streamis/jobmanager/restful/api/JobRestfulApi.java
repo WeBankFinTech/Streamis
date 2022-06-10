@@ -22,9 +22,6 @@ import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.FlinkJobInfo;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.Checkpoint;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.Savepoint;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.*;
@@ -78,7 +75,7 @@ public class JobRestfulApi {
         PageInfo<QueryJobListVo> pageInfo;
         PageHelper.startPage(pageNow, pageSize);
         try {
-            pageInfo = jobService.getByProList(projectName, jobName, jobStatus, jobCreator);
+            pageInfo = jobService.getByProList(projectName, username, jobName, jobStatus, jobCreator);
         } finally {
             PageHelper.clearPage();
         }
