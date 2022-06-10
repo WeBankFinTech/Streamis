@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RequestMapping(path = "/streamis/project/projectPrivilege")
 @RestController
@@ -38,7 +40,7 @@ public class StreamisProjectPrivilegeRestfulApi {
         LOGGER.info("user {} obtain project[id:{} name:{}] privilege",username,projectId,projectName);
         try {
             if(projectId==null || projectId == 0) {
-                List<Long> projectIds = projectService.queryProject(projectName);
+                List<Long> projectIds = projectService.queryProjectIds(projectName);
                 if (!CollectionUtils.isEmpty(projectIds)) projectId = projectIds.get(0);
             }
             List<StreamisProjectPrivilege> projectPrivileges = projectPrivilegeService.getProjectPrivilege(projectId, username);
@@ -57,7 +59,7 @@ public class StreamisProjectPrivilegeRestfulApi {
         LOGGER.info("user {} obtain project[id:{} name:{}] release privilege",username,projectId,projectName);
         try {
             if(projectId==null || projectId == 0) {
-                List<Long> projectIds = projectService.queryProject(projectName);
+                List<Long> projectIds = projectService.queryProjectIds(projectName);
                 if (!CollectionUtils.isEmpty(projectIds)) projectId = projectIds.get(0);
             }
             boolean hasReleaseProjectPrivilege = projectPrivilegeService.hasReleaseProjectPrivilege(projectId, username);
@@ -76,7 +78,7 @@ public class StreamisProjectPrivilegeRestfulApi {
         LOGGER.info("user {} obtain project[id:{} name:{}] edit privilege",username,projectId,projectName);
         try {
             if(projectId==null || projectId == 0) {
-                List<Long> projectIds = projectService.queryProject(projectName);
+                List<Long> projectIds = projectService.queryProjectIds(projectName);
                 if (!CollectionUtils.isEmpty(projectIds)) projectId = projectIds.get(0);
             }
             boolean hasEditProjectPrivilege = projectPrivilegeService.hasEditProjectPrivilege(projectId, username);
@@ -95,10 +97,73 @@ public class StreamisProjectPrivilegeRestfulApi {
         LOGGER.info("user {} obtain project[id:{} name:{}] access privilege",username,projectId,projectName);
         try {
             if(projectId==null || projectId == 0) {
-                List<Long> projectIds = projectService.queryProject(projectName);
+                List<Long> projectIds = projectService.queryProjectIds(projectName);
                 if (!CollectionUtils.isEmpty(projectIds)) projectId = projectIds.get(0);
             }
             boolean hasAccessProjectPrivilege = projectPrivilegeService.hasAccessProjectPrivilege(projectId, username);
+            return StreamisProjectRestfulUtils.dealOk("Successfully obtained the access privilege",
+                    new Pair<>("accessPrivilege", hasAccessProjectPrivilege));
+        } catch (Exception e) {
+            LOGGER.error("failed to obtain the access privilege for user {}", username, e);
+            return StreamisProjectRestfulUtils.dealError("failed to obtain the access privilege, reason is:" + ExceptionUtils.getRootCauseMessage(e));
+        }
+    }
+
+    @RequestMapping(path = "/bulk/hasReleasePrivilege", method = RequestMethod.GET)
+    public Message hasReleaseProjectPrivilege(HttpServletRequest request, @RequestParam(value = "projectIds", required = false) List<Long> projectIds,
+                                              @RequestParam(value = "projectNames", required = false) List<String> projectNames) {
+        String username = SecurityFilter.getLoginUsername(request);
+        LOGGER.info("user {} obtain bulk project[id:{} name:{}] release privilege",username,projectIds,projectNames);
+        try {
+            projectIds = Optional.ofNullable(projectIds).orElse(new ArrayList<>());
+            if(!CollectionUtils.isEmpty(projectNames)) {
+                List<Long> ids = projectService.queryProjectIdsByNames(projectNames);
+                if (!CollectionUtils.isEmpty(ids)) projectIds.addAll(ids);
+            }
+            LOGGER.info("obtain bulk projectIds {} release privilege",projectIds);
+            boolean hasReleaseProjectPrivilege = projectPrivilegeService.hasReleaseProjectPrivilege(projectIds, username);
+            return StreamisProjectRestfulUtils.dealOk("Successfully obtained the release privilege",
+                    new Pair<>("releasePrivilege", hasReleaseProjectPrivilege));
+        } catch (Exception e) {
+            LOGGER.error("failed to obtain the release privilege for user {}", username, e);
+            return StreamisProjectRestfulUtils.dealError("failed to obtain the release privilege, reason is:" + ExceptionUtils.getRootCauseMessage(e));
+        }
+    }
+
+    @RequestMapping(path = "/bulk/hasEditPrivilege", method = RequestMethod.GET)
+    public Message hasEditProjectPrivilege(HttpServletRequest request, @RequestParam(value = "projectIds", required = false) List<Long> projectIds,
+                                           @RequestParam(value = "projectNames", required = false) List<String> projectNames) {
+        String username = SecurityFilter.getLoginUsername(request);
+        LOGGER.info("user {} obtain bulk project[id:{} name:{}] edit privilege",username,projectIds,projectNames);
+        try {
+            projectIds = Optional.ofNullable(projectIds).orElse(new ArrayList<>());
+            if(!CollectionUtils.isEmpty(projectNames)) {
+                List<Long> ids = projectService.queryProjectIdsByNames(projectNames);
+                if (!CollectionUtils.isEmpty(ids)) projectIds.addAll(ids);
+            }
+            LOGGER.info("obtain bulk projectIds {} edit privilege",projectIds);
+            boolean hasEditProjectPrivilege = projectPrivilegeService.hasEditProjectPrivilege(projectIds, username);
+            return StreamisProjectRestfulUtils.dealOk("Successfully obtained the edit privilege",
+                    new Pair<>("editPrivilege", hasEditProjectPrivilege));
+        } catch (Exception e) {
+            LOGGER.error("failed to obtain the edit privilege for user {}", username, e);
+            return StreamisProjectRestfulUtils.dealError("failed to obtain the edit privilege, reason is:" + ExceptionUtils.getRootCauseMessage(e));
+        }
+    }
+
+    @RequestMapping(path = "/bulk/hasAccessPrivilege", method = RequestMethod.GET)
+    public Message hasAccessProjectPrivilege(HttpServletRequest request, @RequestParam(value = "projectIds", required = false) List<Long> projectIds,
+                                             @RequestParam(value = "projectNames", required = false) List<String> projectNames) {
+        String username = SecurityFilter.getLoginUsername(request);
+        LOGGER.info("user {} obtain bulk project[id:{} name:{}] access privilege",username,projectIds,projectNames);
+        try {
+            projectIds = Optional.ofNullable(projectIds).orElse(new ArrayList<>());
+            if(!CollectionUtils.isEmpty(projectNames)) {
+                List<Long> ids = projectService.queryProjectIdsByNames(projectNames);
+                if (!CollectionUtils.isEmpty(ids)) projectIds.addAll(ids);
+            }
+            LOGGER.info("obtain bulk projectIds {} access privilege",projectIds);
+            boolean hasAccessProjectPrivilege = projectPrivilegeService.hasAccessProjectPrivilege(projectIds, username);
             return StreamisProjectRestfulUtils.dealOk("Successfully obtained the access privilege",
                     new Pair<>("accessPrivilege", hasAccessProjectPrivilege));
         } catch (Exception e) {
