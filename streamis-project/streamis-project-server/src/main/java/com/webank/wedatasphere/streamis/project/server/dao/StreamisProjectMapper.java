@@ -22,4 +22,6 @@ public interface StreamisProjectMapper {
     void deleteProjectByName(String projectName);
 
     void updateProject(StreamisProject streamisProject);
+
+    List<Long> findProjectIdsByNames(List<String> names);
 }
