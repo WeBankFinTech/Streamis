@@ -46,7 +46,7 @@ public class StreamisCommonUtil {
                                                      String url,
                                                      DSSHttpAction streamisHttpAction) throws ExternalOperationFailedException {
         HttpResult httpResult = getHttpResult(requestRef, ssoRequestOperation, url, streamisHttpAction);
-        logger.debug("responseBody from streamis is {}",httpResult.getResponseBody());
+        logger.info("responseBody from streamis is {}",httpResult.getResponseBody());
         InternalResponseRef responseRef = new ResponseRefBuilder.InternalResponseRefBuilder().setResponseBody(httpResult.getResponseBody()).build();
         checkResponseRef(responseRef);
         return responseRef;
