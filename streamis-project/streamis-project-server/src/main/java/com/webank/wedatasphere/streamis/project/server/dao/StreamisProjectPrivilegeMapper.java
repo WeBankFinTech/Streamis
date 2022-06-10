@@ -21,4 +21,5 @@ public interface StreamisProjectPrivilegeMapper {
 
     int selectPrivilegeCount(StreamisProjectPrivilege projectPrivilege);
 
+    List<StreamisProjectPrivilege> findProjectPrivilegeByProjectIds(List<Long> projectId);
 }
