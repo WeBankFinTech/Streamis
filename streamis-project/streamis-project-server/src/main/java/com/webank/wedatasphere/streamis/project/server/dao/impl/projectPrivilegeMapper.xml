@@ -38,4 +38,11 @@
         select id,project_id,user_name,privilege from linkis_stream_project_privilege where project_id = #{projectId} AND user_name = #{userName}
     </select>
 
+    <select id="findProjectPrivilegeByProjectIds" resultType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProjectPrivilege">
+        select id,project_id,user_name,privilege from linkis_stream_project_privilege where project_id in
+        <foreach collection="list" item="projectId" open='(' separator="," close=')'>
+            #{projectId}
+        </foreach>
+    </select>
+
 </mapper>

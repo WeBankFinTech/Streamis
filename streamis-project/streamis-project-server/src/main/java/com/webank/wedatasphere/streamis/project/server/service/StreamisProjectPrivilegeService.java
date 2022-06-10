@@ -20,4 +20,10 @@ public interface StreamisProjectPrivilegeService {
 
     boolean hasAccessProjectPrivilege(Long projectId, String username);
 
+    boolean hasReleaseProjectPrivilege(List<Long> projectId, String username);
+
+    boolean hasEditProjectPrivilege(List<Long> projectId, String username);
+
+    boolean hasAccessProjectPrivilege(List<Long> projectId, String username);
+
 }
