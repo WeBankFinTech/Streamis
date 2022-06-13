@@ -19,6 +19,5 @@ public interface StreamisProjectPrivilegeMapper {
 
     List<StreamisProjectPrivilege> getProjectPrivilege(Long projectId, String userName);
 
-    int selectPrivilegeCount(StreamisProjectPrivilege projectPrivilege);
-
+    List<StreamisProjectPrivilege> findProjectPrivilegeByProjectIds(List<Long> projectId);
 }
