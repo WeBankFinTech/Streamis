@@ -17,6 +17,8 @@ public interface StreamisProjectService {
 
      void deleteProjectById(Long projectId) throws StreamisProjectErrorException;
 
-     List<Long> queryProject(String projectName) throws StreamisProjectErrorException;
+     List<Long> queryProjectIds(String projectName) throws StreamisProjectErrorException;
+
+     List<Long> queryProjectIdsByNames(List<String> projectNames);
 
 }
