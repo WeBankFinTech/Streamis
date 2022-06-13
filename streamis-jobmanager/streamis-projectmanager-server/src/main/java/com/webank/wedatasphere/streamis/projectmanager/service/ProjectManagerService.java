@@ -44,4 +44,6 @@ public interface ProjectManagerService {
     boolean delete(String fileName, String projectName, String username);
 
     ProjectFiles getFile(Long id, String projectName);
+
+    List<String> getProjectNames(List<Long> ids);
 }
