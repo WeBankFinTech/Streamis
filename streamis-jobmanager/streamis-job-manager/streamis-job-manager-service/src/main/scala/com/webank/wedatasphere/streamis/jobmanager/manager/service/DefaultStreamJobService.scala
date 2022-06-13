@@ -72,8 +72,8 @@ class DefaultStreamJobService extends StreamJobService with Logging {
   /**
    * COre indicator(核心指标)
    */
-  override def countByCores(projectName: String): TaskCoreNumVo = {
-    val jobs = streamJobMapper.getJobLists(projectName, null, null, null)
+  override def countByCores(projectName: String, userName: String): TaskCoreNumVo = {
+    val jobs = streamJobMapper.getJobLists(projectName, userName, null, null, null)
     val taskNum = new TaskCoreNumVo()
     taskNum.setProjectName(projectName)
     if (jobs != null && !jobs.isEmpty) {
