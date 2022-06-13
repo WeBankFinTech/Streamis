@@ -18,11 +18,11 @@ package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
+import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.BMLService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.ZipHelper;
-import com.webank.wedatasphere.streamis.jobmanager.service.ProjectPrivilegeService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -31,7 +31,6 @@ import org.apache.linkis.server.security.SecurityFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -59,7 +58,6 @@ public class UploadRestfulApi {
     private BMLService bmlService;
 
     @Autowired
-    @Qualifier("jobManagerPrivilegeServiceImpl")
     private ProjectPrivilegeService projectPrivilegeService;
 
     @RequestMapping(path = "/upload", method = RequestMethod.POST)

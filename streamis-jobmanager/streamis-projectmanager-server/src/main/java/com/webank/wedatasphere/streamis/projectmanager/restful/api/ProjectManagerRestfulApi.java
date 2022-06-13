@@ -21,19 +21,19 @@ import com.github.pagehelper.PageInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileExceptionManager;
+import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.ReaderUtils;
 import com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles;
 import com.webank.wedatasphere.streamis.projectmanager.service.ProjectManagerService;
-import com.webank.wedatasphere.streamis.projectmanager.service.ProjectPrivilegeService;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,6 +46,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 @RequestMapping(path = "/streamis/streamProjectManager/project")
@@ -57,7 +58,6 @@ public class ProjectManagerRestfulApi {
     @Autowired
     private ProjectManagerService projectManagerService;
     @Autowired
-    @Qualifier("projectManagerPrivilegeServiceImpl")
     private ProjectPrivilegeService projectPrivilegeService;
 
     @RequestMapping(path = "/files/upload", method = RequestMethod.POST)
@@ -167,6 +167,17 @@ public class ProjectManagerRestfulApi {
     @RequestMapping(path = "/files/version/delete", method = RequestMethod.GET)
     public Message deleteVersion(HttpServletRequest req, @RequestParam(value = "ids",required = false) String ids) {
         String username = SecurityFilter.getLoginUsername(req);
+        List<Long> idList = new ArrayList<>();
+        if (!StringUtils.isBlank(ids) && !ArrayUtils.isEmpty(ids.split(","))) {
+            String[] split = ids.split(",");
+            for (String s : split) {
+                idList.add(Long.parseLong(s));
+            }
+        }
+        List<String> projectNames = projectManagerService.getProjectNames(idList);
+        if (!projectPrivilegeService.hasEditPrivilege(req,projectNames)) {
+            return Message.error("the current user has no operation permission");
+        }
 
         return projectManagerService.deleteFiles(ids, username) ? Message.ok()
                 : Message.warn("you have no permission delete some files not belong to you");

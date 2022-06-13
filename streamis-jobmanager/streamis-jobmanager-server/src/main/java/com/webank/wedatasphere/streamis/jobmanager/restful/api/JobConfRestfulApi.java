@@ -23,8 +23,8 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobCon
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobErrorException;
+import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
-import com.webank.wedatasphere.streamis.jobmanager.service.ProjectPrivilegeService;
 import org.apache.linkis.httpclient.dws.DWSHttpClient;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
