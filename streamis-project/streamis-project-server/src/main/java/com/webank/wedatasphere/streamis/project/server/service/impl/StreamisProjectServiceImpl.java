@@ -68,7 +68,13 @@ public class StreamisProjectServiceImpl implements StreamisProjectService {
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public List<Long> queryProject(String projectName) {
+    public List<Long> queryProjectIds(String projectName) {
         return streamisProjectMapper.findProjectIdByName(projectName);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
+    public List<Long> queryProjectIdsByNames(List<String> projectNames) {
+        return streamisProjectMapper.findProjectIdsByNames(projectNames);
     }
 }
