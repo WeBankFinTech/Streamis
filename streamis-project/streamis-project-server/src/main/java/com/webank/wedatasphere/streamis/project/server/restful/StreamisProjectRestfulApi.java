@@ -95,10 +95,10 @@ public class StreamisProjectRestfulApi {
 
     @RequestMapping(path = "/searchProject", method = RequestMethod.GET)
     public Message searchProject( HttpServletRequest request,@RequestParam(value = "projectName", required = false) String projectName){
-        LOGGER.info("enter deleteProject, requestParam projectName is {}",projectName);
+        LOGGER.info("enter searchProject, requestParam projectName is {}",projectName);
         String username = SecurityFilter.getLoginUsername(request);
         try{
-            List<Long> projectIds = projectService.queryProject(projectName);
+            List<Long> projectIds = projectService.queryProjectIds(projectName);
             return StreamisProjectRestfulUtils.dealOk("search project success",
                     new Pair<>("projectId", projectIds.isEmpty()?null:projectIds.get(0)));
         }catch(Exception e){
