@@ -29,11 +29,6 @@
         </foreach>
     </delete>
 
-    <select id="selectPrivilegeCount" parameterType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProjectPrivilege" resultType="java.lang.Integer">
-        select count(*) from linkis_stream_project_privilege
-        where project_id = #{projectId} and user_name = #{userName} and privilege = #{privilege}
-    </select>
-
     <select id="getProjectPrivilege" resultType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProjectPrivilege">
         select id,project_id,user_name,privilege from linkis_stream_project_privilege where project_id = #{projectId} AND user_name = #{userName}
     </select>
