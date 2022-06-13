@@ -25,7 +25,7 @@ import java.util.List;
 
 public interface StreamJobMapper {
 
-    List<QueryJobListVo> getJobLists(@Param("projectName") String projectName, @Param("name") String name,
+    List<QueryJobListVo> getJobLists(@Param("projectName") String projectName, @Param("userName") String userName, @Param("name") String name,
                                      @Param("status") Integer status, @Param("createBy") String createBy);
 
     StreamJob getJobById(@Param("jobId") Long jobId);
