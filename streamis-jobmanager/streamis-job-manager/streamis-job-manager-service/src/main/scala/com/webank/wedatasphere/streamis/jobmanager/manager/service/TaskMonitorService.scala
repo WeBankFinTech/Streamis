@@ -44,7 +44,7 @@ class TaskMonitorService extends Logging {
 
   @Autowired private var streamTaskMapper:StreamTaskMapper=_
   @Autowired private var streamJobMapper:StreamJobMapper=_
-  @Autowired private var jobService:JobService=_
+  @Autowired private var jobService: StreamJobService =_
 
   @Autowired private var alerters:Array[Alerter] = _
 

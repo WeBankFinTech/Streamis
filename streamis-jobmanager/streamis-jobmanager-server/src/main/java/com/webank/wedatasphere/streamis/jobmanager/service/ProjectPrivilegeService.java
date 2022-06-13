@@ -2,12 +2,33 @@ package com.webank.wedatasphere.streamis.jobmanager.service;
 
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * Privilege  service
+ */
 public interface ProjectPrivilegeService {
 
-    Boolean hasReleasePrivilege(HttpServletRequest req, String projectId);
+    /**
+     * Has release privilege
+     * @param req request
+     * @param projectName project name
+     * @return boolean
+     */
+    Boolean hasReleasePrivilege(HttpServletRequest req, String projectName);
 
-    Boolean hasEditPrivilege(HttpServletRequest req, String projectId);
+    /**
+     * Has edit privilege
+     * @param req request
+     * @param projectName project name
+     * @return boolean
+     */
+    Boolean hasEditPrivilege(HttpServletRequest req, String projectName);
 
-    Boolean hasAccessPrivilege(HttpServletRequest req, String projectId);
+    /**
+     * Has access privilege
+     * @param req request
+     * @param projectName project name
+     * @return
+     */
+    Boolean hasAccessPrivilege(HttpServletRequest req, String projectName);
 
 }
