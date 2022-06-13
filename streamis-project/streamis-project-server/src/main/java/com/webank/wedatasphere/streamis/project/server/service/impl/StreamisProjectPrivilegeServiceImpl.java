@@ -66,25 +66,41 @@ public class StreamisProjectPrivilegeServiceImpl implements StreamisProjectPrivi
     @Override
     public boolean hasReleaseProjectPrivilege(Long projectId, String username) {
         if(projectId == null || projectId == 0) return false;
-        StreamisProjectPrivilege streamisProjectPrivilege = new StreamisProjectPrivilege(projectId, username, ProjectUserPrivilegeEnum.RELEASE.getRank());
-        long count = streamisProjectPrivilegeMapper.selectPrivilegeCount(streamisProjectPrivilege);
-        return count != 0;
+        List<StreamisProjectPrivilege> privileges = streamisProjectPrivilegeMapper.getProjectPrivilege(projectId, username);
+        if(CollectionUtils.isEmpty(privileges)){
+            return false;
+        }
+        List<StreamisProjectPrivilege> privilegeList = privileges.stream()
+                .filter(privilege -> ProjectUserPrivilegeEnum.RELEASE.getRank() == privilege.getPrivilege())
+                .collect(Collectors.toList());
+        return CollectionUtils.isNotEmpty(privilegeList);
     }
 
     @Override
     public boolean hasEditProjectPrivilege(Long projectId, String username) {
-        if(projectId == null || projectId == 0) return false;
-        StreamisProjectPrivilege streamisProjectPrivilege = new StreamisProjectPrivilege(projectId, username, ProjectUserPrivilegeEnum.EDIT.getRank());
-        long count = streamisProjectPrivilegeMapper.selectPrivilegeCount(streamisProjectPrivilege);
-        return count != 0;
+        List<StreamisProjectPrivilege> privileges = streamisProjectPrivilegeMapper.getProjectPrivilege(projectId, username);
+        if(CollectionUtils.isEmpty(privileges)){
+            return false;
+        }
+        List<StreamisProjectPrivilege> privilegeList = privileges.stream()
+                .filter(privilege -> ProjectUserPrivilegeEnum.RELEASE.getRank() == privilege.getPrivilege()
+                        || ProjectUserPrivilegeEnum.EDIT.getRank() == privilege.getPrivilege())
+                .collect(Collectors.toList());
+        return CollectionUtils.isNotEmpty(privilegeList);
     }
 
     @Override
     public boolean hasAccessProjectPrivilege(Long projectId, String username) {
-        if(projectId == null || projectId == 0) return false;
-        StreamisProjectPrivilege streamisProjectPrivilege = new StreamisProjectPrivilege(projectId, username, ProjectUserPrivilegeEnum.ACCESS.getRank());
-        long count = streamisProjectPrivilegeMapper.selectPrivilegeCount(streamisProjectPrivilege);
-        return count != 0;
+        List<StreamisProjectPrivilege> privileges = streamisProjectPrivilegeMapper.getProjectPrivilege(projectId, username);
+        if(CollectionUtils.isEmpty(privileges)){
+            return false;
+        }
+        List<StreamisProjectPrivilege> privilegeList = privileges.stream()
+                .filter(privilege -> ProjectUserPrivilegeEnum.RELEASE.getRank() == privilege.getPrivilege()
+                        || ProjectUserPrivilegeEnum.EDIT.getRank() == privilege.getPrivilege()
+                        || ProjectUserPrivilegeEnum.ACCESS.getRank() == privilege.getPrivilege())
+                .collect(Collectors.toList());
+        return CollectionUtils.isNotEmpty(privilegeList);
     }
 
     @Override
