@@ -20,7 +20,7 @@ import org.apache.linkis.common.utils.Logging
 import org.apache.linkis.rpc.{Receiver, Sender}
 import com.webank.wedatasphere.streamis.jobmanager.common.protocol.{ImportJobManagerRequest, ImportJobManagerResponse}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo
-import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.{DefaultStreamJobService, StreamJobService}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.parser.{FlinkSQLJobContentParser, FlinkWorkflowJobContentParser}
 import org.apache.commons.lang.StringUtils
 
@@ -31,7 +31,7 @@ import scala.concurrent.duration.Duration
  * created by cooperyang on 2021/7/19
  * Description:
  */
-class StreamisJobManagerReceiver(jobService: JobService) extends Receiver with Logging {
+class StreamisJobManagerReceiver(jobService: StreamJobService) extends Receiver with Logging {
 
 
   private val timeout = CommonVars("wds.streamis.workflow.ask.timeout", 300).getValue
