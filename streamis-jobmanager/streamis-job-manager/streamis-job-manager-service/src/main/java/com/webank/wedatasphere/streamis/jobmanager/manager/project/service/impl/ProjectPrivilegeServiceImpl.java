@@ -1,6 +1,8 @@
-package com.webank.wedatasphere.streamis.projectmanager.service.impl;
+package com.webank.wedatasphere.streamis.jobmanager.manager.project.service.impl;
 
-import com.webank.wedatasphere.streamis.projectmanager.service.ProjectPrivilegeService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.common.conf.Configuration;
 import org.apache.linkis.server.conf.ServerConfiguration;
 import org.slf4j.Logger;
@@ -12,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -27,23 +30,47 @@ public class ProjectPrivilegeServiceImpl implements ProjectPrivilegeService {
 
     @Override
     public Boolean hasReleasePrivilege(HttpServletRequest req, String projectName) {
+        if(StringUtils.isBlank(projectName)) return false;
         Map<String, Object> responseData = getResponseData("/hasReleasePrivilege?projectName="+projectName, req);
         return (Boolean)Optional.ofNullable(responseData).orElse(new HashMap<>()).getOrDefault("releasePrivilege",false);
     }
 
     @Override
     public Boolean hasEditPrivilege(HttpServletRequest req, String projectName) {
+        if(StringUtils.isBlank(projectName)) return false;
         Map<String, Object> responseData = getResponseData("/hasEditPrivilege?projectName="+projectName, req);
         return (Boolean)Optional.ofNullable(responseData).orElse(new HashMap<>()).getOrDefault("editPrivilege",false);
     }
 
     @Override
     public Boolean hasAccessPrivilege(HttpServletRequest req, String projectName) {
+        if(StringUtils.isBlank(projectName)) return false;
         Map<String, Object> responseData = getResponseData("/hasAccessPrivilege?projectName="+projectName, req);
         return (Boolean)Optional.ofNullable(responseData).orElse(new HashMap<>()).getOrDefault("accessPrivilege",false);
     }
 
-    private Map<String, Object> getResponseData(String reqPath,HttpServletRequest req){
+    @Override
+    public Boolean hasReleasePrivilege(HttpServletRequest req, List<String> projectNames) {
+        if(CollectionUtils.isEmpty(projectNames)) return false;
+        Map<String, Object> responseData = getResponseData("/bulk/hasReleasePrivilege?projectNames="+projectNames, req);
+        return (Boolean)Optional.ofNullable(responseData).orElse(new HashMap<>()).getOrDefault("releasePrivilege",false);
+    }
+
+    @Override
+    public Boolean hasEditPrivilege(HttpServletRequest req, List<String> projectNames) {
+        if(CollectionUtils.isEmpty(projectNames)) return false;
+        Map<String, Object> responseData = getResponseData("/bulk/hasEditPrivilege?projectNames="+projectNames, req);
+        return (Boolean)Optional.ofNullable(responseData).orElse(new HashMap<>()).getOrDefault("editPrivilege",false);
+    }
+
+    @Override
+    public Boolean hasAccessPrivilege(HttpServletRequest req, List<String> projectNames) {
+        if(CollectionUtils.isEmpty(projectNames)) return false;
+        Map<String, Object> responseData = getResponseData("/bulk/hasAccessPrivilege?projectNames="+projectNames, req);
+        return (Boolean)Optional.ofNullable(responseData).orElse(new HashMap<>()).getOrDefault("accessPrivilege",false);
+    }
+
+    private Map<String, Object> getResponseData(String reqPath, HttpServletRequest req){
         String url = url_prefix + reqPath;
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie",req.getHeader("Cookie"));
