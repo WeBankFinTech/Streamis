@@ -19,7 +19,7 @@ import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.BMLService;
-import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.ZipHelper;
 import com.webank.wedatasphere.streamis.jobmanager.service.ProjectPrivilegeService;
@@ -53,7 +53,7 @@ public class UploadRestfulApi {
     private static final Logger LOG = LoggerFactory.getLogger(UploadRestfulApi.class);
 
     @Autowired
-    private JobService jobService;
+    private StreamJobService streamJobService;
 
     @Autowired
     private BMLService bmlService;
@@ -71,7 +71,7 @@ public class UploadRestfulApi {
         if (files == null || files.size() <= 0) {
             throw JobExceptionManager.createException(30300, "uploaded files");
         }
-        if (!projectPrivilegeService.hasEditPrivilege(request,projectName)) return Message.error("the current user has no operation permission");
+        if (!projectPrivilegeService.hasEditPrivilege(request, projectName)) return Message.error("the current user has no operation permission");
 
         //Only uses 1st file(只取第一个文件)
         MultipartFile p = files.get(0);
@@ -91,7 +91,7 @@ public class UploadRestfulApi {
             is = p.getInputStream();
             os = IoUtils.generateExportOutputStream(inputPath);
             IOUtils.copy(is, os);
-            StreamJobVersion job = jobService.uploadJob(projectName, userName, inputPath);
+            StreamJobVersion job = streamJobService.uploadJob(projectName, userName, inputPath);
             return Message.ok().data("jobId",job.getJobId());
         } catch (Exception e){
             LOG.error("Failed to upload zip {} to project {} for user {}.", fileName, projectName, userName, e);
