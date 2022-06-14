@@ -16,6 +16,7 @@
 package com.webank.wedatasphere.streamis.projectmanager.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.linkis.common.utils.JsonUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.BMLService;
@@ -122,5 +123,18 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
     @Override
     public ProjectFiles selectFile(String fileName, String version, String projectName) {
         return projectManagerMapper.selectFile(fileName, version, projectName);
+    }
+
+    @Override
+    public List<String> getProjectNames(List<Long> ids) {
+        if(CollectionUtils.isEmpty(ids)){
+            return null;
+        }
+        return projectManagerMapper.selectProjectNamesByIds(ids);
+    }
+
+    @Override
+    public String getProjectNameById(Long id) {
+        return projectManagerMapper.getProjectNameById(id);
     }
 }
