@@ -119,6 +119,7 @@ public class ProjectManagerRestfulApi {
         if (StringUtils.isBlank(projectName)) {
             return Message.error("projectName is null");
         }
+        if (!projectPrivilegeService.hasAccessPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
         PageHelper.startPage(pageNow, pageSize);
         List<ProjectFiles> fileList;
         try {
@@ -142,6 +143,7 @@ public class ProjectManagerRestfulApi {
         if (StringUtils.isBlank(fileName)) {
             return Message.error("fileName is null");
         }
+        if (!projectPrivilegeService.hasAccessPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
         PageHelper.startPage(pageNow, pageSize);
         List<? extends StreamisFile> fileList;
         try {
