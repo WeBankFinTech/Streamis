@@ -129,9 +129,11 @@ public class JobConfRestfulApi {
         Message result = Message.ok("success");
         try{
             String userName = SecurityFilter.getLoginUsername(request);
+            StreamJob streamJob = this.streamJobService.getJobById(jobId);
             // Accept the developer to modify
             if (!streamJobService.isCreator(jobId, userName) &&
-                    !JobConf.STREAMIS_DEVELOPER().getValue().contains(userName)) {
+                    !JobConf.STREAMIS_DEVELOPER().getValue().contains(userName) &&
+                    !this.privilegeService.hasEditPrivilege(request, streamJob.getProjectName())) {
                 throw new JobErrorException(-1, "Have no permission to save StreamJob [" + jobId + "] configuration");
             }
             this.streamJobConfService.saveJobConfig(jobId, configContent);
