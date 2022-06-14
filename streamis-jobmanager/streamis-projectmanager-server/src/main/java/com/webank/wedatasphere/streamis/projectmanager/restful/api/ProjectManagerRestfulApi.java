@@ -193,6 +193,9 @@ public class ProjectManagerRestfulApi {
         if (StringUtils.isBlank(projectFiles.getStorePath())) {
             return Message.error("storePath is null");
         }
+        if(StringUtils.isBlank(projectName)){
+            projectName = projectManagerService.getProjectNameById(id);
+        }
         if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
 
         response.setContentType("application/x-download");
