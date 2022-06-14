@@ -46,4 +46,6 @@ public interface ProjectManagerService {
     ProjectFiles getFile(Long id, String projectName);
 
     List<String> getProjectNames(List<Long> ids);
+
+    String getProjectNameById(Long id);
 }
