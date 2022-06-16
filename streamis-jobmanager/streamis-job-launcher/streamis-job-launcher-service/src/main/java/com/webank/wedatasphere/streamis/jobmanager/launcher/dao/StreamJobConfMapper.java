@@ -53,6 +53,12 @@ public interface StreamJobConfMapper {
     int deleteConfValuesByJobId(@Param("jobId")Long jobId);
 
     /**
+     * Delete temporary config value
+     * @param jobId job id
+     * @return affect rows
+     */
+    int deleteTemporaryConfValue(@Param("jobId")Long jobId);
+    /**
      * Batch insert
      * @param values values
      */

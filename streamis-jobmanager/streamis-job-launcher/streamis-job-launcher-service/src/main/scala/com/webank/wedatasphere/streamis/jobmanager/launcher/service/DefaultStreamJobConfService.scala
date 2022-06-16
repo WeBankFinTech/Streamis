@@ -42,9 +42,11 @@ class DefaultStreamJobConfService extends StreamJobConfService with Logging{
    */
   @Transactional(rollbackFor = Array(classOf[Exception]))
   override def saveJobConfig(jobId: Long, valueMap: util.Map[String, Any]): Unit = {
+    val definitions = Option(this.streamJobConfMapper.loadAllDefinitions())
+      .getOrElse(new util.ArrayList[JobConfDefinition]())
     // Can deserialize the value map at first
-    val configValues = JobConfValueUtils.deserialize(valueMap, Option(this.streamJobConfMapper.loadAllDefinitions())
-      .getOrElse(new util.ArrayList[JobConfDefinition]()))
+    val configValues = JobConfValueUtils.deserialize(valueMap, definitions)
+    suppleDefaultConfValue(configValues, definitions)
     saveJobConfig(jobId, configValues)
   }
 
@@ -96,7 +98,8 @@ class DefaultStreamJobConfService extends StreamJobConfService with Logging{
    */
   override def saveJobConfValueSet(valueSet: JobConfValueSet): Unit = {
      val configValues: util.List[JobConfValue] = new util.ArrayList[JobConfValue]()
-     val definitionMap: util.Map[String, JobConfDefinition] = this.streamJobConfMapper.loadAllDefinitions()
+     val definitions = this.streamJobConfMapper.loadAllDefinitions()
+     val definitionMap: util.Map[String, JobConfDefinition] = definitions
         .asScala.map(definition => (definition.getKey, definition)).toMap.asJava
      configValues.addAll(convertToConfigValue(
        valueSet.getResourceConfig, definitionMap, Option(definitionMap.get(JobConfKeyConstants.GROUP_RESOURCE.getValue)) match {
@@ -123,6 +126,7 @@ class DefaultStreamJobConfService extends StreamJobConfService with Logging{
         case Some(definition) => definition.getId
         case _ => 0
       }))
+    suppleDefaultConfValue(configValues, definitions)
     saveJobConfig(valueSet.getJobId, configValues)
   }
   /**
@@ -158,6 +162,24 @@ class DefaultStreamJobConfService extends StreamJobConfService with Logging{
           this.streamJobConfMapper.batchInsertValues(configValues)
         }
     }
+  }
+
+  /**
+   * Supple the default value into the configuration
+   * @param configValues config value list
+   * @param definitions definitions
+   */
+  private def suppleDefaultConfValue(configValues: util.List[JobConfValue], definitions: util.List[JobConfDefinition]): Unit = {
+    val configMark = configValues.asScala.filter(configValue => configValue.getReferDefId != null)
+      .map(configValue => (configValue.getReferDefId, 1)).toMap
+    definitions.asScala.filter(definition => definition.getLevel > 0 && StringUtils.isNotBlank(definition.getDefaultValue))
+      .foreach(definition => configMark.get(definition.getId) match {
+        case Some(mark) =>
+        case None =>
+          val configValue = new JobConfValue(definition.getKey, definition.getDefaultValue, definition.getId)
+          configValues.add(configValue)
+      }
+    )
   }
   /**
    * Resolve to config value view object

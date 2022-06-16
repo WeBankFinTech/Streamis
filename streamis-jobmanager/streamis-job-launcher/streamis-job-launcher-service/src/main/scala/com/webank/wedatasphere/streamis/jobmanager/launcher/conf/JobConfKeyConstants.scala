@@ -62,6 +62,16 @@ object JobConfKeyConstants {
   val SAVEPOINT: CommonVars[String] = CommonVars("wds.streamis.job.config.key.savepoint", "wds.linkis.flink.savepoint.")
 
   /**
+   * Switch to restart job automatically when fail
+   */
+  val FAIL_RESTART_SWITCH: CommonVars[String] = CommonVars("wds.streamis.job.config.key.fail-restart.switch", "wds.linkis.flink.app.fail-restart.switch")
+
+  /**
+   * Switch to restore job automatically when starting
+   */
+  val START_AUTO_RESTORE_SWITCH: CommonVars[String] = CommonVars("wds.streamis.job.config.key.start-auto-restore.switch", "wds.linkis.flink.app.start-auto-restore.switch")
+
+  /**
    * Authority author
    */
   val AUTHORITY_AUTHOR_VISIBLE: CommonVars[String] = CommonVars("wds.streamis.job.config.key.authority.visible", "wds.linkis.flink.authority.visible")
