@@ -21,9 +21,11 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteE
 
 object JobConf {
 
-  val STREAMIS_DEVELOPER: CommonVars[String] = CommonVars("wds.streamis.developer", "enjoyyin")
+  val STREAMIS_DEVELOPER: CommonVars[String] = CommonVars("wds.streamis.developer", "enjoyyin,davidhua")
 
   val STREAMIS_DEFAULT_TENANT: CommonVars[String] = CommonVars("wds.streamis.job.tenant.default", "")
+
+  val STREAMIS_JOB_MONITOR_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.job.monitor.enable", true)
 
   val FLINK_JOB_STATUS_NOT_STARTED: CommonVars[Int] = CommonVars("wds.streamis.job.status.not-started", 0,"Not Started")
 

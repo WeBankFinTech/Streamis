@@ -38,7 +38,7 @@ trait StreamJobConfService {
 
   /**
    * Query the job configuration
-   * @param jobId
+   * @param jobId job id
    * @return
    */
   def getJobConfig(jobId: Long): util.Map[String, Any]
