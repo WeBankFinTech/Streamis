@@ -91,6 +91,14 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     }
   }
 
+  override def execute(jobId: Long, taskId: Long, execUser: String): Unit = {
+    val actualJobId = if(jobId <= 0) getTaskInfo(taskId)._1 else jobId
+    val restore = this.streamJobConfMapper.getRawConfValue(actualJobId, JobConfKeyConstants.START_AUTO_RESTORE_SWITCH.getValue) match {
+      case "ON" => true
+      case _ =>  false
+    }
+    execute(actualJobId, 0, execUser, restore)
+  }
 
   override def asyncExecute(jobId: Long, taskId: Long, execUser: String, restore: Boolean): Future[String] = {
     execute(jobId, taskId, execUser, restore, new function.Function[SchedulerEvent, String] {
@@ -104,6 +112,24 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     })._2
   }
 
+  override def asyncExecute(jobId: Long, taskId: Long, execUser: String): Future[String] = {
+    val actualJobId = if(jobId <= 0) getTaskInfo(taskId)._1 else jobId
+    val restore = this.streamJobConfMapper.getRawConfValue(actualJobId, JobConfKeyConstants.START_AUTO_RESTORE_SWITCH.getValue) match {
+      case "ON" => true
+      case _ =>  false
+    }
+    asyncExecute(actualJobId, 0, execUser, restore)
+  }
+
+  override def bulkExecute(jobIds: util.List[Long], taskIds: util.List[Long], execUser: String): util.List[ExecResultVo] = {
+    bulkExecute(jobIds, taskIds, execUser, (jobId, taskId) => {
+      val actualJobId = if(jobId <= 0) getTaskInfo(taskId)._1 else jobId
+      this.streamJobConfMapper.getRawConfValue(actualJobId, JobConfKeyConstants.START_AUTO_RESTORE_SWITCH.getValue) match {
+        case "ON" => true
+        case _ =>  false
+      }
+    })
+  }
   /**
    * Bulk executing
    *
@@ -113,13 +139,17 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
    * @param restore  restore from job state
    */
   override def bulkExecute(jobIds: util.List[Long], taskIds: util.List[Long], execUser: String, restore: Boolean): util.List[ExecResultVo] = {
+    bulkExecute(jobIds, taskIds, execUser, (_, _) => restore)
+  }
+
+  def bulkExecute(jobIds: util.List[Long], taskIds: util.List[Long], execUser: String, isRestore: (Long, Long) => Boolean): util.List[ExecResultVo] = {
     val result: util.List[ExecResultVo] = new util.ArrayList[ExecResultVo]()
     val counter = (jobIds.size(), taskIds.size())
     val iterateNum: Int = math.max(counter._1, counter._2)
     for (i <- 0 until iterateNum){
       val jobId = if (i < counter._1) jobIds.get(i) else 0L
       val taskId = if (i < counter._2) taskIds.get(i) else 0L
-      val event = execute(jobId, taskId, execUser, restore,
+      val event = execute(jobId, taskId, execUser, isRestore(jobId, taskId),
         new function.Function[SchedulerEvent, String]{
           override def apply(event: SchedulerEvent): String = {
             event match {
@@ -128,7 +158,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
               case _ => null
             }
           }
-      })._1
+        })._1
       // Convert scheduler event to execution result
       val resultVo: ExecResultVo = new ExecResultVo(jobId, taskId)
       event match {
@@ -139,7 +169,6 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     }
     result
   }
-
   def execute[T](jobId: Long, taskId: Long, execUser: String, restore: Boolean, returnMapping: function.Function[SchedulerEvent, T]): (SchedulerEvent, Future[T]) = {
     val self = SpringContextHolder.getBean(classOf[StreamTaskService])
     var finalJobId = jobId
@@ -565,6 +594,11 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       if (FLINK_JOB_STATUS_FAILED.getValue == streamTask.getStatus){
          throw new JobExecuteErrorException(-1, s"(提交流式应用状态失败, 请检查日志), errorDesc: ${streamTask.getErrDesc}")
       }
+      // Drop the temporary configuration
+      Utils.tryQuietly(streamJobConfMapper.deleteTemporaryConfValue(streamTask.getJobId), {
+        case e: Exception =>
+          warn(s"Fail to delete the temporary configuration for job [${streamTask.getJobId}], task [${streamTask.getId}]", e)
+      })
     }{case e: Exception =>
       val message = s"Error occurred when to refresh and store the info of StreamJob [${streamJob.getName}] with JobClient"
       warn(s"$message, stop and destroy the Client connection.")
@@ -668,4 +702,5 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       case _ => null
     }
   }
+
 }
