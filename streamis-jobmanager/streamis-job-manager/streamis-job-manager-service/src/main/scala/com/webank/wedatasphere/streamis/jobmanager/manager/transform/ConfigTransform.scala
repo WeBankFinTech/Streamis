@@ -16,8 +16,9 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.ConfigKeyVO
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LaunchJob
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJob
+
 
 
 trait ConfigTransform extends Transform {
