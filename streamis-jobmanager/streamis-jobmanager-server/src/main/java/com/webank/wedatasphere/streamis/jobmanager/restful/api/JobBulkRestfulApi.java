@@ -73,9 +73,10 @@ public class JobBulkRestfulApi {
                      throw new JobExecuteErrorException(-1, "Have no permission to execute StreamJob [" + jobId + "]");
                  }
              }
-              execResults = streamTaskService.bulkExecute(new ArrayList<>(execBulkRequest.getBulkSubject()), Collections.emptyList(), username, true);
+             // TODO Enable to accept 'restore' parameter from request
+              execResults = streamTaskService.bulkExecute(new ArrayList<>(execBulkRequest.getBulkSubject()), Collections.emptyList(), username);
           } else {
-              execResults = streamTaskService.bulkExecute(Collections.emptyList(), new ArrayList<>(execBulkRequest.getBulkSubject()), username, true);
+              execResults = streamTaskService.bulkExecute(Collections.emptyList(), new ArrayList<>(execBulkRequest.getBulkSubject()), username);
           }
           // Convert to bulk response
           BulkResponse<ExecResultVo> response = new BulkResponse<>(execResult -> {

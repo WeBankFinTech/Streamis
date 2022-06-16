@@ -20,6 +20,8 @@ import java.util.Date
 import java.util.concurrent.{Future, TimeUnit}
 import com.google.common.collect.Sets
 import com.webank.wedatasphere.streamis.jobmanager.launcher.JobLauncherAutoConfiguration
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
+import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo}
@@ -51,20 +53,25 @@ class TaskMonitorService extends Logging {
   @Resource
   private var streamTaskService: StreamTaskService = _
 
+  @Resource
+  private var streamJobConfMapper: StreamJobConfMapper = _
+
   private var future: Future[_] = _
 
   @PostConstruct
   def init(): Unit = {
-    future = Utils.defaultScheduler.scheduleAtFixedRate(new Runnable {
-      override def run(): Unit = Utils.tryAndWarnMsg {
-        doMonitor()
-      }("Monitor the status of all tasks failed!")
-    }, JobConf.TASK_MONITOR_INTERVAL.getValue.toLong, JobConf.TASK_MONITOR_INTERVAL.getValue.toLong, TimeUnit.MILLISECONDS)
+    if (JobConf.STREAMIS_JOB_MONITOR_ENABLE.getValue) {
+      future = Utils.defaultScheduler.scheduleAtFixedRate(new Runnable {
+        override def run(): Unit = Utils.tryAndWarnMsg {
+          doMonitor()
+        }("Monitor the status of all tasks failed!")
+      }, JobConf.TASK_MONITOR_INTERVAL.getValue.toLong, JobConf.TASK_MONITOR_INTERVAL.getValue.toLong, TimeUnit.MILLISECONDS)
+    }
   }
 
   @PreDestroy
   def close(): Unit = {
-    future.cancel(true)
+    Option(future).foreach(_.cancel(true))
   }
 
   def doMonitor(): Unit = {
@@ -111,17 +118,22 @@ class TaskMonitorService extends Logging {
             extraMessage = s",${flinkJobInfo.getApplicationId}"
           case _ =>
         }
-        // TODO Need to add restart feature if user sets the restart parameters in checkpoint module.
-        val alertMsg = s"您的 streamis 流式应用[${job.getName}${extraMessage}]已经失败, 请您登陆Streamis查看应用日志, 现将自动拉起该应用"
-        Utils.tryCatch{
-          info(s"Start to reLaunch the StreamisJob [${job.getName}], now to submit and schedule it...")
-          // Use submit user to start job
-          val future: Future[String] = streamTaskService.asyncExecute(job.getId, 0L, job.getSubmitUser, true)
-        }{
-          case e:Exception =>
-            warn(s"Fail to reLaunch the StreamisJob [${job.getName}]", e)
+        // Need to add restart feature if user sets the restart parameters.
+        var alertMsg = s"Streamis 流式应用[${job.getName}${extraMessage}]已经失败, 请登陆Streamis查看应用日志."
+        this.streamJobConfMapper.getRawConfValue(job.getId, JobConfKeyConstants.FAIL_RESTART_SWITCH.getValue) match {
+          case "ON" =>
+            alertMsg = s"${alertMsg} 现将自动拉起该应用"
+            Utils.tryCatch{
+              info(s"Start to reLaunch the StreamisJob [${job.getName}], now to submit and schedule it...")
+              // Use submit user to start job
+              val future: Future[String] = streamTaskService.asyncExecute(job.getId, 0L, job.getSubmitUser, true)
+            }{
+              case e:Exception =>
+                warn(s"Fail to reLaunch the StreamisJob [${job.getName}]", e)
+            }
+          case _ =>
         }
-        val userList = Sets.newHashSet(job.getCreateBy, job.getSubmitUser)
+        val userList = Sets.newHashSet(job.getSubmitUser, job.getCreateBy)
         userList.addAll(getAlertUsers(job))
         alert(jobService.getAlertLevel(job), alertMsg, new util.ArrayList[String](userList), streamTask)
       }
