@@ -1,10 +1,10 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
 import java.util
-
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.ConfigKeyVO
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LaunchJob
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.ConfigTransform
+import com.webank.wedatasphere.streamis.jobmanager.manager.utils.JobUtils
 import org.apache.commons.lang.StringUtils
 import org.apache.linkis.protocol.utils.TaskUtils
 
@@ -28,10 +28,10 @@ class FlinkCheckpointConfigTransform extends ConfigTransform {
       startupMap.put("flink.app.checkpoint.interval", config.getValue.toLong)
       if(job.getParams == null) {
         val params = new util.HashMap[String, Any]
-        TaskUtils.addStartupMap(params, startupMap)
+        TaskUtils.addStartupMap(params, JobUtils.filterParameterSpec(startupMap))
         LaunchJob.builder().setLaunchJob(job).setParams(params).build()
       } else {
-        TaskUtils.addStartupMap(job.getParams, startupMap)
+        TaskUtils.addStartupMap(job.getParams, JobUtils.filterParameterSpec(startupMap))
         job
       }
     }.getOrElse(job)
