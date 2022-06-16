@@ -76,7 +76,7 @@ public class JobRestfulApi {
                               @RequestParam(value = "jobCreator", required = false) String jobCreator) throws JobException {
         String username = SecurityFilter.getLoginUsername(req);
         if(StringUtils.isBlank(projectName)){
-            throw JobExceptionManager.createException(30301, "projectName");
+            return Message.error("ProjectName cannot be empty(项目名不能为空，请指定)");
         }
         if (Objects.isNull(pageNow)) {
             pageNow = 1;
@@ -136,7 +136,7 @@ public class JobRestfulApi {
             return Message.error("Have no permission to execute StreamJob [" + jobId + "]");
         }
         try {
-            streamTaskService.execute(jobId, 0L, userName, true);
+            streamTaskService.execute(jobId, 0L, userName);
         } catch (Exception e) {
             LOG.error("{} execute job {} failed!", userName, jobId, e);
             return Message.error(ExceptionUtils.getRootCauseMessage(e));
