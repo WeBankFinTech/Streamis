@@ -13,17 +13,18 @@
  * limitations under the License.
  */
 
-package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager
+package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 
-import java.util
-
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.core.FlinkLogIterator
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{LaunchJob, LinkisJobInfo, LogRequestPayload}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{LinkisJobInfo, LogRequestPayload}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
 import org.apache.linkis.common.utils.{Logging, Utils}
 import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
 import org.apache.linkis.computation.client.utils.LabelKeyUtils
+
+import java.util
 
 
 trait FlinkJobManager extends LinkisJobManager with Logging {
