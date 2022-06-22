@@ -42,7 +42,7 @@
                         v-model="resourceConfig.jobManagerMemory"
                         type="number"
                       />
-                      <div class="unit">M</div>
+                      <div class="unit">G</div>
                     </div>
                   </FormItem>
                 </Col>
@@ -70,7 +70,7 @@
                         v-model="resourceConfig.taskManagerMemory"
                         type="number"
                       />
-                      <div class="unit">M</div>
+                      <div class="unit">G</div>
                     </div>
                   </FormItem>
                 </Col>
@@ -540,20 +540,18 @@ export default {
           const { key, valueLists } = item
           const temp = (key && key.replace(/\./g, '').toLowerCase()) || ''
           const hit = keys.find(i => temp.endsWith(i.toLowerCase()))
-          if (typeof hit !== "undefined"){
-            const finalValue = values[hit]
-            item.value = Array.isArray(finalValue)
-              ? finalValue.join(',')
-              : finalValue
-            if (valueLists) {
-              valueLists.forEach(vl => {
-                if (Array.isArray(finalValue)) {
-                  vl.selected = finalValue.includes(vl.value)
-                } else {
-                  vl.selected = vl.value === finalValue
-                }
-              })
-            }
+          const finalValue = values[hit]
+          item.value = Array.isArray(finalValue)
+            ? finalValue.join(',')
+            : finalValue
+          if (valueLists) {
+            valueLists.forEach(vl => {
+              if (Array.isArray(finalValue)) {
+                vl.selected = finalValue.includes(vl.value)
+              } else {
+                vl.selected = vl.value === finalValue
+              }
+            })
           }
         })
       })
