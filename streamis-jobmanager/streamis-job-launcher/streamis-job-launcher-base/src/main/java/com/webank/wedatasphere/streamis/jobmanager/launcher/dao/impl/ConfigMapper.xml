@@ -67,8 +67,9 @@
     </sql>
 
     <sql id="Config_Key_Value_Column">
-        k.id, v.config_key as `key`, k.name, k.description, k.default_value, k.validate_type, k.validate_range, k.is_hidden, k.is_advanced,k.level, k.treeName,v.type,k.sort,k.`status`,v.id as value_id ,v.config_key,v.configkey_id,v.config_value,v.job_id,v.job_name
+        k.id,k.key,k.name,k.description, k.default_value, k.validate_type, k.validate_range, k.is_hidden, k.is_advanced,k.level, k.treeName,k.type,k.sort,k.`status`,v.id as value_id ,v.config_key,v.configkey_id,v.config_value,v.job_id,v.job_name
     </sql>
+
 
     <select id="getConfigKey"  resultMap="ConfigKeyMap" >
         SELECT <include refid="Config_Key_Column"/> FROM linkis_stream_configuration_config_key
@@ -78,18 +79,11 @@
     <select id="getConfigKeyValues"  resultMap="ConfigKeyValueMap" >
         SELECT <include refid="Config_Key_Value_Column"/>  FROM linkis_stream_configuration_config_key as k join linkis_stream_configuration_config_value as v on k.id = v.configkey_id
         <where>
-            <if test="type != null">v.type = #{type}</if>
-            <if test="jobId != null"> AND v.job_id = #{jobId}</if>
-        </where>
-    </select>
-
-    <select id="getConfigKeyValues"  resultMap="ConfigKeyValueMap" >
-        SELECT <include refid="Config_Key_Value_Column"/>  FROM linkis_stream_configuration_config_key as k join linkis_stream_configuration_config_value as v on k.id = v.configkey_id
-        <where>
             <if test="type != null">k.type = #{type}</if>
             <if test="jobId != null"> AND v.job_id = #{jobId}</if>
         </where>
     </select>
+
 
     <select id="getConfigKeyValue"  resultMap="ConfigKeyValueMap">
         SELECT * FROM linkis_stream_configuration_config_value

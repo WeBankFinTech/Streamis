@@ -16,11 +16,11 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
 import java.util
+
 import org.apache.linkis.protocol.utils.TaskUtils
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.{ConfigKeyVO, ConfigRelationVO}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.ConfigTransform
-import com.webank.wedatasphere.streamis.jobmanager.manager.utils.JobUtils
 
 import scala.collection.convert.WrapAsScala._
 
@@ -37,12 +37,8 @@ class ResourceConfigTransform extends ConfigTransform {
       startupMap.put(vo.getKey, vo.getValue)
     }
     val params = if(job.getParams == null) new util.HashMap[String, Any] else job.getParams
-    if(!startupMap.isEmpty) TaskUtils.addStartupMap(params, JobUtils.filterParameterSpec(startupMap))
+    if(!startupMap.isEmpty) TaskUtils.addStartupMap(params, startupMap)
     LaunchJob.builder().setLaunchJob(job).setParams(params).build()
   }
 
-}
-
-object ResourceConfigTransform{
-//  val RESOURCE_
 }
