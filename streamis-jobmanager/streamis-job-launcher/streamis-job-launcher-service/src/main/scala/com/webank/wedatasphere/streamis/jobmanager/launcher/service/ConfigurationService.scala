@@ -47,33 +47,19 @@ class ConfigurationService extends Logging {
     val job = streamJobMapper.getJobById(vo.getJobId)
     if (job == null) throw new ConfigurationException(s"no such job,jobId is : ${vo.getJobId} ")
 
+    val baseList = vo.getResourceConfig.asScala.++=(vo.getProduceConfig.asScala)
     //Delete all KeyValue Rules under current jobId(删除该jibId下所有的KeyValue规则)
     configMapper.deleteKeyValue(vo.getJobId)
-    if (!CollectionUtils.isEmpty(vo.getResourceConfig)){
-      vo.getResourceConfig.asScala.foreach(f => {
-        val keyValue = new ConfigKeyValue()
-        keyValue.setConfigkeyId(f.getConfigkeyId)
-        keyValue.setConfigKey(f.getKey)
-        keyValue.setJobId(vo.getJobId)
-        keyValue.setConfigValue(f.getValue)
-        keyValue.setJobName(job.getName)
-        keyValue.setType(ConfigConf.JOBMANAGER_FLINK_RESOURCE.getValue)
-        configMapper.insertValue(keyValue)
-      })
-    }
-
-    if (!CollectionUtils.isEmpty(vo.getProduceConfig)){
-      vo.getProduceConfig.asScala.foreach(f => {
-        val keyValue = new ConfigKeyValue()
-        keyValue.setConfigkeyId(f.getConfigkeyId)
-        keyValue.setConfigKey(f.getKey)
-        keyValue.setJobId(vo.getJobId)
-        keyValue.setConfigValue(f.getValue)
-        keyValue.setJobName(job.getName)
-        keyValue.setType(ConfigConf.JOBMANAGER_FLINK_PRODUCE.getValue)
-        configMapper.insertValue(keyValue)
-      })
-    }
+    baseList.foreach(f => {
+      val value = new ConfigKeyValue()
+      value.setConfigkeyId(f.getConfigkeyId)
+      value.setConfigKey(f.getKey)
+      value.setConfigValue(f.getValue)
+      value.setJobId(vo.getJobId)
+      value.setJobName(job.getName)
+      value.setType(ConfigConf.JOBMANAGER_FLINK_PRODUCE.getValue)
+      configMapper.insertValue(value)
+    })
 
     if (!CollectionUtils.isEmpty(vo.getAlarmConfig)) {
       vo.getAlarmConfig.asScala.groupBy(_.getConfigkeyId).map(_._2.head).foreach(f => {
@@ -107,7 +93,7 @@ class ConfigurationService extends Logging {
       vo.getParameterConfig.asScala.foreach(f => {
         val keyValue = new ConfigKeyValue()
         keyValue.setConfigkeyId(f.getConfigkeyId)
-        keyValue.setConfigKey(f.getKey)
+        keyValue.setConfigKey(f.getName)
         keyValue.setJobId(vo.getJobId)
         keyValue.setConfigValue(f.getValue)
         keyValue.setJobName(job.getName)
