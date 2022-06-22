@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.webank.wedatasphere.streamis.jobmanager.launcher.job
+package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity
 
 import java.util
 

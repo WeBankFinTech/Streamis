@@ -31,10 +31,16 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 public class StreamisProjectRestfulApi {
 
+
+
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamisProjectRestfulApi.class);
+
 
     @Autowired
     private StreamisProjectService projectService;
+
+
+
 
     @RequestMapping(path = "/createProject", method = RequestMethod.POST)
     public Message createProject( HttpServletRequest request,@RequestBody CreateProjectRequest createProjectRequest){
@@ -49,29 +55,38 @@ public class StreamisProjectRestfulApi {
         }
     }
 
-    @RequestMapping(path = "/updateProject", method = RequestMethod.PUT)
+
+
+
+    @RequestMapping(path = "/updateProject", method = RequestMethod.POST)
     public Message updateProject( HttpServletRequest request, @RequestBody UpdateProjectRequest updateProjectRequest){
         String username = SecurityFilter.getLoginUsername(request);
         try{
-             projectService.updateProject(username, updateProjectRequest);
-            return StreamisProjectRestfulUtils.dealOk("更新工程成功");
+             projectService.updateProject(new UpdateStreamProjectRequest(updateProjectRequest.getId(),updateProjectRequest.getProjectName(),updateProjectRequest.getDescription(),username));
+            return StreamisProjectRestfulUtils.dealOk("更新工程成功",
+                    new Pair<>("projectName", updateProjectRequest.getProjectName()), new Pair<>("projectId", updateProjectRequest.getId()));
         }catch(final Throwable t){
             LOGGER.error("failed to update project for user {}", username, t);
             return StreamisProjectRestfulUtils.dealError("更新工程失败,原因是:" + t.getMessage());
         }
     }
 
+
     @RequestMapping(path = "/deleteProject", method = RequestMethod.POST)
     public Message deleteProject( HttpServletRequest request, @RequestBody DeleteProjectRequest deleteProjectRequest){
         String username = SecurityFilter.getLoginUsername(request);
         try{
-            projectService.deleteProject(deleteProjectRequest);
-            return StreamisProjectRestfulUtils.dealOk("删除工程成功");
+            projectService.deleteProject(new DeleteStreamProjectRequest(0L,deleteProjectRequest.getProjectName()));
+            return StreamisProjectRestfulUtils.dealOk("删除工程成功",
+                    new Pair<>("projectName", deleteProjectRequest.getProjectName()));
         }catch(final Throwable t){
             LOGGER.error("failed to delete project for user {}", username, t);
             return StreamisProjectRestfulUtils.dealError("删除工程失败,原因是:" + t.getMessage());
         }
     }
+
+
+
 
 
 }

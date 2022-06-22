@@ -13,13 +13,14 @@
  * limitations under the License.
  */
 
-package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
+package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
+import java.util
+
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.core.{FlinkLogIterator, SimpleFlinkJobLogIterator}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{FlinkJobInfo, LinkisJobInfo, LogRequestPayload}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{FlinkJobInfo, LaunchJob, LinkisJobInfo, LogRequestPayload}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
 import org.apache.linkis.common.utils.RetryHandler
 import org.apache.linkis.computation.client.once.simple.{SimpleOnceJob, SubmittableSimpleOnceJob}
@@ -28,7 +29,6 @@ import org.apache.linkis.computation.client.operator.impl.{EngineConnApplication
 import org.apache.linkis.httpclient.dws.DWSHttpClient
 import org.apache.linkis.ujes.client.exception.UJESJobException
 
-import java.util
 import scala.collection.JavaConverters.mapAsScalaMapConverter
 
 class SimpleFlinkJobManager extends FlinkJobManager {

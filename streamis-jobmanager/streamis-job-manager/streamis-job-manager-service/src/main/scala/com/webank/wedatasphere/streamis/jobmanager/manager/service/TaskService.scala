@@ -15,13 +15,12 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
-
 import java.util
 import java.util.Date
+
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.LinkisJobManager
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{FlinkJobInfo, LogRequestPayload}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.FlinkJobManager
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.{FlinkJobInfo, LaunchJob, LogRequestPayload}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager.FlinkJobManager
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask
@@ -72,8 +71,7 @@ class TaskService extends Logging{
     info(s"A new task(taskId: ${task.getId}, jobVersion: ${jobVersion.getVersion}) is created for StreamJob-${job.getName}.")
     val transformJob = streamisTransformJobBuilders.find(_.canBuild(job)).map(_.build(job))
       .getOrElse(throw new TransformFailedErrorException(30408, s"Cannot find a TransformJobBuilder to build StreamJob ${job.getName}."))
-    // To avoid the permission problem, use the creator to submit job
-    var launchJob = LaunchJob.builder().setSubmitUser(job.getCreateBy).build()
+    var launchJob = LaunchJob.builder().setSubmitUser(userName).build()
     launchJob = Transform.getTransforms.foldLeft(launchJob)((job, transform) => transform.transform(transformJob, job))
     info(s"StreamJob-${job.getName} has transformed with launchJob $launchJob.")
     //TODO getLinkisJobManager should use jobManagerType to instance in future, since not only `simpleFlink` mode is supported in future.
