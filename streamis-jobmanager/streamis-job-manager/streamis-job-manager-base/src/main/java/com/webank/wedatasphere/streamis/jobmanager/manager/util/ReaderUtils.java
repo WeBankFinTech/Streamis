@@ -40,7 +40,7 @@ public class ReaderUtils {
     private static final String description = "description";
     private static final String defaultTagList = "prod,streamis";
     private static final String version = "v00001";
-    private static final String regex = "^[a-z0-9A-Z_-]+$";
+    private static final String regex = "^[a-z0-9A-Z]+$";
     private static final String jarRegex = "^[a-z0-9A-Z._-]+$";
     private static final int defaultLength = 64;
     private static final int descriptionLength = 128;

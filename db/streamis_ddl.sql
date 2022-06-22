@@ -8,7 +8,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `linkis_stream_configuration_config_key`;
 CREATE TABLE `linkis_stream_configuration_config_key`  (
   `id` bigint(20) NOT NULL,
-  `key` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `key` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `name` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `description` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `default_value` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
@@ -31,13 +31,13 @@ CREATE TABLE `linkis_stream_configuration_config_key`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `linkis_stream_configuration_config_value`;
 CREATE TABLE `linkis_stream_configuration_config_value`  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) NOT NULL,
   `configkey_id` bigint(20) NULL DEFAULT NULL,
-  `config_value` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `config_value` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `type` int(10) NULL DEFAULT NULL,
   `job_id` bigint(20) NULL DEFAULT NULL,
-  `job_name` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
-  `config_key` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `job_name` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `config_key` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `key`(`config_key`) USING BTREE,
   INDEX `keyid`(`configkey_id`) USING BTREE
@@ -129,8 +129,8 @@ DROP TABLE IF EXISTS `linkis_stream_job`;
 
 CREATE TABLE `linkis_stream_job` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `project_name` varchar(100) DEFAULT NULL,
-  `name` varchar(200) DEFAULT NULL,
+  `project_name` varchar(50) DEFAULT NULL,
+  `name` varchar(50) DEFAULT NULL,
   `status` tinyint(1) DEFAULT '0' COMMENT '1:已完成 ，2:等待重启 ，3:告警 ，4:慢任务 ，5:运行中 ，6:失败任务',
   `create_by` varchar(50) DEFAULT NULL,
   `create_time` datetime DEFAULT NULL,
@@ -182,7 +182,7 @@ DROP TABLE IF EXISTS `linkis_stream_project`;
 CREATE TABLE `linkis_stream_project` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `workspace_id` bigint(20) DEFAULT NULL,
-  `name` varchar(100) DEFAULT NULL,
+  `name` varchar(50) DEFAULT NULL,
   `create_by` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='项目表';
@@ -211,14 +211,14 @@ DROP TABLE IF EXISTS `linkis_stream_task`;
 CREATE TABLE `linkis_stream_task` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `job_version_id` bigint(20) NOT NULL,
-  `job_id` varchar(200) DEFAULT NULL,
+  `job_id` varchar(50) DEFAULT NULL,
   `version` varchar(50) DEFAULT NULL,
   `status` int(3) DEFAULT NULL,
   `start_time` datetime DEFAULT NULL,
   `last_update_time` datetime DEFAULT NULL,
   `err_desc` varchar(10240) DEFAULT NULL,
   `submit_user` varchar(50) DEFAULT NULL,
-  `linkis_job_id` varchar(200) DEFAULT NULL,
+  `linkis_job_id` varchar(50) DEFAULT NULL,
   `linkis_job_info` mediumtext,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='任务表';
@@ -238,16 +238,5 @@ CREATE TABLE `linkis_stream_alert_record` (
   `error_msg` varchar(200) DEFAULT NULL COMMENT '告警发送失败后的错误信息',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `linkis_stream_project_privilege`;
-
-CREATE TABLE `linkis_stream_project_privilege` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `project_id` bigint(20) NOT NULL,
-  `user_name` varchar(100) NOT NULL,
-  `privilege` tinyint(1) DEFAULT '0' NOT NULL COMMENT '1:发布权限 ，2:编辑权限 ，3:查看权限 ，4:所有权限 ，5:发布编辑权限 ，6:发布查看权限 ，7:编辑查看权限 ',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='项目权限表';
-
 
 SET FOREIGN_KEY_CHECKS = 1;
