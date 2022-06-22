@@ -16,7 +16,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.{ConfigKeyVO, ConfigRelationVO}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LaunchJob
 import org.springframework.beans.BeanUtils
 
 import scala.collection.JavaConverters._
