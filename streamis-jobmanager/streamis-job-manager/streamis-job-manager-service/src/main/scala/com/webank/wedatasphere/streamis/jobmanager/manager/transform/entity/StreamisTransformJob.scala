@@ -31,5 +31,4 @@ trait StreamisTransformJob {
 
   def getStreamisTransformJobContent: StreamisTransformJobContent
 
-
 }
