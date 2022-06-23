@@ -27,8 +27,8 @@ VALUES(@jobcenter_dss_appconn_id, 1, 'StreamSQL development', 'StreamSQL开发',
 
 INSERT INTO dss_appconn_instance
 (appconn_id, label, url, enhance_json, homepage_uri)
-VALUES(@dss_appconn_id, 'DEV', 'http://10.107.97.166:9188/', '', 'http://10.107.97.166:9188/#/realTimeJobCenter');
+VALUES(@dss_appconn_id, 'DEV', 'http://Streamis_INSTALL_IP:Streamis_INSTALL_PORT/', '', 'http://Streamis_INSTALL_IP:Streamis_INSTALL_PORT/#/realTimeJobCenter');
 
 INSERT INTO dss_appconn_instance
 (appconn_id, label, url, enhance_json, homepage_uri)
-VALUES(@jobcenter_dss_appconn_id, 'DEV', 'http://10.107.97.166:9188/#/realTimeJobCenter', NULL, NULL);
+VALUES(@jobcenter_dss_appconn_id, 'DEV', 'http://Streamis_INSTALL_IP:Streamis_INSTALL_PORT/#/realTimeJobCenter', NULL, NULL);
