@@ -6,7 +6,6 @@ import com.webank.wedatasphere.dss.standard.app.sso.origin.request.action.DSSPut
 import com.webank.wedatasphere.dss.standard.app.structure.AbstractStructureOperation;
 import com.webank.wedatasphere.dss.standard.app.structure.project.ProjectUpdateOperation;
 import com.webank.wedatasphere.dss.standard.app.structure.project.ref.DSSProjectPrivilege;
-import com.webank.wedatasphere.dss.standard.app.structure.project.ref.ProjectResponseRef;
 import com.webank.wedatasphere.dss.standard.common.entity.ref.ResponseRef;
 import com.webank.wedatasphere.dss.standard.common.exception.operation.ExternalOperationFailedException;
 import com.webank.wedatasphere.streamis.dss.appconn.exception.StreamisAppConnErrorException;
@@ -16,7 +15,7 @@ import com.webank.wedatasphere.streamis.dss.appconn.utils.StreamisCommonUtil;
 import static com.webank.wedatasphere.streamis.dss.appconn.constraints.Constraints.API_REQUEST_PREFIX;
 import static com.webank.wedatasphere.streamis.dss.appconn.constraints.Constraints.STREAMIS_APPCONN_NAME;
 
-public class StreamisProjectUpdateOperation extends AbstractStructureOperation<StreamisProjectUpdateReqRef, ProjectResponseRef>
+public class StreamisProjectUpdateOperation extends AbstractStructureOperation<StreamisProjectUpdateReqRef, ResponseRef>
         implements ProjectUpdateOperation<StreamisProjectUpdateReqRef> {
 
     private String projectUrl;
