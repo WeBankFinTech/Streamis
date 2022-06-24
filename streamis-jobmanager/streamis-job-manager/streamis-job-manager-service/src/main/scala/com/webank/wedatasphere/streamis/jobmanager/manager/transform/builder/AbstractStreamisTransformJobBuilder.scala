@@ -17,7 +17,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.transform.builder
 
 import org.apache.linkis.common.conf.CommonVars
 import org.apache.linkis.manager.label.entity.engine.RunType.RunType
-import com.webank.wedatasphere.streamis.jobmanager.launcher.service.ConfigurationService
+import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.StreamisTransformJobBuilder
@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired
 abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobBuilder {
 
   @Autowired private var streamJobMapper: StreamJobMapper = _
-  @Autowired private var configurationService: ConfigurationService = _
+  @Autowired private var streamJobConfService: StreamJobConfService = _
 
   protected def createStreamisTransformJob(): StreamisTransformJobImpl = new StreamisTransformJobImpl
 
@@ -39,7 +39,8 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
   override def build(streamJob: StreamJob): StreamisTransformJob = {
     val transformJob = createStreamisTransformJob()
     transformJob.setStreamJob(streamJob)
-    transformJob.setConfig(configurationService.getFullTree(streamJob.getId))
+    transformJob.setConfigMap(streamJobConfService.getJobConfig(streamJob.getId))
+//    transformJob.setConfig(configurationService.getFullTree(streamJob.getId))
     val streamJobVersions = streamJobMapper.getJobVersions(streamJob.getId)
     // 无需判断streamJobVersions是否非空，因为TaskService已经判断了
     transformJob.setStreamJobVersion(streamJobVersions.get(0))

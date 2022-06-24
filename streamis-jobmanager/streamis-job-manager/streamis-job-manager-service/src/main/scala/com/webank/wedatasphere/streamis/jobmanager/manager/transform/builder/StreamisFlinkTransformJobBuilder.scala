@@ -17,7 +17,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.transform.builder
 
 import org.apache.linkis.manager.label.entity.engine.RunType.RunType
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob
-import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteFailedErrorException
+import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteErrorException
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisTransformJob, StreamisTransformJobContent}
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,5 +37,5 @@ class StreamisFlinkTransformJobBuilder extends AbstractFlinkStreamisTransformJob
   override protected def createStreamisTransformJobContent(transformJob: StreamisTransformJob): StreamisTransformJobContent =
     jobContentParsers.find(_.canParse(transformJob.getStreamJob, transformJob.getStreamJobVersion))
       .map(_.parseTo(transformJob.getStreamJob, transformJob.getStreamJobVersion))
-    .getOrElse(throw new JobExecuteFailedErrorException(30350, "Not support jobContent " + transformJob.getStreamJobVersion.getJobContent))
+    .getOrElse(throw new JobExecuteErrorException(30350, "Not support jobContent " + transformJob.getStreamJobVersion.getJobContent))
 }
