@@ -27,7 +27,43 @@ public interface StreamTaskMapper {
 
     void updateTask(StreamTask streamTask);
 
+    /**
+     * Update task which in specific status
+     * @param streamTask stream task
+     * @param status status
+     */
+    int updateTaskInStatus(@Param("task")StreamTask streamTask, @Param("status")Integer status);
+
     List<StreamTask> getByJobVersionId(@Param("jobVersionId") Long jobVersionId, @Param("version") String version);
+
+    /**
+     * Get latest task by job version id
+     * @param jobVersionId job version id
+     * @param version version number
+     * @return stream task
+     */
+    StreamTask getLatestByJobVersionId(@Param("jobVersionId") Long jobVersionId, @Param("version") String version);
+
+    /**
+     * Get the latest task by job id
+     * @param jobId job id
+     * @return stream task
+     */
+    StreamTask getLatestByJobId(@Param("jobId") Long jobId);
+
+    /**
+     * Get the latest task(launched) by job id
+     * @param jobId job id
+     * @return stream task
+     */
+    StreamTask getLatestLaunchedById(@Param("jobId") Long jobId);
+    /**
+     * Get earlier task list by job id
+     * @param jobId job id
+     * @param count the max number of task
+     * @return
+     */
+    List<StreamTask> getEarlierByJobId(@Param("jobId") Long jobId, @Param("count") Integer count);
 
     StreamTask getRunningTaskByJobId(@Param("jobId") Long jobId);
 
@@ -38,4 +74,12 @@ public interface StreamTaskMapper {
     List<StreamTask> getTasksByStatus(List<Integer> status);
 
     String getTask(@Param("jobId") Long jobId, @Param("version") String version);
+
+    /**
+     * Get status info of tasks by job ids
+     * @param jobIds job ids
+     * @return list
+     */
+    List<StreamTask> getStatusInfoByJobIds(@Param("jobIds")List<Long> jobIds);
+
 }

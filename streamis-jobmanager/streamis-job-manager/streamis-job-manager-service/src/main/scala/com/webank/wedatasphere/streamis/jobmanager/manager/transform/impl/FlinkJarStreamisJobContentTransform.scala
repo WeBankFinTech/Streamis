@@ -15,14 +15,15 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
-import java.util
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 
+import java.util
 import org.apache.linkis.common.utils.JsonUtils
 import org.apache.linkis.protocol.utils.TaskUtils
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.{StreamisJobContentTransform, Transform}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisJarTransformJobContent, StreamisTransformJob, StreamisTransformJobContent}
+import com.webank.wedatasphere.streamis.jobmanager.manager.utils.JobUtils
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -55,7 +56,10 @@ class FlinkJarStreamisStartupParamsTransform extends Transform {
       } else if(transformJobContent.getDependencyJars != null) {
         startupMap.put("flink.app.user.class.path", transformJobContent.getDependencyJars.asScala.map(_.getFileName).mkString(","))
         transformJobContent.getDependencyJars.asScala
-      } else if(transformJobContent.getResources != null) transformJobContent.getResources.asScala
+      } else if(transformJobContent.getResources != null) {
+        startupMap.put("flink.yarn.ship-directories", transformJobContent.getResources.asScala.map(_.getFileName).mkString(","))
+        transformJobContent.getResources.asScala
+      }
       else mutable.Buffer[StreamisFile]()
       if(classpathFiles.nonEmpty)
         startupMap.put("flink.app.user.class.path.bml.json",
@@ -63,7 +67,7 @@ class FlinkJarStreamisStartupParamsTransform extends Transform {
       if(transformJobContent.getHdfsJars != null)
         startupMap.put("flink.user.lib.path", transformJobContent.getHdfsJars.asScala.mkString(","))
       val params = if(job.getParams == null) new util.HashMap[String, Any] else job.getParams
-      if(!startupMap.isEmpty) TaskUtils.addStartupMap(params, startupMap)
+      if(!startupMap.isEmpty) TaskUtils.addStartupMap(params, JobUtils.filterParameterSpec(startupMap))
       LaunchJob.builder().setLaunchJob(job).setParams(params).build()
     case _ => job
   }

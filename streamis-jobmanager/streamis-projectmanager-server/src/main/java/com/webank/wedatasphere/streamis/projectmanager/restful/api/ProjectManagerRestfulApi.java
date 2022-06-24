@@ -21,11 +21,13 @@ import com.github.pagehelper.PageInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileExceptionManager;
+import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.ReaderUtils;
 import com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles;
 import com.webank.wedatasphere.streamis.projectmanager.service.ProjectManagerService;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
@@ -44,6 +46,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 @RequestMapping(path = "/streamis/streamProjectManager/project")
@@ -54,6 +57,8 @@ public class ProjectManagerRestfulApi {
 
     @Autowired
     private ProjectManagerService projectManagerService;
+    @Autowired
+    private ProjectPrivilegeService projectPrivilegeService;
 
     @RequestMapping(path = "/files/upload", method = RequestMethod.POST)
     public Message upload(HttpServletRequest req,
@@ -71,6 +76,8 @@ public class ProjectManagerRestfulApi {
         if (StringUtils.isBlank(projectName)) {
             return Message.error("projectName is null");
         }
+        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
+
         //Only uses 1st file(只取第一个文件)
         MultipartFile p = files.get(0);
         String fileName = new String(p.getOriginalFilename().getBytes("ISO8859-1"), StandardCharsets.UTF_8);
@@ -112,6 +119,7 @@ public class ProjectManagerRestfulApi {
         if (StringUtils.isBlank(projectName)) {
             return Message.error("projectName is null");
         }
+        if (!projectPrivilegeService.hasAccessPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
         PageHelper.startPage(pageNow, pageSize);
         List<ProjectFiles> fileList;
         try {
@@ -135,6 +143,7 @@ public class ProjectManagerRestfulApi {
         if (StringUtils.isBlank(fileName)) {
             return Message.error("fileName is null");
         }
+        if (!projectPrivilegeService.hasAccessPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
         PageHelper.startPage(pageNow, pageSize);
         List<? extends StreamisFile> fileList;
         try {
@@ -151,6 +160,7 @@ public class ProjectManagerRestfulApi {
     public Message delete( HttpServletRequest req, @RequestParam(value = "fileName",required = false) String fileName,
                            @RequestParam(value = "projectName",required = false) String projectName) {
         String username = SecurityFilter.getLoginUsername(req);
+        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
 
         return projectManagerService.delete(fileName, projectName, username) ? Message.ok()
                 : Message.warn("you have no permission delete some files not belong to you");
@@ -159,13 +169,24 @@ public class ProjectManagerRestfulApi {
     @RequestMapping(path = "/files/version/delete", method = RequestMethod.GET)
     public Message deleteVersion(HttpServletRequest req, @RequestParam(value = "ids",required = false) String ids) {
         String username = SecurityFilter.getLoginUsername(req);
+        List<Long> idList = new ArrayList<>();
+        if (!StringUtils.isBlank(ids) && !ArrayUtils.isEmpty(ids.split(","))) {
+            String[] split = ids.split(",");
+            for (String s : split) {
+                idList.add(Long.parseLong(s));
+            }
+        }
+        List<String> projectNames = projectManagerService.getProjectNames(idList);
+        if (!projectPrivilegeService.hasEditPrivilege(req,projectNames)) {
+            return Message.error("the current user has no operation permission");
+        }
 
         return projectManagerService.deleteFiles(ids, username) ? Message.ok()
                 : Message.warn("you have no permission delete some files not belong to you");
     }
 
     @RequestMapping(path = "/files/download", method = RequestMethod.GET)
-    public Message download( HttpServletResponse response, @RequestParam(value = "id",required = false) Long id,
+    public Message download( HttpServletRequest req, HttpServletResponse response, @RequestParam(value = "id",required = false) Long id,
                              @RequestParam(value = "projectName",required = false)String projectName) {
         ProjectFiles projectFiles = projectManagerService.getFile(id, projectName);
         if (projectFiles == null) {
@@ -174,6 +195,11 @@ public class ProjectManagerRestfulApi {
         if (StringUtils.isBlank(projectFiles.getStorePath())) {
             return Message.error("storePath is null");
         }
+        if(StringUtils.isBlank(projectName)){
+            projectName = projectManagerService.getProjectNameById(id);
+        }
+        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
+
         response.setContentType("application/x-download");
         response.setHeader("content-Disposition", "attachment;filename=" + projectFiles.getFileName());
         try (InputStream is = projectManagerService.download(projectFiles);
