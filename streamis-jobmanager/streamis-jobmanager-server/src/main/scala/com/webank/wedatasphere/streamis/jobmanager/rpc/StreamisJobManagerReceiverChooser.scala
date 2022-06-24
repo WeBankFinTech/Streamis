@@ -15,12 +15,13 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.rpc
 
-import org.apache.linkis.rpc.{RPCMessageEvent, Receiver, ReceiverChooser}
 import com.webank.wedatasphere.streamis.jobmanager.common.protocol.StreamJobManagerProtocol
-import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService
-import javax.annotation.PostConstruct
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService
+import org.apache.linkis.rpc.{RPCMessageEvent, Receiver, ReceiverChooser}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+
+import javax.annotation.PostConstruct
 
 /**
  * created by cooperyang on 2021/7/19
@@ -30,7 +31,7 @@ import org.springframework.stereotype.Component
 class StreamisJobManagerReceiverChooser extends ReceiverChooser{
 
   @Autowired
-  var jobService:JobService = _
+  var jobService: StreamJobService = _
 
 
   private var receiver: Option[StreamisJobManagerReceiver] = _

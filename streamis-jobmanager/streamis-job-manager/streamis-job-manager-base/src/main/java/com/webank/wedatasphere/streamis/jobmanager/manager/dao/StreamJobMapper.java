@@ -16,8 +16,8 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.dao;
 
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.*;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.QueryJobListVO;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.VersionDetailVO;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.QueryJobListVo;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.VersionDetailVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -25,13 +25,20 @@ import java.util.List;
 
 public interface StreamJobMapper {
 
-    List<QueryJobListVO> getJobLists(@Param("projectName") String projectName, @Param("name") String name,
-        @Param("status") Integer status, @Param("createBy") String createBy);
+    List<QueryJobListVo> getJobLists(@Param("projectName") String projectName, @Param("userName") String userName, @Param("name") String name,
+                                     @Param("status") Integer status, @Param("createBy") String createBy);
 
     StreamJob getJobById(@Param("jobId") Long jobId);
 
 
     List<StreamJobVersion> getJobVersions(@Param("jobId") Long jobId);
+
+    /**
+     * Get the latest job version
+     * @param jobId job id
+     * @return job version
+     */
+    StreamJobVersion getLatestJobVersion(@Param("jobId") Long jobId);
 
     StreamJobVersion getJobVersionById(@Param("jobId") Long jobId, @Param("version") String version);
 
@@ -43,11 +50,26 @@ public interface StreamJobMapper {
 
     List<StreamJob> getJobListsByProjectName(String projectName);
 
-    VersionDetailVO getVersionDetail(@Param("jobId") Long jobId, @Param("version") String version);
+    VersionDetailVo getVersionDetail(@Param("jobId") Long jobId, @Param("version") String version);
 
     void insertJobVersionFiles(StreamJobVersionFiles jobVersionFiles);
 
     List<StreamJobVersionFiles> getStreamJobVersionFiles(@Param("jobId") Long jobId, @Param("jobVersionId") Long jobVersionId);
 
     StreamJob getCurrentJob(@Param("projectName")String projectName, @Param("jobName")String jobName);
+
+    /**
+     * Query and lock current job
+     * @param projectName project name
+     * @param jobName job name
+     * @return stream job
+     */
+    StreamJob queryAndLockJobInCondition(@Param("projectName")String projectName, @Param("jobName")String jobName);
+
+    /**
+     * Query and lock by job id
+     * @param jobId job id
+     * @return stream job
+     */
+    StreamJob queryAndLockJobById(@Param("jobId")Long jobId);
 }

@@ -96,4 +96,16 @@
         select `id`,`file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_time`,`create_by` from
         linkis_stream_project_files where id = #{id}
     </select>
+
+    <select id="selectProjectNamesByIds" resultType="Long">
+        select distinct project_name from linkis_stream_project_files where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getProjectNameById" resultType="String">
+        SELECT j.project_name FROM linkis_stream_job_version_files jvf LEFT JOIN linkis_stream_job j ON jvf.job_id =j.id
+        WHERE jvf.id = #{id}
+    </select>
 </mapper>
