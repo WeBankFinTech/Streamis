@@ -13,9 +13,15 @@ public interface StreamisProjectMapper {
 
     void createProject(StreamisProject streamisProject);
 
-    List<Long> findProjectByName(String projectName);
+    StreamisProject findProjectById(Long projectId);
+
+    List<Long> findProjectIdByName(String name);
+
+    void deleteProjectById(Long projectId);
 
     void deleteProjectByName(String projectName);
 
     void updateProject(StreamisProject streamisProject);
+
+    List<Long> findProjectIdsByNames(List<String> names);
 }
