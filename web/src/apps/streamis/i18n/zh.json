@@ -21,6 +21,8 @@
       "jobStatus": {
         "failure": "失败任务",
         "running": "运行中",
+        "stopping": "停止中",
+        "starting": "启动中",
         "slowTask": "慢任务",
         "alert": "告警",
         "waitRestart": "等待重启",
@@ -32,14 +34,23 @@
       },
       "formItems": {
         "queryBtn": "查询",
+        "batchAction": "批量操作",
+        "cancel": "取消",
         "jobStatus": "作业状态",
         "jobCreator": "提交人",
         "jobName": "作业名称",
         "stopBtn": "停止",
+        "directStop": "直接停止",
+        "snapshotAndStop": "快照并停止",
+        "directRestart": "直接重启",
+        "snapshotRestart": "快照重启",
         "startBtn": "启动",
         "configBtn": "配置",
         "saveBtn": "保存",
-        "updateBtn": "更新"
+        "confirmBtn": "确认",
+        "updateBtn": "更新",
+        "notEmpty": "不能为空",
+        "wrongFormat": "格式错误"
       },
       "jobListTableColumns":{
         "jobName": "作业名称",
@@ -51,7 +62,15 @@
         "lastRelease": "最近发布人",
         "description": "描述",
         "operation": "操作",
-        "upload": "导入"
+        "upload": "导入",
+        "snapTitle": "快照【savepoint】",
+        "stopTaskTitle": "停止任务中",
+        "stopTaskContent": "正在批量停止任务中...",
+        "endTaskTitle": "任务完成",
+        "failInfo": "异常信息",
+        "snapshotInfo": "快照路径",
+        "startTaskTitle": "启动任务中",
+        "startTaskContent": "正在批量启动任务..."
         
       },
       "versionDetail":{
@@ -71,7 +90,8 @@
         "paramsConfiguration": "参数配置",
         "alertConfiguration": "告警配置",
         "runningHistory": "运行历史",
-        "runningLogs": "运行日志"
+        "runningLogs": "运行日志",
+        "savepoint": "快照【savepoint】"
       },
       "jobSummary": {
         "resourceUse": "资源使用",
@@ -190,7 +210,10 @@
         "latestLog": "查看最新日志",
         "noLog": "没有日志信息",
         "onlyKeywords": "请输入需要查询的关键字",
-        "ignoreKeywords": "请输入需要排除的关键字"
+        "ignoreKeywords": "请输入需要排除的关键字",
+        "logTypeKeywords": "请选择日志类型",
+        "clientLabel": "客户端日志",
+        "yarnLabel": "Yarn日志"
       }
     }
   }
