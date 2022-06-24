@@ -15,15 +15,35 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.ConfigKeyVO
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LaunchJob
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJob
+import org.apache.commons.lang3.StringUtils
 
+import java.util
 
+/**
+ * Config transform
+ */
 trait ConfigTransform extends Transform {
 
-  override def transform(streamisTransformJob: StreamisTransformJob, job: LaunchJob): LaunchJob = transform(streamisTransformJob.getConfig, job)
+  override def transform(streamisTransformJob: StreamisTransformJob, job: LaunchJob): LaunchJob = {
+    val config: util.Map[String, Any] = streamisTransformJob.getConfigMap
+    val group = configGroup()
+    if (StringUtils.isNotBlank(group)){
+      Option(config.get(group)) match {
+        case Some(valueSet: util.Map[String, Any]) =>
+          transform(valueSet, job)
+        case _ => job
+      }
+    } else transform(streamisTransformJob.getConfigMap, job)
+  }
 
-  protected def transform(config: ConfigKeyVO, job: LaunchJob): LaunchJob
+  /**
+   * Config group name
+   * @return
+   */
+  protected def configGroup(): String = null
+
+  protected def transform(valueSet: util.Map[String, Any], job: LaunchJob): LaunchJob
 
 }

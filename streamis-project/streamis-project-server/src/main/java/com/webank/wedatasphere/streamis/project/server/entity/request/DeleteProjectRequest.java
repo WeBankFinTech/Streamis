@@ -7,12 +7,18 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class DeleteProjectRequest {
 
-    /**
-     * streamis工程是全局唯一的
-     */
-    @NotNull(message = "streamis projetName can not null")
+    @NotNull(message = "streamis projetId can not null")
+    private Long projectId;
+
     private String projectName;
 
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
 
     public String getProjectName() {
         return projectName;
@@ -20,5 +26,13 @@ public class DeleteProjectRequest {
 
     public void setProjectName(String projectName) {
         this.projectName = projectName;
+    }
+
+    @Override
+    public String toString() {
+        return "DeleteProjectRequest{" +
+                "projectId=" + projectId +
+                ", projectName='" + projectName + '\'' +
+                '}';
     }
 }

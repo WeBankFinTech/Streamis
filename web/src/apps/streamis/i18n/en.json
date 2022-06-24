@@ -22,6 +22,8 @@
       "jobStatus": {
         "failure": "Failure",
         "running": "Runnning",
+        "stopping": "Stopping",
+        "starting": "Starting",
         "slowTask": "Slow task",
         "alert": "Alert",
         "waitRestart": "Wait restart",
@@ -37,10 +39,19 @@
         "jobCreator": "Job Creator",
         "jobName": "Job name",
         "stopBtn": "Stop",
+        "directStop": "Stop directly",
+        "directRestart": "Restart directly",
+        "snapshotRestart": "Restart and snapshot",
+        "snapshotAndStop": "Snapshot and stop",
         "startBtn": "Start",
         "configBtn": "Config",
         "saveBtn": "Save",
-        "updateBtn": "Update"
+        "updateBtn": "Update",
+        "batchAction": "batch Action",
+        "confirmBtn": "confirm",
+        "cancel": "cancel",
+        "notEmpty": "Not empty",
+        "wrongFormat": "Wrong format"
       },
       "jobListTableColumns":{
         "jobName": "Job name",
@@ -52,7 +63,15 @@
         "lastRelease": "Last release",
         "description": "Description",
         "operation": "Operation",
-        "upload": "Upload"
+        "upload": "Upload",
+        "snapTitle": "savepoint",
+        "stopTaskTitle": "Shutdown tasks",
+        "stopTaskContent": "Batch stopping tasks...",
+        "endTaskTitle": "Finish tasks",
+        "failInfo": "Exception info",
+        "snapshotInfo": "Snapshot info",
+        "startTaskTitle": "Start tasks",
+        "startTaskContent": "Batch starting tasks..."
         
       },
       "versionDetail":{
@@ -72,7 +91,8 @@
         "paramsConfiguration": "Params configuration",
         "alertConfiguration": "Alert configuration",
         "runningHistory": "Running history",
-        "runningLogs": "Running logs"
+        "runningLogs": "Running logs",
+        "savepoint": "Snapshot Savepoint"
       },
       "jobSummary": {
         "resourceUse": "Resource use",
@@ -189,7 +209,10 @@
         "latestLog": "View the latest log",
         "noLog": "NO logs",
         "onlyKeywords": "Please input onlyKeywords",
-        "ignoreKeywords": "Please input ignoreKeywords"
+        "ignoreKeywords": "Please input ignoreKeywords",
+        "logTypeKeywords": "Please select logType",
+        "clientLabel": "Client Log",
+        "yarnLabel": "Yarn Log"
       }
     }
   }
