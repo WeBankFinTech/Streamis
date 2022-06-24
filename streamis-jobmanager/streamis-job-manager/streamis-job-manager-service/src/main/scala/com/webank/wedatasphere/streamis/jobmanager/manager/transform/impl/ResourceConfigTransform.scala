@@ -15,30 +15,50 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
+
 import java.util
-
-import org.apache.linkis.protocol.utils.TaskUtils
-import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.{ConfigKeyVO, ConfigRelationVO}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LaunchJob
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.ConfigTransform
+import com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl.ResourceConfigTransform.RESOURCE_CONFIG_MAP
+import com.webank.wedatasphere.streamis.jobmanager.manager.utils.JobUtils
+import org.apache.linkis.protocol.utils.TaskUtils
 
-import scala.collection.convert.WrapAsScala._
+import scala.collection.JavaConverters._
 
 
 class ResourceConfigTransform extends ConfigTransform {
 
-  override protected def transform(config: ConfigKeyVO, job: LaunchJob): LaunchJob =
-    transformConfig(config.getResourceConfig, job)
 
-  protected def transformConfig(getConfig: => util.List[ConfigRelationVO], job: LaunchJob): LaunchJob = {
-    val startupMap = new util.HashMap[String, Any]
-    val configSeq = getConfig
-    if(configSeq != null) configSeq.foreach { vo =>
-      startupMap.put(vo.getKey, vo.getValue)
-    }
+  /**
+   * Config group name
+   *
+   * @return
+   */
+  override protected def configGroup(): String = JobConfKeyConstants.GROUP_RESOURCE.getValue
+
+
+  override protected def transform(valueSet: util.Map[String, Any], job: LaunchJob): LaunchJob = {
+    val startupMap = valueSet.asScala.map{
+      case (key, value) =>
+        RESOURCE_CONFIG_MAP.get(key) match {
+          case Some(mappingKey) =>
+            (mappingKey, value)
+          case _ => (key, value)
+        }
+    }.asJava
     val params = if(job.getParams == null) new util.HashMap[String, Any] else job.getParams
-    if(!startupMap.isEmpty) TaskUtils.addStartupMap(params, startupMap)
+    if(!startupMap.isEmpty) TaskUtils.addStartupMap(params, JobUtils.filterParameterSpec(startupMap))
     LaunchJob.builder().setLaunchJob(job).setParams(params).build()
   }
+}
 
+object ResourceConfigTransform{
+  val RESOURCE_CONFIG_MAP = Map(
+    "wds.linkis.flink.taskmanager.memory" ->"flink.taskmanager.memory",
+    "wds.linkis.flink.jobmanager.memory" -> "flink.jobmanager.memory",
+    "wds.linkis.flink.taskmanager.cpus" -> "flink.taskmanager.cpu.cores",
+    "wds.linkis.flink.taskmanager.numberOfTaskSlots" -> "flink.taskmanager.numberOfTaskSlots",
+    "wds.linkis.flink.app.parallelism" -> "wds.linkis.engineconn.flink.app.parallelism"
+  )
 }

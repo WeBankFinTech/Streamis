@@ -1,175 +1,63 @@
 <template>
   <div>
-    <Row :gutter="0">
-      <Col span="14">
-        <div class="itemWrap">
-          <p>{{ $t('message.streamis.jobConfig.resourceConfig') }}</p>
+    <Col span="25">
+      <div class="itemWrap" v-for="(part, index) in configs" :key="index">
+        <div class="normal" v-if="part.child_def && part.child_def.length">
+          <h3>{{ part.name }}</h3>
           <div>
-            <Form ref="resourceConfig">
-              <Row :gutter="60">
-                <Col span="12">
-                  <FormItem
-                    :label="
-                      $t(
-                        'message.streamis.jobConfig.formItems.taskManagersNum'
-                      ) + ':'
-                    "
-                    :label-width="labelWidth2"
+            <Form v-if="valueMap[part.key]" :model="valueMap[part.key]" :ref="part.key" :rules="rule[part.key]">
+              <FormItem v-for="(def, index) in part.child_def" :key="index" :label="def.name" :prop="def.key" :data-prop="def.key">
+                <Input v-if="def.type === 'INPUT' || def.type === 'NUMBER'" v-model="valueMap[part.key][def.key]" />
+                <!-- <Input v-else-if="def.type === 'NUMBER'" v-model="valueMap[part.key][def.key]" type="number" /> -->
+                <Select
+                  v-else
+                  v-model="valueMap[part.key][def.key]"
+                  class="select"
+                >
+                  <Option
+                    v-for="(item, index) in def.ref_values"
+                    :value="item"
+                    :key="index"
                   >
-                    <Input
-                      v-model="resourceConfig.taskManagerNum"
-                      type="number"
-                    />
-                  </FormItem>
-                </Col>
-                <Col span="12">
-                  <FormItem label="JobManager CPUs:" :label-width="labelWidth2">
-                    <Input
-                      v-model="resourceConfig.jobManagerCPUs"
-                      type="number"
-                    />
-                  </FormItem>
-                </Col>
-              </Row>
-              <Row :gutter="60">
-                <Col span="12">
-                  <FormItem
-                    label="JobManager Memory:"
-                    :label-width="labelWidth2"
-                  >
-                    <div class="inputWrap">
-                      <Input
-                        v-model="resourceConfig.jobManagerMemory"
-                        type="number"
-                      />
-                      <div class="unit">G</div>
-                    </div>
-                  </FormItem>
-                </Col>
-                <Col span="12">
-                  <FormItem
-                    label="TaskManager CPUs:"
-                    :label-width="labelWidth2"
-                  >
-                    <Input
-                      v-model="resourceConfig.taskManagerCPUs"
-                      type="number"
-                    />
-                  </FormItem>
-                </Col>
-              </Row>
-
-              <Row :gutter="60">
-                <Col span="12">
-                  <FormItem
-                    label="TaskManager Memory:"
-                    :label-width="labelWidth2"
-                  >
-                    <div class="inputWrap">
-                      <Input
-                        v-model="resourceConfig.taskManagerMemory"
-                        type="number"
-                      />
-                      <div class="unit">G</div>
-                    </div>
-                  </FormItem>
-                </Col>
-              </Row>
+                    {{ item }}
+                  </Option>
+                </Select>
+              </FormItem>
             </Form>
           </div>
         </div>
-        <div class="itemWrap">
-          <p>{{ $t('message.streamis.jobConfig.productionConfig') }}</p>
+        <div class="canEdited" v-else-if="part.child_def">
+          <h3>{{ part.name }}</h3>
           <div>
-            <Form ref="productionConfig">
-              <Row :gutter="60">
-                <Col span="12">
-                  <FormItem
-                    :label="
-                      $t('message.streamis.jobConfig.formItems.checkpointGap') +
-                        ':'
-                    "
-                    :label-width="labelWidth2"
-                  >
-                    <Input
-                      v-model="productionConfig.checkpointInterval"
-                      type="number"
-                    />
-                  </FormItem>
-                </Col>
-                <Col span="12">
-                  <FormItem
-                    :label="
-                      $t(
-                        'message.streamis.jobConfig.formItems.restartStrategy'
-                      ) + ':'
-                    "
-                    :label-width="labelWidth"
-                  >
-                    <Select
-                      v-model="productionConfig.rebootStrategy"
-                      class="select"
-                    >
-                      <Option
-                        v-for="(item, index) in rebootStrategyOptions"
-                        :value="item.value"
-                        :key="index"
-                      >
-                        {{ item.title }}
-                      </Option>
-                    </Select>
-                  </FormItem>
-                </Col>
-              </Row>
-            </Form>
-          </div>
-        </div>
-        <div class="itemWrap">
-          <p>{{ $t('message.streamis.jobConfig.flinkParameters') }}</p>
-          <div>
-            <Form ref="alertSetForm">
-              <Row v-for="(item, index) in flinkParameters" :key="index">
+            <Form>
+              <Row v-for="(item, index) in diyMap[part.key]" :key="index">
                 <Col span="9">
                   <FormItem>
                     <div class="inputWrap">
                       <div class="flinkIndex">{{ index + 1 }}</div>
-                      <Input
-                        v-model="item[0]"
-                        :placeholder="
-                          $t(
-                            'message.streamis.jobConfig.formItems.placeholders.flinkParameters'
-                          )
-                        "
-                      />
+                      <Input v-model="item.key" />
                       <div class="equity">=</div>
                     </div>
                   </FormItem>
                 </Col>
                 <Col span="5">
                   <FormItem>
-                    <Input
-                      v-model="item[1]"
-                      :placeholder="
-                        $t(
-                          'message.streamis.jobConfig.formItems.placeholders.variable'
-                        )
-                      "
-                    />
+                    <Input v-model="item.value" />
                   </FormItem>
                 </Col>
                 <Col span="10">
                   <div class="inputWrap">
                     <div
                       class="icon"
-                      v-show="flinkParameters.length !== 1"
-                      @click="removeFlinkParameter(index)"
+                      @click="removeParameter(index, part.key)"
+                      v-show="diyMap[part.key].length !== 1"
                     >
                       <Icon type="md-close" />
                     </div>
                     <div
                       class="icon"
-                      v-show="index + 1 === flinkParameters.length"
-                      @click="addFlinkParameter()"
+                      v-show="index + 1 === diyMap[part.key].length"
+                      @click="addParameter(part.key)"
                     >
                       <Icon type="md-add" />
                     </div>
@@ -179,157 +67,11 @@
             </Form>
           </div>
         </div>
-      </Col>
-      <Col span="1">
-      </Col>
-      <Col span="9">
-        <div class="itemWrap">
-          <p>{{ $t('message.streamis.jobConfig.alertSet') }}</p>
-          <div>
-            <Form ref="alertSetForm">
-              <FormItem
-                :label="
-                  $t('message.streamis.jobConfig.formItems.alertRule') + ':'
-                "
-                :label-width="labelWidth"
-              >
-                <CheckboxGroup v-model="alertSet.alertRule">
-                  <Checkbox
-                    :label="option.value"
-                    v-for="option in alertRuleOptions"
-                    :key="option.value"
-                  >
-                    <span>{{ option.title }}</span>
-                  </Checkbox>
-                </CheckboxGroup>
-                <!-- <RadioGroup v-model="alertSet.alertRule">
-                  <Radio
-                    :label="option.value"
-                    v-for="option in alertRuleOptions"
-                    :key="option.value"
-                  ></Radio>
-                </RadioGroup> -->
-              </FormItem>
-              <FormItem
-                :label="
-                  $t('message.streamis.jobConfig.formItems.alertLevel') + ':'
-                "
-                :label-width="labelWidth"
-              >
-                <Select v-model="alertSet.alertLevel" class="select">
-                  <Option
-                    v-for="(item, index) in alertLevelOptions"
-                    :value="item.value"
-                    :key="index"
-                  >
-                    {{ item.title }}
-                  </Option>
-                </Select>
-              </FormItem>
-              <FormItem
-                :label="
-                  $t('message.streamis.jobConfig.formItems.alertUser') + ':'
-                "
-                :label-width="labelWidth"
-              >
-                <Select v-model="alertSet.alertUser" multiple class="select">
-                  <Option
-                    v-for="(item, index) in users"
-                    :value="item"
-                    :key="index"
-                  >
-                    {{ item }}
-                  </Option>
-                </Select>
-              </FormItem>
-              <FormItem
-                :label="
-                  $t('message.streamis.jobConfig.formItems.alertLevelFailed') +
-                    ':'
-                "
-                :label-width="labelWidth"
-              >
-                <Select v-model="alertSet.alertFailureLevel" class="select">
-                  <Option
-                    v-for="(item, index) in alertFailureLevelOptions"
-                    :value="item.value"
-                    :key="index"
-                  >
-                    {{ item.title }}
-                  </Option>
-                </Select>
-              </FormItem>
-              <FormItem
-                :label="
-                  $t('message.streamis.jobConfig.formItems.alertUserFailed') +
-                    ':'
-                "
-                :label-width="labelWidth"
-              >
-                <Select
-                  v-model="alertSet.alertFailureUser"
-                  multiple
-                  class="select"
-                >
-                  <Option
-                    v-for="(item, index) in users"
-                    :value="item"
-                    :key="index"
-                  >
-                    {{ item }}
-                  </Option>
-                </Select>
-              </FormItem>
-            </Form>
-          </div>
+        <div class="noChild" v-else>
+          <h3>{{ part.name }}</h3>
         </div>
-        <div class="itemWrap">
-          <p>{{ $t('message.streamis.jobConfig.authoritySet') }}</p>
-          <div>
-            <Form ref="authorityForm">
-              <FormItem
-                :label="
-                  $t('message.streamis.jobConfig.formItems.authorityModel') +
-                    ':'
-                "
-                :label-width="labelWidth"
-              >
-                <Select v-model="authoritySet.authorityAuthor" class="select">
-                  <Option
-                    v-for="(item, index) in authorityAuthorOptions"
-                    :value="item.value"
-                    :key="index"
-                  >
-                    {{ item.title }}
-                  </Option>
-                </Select>
-              </FormItem>
-              <FormItem
-                :label="
-                  $t('message.streamis.jobConfig.formItems.authorityPersons') +
-                    ':'
-                "
-                :label-width="labelWidth"
-              >
-                <Select
-                  v-model="authoritySet.authorityVisible"
-                  multiple
-                  class="select"
-                >
-                  <Option
-                    v-for="(item, index) in users"
-                    :value="item"
-                    :key="index"
-                  >
-                    {{ item }}
-                  </Option>
-                </Select>
-              </FormItem>
-            </Form>
-          </div>
-        </div>
-      </Col>
-    </Row>
+      </div>
+    </Col>
     <div class="saveBtn">
       <Button
         type="primary"
@@ -337,99 +79,22 @@
         :loading="saveLoading"
         style="width:100px;height:40px;background:rgba(22, 155, 213, 1);"
       >
-        {{
-          !hadSaved
-            ? $t('message.streamis.formItems.saveBtn')
-            : $t('message.streamis.formItems.updateBtn')
-        }}
+        {{$t('message.streamis.formItems.saveBtn')}}
       </Button>
     </div>
   </div>
 </template>
 <script>
 import api from '@/common/service/api'
-/**
- * 重置表单数据
- */
-function resetFormValue(vueThis, dataName, configs) {
-  if (!configs) {
-    return
-  }
-  const newValues = {}
-  const keys = Object.keys(vueThis[dataName])
-  const options = {}
-  const temp1 = []
-  configs.forEach(item => {
-    const { key, value, valueLists, name } = item
-    const temp = (key && key.replace(/\./g, '').toLowerCase()) || ''
-    const hit = keys.find(i => temp.endsWith(i.toLowerCase()))
-    const isUser = ['告警用户', '失败时告警用户', '可见人员'].includes(name)
-    let finalValue = value || value === 0 ? value : ''
-    if (isUser && finalValue) {
-      finalValue = finalValue.split(',')
-    }
-    if (name === '告警规则' && finalValue) {
-      temp1.push(finalValue)
-      finalValue = [...temp1]
-    }
-    if (valueLists && !isUser) {
-      const ar = []
-      valueLists.forEach(option => {
-        ar.push({
-          value: option.value,
-          title: option.value
-        })
-        if (option.selected && name !== '告警规则') {
-          finalValue = option.value
-        }
-      })
-      options[hit + 'Options'] = ar
-    }
-    newValues[hit] = finalValue
-  })
-
-  vueThis[dataName] = newValues
-  Object.assign(vueThis, options)
-}
+import { cloneDeep } from 'lodash';
 export default {
   data() {
     return {
-      labelWidth: 80,
-      labelWidth2: 140,
-      resourceConfig: {
-        taskManagerNum: '',
-        jobManagerCPUs: '',
-        jobManagerMemory: '',
-        taskManagerCPUs: '',
-        taskManagerMemory: ''
-      },
-      productionConfig: {
-        checkpointInterval: '',
-        rebootStrategy: ''
-      },
-      rebootStrategyOptions: [],
-      flinkParameters: [[]],
-      alertSet: {
-        alertRule: [],
-        alertLevel: '',
-        alertUser: [],
-        alertFailureLevel: '',
-        alertFailureUser: []
-      },
-      alertLevelOptions: [],
-      alertFailureLevelOptions: [],
-      alertRuleOptions: [],
-      authoritySet: {
-        authorityAuthor: '',
-        authorityVisible: []
-      },
-      authorityVisibleOptions: [],
-      authorityAuthorOptions: [],
+      configs: [],
+      valueMap: {},
+      diyMap: {},
       saveLoading: false,
-      fullTree: {},
-      hadSaved: false,
-      users: [],
-      originFullTree: {}
+      rule: {},
     }
   },
   mounted() {
@@ -446,124 +111,134 @@ export default {
             this.users = res.users
           }
         })
-        .catch(e => console.log(e))
+        .catch(e => console.warn(e))
+    },
+    getValues() {
+      api
+        .fetch(
+          'streamis/streamJobManager/config/json/' + this.$route.params.id,
+          'get'
+        )
+        .then(res => {
+          const valueMap = this.valueMap;
+          Object.keys(res || {}).forEach(key => {
+            valueMap[key] = {};
+            Object.keys(res[key]).forEach(k => {
+              const formatKey = k.replace(/\./g, '/');
+              valueMap[key][formatKey] = res[key][k];
+            })
+          })
+          Object.keys(this.diyMap).forEach(key => {
+            if (Object.keys(valueMap).includes(key)) {
+              let keyValue = Object.keys(valueMap[key] || {}).map(k => ({key: k.replace(/\//g, '.'), value: valueMap[key][k]}));
+              valueMap[key] = {};
+              if (!keyValue.length) keyValue = [{value: '', key: ''}];
+              this.diyMap = {
+                ...this.diyMap,
+                [key]: keyValue
+              }
+            }
+          })
+          this.valueMap = cloneDeep(valueMap);
+        })
+        .catch(e => console.warn(e))
     },
     getConfigs() {
       api
         .fetch(
-          'streamis/streamJobManager/config/view?jobId=' +
-            this.$route.params.id,
+          'streamis/streamJobManager/config/definitions',
           'get'
         )
         .then(res => {
           console.log(res)
-
-          if (res && res.fullTree) {
-            const { fullTree } = res
-            const {
-              resourceConfig,
-              produceConfig,
-              parameterConfig,
-              alarmConfig,
-              permissionConfig
-            } = fullTree
-            this.fullTree = fullTree
-            this.originFullTree = { ...fullTree }
-            resetFormValue(this, 'resourceConfig', resourceConfig)
-            resetFormValue(this, 'productionConfig', produceConfig)
-            resetFormValue(this, 'alertSet', alarmConfig)
-            resetFormValue(this, 'authoritySet', permissionConfig)
-            console.log(this.alertSet)
-            if (parameterConfig) {
-              const parameters = []
-              parameterConfig.forEach(item => {
-                const { key, value, configkeyId } = item
-                parameters.push([key, value, configkeyId])
-              })
-              this.flinkParameters = parameters
+          let configs = res.def;
+          const valueMap = {};
+          const rule = {};
+          configs = configs.map(conf => {
+            valueMap[conf.key] = {};
+            rule[conf.key] = {};
+            if (!conf.child_def) return conf;
+            if (!conf.child_def.length) {
+              this.diyMap = {...this.diyMap, [conf.key]: [{value: '', key: ''}]};
             }
-          }
-        })
-        .catch(e => console.log(e))
-    },
-    removeFlinkParameter(index) {
-      console.log(index)
-      const newParams = [...this.flinkParameters]
-      newParams.splice(index, 1)
-      this.flinkParameters = newParams
-    },
-    addFlinkParameter() {
-      console.log('add')
-      const newParams = [...this.flinkParameters]
-      newParams.push([])
-      this.flinkParameters = newParams
-    },
-    handleSaveConfig() {
-      const map = {
-        resourceConfig: 'resourceConfig',
-        productionConfig: 'produceConfig',
-        flinkParameters: 'parameterConfig',
-        alertSet: 'alarmConfig',
-        authoritySet: 'permissionConfig'
-      }
-      ;[
-        'resourceConfig',
-        'productionConfig',
-        'flinkParameters',
-        'alertSet',
-        'authoritySet'
-      ].forEach(name => {
-        const obj = this.fullTree[map[name]]
-        const values = this[name]
-        if (name === 'flinkParameters') {
-          const temp = this.originFullTree.parameterConfig || []
-          const hit = temp.find(item => !!item.configkeyId)
-          const configkeyId = hit ? hit.configkeyId : 7
-          if (values[0][0]) {
-            const params = []
-            values.forEach(ar => {
-              params.push({
-                name: ar[0],
-                key: ar[0],
-                value: ar[1],
-                configkeyId: ar[2] || configkeyId
-              })
-            })
-            this.fullTree.parameterConfig = params
-          } else {
-            this.fullTree.parameterConfig = null
-          }
-          return
-        }
-        const keys = Object.keys(values)
-        obj.forEach(item => {
-          const { key, valueLists } = item
-          const temp = (key && key.replace(/\./g, '').toLowerCase()) || ''
-          const hit = keys.find(i => temp.endsWith(i.toLowerCase()))
-          const finalValue = values[hit]
-          item.value = Array.isArray(finalValue)
-            ? finalValue.join(',')
-            : finalValue
-          if (valueLists) {
-            valueLists.forEach(vl => {
-              if (Array.isArray(finalValue)) {
-                vl.selected = finalValue.includes(vl.value)
-              } else {
-                vl.selected = vl.value === finalValue
+            conf.child_def = conf.child_def.map(def => {
+              if (def.validate_type !== 'Regex') def.validate_rule = '';
+              else def.validate_rule = def.validate_rule || '';
+              const defaultValue = def.default_value || '';
+              const defKey = def.key.replace(/\./g, '/');
+              def.key = defKey;
+              valueMap[conf.key][defKey] = defaultValue;
+              const rules = [{required: def.required, message: this.$t('message.streamis.formItems.notEmpty'), trigger: 'blur'}];
+              if (def.type !== 'SELECT') {
+                if (def.validate_rule) rules.push({
+                  pattern: new RegExp(def.validate_rule),
+                  message: this.$t('message.streamis.formItems.wrongFormat'),
+                })
               }
-            })
-          }
+              rule[conf.key][defKey] = rules;
+              return def;
+            }).filter(def => ['SELECT', 'INPUT', 'NUMBER'].includes(def.type)).filter(def => !!def.visiable);
+            return conf;
+          });
+          this.valueMap = cloneDeep(valueMap);
+          this.rule = cloneDeep(rule);
+          this.configs = configs;
+          this.getValues()
         })
-      })
-      this.saveLoading = true
+        .catch(e => console.warn(e))
+    },
+    removeParameter(index, key) {
+      console.log('removeParameter', index);
+      const keyValue = this.diyMap[key];
+      keyValue.splice(index, 1)
+      this.diyMap = {...this.diyMap, [key]: keyValue}
+    },
+    addParameter(key) {
+      console.log('addParameter')
+      this.diyMap = {...this.diyMap, [key]: this.diyMap[key].concat({value: '', key: ''})}
+    },
+    async handleSaveConfig() {
+      console.log('handleSaveConfig')
+      this.valueMap = cloneDeep(this.valueMap);
+      const flags = await Promise.all(Object.keys(this.$refs).map(async ref => {
+        const ele = this.$refs[ref][0];
+        if (typeof ele.validate === 'function') return ele.validate();
+        else return true;
+      }));
+      console.log('flags', flags);
+      if (!flags.every(Boolean)) return;
+      this.saveLoading = true;
+      const configuration = {};
+      Object.keys(this.valueMap).forEach(key => {
+        configuration[key] = {};
+        Object.keys(this.valueMap[key]).forEach(k => {
+          const formatKey = k.replace(/\//g, '.');
+          configuration[key][formatKey] = this.valueMap[key][k];
+        })
+      });
+      let warning = false;
+      let emptyWarning = false;
+      Object.keys(this.diyMap).forEach(key => {
+        configuration[key] = {};
+        (this.diyMap[key] || []).forEach(mapKey => {
+          emptyWarning = !mapKey.key || !mapKey.key.trim();
+          if (configuration[key][mapKey.key]) warning = true;
+          configuration[key][mapKey.key] = mapKey.value || '';
+        })
+      });
+      console.log('configuration', configuration, this.valueMap)
+      if (emptyWarning) {
+        this.saveLoading = false;
+        return this.$Message.error({ content: '请删除多余自定义字段，key值不能为空' });
+      }
+      if (warning) {
+        this.saveLoading = false;
+        return this.$Message.error({ content: '自定义字段名称不能重复' });
+      }
       api
         .fetch(
-          'streamis/streamJobManager/config/' +
-            (this.hadSaved ? 'update' : 'add'),
-          {
-            jobId: this.$route.params.id,
-            fullTree: this.fullTree
-          }
+          `streamis/streamJobManager/config/json/${this.$route.params.id}`,
+          { ...configuration }
         )
         .then(res => {
           this.saveLoading = false
@@ -572,7 +247,6 @@ export default {
             this.$Message.error(res.errorMsg.desc)
           } else {
             this.$Message.success(this.$t('message.streamis.operationSuccess'))
-            this.hadSaved = true
           }
         })
         .catch(e => {

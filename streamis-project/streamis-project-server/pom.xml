@@ -20,7 +20,7 @@
     <parent>
         <artifactId>streamis-project</artifactId>
         <groupId>com.webank.wedatasphere.streamis</groupId>
-        <version>0.1.0</version>
+        <version>0.2.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -65,6 +65,12 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math3</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.webank.wedatasphere.dss</groupId>
+            <artifactId>dss-sso-integration-standard</artifactId>
+            <version>1.0.1</version>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>

@@ -1,23 +1,19 @@
 package com.webank.wedatasphere.streamis.project.server.service.impl;
 
-
-import com.webank.wedatasphere.streamis.project.common.CreateStreamProjectRequest;
-import com.webank.wedatasphere.streamis.project.common.DeleteStreamProjectRequest;
-import com.webank.wedatasphere.streamis.project.common.UpdateStreamProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.dao.StreamisProjectMapper;
 import com.webank.wedatasphere.streamis.project.server.entity.StreamisProject;
-import com.webank.wedatasphere.streamis.project.server.entity.request.CreateProjectRequest;
+import com.webank.wedatasphere.streamis.project.server.entity.StreamisProjectPrivilege;
 import com.webank.wedatasphere.streamis.project.server.exception.StreamisProjectErrorException;
+import com.webank.wedatasphere.streamis.project.server.service.StreamisProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.project.server.service.StreamisProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -26,59 +22,59 @@ import java.util.List;
 @Service
 public class StreamisProjectServiceImpl implements StreamisProjectService {
 
-
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamisProjectServiceImpl.class);
 
     @Autowired
     private StreamisProjectMapper streamisProjectMapper;
 
+    @Autowired
+    private StreamisProjectPrivilegeService streamisProjectPrivilegeService;
 
     @Override
-    public StreamisProject createProject(String username, CreateProjectRequest createProjectRequest) throws StreamisProjectErrorException {
-        LOGGER.info("user {} starts to create project {}", username, createProjectRequest.getProjectName());
-        if (!CollectionUtils.isEmpty(streamisProjectMapper.findProjectByName(createProjectRequest.getProjectName()))) {
+    @Transactional(rollbackFor = Exception.class)
+    public StreamisProject createProject(StreamisProject streamisProject) throws StreamisProjectErrorException {
+        LOGGER.info("user {} starts to create project {}", streamisProject.getCreateBy(), streamisProject.getName());
+        if (!CollectionUtils.isEmpty(streamisProjectMapper.findProjectIdByName(streamisProject.getName()))) {
             throw new StreamisProjectErrorException(600500, "the project name is exist");
         }
-        StreamisProject streamisProject = new StreamisProject(createProjectRequest.getProjectName(), createProjectRequest.getDescription(), null);
-        streamisProject.setCreateBy(username);
-        streamisProject.setTags(createProjectRequest.getTags());
         streamisProjectMapper.createProject(streamisProject);
-        LOGGER.info("user {} ends to create project {} and id is {}", streamisProject.getCreateBy(), streamisProject.getName(), streamisProject.getId());
+        List<StreamisProjectPrivilege> projectPrivileges = streamisProject.getProjectPrivileges();
+        for (StreamisProjectPrivilege privilege : projectPrivileges) privilege.setProjectId(streamisProject.getId());
+        streamisProjectPrivilegeService.addProjectPrivilege(projectPrivileges);
+        LOGGER.info("user {} create project {} finished and id is {}", streamisProject.getCreateBy(), streamisProject.getName(), streamisProject.getId());
         return streamisProject;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public StreamisProject createProject(CreateStreamProjectRequest createStreamProjectRequest) throws StreamisProjectErrorException {
-        LOGGER.info("user {} starts to create project {}", createStreamProjectRequest.createBy(), createStreamProjectRequest.projectName());
-        if (!CollectionUtils.isEmpty(streamisProjectMapper.findProjectByName(createStreamProjectRequest.projectName()))) {
+    public void updateProject(StreamisProject streamisProject) throws StreamisProjectErrorException {
+        LOGGER.info("User {} begins to update project {}", streamisProject.getLastUpdateBy(), streamisProject.getId());
+        List<Long> list = streamisProjectMapper.findProjectIdByName(streamisProject.getName());
+        if (!CollectionUtils.isEmpty(list) && !list.get(0).equals(streamisProject.getId())) {
             throw new StreamisProjectErrorException(600500, "the project name is exist");
         }
-        StreamisProject streamisProject = new StreamisProject(createStreamProjectRequest.projectName(), createStreamProjectRequest.description(), null);
-        streamisProject.setCreateBy(createStreamProjectRequest.createBy());
-        streamisProjectMapper.createProject(streamisProject);
-        LOGGER.info("user {} ends to create project {} and id is {}", createStreamProjectRequest.createBy(), createStreamProjectRequest.projectName(), streamisProject.getId());
-        return streamisProject;
-    }
-
-    @Override
-    public void updateProject(UpdateStreamProjectRequest updateStreamProjectRequest) throws StreamisProjectErrorException {
-        LOGGER.info("User {} begins to update project {}", updateStreamProjectRequest.updateBy(), updateStreamProjectRequest.projectName());
-        List<Long> list = streamisProjectMapper.findProjectByName(updateStreamProjectRequest.projectName());
-        if (!CollectionUtils.isEmpty(list) && list.get(0) != updateStreamProjectRequest.streamisProjectId()) {
-            throw new StreamisProjectErrorException(600500, "the project name is exist");
-        }
-        StreamisProject streamisProject = new StreamisProject(updateStreamProjectRequest.projectName(), updateStreamProjectRequest.description(), updateStreamProjectRequest.updateBy());
-        streamisProject.setId(updateStreamProjectRequest.streamisProjectId());
-        streamisProject.setLastUpdateBy(updateStreamProjectRequest.updateBy());
         streamisProjectMapper.updateProject(streamisProject);
-        LOGGER.info("user {} ends to update, project name is {} and id is {}",updateStreamProjectRequest.updateBy(),updateStreamProjectRequest.projectName(),updateStreamProjectRequest.streamisProjectId());
+        streamisProjectPrivilegeService.updateProjectPrivilege(streamisProject.getProjectPrivileges());
+        LOGGER.info("user {} update project finished and name is {} and id is {}",streamisProject.getLastUpdateBy(),streamisProject.getName(),streamisProject.getId());
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteProjectById(Long projectId) {
+        streamisProjectMapper.deleteProjectById(projectId);
+        streamisProjectPrivilegeService.deleteProjectPrivilegeByProjectId(projectId);
+        LOGGER.info("delete projectId {} finished", projectId);
+    }
 
     @Override
-    public void deleteProject(DeleteStreamProjectRequest deleteStreamProjectRequest) throws StreamisProjectErrorException {
-        streamisProjectMapper.deleteProjectByName(deleteStreamProjectRequest.projectName());
-        LOGGER.info("delete project {}", deleteStreamProjectRequest.projectName());
+    @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
+    public List<Long> queryProjectIds(String projectName) {
+        return streamisProjectMapper.findProjectIdByName(projectName);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
+    public List<Long> queryProjectIdsByNames(List<String> projectNames) {
+        return streamisProjectMapper.findProjectIdsByNames(projectNames);
     }
 }

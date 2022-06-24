@@ -27,6 +27,7 @@
     />
     <logDetail
       :visible="logVisible"
+      :taskId="taskId"
       @modalCancel="modalCancel"
       ref="logDetail"
     />
@@ -101,6 +102,7 @@ export default {
       ],
       modalVisible: false,
       logVisible: false,
+      taskId: 0,
       versionDatas: [],
       jobId: this.$route.params.id,
       fromHistory: true
@@ -152,8 +154,9 @@ export default {
     },
     showLogs(row) {
       console.log(row)
-      this.$refs['logDetail'].getDatas()
-      this.logVisible = true
+      this.$refs['logDetail'].getDatas(row.taskId)
+      this.logVisible = true;
+      this.taskId = +row.taskId;
     },
     modalCancel() {
       this.modalVisible = false
