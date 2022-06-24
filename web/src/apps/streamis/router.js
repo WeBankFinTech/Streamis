@@ -21,7 +21,7 @@ export default [
       import('./view/realTimeJobCenter/index.vue'),
   },
   {
-    path: '/realTimeJobCenter/:id',
+    path: '/realTimeJobCenter/:id/:module/:name/:version/:status/:jobType/:projectName',
     name: 'JobDetail',
     meta: {
       title: 'Streamis',

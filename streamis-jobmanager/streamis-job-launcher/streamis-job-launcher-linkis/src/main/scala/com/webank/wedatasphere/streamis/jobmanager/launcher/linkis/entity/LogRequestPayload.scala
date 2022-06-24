@@ -13,7 +13,7 @@ class LogRequestPayload {
   private var ignoreKeywords: String = _
   private var onlyKeywords: String = _
   private var lastRows = 0
-
+  private var logType: String = _
   def getPageSize: Int = pageSize
   def setPageSize(pageSize: Int): Unit = this.pageSize = pageSize
 
@@ -29,4 +29,7 @@ class LogRequestPayload {
   def getLastRows: Int = lastRows
   def setLastRows(lastRows: Int): Unit = this.lastRows = lastRows
 
+  def getLogType: String = logType
+
+  def setLogType(logType: String): Unit = this.logType = logType
 }

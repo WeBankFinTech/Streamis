@@ -1,4 +1,6 @@
 export const jobStatuses = [
+  { name: 'stopping', code: 9, color: '#ffb200' },
+  { name: 'starting', code: 8, color: '#ffb200' },
   { name: 'stopped', code: 7, icon: 'md-close-circle', color: '#990033' },
   { name: 'failure', code: 6, icon: 'md-close-circle', color: '#990033' },
   { name: 'running', code: 5, color: '#008000' },

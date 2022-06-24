@@ -41,7 +41,7 @@
           <Input v-model="uploadForm.parallelism"></Input>
         </FormItem>
         <FormItem>
-          <Upload :before-upload="handleUpload">
+          <Upload :before-upload="handleUpload" action="">
             <Button icon="ios-cloud-upload-outline">{{
               $t('message.streamis.uploadJar.selectJar')
             }}</Button>
