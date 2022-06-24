@@ -46,4 +46,8 @@ public interface ProjectManagerMapper {
     ProjectFiles getProjectFile(Long id);
 
     ProjectFiles getJobFile(Long id);
+
+    List<String> selectProjectNamesByIds(List<Long> ids);
+
+    String getProjectNameById(Long id);
 }

@@ -1,6 +1,7 @@
 package com.webank.wedatasphere.streamis.project.server.entity;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Description:
@@ -10,22 +11,20 @@ public class StreamisProject {
 
     private Long id;
     private String name;
-    private String description;
+    private Long workspaceId;
     private String createBy;
     private Date createTime;
     private String lastUpdateBy;
     private Date lastUpdateTime;
-    private String tags;
-    private String workspaceName;
-    private Long dssProjectId;
+    private List<StreamisProjectPrivilege> projectPrivileges;
 
-    public StreamisProject(String name, String description, String workspaceName){
-        this.name = name;
-        this.description = description;
-        this.workspaceName = workspaceName;
+    public StreamisProject() {
     }
 
-
+    public StreamisProject(String name, Long workspaceId){
+        this.name = name;
+        this.workspaceId = workspaceId;
+    }
 
     public Long getId() {
         return id;
@@ -43,12 +42,12 @@ public class StreamisProject {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
+    public Long getWorkspaceId() {
+        return workspaceId;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setWorkspaceId(Long workspaceId) {
+        this.workspaceId = workspaceId;
     }
 
     public String getCreateBy() {
@@ -83,30 +82,11 @@ public class StreamisProject {
         this.lastUpdateTime = lastUpdateTime;
     }
 
-    public String getTags() {
-        return tags;
+    public List<StreamisProjectPrivilege> getProjectPrivileges() {
+        return projectPrivileges;
     }
 
-    public void setTags(String tags) {
-        this.tags = tags;
+    public void setProjectPrivileges(List<StreamisProjectPrivilege> projectPrivileges) {
+        this.projectPrivileges = projectPrivileges;
     }
-
-    public String getWorkspaceName() {
-        return workspaceName;
-    }
-
-    public void setWorkspaceName(String workspaceName) {
-        this.workspaceName = workspaceName;
-    }
-
-    public Long getDssProjectId() {
-        return dssProjectId;
-    }
-
-    public void setDssProjectId(Long dssProjectId) {
-        this.dssProjectId = dssProjectId;
-    }
-
-
-
 }

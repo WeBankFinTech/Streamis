@@ -1,29 +1,24 @@
 package com.webank.wedatasphere.streamis.project.server.service;
 
 
-import com.webank.wedatasphere.streamis.project.common.CreateStreamProjectRequest;
-import com.webank.wedatasphere.streamis.project.common.DeleteStreamProjectRequest;
-import com.webank.wedatasphere.streamis.project.common.UpdateStreamProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.entity.StreamisProject;
-import com.webank.wedatasphere.streamis.project.server.entity.request.CreateProjectRequest;
 import com.webank.wedatasphere.streamis.project.server.exception.StreamisProjectErrorException;
+
+import java.util.List;
 
 /**
  * Description:
  */
 public interface StreamisProjectService {
 
+     StreamisProject createProject(StreamisProject streamisProject) throws StreamisProjectErrorException;
 
+     void updateProject(StreamisProject streamisProject) throws StreamisProjectErrorException;
 
-     StreamisProject createProject(String username, CreateProjectRequest createProjectRequest) throws StreamisProjectErrorException;
+     void deleteProjectById(Long projectId) throws StreamisProjectErrorException;
 
-     StreamisProject createProject(CreateStreamProjectRequest createStreamProjectRequest) throws StreamisProjectErrorException;
+     List<Long> queryProjectIds(String projectName) throws StreamisProjectErrorException;
 
-
-     void updateProject(UpdateStreamProjectRequest updateStreamProjectRequest) throws StreamisProjectErrorException;
-
-
-     void deleteProject(DeleteStreamProjectRequest deleteStreamProjectRequest) throws StreamisProjectErrorException;
-
+     List<Long> queryProjectIdsByNames(List<String> projectNames);
 
 }
