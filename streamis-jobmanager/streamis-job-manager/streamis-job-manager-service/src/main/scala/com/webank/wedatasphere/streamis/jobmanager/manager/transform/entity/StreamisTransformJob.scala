@@ -15,20 +15,22 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.ConfigKeyVO
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion}
-
-
+import java.util
+/**
+ * Transform job
+ */
 trait StreamisTransformJob {
 
   def getStreamJob: StreamJob
 
   def getStreamJobVersion: StreamJobVersion
 
-  def getConfig: ConfigKeyVO
+  def getConfigMap: util.Map[String, Any]
 
   def getStreamisJobEngineConn: StreamisJobEngineConn
 
   def getStreamisTransformJobContent: StreamisTransformJobContent
+
 
 }
