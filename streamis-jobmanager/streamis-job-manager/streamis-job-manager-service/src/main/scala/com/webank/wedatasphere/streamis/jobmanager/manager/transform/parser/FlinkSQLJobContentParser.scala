@@ -21,7 +21,7 @@ import org.apache.linkis.common.utils.JsonUtils
 import org.apache.linkis.manager.label.entity.engine.RunType
 import org.apache.linkis.manager.label.entity.engine.RunType.RunType
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion}
-import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteFailedErrorException
+import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteErrorException
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisSqlTransformJobContent, StreamisTransformJobContent}
 import org.springframework.stereotype.Component
 
@@ -39,20 +39,20 @@ class FlinkSQLJobContentParser extends AbstractJobContentParser {
         jobContent.get("file") match {
           case file: String =>
             getFileContent(job, jobVersion, file)
-          case _ => throw new JobExecuteFailedErrorException(30500, s"No file is exists when the type is file in jobContent.")
+          case _ => throw new JobExecuteErrorException(30500, s"No file is exists when the type is file in jobContent.")
         }
       case "bml" =>
         val resourceId = jobContent.get("resourceId")
         val version = jobContent.get("version")
         if(resourceId == null || version == null)
-          throw new JobExecuteFailedErrorException(30500, s"No resourceId or version is exists when the type is bml in jobContent.")
+          throw new JobExecuteErrorException(30500, s"No resourceId or version is exists when the type is bml in jobContent.")
         readFileFromBML(jobVersion.getCreateBy, resourceId.toString, version.toString)
       case "sql" =>
         jobContent.get("sql") match {
           case sql: String => sql
-          case _ => throw new JobExecuteFailedErrorException(30500, s"No sql is exists when the type is sql in jobContent.")
+          case _ => throw new JobExecuteErrorException(30500, s"No sql is exists when the type is sql in jobContent.")
         }
-      case t => throw new JobExecuteFailedErrorException(30500, s"Not recognized type $t in jobContent.")
+      case t => throw new JobExecuteErrorException(30500, s"Not recognized type $t in jobContent.")
     }
     transformJobContent.setSql(sql)
     transformJobContent

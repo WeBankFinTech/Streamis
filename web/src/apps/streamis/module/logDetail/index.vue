@@ -10,6 +10,15 @@
       <div>
         <Form ref="queryForm" inline>
           <FormItem>
+            <Select
+              v-model="query.logType"
+              @on-change="handleQuery"
+              :placeholder="$t('message.streamis.logDetail.logTypeKeywords')"
+            >
+              <Option v-for="item in logTypeList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+            </Select>
+          </FormItem>
+          <FormItem>
             <Input
               search
               v-model="query.ignoreKeywords"
@@ -55,6 +64,7 @@
           </Button>
           <Button
             type="primary"
+            :disabled="endLine === fromLine"
             @click="handleMore('next')"
             style="margin-left: 30px;"
           >
@@ -80,27 +90,38 @@ export default {
     visible: Boolean,
     datas: Array,
     fromHistory: Boolean,
-    projectName: String
+    projectName: String,
+    taskId: Number
   },
   data() {
     return {
       query: {
         ignoreKeywords: '',
-        onlyKeywords: ''
+        onlyKeywords: '',
+        logType: 'client'
       },
+      logTypeList: [{
+        label: this.$t('message.streamis.logDetail.clientLabel'),
+        value: 'client'
+      }, {
+        label: this.$t('message.streamis.logDetail.yarnLabel'),
+        value: 'yarn'
+      }],
       fromLine: 1,
+      endLine: 0,
       logs: '',
       spinShow: false
     }
   },
   methods: {
-    getDatas() {
+    getDatas(taskId) {
       // const logs = new Array(1000).fill(
       //   'pps/pps/streamis/module/versionDetailtreamis/module/versionDetailpps/streamis/module/versionDetailpps/streamis/module/versionDetailpps/streamis/module/versionDetailpps/streamis/module/versionDetail'
       // )
       // this.logs = logs.join('\n')
       const { id } = this.$route.params || {}
       let queries = `?jobId=${id}&fromLine=${this.fromLine}&pageSize=100`
+      if (taskId || this.taskId) queries += `&taskId=${taskId || this.taskId}`;
       Object.keys(this.query).forEach(key => {
         const value = this.query[key]
         if (value) {
@@ -113,6 +134,10 @@ export default {
         .then(res => {
           this.spinShow = false
           if (res && res.logs) {
+            if (res.logs.endLine <= this.fromLine) {
+              this.fromLine = res.logs.endLine;
+              this.endLine = res.logs.endLine;
+            }
             this.logs = res.logs.logs.join('\n')
           } else {
             this.logs = ''
@@ -129,7 +154,8 @@ export default {
       this.spinShow = false
       this.query = {
         ignoreKeywords: '',
-        onlyKeywords: ''
+        onlyKeywords: '',
+        logType: 'client'
       }
       this.$emit('modalCancel')
     },
@@ -137,11 +163,12 @@ export default {
       if (type === 'more') {
         this.fromLine = 1
         this.query = {
+          ...this.query,
           ignoreKeywords: '',
-          onlyKeywords: ''
+          onlyKeywords: '',
         }
       } else if (type === 'next') {
-        this.fromLine = this.fromLine + 100
+        this.fromLine = this.fromLine + 100;
       } else {
         this.fromLine = this.fromLine > 100 ? this.fromLine - 100 : 1
       }
