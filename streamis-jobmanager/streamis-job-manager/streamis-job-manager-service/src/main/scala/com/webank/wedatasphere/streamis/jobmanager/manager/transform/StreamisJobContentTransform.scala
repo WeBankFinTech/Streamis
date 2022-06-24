@@ -15,10 +15,11 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform
 
-import java.util
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LaunchJob
+import java.util
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisTransformJob, StreamisTransformJobContent}
+
 
 
 trait StreamisJobContentTransform extends Transform {
@@ -30,6 +31,7 @@ trait StreamisJobContentTransform extends Transform {
       LaunchJob.builder().setLaunchJob(job).setJobContent(jobContent).build()
     } else job
   }
+
 
   protected def transformJobContent(transformJob: StreamisTransformJobContent): util.HashMap[String, Any]
 }
