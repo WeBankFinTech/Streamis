@@ -21,6 +21,7 @@ public class QueryJobListVo {
     private Long id;
     private String name;
     private Long workspaceName;
+    private String projectId;
     private String projectName;
     private String jobType;
     private String label;
@@ -53,6 +54,14 @@ public class QueryJobListVo {
 
     public void setWorkspaceName(Long workspaceName) {
         this.workspaceName = workspaceName;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
     }
 
     public String getProjectName() {
