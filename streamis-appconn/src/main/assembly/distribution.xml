@@ -22,10 +22,10 @@
     <!-- Unique key -->
     <id>dss-streamis-appconn</id>
     <formats>
-        <format>dir</format>
+        <format>zip</format>
     </formats>
     <includeBaseDirectory>true</includeBaseDirectory>
-    <baseDirectory>streamisAppConn</baseDirectory>
+    <baseDirectory>streamis</baseDirectory>
 
     <dependencySets>
         <dependencySet>

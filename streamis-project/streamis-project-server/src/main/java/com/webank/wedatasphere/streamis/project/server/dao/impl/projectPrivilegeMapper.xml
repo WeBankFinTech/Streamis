@@ -15,12 +15,29 @@
     </insert>
 
     <select id="findProjectPrivilegeByProjectId" resultType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProjectPrivilege">
-        select id,projectId,userName,privilege from linkis_stream_project_privilege where projectId = #{projectId}
+        select id,project_id,user_name,privilege from linkis_stream_project_privilege where project_id = #{projectId}
     </select>
 
     <delete id="deleteProjectPrivilegeByProjectId">
-        delete from linkis_stream_project_privilege where projectId = #{projectId}
+        delete from linkis_stream_project_privilege where project_id = #{projectId}
     </delete>
 
+    <delete id="deleteProjectPrivilegeById" parameterType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProjectPrivilege" >
+        delete from linkis_stream_project_privilege where id in
+        <foreach collection="list" item="item" open='(' separator="," close=')'>
+            #{item.id}
+        </foreach>
+    </delete>
+
+    <select id="getProjectPrivilege" resultType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProjectPrivilege">
+        select id,project_id,user_name,privilege from linkis_stream_project_privilege where project_id = #{projectId} AND user_name = #{userName}
+    </select>
+
+    <select id="findProjectPrivilegeByProjectIds" resultType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProjectPrivilege">
+        select id,project_id,user_name,privilege from linkis_stream_project_privilege where project_id in
+        <foreach collection="list" item="projectId" open='(' separator="," close=')'>
+            #{projectId}
+        </foreach>
+    </select>
 
 </mapper>

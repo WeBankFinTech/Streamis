@@ -22,33 +22,37 @@
 
     <insert id="createProject" useGeneratedKeys="true" keyProperty="id"
             parameterType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProject">
-        insert into streamis_stream_project (name,description,create_by,create_time,tags,workspace_name,dss_project_id)
+        insert into linkis_stream_project (name,workspace_id,create_by,create_time)
         values (
-        #{name},#{description},#{createBy},now(),#{tags},#{workspaceName},#{dssProjectId}
+        #{name},#{workspaceId},#{createBy},now()
         )
     </insert>
 
     <update id="updateProject" parameterType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProject">
-        update streamis_stream_project set
-        <if test="description != null">
-            description = #{description},
-        </if>
+        update linkis_stream_project set
         <if test="lastUpdateBy != null">
             last_update_by = #{lastUpdateBy},
         </if>
         last_update_time = now()
-        where name = #{name}
+        where id = #{id}
     </update>
 
     <delete id="deleteProjectById">
-        delete from streamis_stream_project where id = #{id}
+        update linkis_stream_project set is_deleted = 1 where id = #{id}
     </delete>
 
     <select id="findProjectById" resultType="com.webank.wedatasphere.streamis.project.server.entity.StreamisProject">
-        select id,name,description from streamis_stream_project where id = #{id}
+        select id,name,workspace_id from linkis_stream_project where id = #{id}
     </select>
 
-    <select id="findProjectByName" resultType="java.lang.Long">
-        select id from streamis_stream_project where name = #{name}
+    <select id="findProjectIdByName" resultType="java.lang.Long">
+        select id from linkis_stream_project where name = #{name}
+    </select>
+
+    <select id="findProjectIdsByNames" resultType="java.lang.Long">
+        select id from linkis_stream_project where name in
+        <foreach collection="list" item="name" open='(' separator=',' close=')' >
+            #{name}
+        </foreach>
     </select>
 </mapper>
