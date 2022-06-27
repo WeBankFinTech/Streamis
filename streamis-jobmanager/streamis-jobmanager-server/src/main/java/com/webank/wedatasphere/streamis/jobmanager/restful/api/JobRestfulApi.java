@@ -102,7 +102,7 @@ public class JobRestfulApi {
         if (StringUtils.isBlank(projectName)){
             return Message.error("Project name cannot be empty(项目名不能为空，请指定)");
         }
-        if(!this.privilegeService.hasAccessPrivilege(req, projectName)){
+        if(!this.privilegeService.hasEditPrivilege(req, projectName)){
             return Message.error("Have no permission to create or update StreamJob in project [" + projectName + "]");
         }
         StreamJobVersion job = streamJobService.createOrUpdate(username, metaJsonInfo);
