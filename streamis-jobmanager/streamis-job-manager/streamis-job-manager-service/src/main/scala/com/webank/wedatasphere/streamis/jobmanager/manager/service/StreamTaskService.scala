@@ -15,7 +15,6 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
-import com.sun.xml.bind.v2.runtime.unmarshaller.LocatorEx.Snapshot
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.FlinkJobInfo
@@ -40,8 +39,19 @@ trait StreamTaskService {
    */
    def execute(jobId: Long, taskId: Long, execUser: String, restore: Boolean = false): Unit
 
+   def execute(jobId: Long, taskId: Long, execUser: String): Unit
+
+  /**
+   * Async to execute job(task)
+   * @param jobId job id
+   * @param taskId task id
+   * @param execUser user name
+   * @param restore restore from job state
+   * @return
+   */
    def asyncExecute(jobId: Long, taskId: Long, execUser: String, restore: Boolean = false): Future[String]
 
+   def asyncExecute(jobId: Long, taskId: Long, execUser: String): Future[String]
   /**
    * Bulk executing
    * @param jobIds jobIds
@@ -50,6 +60,8 @@ trait StreamTaskService {
    * @param restore restore from job state
    */
    def bulkExecute(jobIds: util.List[Long], taskIds: util.List[Long], execUser: String, restore: Boolean = false): util.List[ExecResultVo]
+
+   def bulkExecute(jobIds: util.List[Long], taskIds: util.List[Long], execUser: String): util.List[ExecResultVo]
   /**
    * Sync to pause job(task)
    * @param jobId job id

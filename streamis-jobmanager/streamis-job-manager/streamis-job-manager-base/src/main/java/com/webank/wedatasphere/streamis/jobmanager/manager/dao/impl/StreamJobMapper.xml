@@ -94,13 +94,15 @@
     <select id="getJobLists" resultMap="StreamJobVOMap">
         select * from (
         SELECT j.`id`,j.`project_name`, j.`workspace_name`,j.`name`,j.`create_by`, j.`create_time`,j.`label`,j.`description`,
-        j.`job_type`, (CASE WHEN t.`status` IS NULL THEN 0 ELSE t.status END)  AS STATUS, ll.version AS VERSION, ll.create_time AS lastVersionTime, t.start_time FROM
+        j.`job_type`, (CASE WHEN t.`status` IS NULL THEN 0 ELSE t.status END)  AS STATUS, ll.version AS VERSION,
+        ll.create_time AS lastVersionTime, t.start_time, lsp.id AS project_id FROM
         linkis_stream_job j
         LEFT JOIN (SELECT id,job_id, MAX(VERSION) VERSION FROM linkis_stream_job_version GROUP BY job_id) l ON j.id = l.job_id
         LEFT JOIN linkis_stream_job_version ll ON l.job_id=ll.job_id AND l.version=ll.version
         LEFT JOIN (SELECT MAX(start_time) start_time, MAX(VERSION) VERSION,job_id FROM linkis_stream_task GROUP BY job_id) tt
         ON tt.job_id = l.job_id AND tt.version = l.version
         LEFT JOIN linkis_stream_task t ON tt.job_id = t.job_id AND tt.start_time = t.start_time
+        LEFT JOIN linkis_stream_project lsp ON lsp.name = j.project_name
         ) aa
         <where>
             <if test="projectName != null and projectName!=''">
@@ -115,6 +117,8 @@
             <if test="createBy != null and createBy != ''">
                 AND aa.`create_by` = #{createBy}
             </if>
+            AND EXISTS (SELECT 1 FROM linkis_stream_project_privilege lspp WHERE lspp.project_id =aa.project_id
+                 AND lspp.privilege in (1,2,3) AND lspp.user_name = #{userName})
         </where>
         order by aa.start_time desc
     </select>

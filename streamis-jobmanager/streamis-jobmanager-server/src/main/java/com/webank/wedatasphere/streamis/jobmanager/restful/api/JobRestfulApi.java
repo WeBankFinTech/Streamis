@@ -22,13 +22,12 @@ import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.FlinkJobInfo;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.Checkpoint;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.Savepoint;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.*;
-import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamTaskService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -44,7 +43,10 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @RequestMapping(path = "/streamis/streamJobManager/job")
 @RestController
@@ -53,12 +55,16 @@ public class JobRestfulApi {
     private static final Logger LOG = LoggerFactory.getLogger(JobRestfulApi.class);
 
     @Autowired
-    private JobService jobService;
+    private StreamJobService streamJobService;
+
     @Autowired
     private StreamTaskService streamTaskService;
 
     @Resource
     private JobLaunchManager<? extends JobInfo> jobLaunchManager;
+
+    @Resource
+    private ProjectPrivilegeService privilegeService;
 
     @RequestMapping(path = "/list", method = RequestMethod.GET)
     public Message getJobList(HttpServletRequest req,
@@ -67,8 +73,11 @@ public class JobRestfulApi {
                               @RequestParam(value = "projectName", required = false) String projectName,
                               @RequestParam(value = "jobName", required = false) String jobName,
                               @RequestParam(value = "jobStatus", required = false) Integer jobStatus,
-                              @RequestParam(value = "jobCreator", required = false) String jobCreator) {
+                              @RequestParam(value = "jobCreator", required = false) String jobCreator) throws JobException {
         String username = SecurityFilter.getLoginUsername(req);
+        if(StringUtils.isBlank(projectName)){
+            return Message.error("Project name cannot be empty(项目名不能为空，请指定)");
+        }
         if (Objects.isNull(pageNow)) {
             pageNow = 1;
         }
@@ -78,7 +87,7 @@ public class JobRestfulApi {
         PageInfo<QueryJobListVo> pageInfo;
         PageHelper.startPage(pageNow, pageSize);
         try {
-            pageInfo = jobService.getByProList(projectName, jobName, jobStatus, jobCreator);
+            pageInfo = streamJobService.getByProList(projectName, username, jobName, jobStatus, jobCreator);
         } finally {
             PageHelper.clearPage();
         }
@@ -89,7 +98,14 @@ public class JobRestfulApi {
     @RequestMapping(path = "/createOrUpdate", method = RequestMethod.POST)
     public Message createOrUpdate(HttpServletRequest req, @Validated @RequestBody MetaJsonInfo metaJsonInfo) throws Exception {
         String username = SecurityFilter.getLoginUsername(req);
-        StreamJobVersion job = jobService.createOrUpdate(username, metaJsonInfo);
+        String projectName = metaJsonInfo.getProjectName();
+        if (StringUtils.isBlank(projectName)){
+            return Message.error("Project name cannot be empty(项目名不能为空，请指定)");
+        }
+        if(!this.privilegeService.hasAccessPrivilege(req, projectName)){
+            return Message.error("Have no permission to create or update StreamJob in project [" + projectName + "]");
+        }
+        StreamJobVersion job = streamJobService.createOrUpdate(username, metaJsonInfo);
         return Message.ok().data("jobId", job.getJobId());
     }
 
@@ -103,10 +119,12 @@ public class JobRestfulApi {
             throw JobExceptionManager.createException(30301, "version");
         }
         String username = SecurityFilter.getLoginUsername(req);
-        if (!jobService.hasPermission(jobId, username)) {
-            return Message.error("you have no permission of this job ,please ask for the job creator");
+        StreamJob streamJob = this.streamJobService.getJobById(jobId);
+        if (!streamJobService.hasPermission(streamJob, username) &&
+            !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
+            return Message.error("Have no permission to view versions of StreamJob [" + jobId + "]");
         }
-        VersionDetailVo versionDetailVO = jobService.versionDetail(jobId, version);
+        VersionDetailVo versionDetailVO = streamJobService.versionDetail(jobId, version);
         return Message.ok().data("detail", versionDetailVO);
     }
 
@@ -119,11 +137,13 @@ public class JobRestfulApi {
         }
         long jobId = Long.parseLong(json.get("jobId").toString());
         LOG.info("{} try to execute job {}.", userName, jobId);
-        if (!jobService.hasPermission(jobId, userName)) {
-            return Message.error("you have no permission of this job ,please ask for the job creator");
+        StreamJob streamJob = this.streamJobService.getJobById(jobId);
+        if (!streamJobService.hasPermission(streamJob, userName) &&
+                !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
+            return Message.error("Have no permission to execute StreamJob [" + jobId + "]");
         }
         try {
-            streamTaskService.execute(jobId, 0L, userName, true);
+            streamTaskService.execute(jobId, 0L, userName);
         } catch (Exception e) {
             LOG.error("{} execute job {} failed!", userName, jobId, e);
             return Message.error(ExceptionUtils.getRootCauseMessage(e));
@@ -136,12 +156,15 @@ public class JobRestfulApi {
                            @RequestParam(value = "jobId", required = false) Long jobId,
                            @RequestParam(value = "snapshot", required = false) Boolean snapshot) throws JobException {
         String userName = SecurityFilter.getLoginUsername(req);
+        snapshot = !Objects.isNull(snapshot) && snapshot;
         if (jobId == null) {
-            JobExceptionManager.createException(30301, "jobId");
+            throw JobExceptionManager.createException(30301, "jobId");
         }
         LOG.info("{} try to kill job {}.", userName, jobId);
-        if (!jobService.hasPermission(jobId, userName)) {
-            return Message.error("you have no permission of this job ,please ask for the job creator");
+        StreamJob streamJob = this.streamJobService.getJobById(jobId);
+        if (!streamJobService.hasPermission(streamJob, userName) &&
+                !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
+            return Message.error("Have no permission to kill/stop StreamJob [" + jobId + "]");
         }
         try {
             PauseResultVo resultVo = streamTaskService.pause(jobId, 0L, userName, Objects.nonNull(snapshot)? snapshot : false);
@@ -206,8 +229,10 @@ public class JobRestfulApi {
         if (StringUtils.isEmpty(version)) {
             throw JobExceptionManager.createException(30301, "version");
         }
-        if (!jobService.hasPermission(jobId, username)) {
-            return Message.error("you have no permission of this job ,please ask for the job creator");
+        StreamJob streamJob = this.streamJobService.getJobById(jobId);
+        if (!streamJobService.hasPermission(streamJob, username) &&
+                !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
+            return Message.error("Have no permission to view execution history of StreamJob [" + jobId + "]");
         }
         List<StreamTaskListVo> details = streamTaskService.queryHistory(jobId, version);
         return Message.ok().data("details", details);
@@ -220,8 +245,10 @@ public class JobRestfulApi {
         if (jobId == null) {
             throw JobExceptionManager.createException(30301, "jobId");
         }
-        if (!jobService.hasPermission(jobId, username)) {
-            return Message.error("you have no permission of this job ,please ask for the job creator");
+        StreamJob streamJob = this.streamJobService.getJobById(jobId);
+        if (!streamJobService.hasPermission(streamJob, username) &&
+                !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
+            return Message.error("Have no permission to view the progress of StreamJob [" + jobId + "]");
         }
         JobProgressVo jobProgressVO = streamTaskService.getProgress(jobId, version);
         return Message.ok().data("taskId", jobProgressVO.getTaskId()).data("progress", jobProgressVO.getProgress());
@@ -231,10 +258,12 @@ public class JobRestfulApi {
     public Message uploadDetailsJob(HttpServletRequest req, @RequestParam(value = "jobId", required = false) Long jobId,
                                     @RequestParam(value = "version", required = false) String version) {
         String username = SecurityFilter.getLoginUsername(req);
-        if (!jobService.hasPermission(jobId, username)) {
-            return Message.error("you have no permission of this job ,please ask for the job creator");
+        StreamJob streamJob = this.streamJobService.getJobById(jobId);
+        if (!streamJobService.hasPermission(streamJob, username) &&
+                !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
+            return Message.error("Have no permission to view job details of StreamJob [" + jobId + "]");
         }
-        StreamisTransformJobContent jobContent = jobService.getJobContent(jobId, version);
+        StreamisTransformJobContent jobContent = streamJobService.getJobContent(jobId, version);
         return Message.ok().data("jobContent", jobContent);
     }
 
@@ -243,7 +272,7 @@ public class JobRestfulApi {
                                             @RequestParam(value = "version", required = false) String version) {
         String username = SecurityFilter.getLoginUsername(req);
 
-        return Message.ok().data("list", jobService.getAlert(username, jobId, version));
+        return Message.ok().data("list", streamJobService.getAlert(username, jobId, version));
     }
 
     @RequestMapping(path = "/logs", method = RequestMethod.GET)
@@ -261,8 +290,10 @@ public class JobRestfulApi {
         }
         logType = StringUtils.isBlank(logType) ? "client" : logType;
         String username = SecurityFilter.getLoginUsername(req);
-        if (!jobService.hasPermission(jobId, username)) {
-            return Message.error("you have no permission of this job ,please ask for the job creator");
+        StreamJob streamJob = this.streamJobService.getJobById(jobId);
+        if (!streamJobService.hasPermission(streamJob, username) &&
+                !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
+            return Message.error("Have no permission to fetch logs from StreamJob [" + jobId + "]");
         }
         LogRequestPayload payload = new LogRequestPayload();
         payload.setFromLine(fromLine);
@@ -304,8 +335,10 @@ public class JobRestfulApi {
         Message result = Message.ok();
         try{
             String username = SecurityFilter.getLoginUsername(request);
-            if (!jobService.hasPermission(jobId, username)){
-                return Message.error("You have no permission to do snapshot for this job ,please ask for the job creator");
+            StreamJob streamJob = this.streamJobService.getJobById(jobId);
+            if (!streamJobService.hasPermission(streamJob, username) &&
+                    !this.privilegeService.hasEditPrivilege(request, streamJob.getProjectName())){
+                return Message.error("Have no permission to do snapshot for StreamJob [" + jobId + "]");
             }
             result.data("path", streamTaskService.snapshot(jobId, 0L, username));
         }catch (Exception e){

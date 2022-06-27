@@ -15,11 +15,17 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.JobConfDefinition;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.JobConfDefinitionVo;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.JobConfValueSet;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobErrorException;
-import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
+import org.apache.linkis.httpclient.dws.DWSHttpClient;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
 import org.slf4j.Logger;
@@ -41,7 +47,11 @@ public class JobConfRestfulApi {
     private StreamJobConfService streamJobConfService;
 
     @Resource
-    private JobService jobService;
+    private StreamJobService streamJobService;
+
+    @Resource
+    private ProjectPrivilegeService privilegeService;
+
     /**
      * Definitions
      * @return message
@@ -92,7 +102,9 @@ public class JobConfRestfulApi {
         Message result = Message.ok("success");
         try {
             String userName = SecurityFilter.getLoginUsername(request);
-            if (!jobService.hasPermission(jobId, userName)){
+            StreamJob streamJob = this.streamJobService.getJobById(jobId);
+            if (!streamJobService.hasPermission(streamJob, userName) &&
+                    !this.privilegeService.hasAccessPrivilege(request, streamJob.getProjectName())){
                 throw new JobErrorException(-1, "Have no permission to view StreamJob [" + jobId + "] configuration");
             }
             result.setData(new HashMap<>(this.streamJobConfService.getJobConfig(jobId)));
@@ -117,7 +129,11 @@ public class JobConfRestfulApi {
         Message result = Message.ok("success");
         try{
             String userName = SecurityFilter.getLoginUsername(request);
-            if (!jobService.hasPermission(jobId, userName)){
+            StreamJob streamJob = this.streamJobService.getJobById(jobId);
+            // Accept the developer to modify
+            if (!streamJobService.isCreator(jobId, userName) &&
+                    !JobConf.STREAMIS_DEVELOPER().getValue().contains(userName) &&
+                    !this.privilegeService.hasEditPrivilege(request, streamJob.getProjectName())) {
                 throw new JobErrorException(-1, "Have no permission to save StreamJob [" + jobId + "] configuration");
             }
             this.streamJobConfService.saveJobConfig(jobId, configContent);
@@ -125,6 +141,49 @@ public class JobConfRestfulApi {
            String message = "Fail to save StreamJob configuration(保存/更新任务配置失败), message: " + e.getMessage();
            LOG.warn(message, e);
            result = Message.error(message);
+        }
+        return result;
+    }
+
+    @RequestMapping(path = "/view", method = RequestMethod.GET)
+    public Message viewConfigTree(@RequestParam(value = "jobId", required = false) Long jobId,
+                              HttpServletRequest req){
+        Message result = Message.ok("success");
+        try{
+            if (Objects.isNull(jobId)){
+                throw new JobErrorException(-1, "Params 'jobId' cannot be empty");
+            }
+            String userName = SecurityFilter.getLoginUsername(req);
+            StreamJob streamJob = this.streamJobService.getJobById(jobId);
+            if (!this.streamJobService.hasPermission(streamJob, userName)
+                    && !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())){
+                throw new JobErrorException(-1, "Have no permission to view the configuration tree of StreamJob [" + jobId + "]");
+            }
+            result.data("fullTree", this.streamJobConfService.getJobConfValueSet(jobId));
+        }catch (Exception e){
+            String message = "Fail to view configuration tree(查看任务配置树失败), message: " + e.getMessage();
+            LOG.warn(message, e);
+            result = Message.error(message);
+        }
+        return result;
+    }
+
+    @RequestMapping(path = {"/add", "/update"}, method = RequestMethod.POST)
+    public Message saveConfigTree(@RequestBody JsonNode json, HttpServletRequest req){
+        Message result = Message.ok("success");
+        try{
+            String userName = SecurityFilter.getLoginUsername(req);
+            JobConfValueSet fullTrees = DWSHttpClient.jacksonJson().readValue(json.get("fullTree").traverse(), JobConfValueSet.class);
+            // Accept the developer to modify
+            if (!streamJobService.isCreator(fullTrees.getJobId(), userName) &&
+                    !JobConf.STREAMIS_DEVELOPER().getValue().contains(userName)) {
+                return Message.error("you con not modify the config ,the job is not belong to you");
+            }
+            streamJobConfService.saveJobConfValueSet(fullTrees);
+        }catch (Exception e){
+            String message = "Fail to insert/update configuration tree(保存/更新任务配置树失败), message: " + e.getMessage();
+            LOG.warn(message, e);
+            result = Message.error(message);
         }
         return result;
     }
