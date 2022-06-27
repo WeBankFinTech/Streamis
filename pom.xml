@@ -38,8 +38,8 @@
 
     <modules>
         <module>streamis-jobmanager</module>
-        <module>streamis-server</module>
         <module>streamis-project</module>
+        <module>streamis-server</module>
         <module>assembly</module>
         <module>streamis-appconn</module>
     </modules>

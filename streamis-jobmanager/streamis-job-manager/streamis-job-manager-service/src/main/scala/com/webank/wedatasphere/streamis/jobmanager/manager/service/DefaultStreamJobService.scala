@@ -17,10 +17,9 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import java.util
 import java.util.Date
-
 import com.github.pagehelper.PageInfo
-import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfConstants
-import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.ConfigMapper
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
+import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
 import org.apache.linkis.common.exception.ErrorException
 import org.apache.linkis.common.utils.Logging
@@ -36,24 +35,33 @@ import org.apache.commons.lang.StringUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.util.CollectionUtils
 
+import javax.annotation.Resource
 import scala.collection.JavaConverters._
 
 
 @Service
-class JobService extends Logging {
+class DefaultStreamJobService extends StreamJobService with Logging {
 
-  @Autowired private var streamJobMapper: StreamJobMapper = _
-  @Autowired private var streamTaskMapper: StreamTaskMapper = _
-  @Autowired private var bmlService: BMLService = _
-  @Autowired private var jobContentParsers: Array[JobContentParser] = _
-  @Autowired private var configMapper: ConfigMapper = _
-  @Autowired private var streamAlertMapper:StreamAlertMapper = _
+  @Autowired
+  private var streamJobMapper: StreamJobMapper = _
+  @Autowired
+  private var streamTaskMapper: StreamTaskMapper = _
+  @Autowired
+  private var bmlService: BMLService = _
+  @Autowired
+  private var jobContentParsers: Array[JobContentParser] = _
+  @Autowired
+  private var streamJobConfService: StreamJobConfService = _
+  @Autowired
+  private var streamAlertMapper:StreamAlertMapper = _
 
+  override def getJobById(jobId: Long): StreamJob = {
+    this.streamJobMapper.getJobById(jobId)
+  }
 
-  def getByProList(projectName: String, jobName: String, jobStatus: Integer, jobCreator: String): PageInfo[QueryJobListVo] = {
-    val streamJobList = streamJobMapper.getJobLists(projectName, jobName, jobStatus, jobCreator)
+  override def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String): PageInfo[QueryJobListVo] = {
+    val streamJobList = streamJobMapper.getJobLists(projectName, userName, jobName, jobStatus, jobCreator)
     if (streamJobList != null && !streamJobList.isEmpty) {
       val pageInfo = new PageInfo[QueryJobListVo](streamJobList)
       return pageInfo
@@ -64,8 +72,8 @@ class JobService extends Logging {
   /**
    * COre indicator(核心指标)
    */
-  def countByCores(projectName: String): TaskCoreNumVo = {
-    val jobs = streamJobMapper.getJobLists(projectName, null, null, null)
+  override def countByCores(projectName: String, userName: String): TaskCoreNumVo = {
+    val jobs = streamJobMapper.getJobLists(projectName, userName, null, null, null)
     val taskNum = new TaskCoreNumVo()
     taskNum.setProjectName(projectName)
     if (jobs != null && !jobs.isEmpty) {
@@ -87,18 +95,18 @@ class JobService extends Logging {
    *
    * @param jobId
    */
-  def versionDetail(jobId: Long, version: String): VersionDetailVo = {
+  override def versionDetail(jobId: Long, version: String): VersionDetailVo = {
     streamJobMapper.getVersionDetail(jobId, version)
   }
 
 
-  def updateVersion(preVersion: String): String = {
+  override def updateVersion(preVersion: String): String = {
     val newVersion = preVersion.substring(1).toInt + 1
     val codeFormat = "%05d"
     "v" + String.format(codeFormat, new Integer(newVersion))
   }
 
-  def uploadFiles(metaJsonInfo: MetaJsonInfo, version: StreamJobVersion, path: String): Unit = {
+  override def uploadFiles(metaJsonInfo: MetaJsonInfo, version: StreamJobVersion, path: String): Unit = {
     val readerUtils = new ReaderUtils
     readerUtils.listFiles(path).asScala.foreach(path => {
       val response = bmlService.upload(version.getCreateBy, path)
@@ -115,7 +123,7 @@ class JobService extends Logging {
   }
 
 
-  def createStreamJob(metaJsonInfo: MetaJsonInfo, userName: String): StreamJobVersion = {
+  override def createStreamJob(metaJsonInfo: MetaJsonInfo, userName: String): StreamJobVersion = {
     if(StringUtils.isBlank(metaJsonInfo.getJobType))
       throw new JobCreateErrorException(30030, s"jobType is needed.")
     if(metaJsonInfo.getJobContent == null || metaJsonInfo.getJobContent.isEmpty)
@@ -161,7 +169,7 @@ class JobService extends Logging {
 
   @throws(classOf[ErrorException])
   @Transactional(rollbackFor = Array(classOf[Exception]))
-  def uploadJob(projectName: String, userName: String, inputZipPath: String): StreamJobVersion = {
+  override def uploadJob(projectName: String, userName: String, inputZipPath: String): StreamJobVersion = {
     val inputPath = ZipHelper.unzip(inputZipPath)
     val readerUtils = new ReaderUtils
     val metaJsonInfo = readerUtils.parseJson(inputPath)
@@ -178,14 +186,14 @@ class JobService extends Logging {
 
   @throws(classOf[ErrorException])
   @Transactional(rollbackFor = Array(classOf[Exception]))
-  def createOrUpdate(userName: String, metaJsonInfo: MetaJsonInfo): StreamJobVersion = {
+  override def createOrUpdate(userName: String, metaJsonInfo: MetaJsonInfo): StreamJobVersion = {
     validateUpload(metaJsonInfo.getProjectName, metaJsonInfo.getJobName, userName)
     val readerUtils = new ReaderUtils
     metaJsonInfo.setMetaInfo(readerUtils.readAsJson(metaJsonInfo))
     createStreamJob(metaJsonInfo, userName)
   }
 
-  def getJobContent(jobId: Long, version: String): StreamisTransformJobContent = {
+  override def getJobContent(jobId: Long, version: String): StreamisTransformJobContent = {
     val job = streamJobMapper.getJobById(jobId)
     if(job == null) throw new JobFetchErrorException(30030, s"job is not exists.")
     val jobVersion = if(StringUtils.isBlank(version)) {
@@ -197,14 +205,58 @@ class JobService extends Logging {
       .getOrElse(throw new JobFetchErrorException(30030, s"Cannot find a JobContentParser to parse jobContent."))
   }
 
+
+  override def hasPermission(jobId: Long, username: String): Boolean = {
+    hasPermission(this.streamJobMapper.getJobById(jobId), username)
+  }
+
+  override def hasPermission(job: StreamJob, username: String): Boolean = {
+    Option(job) match {
+      case Some(job: StreamJob) =>
+        if (!username.equals(job.getCreateBy)){
+          Option(this.streamJobConfService.getJobConfValue(job.getId,
+            JobConfKeyConstants.AUTHORITY_AUTHOR_VISIBLE.getValue)) match {
+            case Some(authors) =>
+              authors.split(",").toList.contains(username)
+            case _ => false
+          }
+        } else true
+      case None => false
+    }
+  }
+
+  override def getAlertUsers(job: StreamJob): util.List[String] = {
+    val alertUsers = this.streamJobConfService.getJobConfValue(job.getId, JobConfKeyConstants.ALERT_USER.getValue)
+    if (StringUtils.isBlank(alertUsers)) return null
+    alertUsers.split(",").toList.asJava
+  }
+
+  override def getAlertLevel(job: StreamJob): AlertLevel = {
+    val level = this.streamJobConfService.getJobConfValue(job.getId, JobConfKeyConstants.ALERT_LEVEL.getValue)
+    if (StringUtils.isBlank(level)) return AlertLevel.MINOR
+    AlertLevel.valueOf(level)
+  }
+
+  override def isCreator(jobId: Long, username: String): Boolean = {
+    val job = streamJobMapper.getJobById(jobId)
+    if (job == null) return false
+    username.equals(job.getCreateBy)
+  }
+
+  override def getAlert(username: String, jobId: Long, version: String): util.List[StreamAlertRecord] = {
+    val job = streamJobMapper.getJobVersionById(jobId, version)
+    if (job == null) return null
+    streamAlertMapper.getAlertByJobIdAndVersion(username,jobId,job.getId)
+  }
+
   private def validateUpload(projectName: String, jobName: String, userName: String): Unit = {
     if(StringUtils.isBlank(jobName)) throw new JobCreateErrorException(30030, s"jobName is needed.")
     if(StringUtils.isBlank(projectName)) throw new JobCreateErrorException(30030, s"projectName is needed.")
     // Try to lock the stream job to create version
     Option(streamJobMapper.queryAndLockJobInCondition(projectName, jobName)).foreach(streamJob => {
-      // TODO 需加上是否有导入权限的判断，这里先只判断创建者
-      if (streamJob.getCreateBy != userName)
-        throw new JobCreateErrorException(30030, s"You have no permission to update StreamJob-$jobName.")
+      // Use the project privilege at restful api
+//      if (streamJob.getCreateBy != userName)
+//        throw new JobCreateErrorException(30030, s"You have no permission to update StreamJob-$jobName.")
       val jobVersions = streamJobMapper.getJobVersions(streamJob.getId)
       if (jobVersions != null && !jobVersions.isEmpty) {
         val tasks = streamTaskMapper.getTasksByJobIdAndJobVersionId(streamJob.getId, jobVersions.get(0).getId)
@@ -215,52 +267,4 @@ class JobService extends Logging {
     })
   }
 
-  def hasPermission(jobId: Long, username: String): Boolean = {
-    val job = streamJobMapper.getJobById(jobId)
-    if (job == null) return false
-    if (username.equals(job.getCreateBy)) return true
-    val values = configMapper.getConfigKeyValues(null, jobId)
-    if (CollectionUtils.isEmpty(values)) return false
-    val configValues = values.asScala
-    val list = configValues.groupBy(_.getConfigKey).filter(f => f._1.equals(JobConfConstants.JOBMANAGER_FLINK_AUTHORITY_VISIBLE.getValue)).toList
-    if (list.size <= 0) return false
-    val value = list.head._2.head.getConfigValue
-    if (StringUtils.isBlank(value)) return false
-    val names = value.split(",").toList
-    names.contains(username)
-  }
-
-  def getAlertUsers(job: StreamJob): util.List[String] = {
-    val values = configMapper.getConfigKeyValues(null, job.getId)
-    if (CollectionUtils.isEmpty(values)) return null
-    val configValues = values.asScala
-    val list = configValues.groupBy(_.getConfigKey).filter(f => f._1.equals(JobConfConstants.JOB_CONF_ALERT_USER.getValue)).toList
-    if (list.size <= 0) return null
-    val value = list.head._2.head.getConfigValue
-    if (StringUtils.isBlank(value)) return null
-    value.split(",").toList.asJava
-  }
-
-  def getAlertLevel(job: StreamJob): AlertLevel = {
-    val values = configMapper.getConfigKeyValues(null, job.getId)
-    if (CollectionUtils.isEmpty(values)) return AlertLevel.MINOR
-    val configValues = values.asScala
-    val list = configValues.groupBy(_.getConfigKey).filter(f => f._1.equals(JobConfConstants.JOB_CONF_ALERT_LEVEL.getValue)).toList
-    if (list.size <= 0) return AlertLevel.MINOR
-    val value = list.head._2.head.getConfigValue
-    if (StringUtils.isBlank(value)) return AlertLevel.MINOR
-    AlertLevel.valueOf(value)
-  }
-
-  def isCreator(jobId: Long, username: String): Boolean = {
-    val job = streamJobMapper.getJobById(jobId)
-    if (job == null) return false
-    username.equals(job.getCreateBy)
-  }
-
-  def getAlert(username: String, jobId: Long, version: String): util.List[StreamAlertRecord] = {
-    val job = streamJobMapper.getJobVersionById(jobId, version)
-    if (job == null) return null
-    streamAlertMapper.getAlertByJobIdAndVersion(username,jobId,job.getId)
-  }
 }

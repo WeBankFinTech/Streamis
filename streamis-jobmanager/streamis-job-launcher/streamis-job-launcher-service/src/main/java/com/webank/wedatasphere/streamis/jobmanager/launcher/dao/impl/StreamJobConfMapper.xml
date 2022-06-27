@@ -48,6 +48,9 @@
         SELECT * FROM `linkis_stream_job_config_def`;
     </select>
 
+    <select id="getRawConfValue" resultType="String">
+        SELECT `value` FROM `linkis_stream_job_config` WHERE job_id = #{jobId} AND `key` = #{key};
+    </select>
     <select id="getConfValuesByJobId" resultMap="ConfigValue">
         SELECT * FROM `linkis_stream_job_config` WHERE job_id = #{jobId};
     </select>
@@ -56,6 +59,9 @@
         DELETE FROM `linkis_stream_job_config` WHERE job_id = #{jobId};
     </delete>
 
+    <delete id="deleteTemporaryConfValue">
+        DELETE c FROM `linkis_stream_job_config` c INNER JOIN `linkis_stream_job_config_def` d ON c.job_id = 0 AND d.id = c.ref_def_id AND d.is_temp = 1;
+    </delete>
     <insert id="batchInsertValues">
         INSERT INTO `linkis_stream_job_config`(`job_id`, `job_name`, `key`, `value`, `ref_def_id`) VALUES
         <foreach collection="values" item="item" open="" close="" separator=",">

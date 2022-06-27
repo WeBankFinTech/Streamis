@@ -17,20 +17,40 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo;
 
 import java.util.List;
 
-
+/**
+ * Config value set
+ */
 public class JobConfValueSet {
 
+    /**
+     * Job id
+     */
     private Long jobId;
 
-    private List<ConfigRelationVO> resourceConfig;
+    /**
+     * Resource config
+     */
+    private List<JobConfValueVo> resourceConfig;
 
-    private List<ConfigRelationVO> produceConfig;
+    /**
+     * Produce config
+     */
+    private List<JobConfValueVo> produceConfig;
 
-    private List<ConfigRelationVO> parameterConfig;
+    /**
+     * Parameter config
+     */
+    private List<JobConfValueVo> parameterConfig;
 
-    private List<ConfigRelationVO> alarmConfig;
+    /**
+     * Alarm config
+     */
+    private List<JobConfValueVo> alarmConfig;
 
-    private List<ConfigRelationVO> permissionConfig;
+    /**
+     * Permission config
+     */
+    private List<JobConfValueVo> permissionConfig;
 
 
     public Long getJobId() {
@@ -41,43 +61,43 @@ public class JobConfValueSet {
         this.jobId = jobId;
     }
 
-    public List<ConfigRelationVO> getResourceConfig() {
+    public List<JobConfValueVo> getResourceConfig() {
         return resourceConfig;
     }
 
-    public void setResourceConfig(List<ConfigRelationVO> resourceConfig) {
+    public void setResourceConfig(List<JobConfValueVo> resourceConfig) {
         this.resourceConfig = resourceConfig;
     }
 
-    public List<ConfigRelationVO> getProduceConfig() {
+    public List<JobConfValueVo> getProduceConfig() {
         return produceConfig;
     }
 
-    public void setProduceConfig(List<ConfigRelationVO> produceConfig) {
+    public void setProduceConfig(List<JobConfValueVo> produceConfig) {
         this.produceConfig = produceConfig;
     }
 
-    public List<ConfigRelationVO> getParameterConfig() {
+    public List<JobConfValueVo> getParameterConfig() {
         return parameterConfig;
     }
 
-    public void setParameterConfig(List<ConfigRelationVO> parameterConfig) {
+    public void setParameterConfig(List<JobConfValueVo> parameterConfig) {
         this.parameterConfig = parameterConfig;
     }
 
-    public List<ConfigRelationVO> getAlarmConfig() {
+    public List<JobConfValueVo> getAlarmConfig() {
         return alarmConfig;
     }
 
-    public void setAlarmConfig(List<ConfigRelationVO> alarmConfig) {
+    public void setAlarmConfig(List<JobConfValueVo> alarmConfig) {
         this.alarmConfig = alarmConfig;
     }
 
-    public List<ConfigRelationVO> getPermissionConfig() {
+    public List<JobConfValueVo> getPermissionConfig() {
         return permissionConfig;
     }
 
-    public void setPermissionConfig(List<ConfigRelationVO> permissionConfig) {
+    public void setPermissionConfig(List<JobConfValueVo> permissionConfig) {
         this.permissionConfig = permissionConfig;
     }
 }

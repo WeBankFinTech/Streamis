@@ -17,13 +17,39 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo;
 
 import java.util.List;
 
-
-public class ConfigRelationVO {
+/**
+ * View object
+ */
+public class JobConfValueVo {
+    /**
+     * Config key id
+     */
     private Long configkeyId;
+    /**
+     * Key
+     */
     private String key;
+    /**
+     * Name
+     */
     private String name;
+    /**
+     * Value
+     */
     private String value;
+    /**
+     * Value list
+     */
     private List<ValueList> valueLists;
+
+    public JobConfValueVo(){
+
+    }
+
+    public JobConfValueVo(String key, String value){
+        this.key = key;
+        this.value = value;
+    }
 
     public static class ValueList {
         private String value;
