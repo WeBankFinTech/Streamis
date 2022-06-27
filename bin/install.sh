@@ -20,7 +20,6 @@ txt=""
 if [[ "$OSTYPE" == "darwin"* ]]; then
     txt="''"
 elif [[ "$OSTYPE" == "linux-gnu" ]]; then
-    # linux
     txt=""
 elif [[ "$OSTYPE" == "cygwin" ]]; then
     echo "streamis not support Windows operating system"
@@ -100,48 +99,40 @@ if [[ '2' = "$MYSQL_INSTALL_MODE" ]];then
 fi
 
 
-
-###linkis Eurkea info
-SERVER_IP=$EUREKA_INSTALL_IP
-SERVER_PORT=$EUREKA_PORT
-SERVER_HOME=$STREAMIS_INSTALL_HOME
-
-if test -z "$SERVER_IP"
-then
-  SERVER_IP=$local_host
-fi
-EUREKA_URL=http://$SERVER_IP:$EUREKA_PORT/eureka/
+EUREKA_URL=http://$EUREKA_INSTALL_IP:$EUREKA_PORT/eureka/
 
 ##function start
 function installPackage(){
 echo "start to install $SERVERNAME"
 echo "$SERVERNAME-step1: create dir"
-if test -z "$SERVER_IP"
-then
-  SERVER_IP=$local_host
-fi
 
-if ! ssh -p $SSH_PORT $SERVER_IP test -e $SERVER_HOME; then
-  ssh  -p $SSH_PORT $SERVER_IP "sudo mkdir -p $SERVER_HOME;sudo chown -R $deployUser:$deployUser $SERVER_HOME"
+if ! test -e $SERVER_HOME; then
+  sudo mkdir -p $SERVER_HOME;sudo chown -R $deployUser:$deployUser $SERVER_HOME
   isSuccess "create the dir of  $SERVERNAME"
 fi
 
 echo "$SERVERNAME-step2:copy install package"
-scp  -P $SSH_PORT   ${workDir}/share/$PACKAGE_DIR/$SERVERNAME.zip $SERVER_IP:$SERVER_HOME
+cp ${workDir}/share/$PACKAGE_DIR/$SERVERNAME.zip $SERVER_HOME
 isSuccess "copy  ${SERVERNAME}.zip"
-ssh  -p $SSH_PORT $SERVER_IP "cd $SERVER_HOME/;rm -rf $SERVERNAME-bak; mv -f $SERVERNAME $SERVERNAME-bak"
-ssh  -p $SSH_PORT $SERVER_IP "cd $SERVER_HOME/;unzip $SERVERNAME.zip > /dev/null"
+cd $SERVER_HOME/;rm -rf $SERVERNAME-bak; mv -f $SERVERNAME $SERVERNAME-bak
+cd $SERVER_HOME/;unzip $SERVERNAME.zip > /dev/null
 isSuccess "unzip  ${SERVERNAME}.zip"
 
 echo "$SERVERNAME-step3:subsitution conf"
 SERVER_CONF_PATH=$SERVER_HOME/$SERVERNAME/conf/application.yml
-ssh  -p $SSH_PORT $SERVER_IP "sed -i  \"s#port:.*#port: $SERVER_PORT#g\" $SERVER_CONF_PATH"
-ssh  -p $SSH_PORT $SERVER_IP "sed -i  \"s#defaultZone:.*#defaultZone: $EUREKA_URL#g\" $SERVER_CONF_PATH"
-ssh  -p $SSH_PORT $SERVER_IP "sed -i  \"s#hostname:.*#hostname: $SERVER_IP#g\" $SERVER_CONF_PATH"
+sed -i  "s#port:.*#port: $SERVER_PORT#g" $SERVER_CONF_PATH
+sed -i  "s#defaultZone:.*#defaultZone: $EUREKA_URL#g" $SERVER_CONF_PATH
+sed -i  "s#hostname:.*#hostname: $SERVER_IP#g" $SERVER_CONF_PATH
 isSuccess "subsitution conf of $SERVERNAME"
 }
-##function end
 
+function setDatasourcePassword(){
+  PASSWORD=$MYSQL_PASSWORD
+  temp=${PASSWORD//#/%tream%}
+  sed -i  "s#wds.linkis.server.mybatis.datasource.password.*#wds.linkis.server.mybatis.datasource.password=$temp#g" $SERVER_CONF_PATH
+  sed -i  "s/%tream%/#/g" $SERVER_CONF_PATH
+}
+##function end
 
 
 ##Streamis-Server Install
@@ -155,12 +146,12 @@ installPackage
 ###update Streamis-Server linkis.properties
 echo "$SERVERNAME-step4:update linkis.properties"
 SERVER_CONF_PATH=$SERVER_HOME/$SERVERNAME/conf/linkis.properties
-ssh  -p $SSH_PORT $SERVER_IP "sed -i  \"s#wds.linkis.server.mybatis.datasource.url.*#wds.linkis.server.mybatis.datasource.url=jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}?characterEncoding=UTF-8#g\" $SERVER_CONF_PATH"
-ssh  -p $SSH_PORT $SERVER_IP "sed -i  \"s#wds.linkis.server.mybatis.datasource.username.*#wds.linkis.server.mybatis.datasource.username=$MYSQL_USER#g\" $SERVER_CONF_PATH"
-ssh  -p $SSH_PORT $SERVER_IP "sed -i  \"s#wds.linkis.server.mybatis.datasource.password.*#wds.linkis.server.mybatis.datasource.password=$MYSQL_PASSWORD#g\" $SERVER_CONF_PATH"
-ssh  -p $SSH_PORT $SERVER_IP "sed -i  \"s#wds.linkis.gateway.ip.*#wds.linkis.gateway.ip=$GATEWAY_INSTALL_IP#g\" $SERVER_CONF_PATH"
-ssh  -p $SSH_PORT $SERVER_IP "sed -i  \"s#wds.linkis.gateway.port.*#wds.linkis.gateway.port=$GATEWAY_PORT#g\" $SERVER_CONF_PATH"
-ssh  -p $SSH_PORT $SERVER_IP "sed -i  \"s#wds.linkis.gateway.url.*#wds.linkis.gateway.url=http://${GATEWAY_INSTALL_IP}:${GATEWAY_PORT}#g\" $SERVER_CONF_PATH"
+sed -i  "s#wds.linkis.server.mybatis.datasource.url.*#wds.linkis.server.mybatis.datasource.url=jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}?characterEncoding=UTF-8#g" $SERVER_CONF_PATH
+sed -i  "s#wds.linkis.server.mybatis.datasource.username.*#wds.linkis.server.mybatis.datasource.username=$MYSQL_USER#g" $SERVER_CONF_PATH
+setDatasourcePassword
+sed -i  "s#wds.linkis.gateway.ip.*#wds.linkis.gateway.ip=$GATEWAY_INSTALL_IP#g" $SERVER_CONF_PATH
+sed -i  "s#wds.linkis.gateway.port.*#wds.linkis.gateway.port=$GATEWAY_PORT#g" $SERVER_CONF_PATH
+sed -i  "s#wds.linkis.gateway.url.*#wds.linkis.gateway.url=http://${GATEWAY_INSTALL_IP}:${GATEWAY_PORT}#g" $SERVER_CONF_PATH
 isSuccess "subsitution linkis.properties of $SERVERNAME"
 echo "<----------------$SERVERNAME:end------------------->"
 echo ""
