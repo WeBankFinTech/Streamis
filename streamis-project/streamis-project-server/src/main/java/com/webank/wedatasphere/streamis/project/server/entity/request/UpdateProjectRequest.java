@@ -14,12 +14,7 @@ public class UpdateProjectRequest {
     @NotNull(message = "projectName can not be null")
     private String projectName;
 
-    @NotNull(message = "description can not be null")
-    private String description;
-
-    private String creator;
-
-    private String updateBy;
+    private Long workspaceId;
 
     private List<String> accessUsers;
 
@@ -43,28 +38,12 @@ public class UpdateProjectRequest {
         this.projectName = projectName;
     }
 
-    public String getDescription() {
-        return description;
+    public Long getWorkspaceId() {
+        return workspaceId;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public String getUpdateBy() {
-        return updateBy;
-    }
-
-    public void setUpdateBy(String updateBy) {
-        this.updateBy = updateBy;
+    public void setWorkspaceId(Long workspaceId) {
+        this.workspaceId = workspaceId;
     }
 
     public List<String> getAccessUsers() {
@@ -89,5 +68,17 @@ public class UpdateProjectRequest {
 
     public void setReleaseUsers(List<String> releaseUsers) {
         this.releaseUsers = releaseUsers;
+    }
+
+    @Override
+    public String toString() {
+        return "UpdateProjectRequest{" +
+                "projectId=" + projectId +
+                ", projectName='" + projectName + '\'' +
+                ", workspaceId=" + workspaceId +
+                ", accessUsers=" + accessUsers +
+                ", editUsers=" + editUsers +
+                ", releaseUsers=" + releaseUsers +
+                '}';
     }
 }

@@ -15,26 +15,29 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.{JobConfValueSet, ConfigRelationVO}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
-import org.springframework.beans.BeanUtils
 
+import java.util
 import scala.collection.JavaConverters._
 
+/**
+ * Flink extra configuration(key => _FLINK_CONFIG_ + key)
+ */
+class FlinkExtraConfigTransform extends FlinkConfigTransform {
 
-class ExtraConfigTransform extends ResourceConfigTransform {
 
-  override protected def transform(config: JobConfValueSet, job: LaunchJob): LaunchJob = {
-    val newConfigs = config.getParameterConfig.asScala.map{config =>
-      val newConfig = new ConfigRelationVO
-      BeanUtils.copyProperties(config, newConfig)
-      newConfig.setKey(ExtraConfigTransform.FLINK_CONFIG_PREFIX + config.getKey)
-      newConfig
-    }.asJava
-    transformConfig(newConfigs, job)
+  /**
+   * Config group name
+   *
+   * @return
+   */
+  override protected def configGroup(): String = JobConfKeyConstants.GROUP_FLINK_EXTRA.getValue
+
+  override protected def transform(flinkExtra: util.Map[String, Any], job: LaunchJob): LaunchJob = {
+    transformConfig(flinkExtra.asScala.map(entry =>{
+      (FlinkConfigTransform.FLINK_CONFIG_PREFIX + entry._1, entry._2)
+    }).asJava, job)
   }
 
-}
-object ExtraConfigTransform {
-  private val FLINK_CONFIG_PREFIX = "_FLINK_CONFIG_."
 }
