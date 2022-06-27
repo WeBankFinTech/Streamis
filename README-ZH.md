@@ -45,7 +45,7 @@ Dimension节点、Transform节点、Sink节点 和 [Visualis](https://github.com
 
 ![流式应用配置](docs/images/流式应用配置.png)
 
-&nbsp; &nbsp; &nbsp; &nbsp;更多功能，请参考：[Streamis 用户手册](docs/zh_CN/0.1.0/使用文档/Streamis用户手册.md)。
+&nbsp; &nbsp; &nbsp; &nbsp;更多功能，请参考：[Streamis 用户手册](docs/zh_CN/0.2.0/使用文档/Streamis用户手册.md)。
 
 ----
 
@@ -72,20 +72,20 @@ Dimension节点、Transform节点、Sink节点 和 [Visualis](https://github.com
 
 ## 编译和安装部署
 
-&nbsp; &nbsp; &nbsp; &nbsp;请参照 [编译指引](docs/zh_CN/0.1.0/development/Streamis编译文档.md) ，用于编译 Streamis。
+&nbsp; &nbsp; &nbsp; &nbsp;请参照 [编译指引](docs/zh_CN/0.2.0/development/Streamis编译文档.md) ，用于编译 Streamis。
 
 &nbsp; &nbsp; &nbsp; &nbsp;在安装Streamis之前，请先安装 Linkis1.0.3 和 DSS1.0.1，可参照：[DSS + Linkis 安装部署文档](https://github.com/WeBankFinTech/DataSphereStudio-Doc/blob/main/zh_CN/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/DSS%E5%8D%95%E6%9C%BA%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.md)
 
 &nbsp; &nbsp; &nbsp; &nbsp;同时，请确保 Linkis Flink 引擎已可正常使用，可参照：[Linkis Flink 引擎插件安装文档](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/zh_CN/Deployment_Documents/EngineConnPlugin%E5%BC%95%E6%93%8E%E6%8F%92%E4%BB%B6%E5%AE%89%E8%A3%85%E6%96%87%E6%A1%A3.md)
 
-&nbsp; &nbsp; &nbsp; &nbsp;最后，请参考 [Streamis 安装部署文档](docs/zh_CN/0.1.0/Streamis安装文档.md) ，用于安装部署 Streamis。
+&nbsp; &nbsp; &nbsp; &nbsp;最后，请参考 [Streamis 安装部署文档](docs/zh_CN/0.2.0/Streamis安装文档.md) ，用于安装部署 Streamis。
 
 
 ----
 
 ## 示例和使用指引
 
-&nbsp; &nbsp; &nbsp; &nbsp;请到 [用户使用文档](docs/zh_CN/0.1.0/使用文档/Streamis用户手册.md) ，了解如何快速使用 Streamis。
+&nbsp; &nbsp; &nbsp; &nbsp;请到 [用户使用文档](docs/zh_CN/0.2.0/使用文档/Streamis用户手册.md) ，了解如何快速使用 Streamis。
 
 ----
 
