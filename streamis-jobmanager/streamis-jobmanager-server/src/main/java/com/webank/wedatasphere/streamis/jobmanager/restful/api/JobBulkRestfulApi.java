@@ -1,9 +1,11 @@
 package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.ExecResultVo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.PauseResultVo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteErrorException;
-import com.webank.wedatasphere.streamis.jobmanager.manager.service.JobService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamTaskService;
 import com.webank.wedatasphere.streamis.jobmanager.vo.BaseBulkRequest;
 import com.webank.wedatasphere.streamis.jobmanager.vo.BulkResponse;
@@ -25,13 +27,15 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequestMapping(path = "/streamis/streamJobManager/job/bulk")
 @RestController
 public class JobBulkRestfulApi {
 
     private static final Logger LOG = LoggerFactory.getLogger(JobBulkRestfulApi.class);
+
+    @Resource
+    private ProjectPrivilegeService privilegeService;
 
     /**
      * Stream task service
@@ -40,7 +44,7 @@ public class JobBulkRestfulApi {
     private StreamTaskService streamTaskService;
 
     @Resource
-    private JobService jobService;
+    private StreamJobService streamjobService;
 
     /**
      * Bulk execution
@@ -63,13 +67,16 @@ public class JobBulkRestfulApi {
           List<ExecResultVo> execResults;
           if (JobBulkRequest.IdType.JOB.name().equals(execBulkRequest.getBulkSubjectType())){
              for(Object jobId : execBulkRequest.getBulkSubject()){
-                 if (!jobService.hasPermission(Long.parseLong(jobId.toString()), username)){
+                 StreamJob streamJob = this.streamjobService.getJobById(Long.parseLong(jobId.toString()));
+                 if (!streamjobService.hasPermission(streamJob, username) &&
+                        !this.privilegeService.hasEditPrivilege(request, streamJob.getProjectName())){
                      throw new JobExecuteErrorException(-1, "Have no permission to execute StreamJob [" + jobId + "]");
                  }
              }
-              execResults = streamTaskService.bulkExecute(new ArrayList<>(execBulkRequest.getBulkSubject()), Collections.emptyList(), username, true);
+             // TODO Enable to accept 'restore' parameter from request
+              execResults = streamTaskService.bulkExecute(new ArrayList<>(execBulkRequest.getBulkSubject()), Collections.emptyList(), username);
           } else {
-              execResults = streamTaskService.bulkExecute(Collections.emptyList(), new ArrayList<>(execBulkRequest.getBulkSubject()), username, true);
+              execResults = streamTaskService.bulkExecute(Collections.emptyList(), new ArrayList<>(execBulkRequest.getBulkSubject()), username);
           }
           // Convert to bulk response
           BulkResponse<ExecResultVo> response = new BulkResponse<>(execResult -> {
@@ -114,7 +121,9 @@ public class JobBulkRestfulApi {
             // TODO Check the permission of task id
             if (JobBulkRequest.IdType.JOB.name().equals(pauseRequest.getBulkSubjectType())){
                 for(Long jobId : pauseRequest.getBulkSubject()){
-                    if (!jobService.hasPermission(jobId, username)){
+                    StreamJob streamJob = this.streamjobService.getJobById(jobId);
+                    if (!streamjobService.hasPermission(streamJob, username) &&
+                            !this.privilegeService.hasEditPrivilege(request, streamJob.getProjectName())){
                         throw new JobExecuteErrorException(-1, "Have no permission to execute StreamJob [" + jobId + "]");
                     }
                 }

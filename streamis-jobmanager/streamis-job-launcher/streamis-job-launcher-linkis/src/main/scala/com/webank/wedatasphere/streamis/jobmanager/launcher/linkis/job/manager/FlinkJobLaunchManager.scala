@@ -18,7 +18,7 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration.VAR_FLINK_SAVEPOINT_PATH
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration.{VAR_FLINK_APP_NAME, VAR_FLINK_SAVEPOINT_PATH}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.LinkisJobInfo
 import org.apache.linkis.common.utils.{Logging, Utils}
@@ -55,6 +55,13 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
       startUpParams.putIfAbsent(VAR_FLINK_SAVEPOINT_PATH.getValue,
         state.getLocation.toString)
     })
+    TaskUtils.getStartupMap(job.getParams).put(VAR_FLINK_APP_NAME.getValue,
+      Option(job.getJobName) match {
+        case None => "EngineConn-Flink"
+        case Some(jobName) =>
+          val index = jobName.lastIndexOf(".")
+          if (index > 0) jobName.substring(0, index) else jobName
+    })
     job.getLabels.get(LabelKeyUtils.ENGINE_TYPE_LABEL_KEY) match {
       case engineConnType: String =>
         if(!engineConnType.toLowerCase.startsWith(FlinkJobLaunchManager.FLINK_ENGINE_CONN_TYPE))
@@ -69,14 +76,15 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
           throw e
         case t: Throwable =>
           error(s"${job.getSubmitUser} create jobInfo failed, now stop this EngineConn ${onceJob.getId}.")
-          onceJob.kill()
+          Utils.tryAndWarn(onceJob.kill())
           throw new FlinkJobLaunchErrorException(-1, "Fail to obtain launched job info", t)
       }
       createJobClient(onceJob, jobInfo)
     }{
       case e: FlinkJobLaunchErrorException => throw e
       case t: Throwable =>
-        throw new FlinkJobLaunchErrorException(-1, s"Exception in submitting Flink job to Linkis remote server, message: ${t.getMessage}", t)
+        error(s"Server Exception in submitting Flink job [${job.getJobName}] to Linkis remote server", t)
+        throw new FlinkJobLaunchErrorException(-1, s"Exception in submitting Flink job to Linkis remote server (提交至Linkis服务失败，请检查服务及网络)", t)
     }
   }
 

@@ -3,7 +3,6 @@ package com.webank.wedatasphere.streamis.dss.appconn.structure.project;
 import com.webank.wedatasphere.dss.standard.app.sso.origin.request.action.DSSDeleteAction;
 import com.webank.wedatasphere.dss.standard.app.structure.AbstractStructureOperation;
 import com.webank.wedatasphere.dss.standard.app.structure.project.ProjectDeletionOperation;
-import com.webank.wedatasphere.dss.standard.app.structure.project.ref.ProjectResponseRef;
 import com.webank.wedatasphere.dss.standard.common.entity.ref.ResponseRef;
 import com.webank.wedatasphere.dss.standard.common.exception.operation.ExternalOperationFailedException;
 import com.webank.wedatasphere.streamis.dss.appconn.structure.ref.StreamisProjectContentReqRef;
@@ -12,7 +11,7 @@ import com.webank.wedatasphere.streamis.dss.appconn.utils.StreamisCommonUtil;
 import static com.webank.wedatasphere.streamis.dss.appconn.constraints.Constraints.API_REQUEST_PREFIX;
 import static com.webank.wedatasphere.streamis.dss.appconn.constraints.Constraints.STREAMIS_APPCONN_NAME;
 
-public class StreamisPrejectDeleteOperation extends AbstractStructureOperation<StreamisProjectContentReqRef, ProjectResponseRef>
+public class StreamisPrejectDeleteOperation extends AbstractStructureOperation<StreamisProjectContentReqRef, ResponseRef>
         implements ProjectDeletionOperation<StreamisProjectContentReqRef> {
 
     private String projectUrl;
@@ -33,7 +32,7 @@ public class StreamisPrejectDeleteOperation extends AbstractStructureOperation<S
     @Override
     public void init() {
         super.init();
-        projectUrl = mergeBaseUrl(mergeUrl(API_REQUEST_PREFIX, "createProject"));
+        projectUrl = mergeBaseUrl(mergeUrl(API_REQUEST_PREFIX, "deleteProject"));
     }
 
 }

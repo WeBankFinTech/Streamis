@@ -12,7 +12,7 @@ public class Constraints {
 
     public static final String STREAMIS_SERVER_VERSION = CommonVars.apply("wds.dss.appconn.streamis.server.version", "v1").getValue();
 
-    public static final String API_REQUEST_PREFIX = CommonVars.apply("wds.dss.appconn.streamis.api.request-prefix", "/api/rest_j/"+STREAMIS_SERVER_VERSION+"/streamis").getValue();
+    public static final String API_REQUEST_PREFIX = CommonVars.apply("wds.dss.appconn.streamis.api.request-prefix", "/api/rest_j/"+STREAMIS_SERVER_VERSION+"/streamis/project").getValue();
 
 
 }
