@@ -23,7 +23,7 @@ cd ${STREAMIS_CODE_HOME}
 mvn -N install
 mvn clean install
 ```
-编译成功后将会在项目的 assembly/target 目录下生成安装包wedatasphere-streamis-${streamis-version}-dist.tar.gz
+编译成功后将会在项目的 `assembly/target` 目录下生成安装包 `wedatasphere-streamis-${streamis-version}-dist.tar.gz`
 
 - 前端编译方式如下：
 
@@ -34,7 +34,7 @@ cd ${STREAMIS_CODE_HOME}/web
 npm i
 npm run build
 ```
-编译成功后，在${STREAMIS_CODE_HOME}/web目录下生成streamis-${streamis-version}-dist.zip
+编译成功后，在 `${STREAMIS_CODE_HOME}/web` 目录下生成 `streamis-${streamis-version}-dist.zip`
 
 ## 3.安装准备
 
