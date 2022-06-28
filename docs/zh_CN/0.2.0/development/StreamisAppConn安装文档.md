@@ -65,6 +65,7 @@ Streamis 的相关配置信息会插入到以下表中，通过配置下表，�
 
 |表名	            |表作用	                                  |备注    |
 |-------------------|-----------------------------------------|------|
+|dss_workspace_dictionary  |配置流式生产中心                  	|必须|
 |dss_appconn	        |AppConn的基本信息，用于加载AppConn   	|必须|
+|dss_workspace_menu_appconn  |AppConn菜单，前端连接Streamis	|必须|
 |dss_appconn_instance	|AppConn的实例的信息，包括自身的url信息	|必须|
-|dss_workspace_menu_appconn  |AppConn菜单	|必须|
