@@ -189,7 +189,7 @@ server {
 }
 ```
 
-5.加载nginx配置
+4.加载nginx配置
 
 ```bash
 sudo nginx -s reload
@@ -200,4 +200,7 @@ sudo nginx -s reload
 如您想正常使用 Streamis0.2.0 前端，还需安装 DSS StreamisAppConn 插件，请参考: [StreamisAppConn 插件安装文档](development/StreamisAppConn安装文档.md)
 
 ## 6.Linkis Flink引擎编译安装
-如您想正常执行 Streamis0.2.0，还需安装 Linkis Flink 引擎，请参考: [Linkis Flink 引擎安装文档](development/Flink引擎编译文档.md)
+如您想正常执行 Streamis0.2.0，还需安装 Linkis Flink 引擎，请参考: [Linkis Flink 引擎安装文档](https://linkis.apache.org/zh-CN/docs/1.1.2/engine_usage/flink/)
+
+## 7.Streamis组件升级文档/脚本
+如您想从Streamis较低版本升级到 Streamis0.2.0 ，请参考：[Streamis升级文档](development/Streamis升级文档.md)
