@@ -1,13 +1,19 @@
 # Streamis access AppConn
 
 ## Overall flow chart
-![Streamis access DSS](../../images/zh_CN/streamis_appconn.png)
+![Streamis access DSS](../../../images/streamis_appconn_en.png)
 
 ## DSS project APPCONN plug-in streamis-appconn
 
 ### The configuration table
-Configure the following three tables:dss_appconn、dss_workspace_menu_appconn、dss_appconn_instance，appconn_name for realTimeJobCenter is appconn accessed by the graphical interface，appconn_name for streamis is appconn accessed by the API，The StreamisAppConn object is instantiated based on the configuration information in the table when DSS is started。  
+Configure the following four tables:dss_workspace_dictionary、dss_appconn、dss_workspace_menu_appconn、dss_appconn_instance，appconn_name for realTimeJobCenter is appconn accessed by the graphical interface，appconn_name for streamis is appconn accessed by the API，The StreamisAppConn object is instantiated based on the configuration information in the table when DSS is started.Appconn in the following SQL_ INSTALL_ IP and appconn_ INSTALL_ When executing DSS installation script for automatic installation, port will enter through interactive commands.  
 ```roomsql
+delete from  `dss_workspace_dictionary` WHERE `appconn_name` = 'streamis';
+
+INSERT INTO `dss_workspace_dictionary` ( `workspace_id`, `parent_key`, `dic_name`, `dic_name_en`, `dic_key`, `dic_value`, `dic_value_en`, `title`, `title_en`, `url`, `url_type`,`icon`, `order_num`, `remark`, `create_user`, `create_time`, `update_user`, `update_time`, appconn_name)
+VALUES ('0','p_develop_process','流式生产中心','Streamis Product Center','pdp_streamis_product_center','streamis_prod',NULL,NULL,NULL,
+'http://APPCONN_INSTALL_IP:APPCONN_INSTALL_PORT/#/realtimeJobCenter?projectName=${projectName}&workspaceName=${workspaceName}','0','kaifa-icon','1','工程开发流程-流式生产中心','SYSTEM','2020-12-28 17:32:35',NULL,'2022-06-30 17:49:02','streamis');
+
 select @old_dss_appconn_id:=id from `dss_appconn` where `appconn_name` = 'streamis';
 
 delete from  `dss_workspace_menu_appconn` WHERE `appconn_id` = @old_dss_appconn_id;
@@ -37,11 +43,11 @@ VALUES(@jobcenter_dss_appconn_id, 1, 'StreamSQL development', 'StreamSQL开发',
 
 INSERT INTO dss_appconn_instance
 (appconn_id, label, url, enhance_json, homepage_uri)
-VALUES(@dss_appconn_id, 'DEV', 'http://Streamis_INSTALL_IP:Streamis_INSTALL_PORT/', '', 'http://Streamis_INSTALL_IP:Streamis_INSTALL_PORT/#/realTimeJobCenter');
+VALUES(@dss_appconn_id, 'DEV', 'http://APPCONN_INSTALL_IP:APPCONN_INSTALL_PORT/', '', 'http://APPCONN_INSTALL_IP:APPCONN_INSTALL_PORT/#/realTimeJobCenter');
 
 INSERT INTO dss_appconn_instance
 (appconn_id, label, url, enhance_json, homepage_uri)
-VALUES(@jobcenter_dss_appconn_id, 'DEV', 'http://Streamis_INSTALL_IP:Streamis_INSTALL_PORT/#/realTimeJobCenter', NULL, NULL);
+VALUES(@jobcenter_dss_appconn_id, 'DEV', 'http://APPCONN_INSTALL_IP:APPCONN_INSTALL_PORT/#/realTimeJobCenter', NULL, NULL);
 ```
 
 ### Concrete implementation description
@@ -55,7 +61,7 @@ To create a StreamisProjectService by rewriting the methods in StreamisStructure
 
 ## API
 1 API name: query project
-- API path：GET/streamis/project/searchProject
+- API path：GET /streamis/project/searchProject
 - Request parameters
 
 |Parameter name	  |Whether it is necessary	|Example	|remarks     |
@@ -73,7 +79,7 @@ To create a StreamisProjectService by rewriting the methods in StreamisStructure
 |- projectId  |number  |yes   |
 
 2 API name：create project
-- API path：GET/streamis/project/createProject
+- API path：POST /streamis/project/createProject
 - Request parameters
 
 |Parameter name	  |Whether it is necessary	|Example	|remarks     |
@@ -96,7 +102,7 @@ To create a StreamisProjectService by rewriting the methods in StreamisStructure
 |- projectName  |string  |no   |
 
 3 API name：update project
-- API path：GET/streamis/project/updateProject
+- API path：PUT /streamis/project/updateProject
 - Request parameters
 
 |Parameter name	  |Whether it is necessary	|Example	|remarks     |
@@ -118,7 +124,7 @@ To create a StreamisProjectService by rewriting the methods in StreamisStructure
 |data      |object  |no   |
 
 4 API name：delete project
-- API path：GET/streamis/project/deleteProject
+- API path：DELETE /streamis/project/deleteProject
 - Request parameters
 
 |Parameter name	  |Whether it is necessary	|Example	|remarks     |
@@ -170,40 +176,3 @@ ALTER TABLE `linkis_stream_project` ADD is_deleted tinyint unsigned DEFAULT 0;
 - The creation operation will insert the project information (projectName、workspaceId) in the request parameters into the project table linkis_stream_project and auto increment the generated ID, associate the user in the permission information data (releaseUsers、editUsers、accessUsers) in the request parameters with the generated ID of the project table, and insert the table linkis_stream_project_privilege, the status value returned from the successful creation operation is 0, and the project table generation ID will be returned as the value of projectId;
 - The modification operation will update the request information data to the table linkis_stream_project and linkis_stream_project_privilege, the status value returned successfully is 0;
 - In the delete operation, the is_deleted field of the table linkis_stream_project will be marked as 1 according to the projectId. The relevant data in the table linkis_stream_project_privilege will be deleted, the status value returned successfully is 0.
-
-# Authentication
-
-## Authentication flow chart
-![Streamis project authentication operation](../../images/zh_CN/streamis_project_privilege.png)
-
-### edit privilege API：
-
-|RequestMethod  |API path                                          |name             |
-|------|----------------------------------------------------------|-----------------|
-|POST  |/streamis/streamProjectManager/project/files/upload       |Project resource file - Import   |
-|GET   |/streamis/streamProjectManager/project/files/delete       |Delete all versions of the file under the project  |
-|GET   |/streamis/streamProjectManager/project/files/version/delete |Delete version file  |
-|GET   |/streamis/streamProjectManager/project/files/download     |Task details - Download  |
-|POST  |/streamis/streamJobManager/job/upload                     |Upload file  |
-|POST  |/streamis/streamJobManager/job/execute                  |start-up  |
-|GET   |/streamis/streamJobManager/job/stop                     |stop  |
-|PUT   |/streamis/streamJobManager/job//snapshot/{jobId:\w+}    |Snapshot generation  |
-|GET   |/streamis/streamJobManager/config/json/{jobId:\w+}    |Configuration - save  |
-|POST  |/streamis/streamJobManager/job/bulk/execution         |Batch start  |
-|POST  |/streamis/streamJobManager/job/bulk/pause             |Batch stop  |
-
-
-### access privilege API：
-
-|RequestMethod  |API path                                          |name          |
-|------|----------------------------------------------------------|-------------|
-|GET   |streamis/streamJobManager/job/list                        |Query the jobs that the current user can view  |
-|GET   |/streamis/streamProjectManager/project/files/list         |prokect resource document  |
-|GET   |/streamis/streamProjectManager/project/files/version/list  |Obtain all versions of the file under the project  |
-|GET   |/streamis/streamJobManager/job/version                    |Query job version  |
-|GET   |/streamis/streamJobManager/job/execute/history            |Job execution history  |
-|GET   |/streamis/streamJobManager/job/progress                |Get the latest task status of the current version of the job  |
-|GET   |/streamis/streamJobManager/job/jobContent             |Task details  |
-|GET   |/streamis/streamJobManager/job/logs                   |Get log  |
-|POST  |/streamis/streamJobManager/config/json/{jobId:\w+}    |Get task configuration  |
-|GET   |/streamis/streamJobManager/config/view                |Query the current job configuration information  |
