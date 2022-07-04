@@ -35,15 +35,16 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 &nbsp; &nbsp; &nbsp; &nbsp;Supports multi-version management, full life cycle management, monitoring alarm, checkpoint and savepoint management capabilities of streaming jobs.
 
-![prod center](docs/images/homePage_en.png)
+![prod center](docs/images/stream_product_center.png)
 
 &nbsp; &nbsp; &nbsp; &nbsp;Running information page:
 
-![Running information](docs/images/statusDetail_en.png)
+![Running information](docs/images/stream_job_detail.png)
 
 &nbsp; &nbsp; &nbsp; &nbsp;Configurations page：
 
-![Configurations](docs/images/config_en.png)
+![Configurations](docs/images/stream_job_config_1.png)
+![Configurations](docs/images/stream_job_config_2.png)
 
 &nbsp; &nbsp; &nbsp; &nbsp;For more features, please refer to: [User Manual](docs/en_US/userManual/StreamisUserManual.md).
 
@@ -54,7 +55,7 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 | Depended Component | Description | Streamis compatibility |
 | -------------- | -------------------------------------------------------------- | --------------|
 | [DataSphereStudio](https://github.com/WeBankFinTech/DataSphereStudio) | Data application development management framework. With a unified UI, the workflow-like graphical drag-and-drop development experience meets the entire lifecycle of data application development from data import, desensitization cleaning, data analysis, data mining, quality inspection, visualization, scheduling to data output applications, etc. | &gt;= DSS1.1.0 (Released) |
-| [Linkis](https://github.com/apache/incubator-linkis) | Apache Linkis, builds a layer of computation middleware, by using standard interfaces such as REST/WS/JDBC provided by Linkis, the upper applications can easily access the underlying engines such as MySQL/Spark/Hive/Presto/Flink, etc. | &gt= Linkis1.1.1 (Released) |
+| [Linkis](https://github.com/apache/incubator-linkis) | Apache Linkis, builds a layer of computation middleware, by using standard interfaces such as REST/WS/JDBC provided by Linkis, the upper applications can easily access the underlying engines such as MySQL/Spark/Hive/Presto/Flink, etc. | &gt;= Linkis1.1.1 (Released),some functions need to be supported by linkis 1.1.2 |
 
 ## Demo Trial environment
 
