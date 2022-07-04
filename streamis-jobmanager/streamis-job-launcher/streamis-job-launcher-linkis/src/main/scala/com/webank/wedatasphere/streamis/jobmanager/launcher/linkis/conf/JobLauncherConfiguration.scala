@@ -36,6 +36,10 @@ object JobLauncherConfiguration {
   val FLINK_CHECKPOINT_PATH: CommonVars[String] = CommonVars("wds.streamis.launch.flink.checkpoint.dir", "/flink/flink-checkpoints")
 
   /**
+   * Linkis release version
+   */
+  val FLINK_LINKIS_RELEASE_VERSION: CommonVars[String] = CommonVars("wds.streamis.launch.flink.linkis.release.version", "")
+  /**
    * Variable: savepoint path
    */
   val VAR_FLINK_SAVEPOINT_PATH: CommonVars[String] = CommonVars("wds.streamis.launch.variable.flink.savepoint.path", "flink.app.savePointPath")
@@ -44,4 +48,5 @@ object JobLauncherConfiguration {
    * Variable: flink app
    */
   val VAR_FLINK_APP_NAME: CommonVars[String] = CommonVars("wds.streamis.launch.variable.flink.app.name", "flink.app.name")
+
 }
