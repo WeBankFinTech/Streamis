@@ -10,7 +10,7 @@
 
 The entry path is **Home-DSS component application-Enter Streamis**
 
-![Streamis entrance](../../images/create_stream_product_center.png)
+![Streamis entrance](../../images/create_stream_product_center_en.png)
 <center>Picture 2.1 Streamis entrance]</center>
 
 ## 3. Core indicators
@@ -19,7 +19,7 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The core indicator shows the status summary of the Flink tasks uploaded to the project for execution. There are temporarily 7 states, showing the state name and the number of tasks in that state. The specific content is as shown in the figure below.
 
-![Core indicators](../../images/home_page.png)
+![Core indicators](../../images/home_page_en.png)
 <center>Picture 3.1 Core indicators</center>
 
 # 4. Job management
@@ -94,7 +94,7 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Click **"job name"** of a task in the task list to provide the function of managing the task, or click **"three dots"** to the left of the name to call up the specific function configuration entry, as shown below:
 
-![Configuration job](../../images/job_list.png)
+![Configuration job](../../images/job_list_en.png)
 <center>Picture4.3 Configuration job</center> 
 
 <br/>
@@ -109,9 +109,13 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 <br/>
 
+Click batch operation, and multiple job tasks can be restarted. Restart and snapshot  will generate a snapshot and then restart. Restart directly will not generate a snapshot.
+
+![jobbulk_operate](../../images/jobbulk_operate_en.png)
+
 ### 4.3.1. Job summary:
 
-![Operating condition](../../images/stream_job_detail.png)
+![Operating condition](../../images/stream_job_detail_en.png)
 <center> Picture 4.4 Job summary</center> 
 
 <br/>
@@ -122,7 +126,7 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 ### 4.3.2. Job history:
 
-![Execution history](../../images/stream_job_history.png)
+![Execution history](../../images/stream_job_history_en.png)
 <center>Picture 4.5 Job history</center> 
 
 <br/>
@@ -134,8 +138,8 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 ### 4.3.3. Job config:
 
-![Configuration](../../images/stream_job_config_1.png)
-![Configuration](../../images/stream_job_config_2.png)
+![Configuration](../../images/stream_job_config_en_1.png)
+![Configuration](../../images/stream_job_config_en_2.png)
 <center>Picture 4.6 Job config</center> 
 
 <br/>
@@ -159,7 +163,7 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 **Flink Jar Job details**
 
-![Job details](../../images/stream_job_flinkjar_jobcontent.png)
+![Job details](../../images/stream_job_flinkjar_jobcontent_en.png)
 <center>Picture 4.7 Flink Jar Job details</center> 
 
 <br/>
@@ -171,7 +175,7 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 **Flink SQL job details**
 
-![Job details](../../images/stream_job_flinksql_jobcontent.png)
+![Job details](../../images/stream_job_flinksql_jobcontent_en.png)
 <center>Picture 4.8 Flink SQL job details</center> 
 
 <br/>
@@ -192,10 +196,10 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 <br/>
 
-![Engineering Documents Home Page](../../images/project_source_file_list.png)
+![Engineering Documents Home Page](../../images/project_source_file_list_en.png)
 <center>Picture 5.1 Engineering Documents Home Page</center>
 
 <br/>
 
-![Upload project file](../../images/project_source_file_import.png)
+![Upload project file](../../images/project_source_file_import_en.png)
 <center>Picture 5.2 Upload project file</center>
