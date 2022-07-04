@@ -2,7 +2,7 @@
 
 ## 1. Preface
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This article is a quick start document for Streamis 0.1.0, which covers the basic usage process of Stremis. More details on operation and usage will be provided in the user documentation.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This article is a quick start document for Streamis 0.2.0, which covers the basic usage process of Stremis. More details on operation and usage will be provided in the user documentation.
   
 
 ## 2. Streamis entrance
@@ -10,7 +10,7 @@
 
 The entry path is **Home-DSS component application-Enter Streamis**
 
-![Streamis entrance](../../images/entry_en.png)
+![Streamis entrance](../../images/create_stream_product_center.png)
 <center>Picture 2.1 Streamis entrance]</center>
 
 ## 3. Core indicators
@@ -19,7 +19,7 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The core indicator shows the status summary of the Flink tasks uploaded to the project for execution. There are temporarily 7 states, showing the state name and the number of tasks in that state. The specific content is as shown in the figure below.
 
-![Core indicators](../../images/homePage_en.png)
+![Core indicators](../../images/home_page.png)
 <center>Picture 3.1 Core indicators</center>
 
 # 4. Job management
@@ -88,48 +88,30 @@ The entry path is **Home-DSS component application-Enter Streamis**
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The task list provides the function of **"query"**, where **job name** provides the function of fuzzy query.
 
 
-## 4.2. Job details
-
-<br/>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Click **"Version"** of a task in the task list to provide the function of viewing all versions of the task, as shown in the figure below:
-
-![Version details](../../images/versionDetail_en.png)
-<center>Picture 4.2 Version details</center> 
-
-<br/>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Click "Open" of a certain version in the task list to view the **"Execution History"** and **"Task Details"** of that version, as shown in the figure below:
-
-![Version details](../../images/versionHistory_en.png)
-<center> Picture 4.3 Version details</center> 
-<br/>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Click **"Real-time Production Center"** in the figure above to return to the Streamis homepage.
-
 ## 4.3. Management jobs
 
 <br/>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Click **"job name"** of a task in the task list to provide the function of managing the task, or click **"three dots"** to the left of the name to call up the specific function configuration entry, as shown below:
 
-![Configuration job](../../images/jobNav_en.png)
+![Configuration job](../../images/job_list.png)
 <center>Picture4.3 Configuration job</center> 
 
 <br/>
 
 &nbsp;&nbsp; The configuration task provides four functions, namely:
 
-- Job summary
-- Job history
-- Job config
-- Job detail
+- Parameter configuration 
+- alarm configuration 
+- operation history 
+- operation log
+- snapshot[savepoint]
 
 <br/>
 
 ### 4.3.1. Job summary:
 
-![Operating condition](../../images/statusDetail_en.png)
+![Operating condition](../../images/stream_job_detail.png)
 <center> Picture 4.4 Job summary</center> 
 
 <br/>
@@ -140,7 +122,7 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 ### 4.3.2. Job history:
 
-![Execution history](../../images/history_en.png)
+![Execution history](../../images/stream_job_history.png)
 <center>Picture 4.5 Job history</center> 
 
 <br/>
@@ -152,7 +134,8 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 ### 4.3.3. Job config:
 
-![Configuration](../../images/config_en.png)
+![Configuration](../../images/stream_job_config_1.png)
+![Configuration](../../images/stream_job_config_2.png)
 <center>Picture 4.6 Job config</center> 
 
 <br/>
@@ -162,7 +145,6 @@ The entry path is **Home-DSS component application-Enter Streamis**
 - Resource configuration
 - Production configuration
 - Flink parameters
-- Alarm settings
 - Permission settings
 
 <br/>
@@ -177,7 +159,7 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 **Flink Jar Job details**
 
-![Job details](../../images/jarDetail_en.png)
+![Job details](../../images/stream_job_flinkjar_jobcontent.png)
 <center>Picture 4.7 Flink Jar Job details</center> 
 
 <br/>
@@ -189,7 +171,7 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 **Flink SQL job details**
 
-![Job details](../../images/SQLDetail_en.png)
+![Job details](../../images/stream_job_flinksql_jobcontent.png)
 <center>Picture 4.8 Flink SQL job details</center> 
 
 <br/>
@@ -210,10 +192,10 @@ The entry path is **Home-DSS component application-Enter Streamis**
 
 <br/>
 
-![Engineering Documents Home Page](../../images/fileHome_en.png)
+![Engineering Documents Home Page](../../images/project_source_file_list.png)
 <center>Picture 5.1 Engineering Documents Home Page</center>
 
 <br/>
 
-![Upload project file](../../images/fileUpload_en.png)
+![Upload project file](../../images/project_source_file_import.png)
 <center>Picture 5.2 Upload project file</center>
