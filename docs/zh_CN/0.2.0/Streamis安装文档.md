@@ -1,9 +1,8 @@
 # Streamis安装部署文档
 
 ## 1.组件介绍
-----------
 
-Streamis0.1.0 提供了 Streamis-JobManager 流式生产中心，其作用主要有：
+Streamis0.2.0 提供了 Streamis-JobManager 流式生产中心，其作用主要有：
 
 1. 上传/更新流式应用
 2. 配置流式应用参数，如 Flink 的 Slot 数量、checkpoint相关参数等 
@@ -12,27 +11,30 @@ Streamis0.1.0 提供了 Streamis-JobManager 流式生产中心，其作用主要
 
 
 ## 2.代码编译
-----------
-
+ 
 **Streamis 无需手动编译，可以直接下载安装包进行部署，请 [点我下载安装包](https://github.com/WeBankFinTech/Streamis/releases)。**
 
 如果您想自己编译 Streamis，可参考如下步骤进行。
 
-后台编译方式如下：
+- 后台编译方式如下：
 
-```
+```shell script
 cd ${STREAMIS_CODE_HOME}
 mvn -N install
 mvn clean install
 ```
+编译成功后将会在项目的 `assembly/target` 目录下生成安装包 `wedatasphere-streamis-${streamis-version}-dist.tar.gz`
 
-前端编译方式如下：
+- 前端编译方式如下：
 
-```bash
+前置依赖：nodejs、python 2.0
+
+```shell script
 cd ${STREAMIS_CODE_HOME}/web
 npm i
 npm run build
 ```
+编译成功后，在 `${STREAMIS_CODE_HOME}/web` 目录下生成 `streamis-${streamis-version}-dist.zip`
 
 ## 3.安装准备
 
@@ -45,40 +47,47 @@ npm run build
 
 ### 3.2 Linkis 和 DSS 环境
 
-- Linkis (>=1.0.3)，Streamis 的执行依赖于 Linkis 的 Flink 引擎，并且依赖 **Linkis-1.0.3** 及以上版本。
-- DataSphere Studio (>=1.0.1)，Streamis 流式作业的开发和调试，依赖于 DSS-Scriptis，Streamis 流式生产中心则需嵌入到 DSS 工程框架体系之中，所以依赖于 **DSS-1.0.1** 及以上版本。
+- Linkis (>=1.1.1)，Streamis 的执行依赖于 Linkis 的 Flink 引擎，并且依赖 **Linkis-1.1.1** 及以上版本，部分功能需要Linkis-1.1.2支持。
+- DataSphere Studio (>=1.1.0)，Streamis 流式作业的开发和调试，依赖于 DSS-Scriptis，Streamis 流式生产中心则需嵌入到 DSS 工程框架体系之中，所以依赖于 **DSS-1.1.0** 及以上版本。
 
-在正式安装 Streamis 之前，请先安装 Linkis1.0.3 和 DSS1.0.1 及以上版本，并且保证 Linkis Flink 引擎 和 DSS 可以正常使用，DSS 和 Linkis 安装，可参照 [DSS & Linkis 一键安装部署文档](https://github.com/WeBankFinTech/DataSphereStudio-Doc/blob/main/zh_CN/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/DSS%E5%8D%95%E6%9C%BA%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.md)。
+在正式安装 Streamis 之前，请先安装 Linkis1.1.1 和 DSS1.1.0 及以上版本，并且保证 Linkis Flink 引擎 和 DSS 可以正常使用，DSS 和 Linkis 安装，可参照 [DSS & Linkis 一键安装部署文档](https://github.com/WeBankFinTech/DataSphereStudio-Doc/blob/main/zh_CN/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/DSS%E5%8D%95%E6%9C%BA%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.md)。
 
 如何验证 DSS 和 Linkis 已基本可用？您可以在 DSS-Scriptis 上新建一个 flinksql 脚本并执行，如果 flinksql 能正确执行并返回结果集，表示 DSS 和 linkis 环境是可用的。
 
-### 3.3 安装包准备
 
-将安装包上传到 Linux 服务器（目前只支持 Linux 环境部署）的安装目录，如 /appcom/Install/streamis：
+## 4.安装和启动
 
-```bash
+### 后台安装
+
+1.安装包准备
+
+将安装包上传到 Linux 服务器（目前只支持 Linux 环境部署）的安装目录，如 /appcom/Install/streamis，然后进行解压：
+
+```shell script
 cd /appcom/Install/streamis
 tar -xvf wedatasphere-streamis-${streamis-version}-dist.tar.gz
 ```
 
-### 3.4 修改数据库配置
+2.修改数据库配置
 
-```bash
+```shell script
 vi conf/db.sh
 #配置基础的数据库信息
 
 ```
 
-### 3.5 修改基础配置文件
+3.修改基础配置文件
 
-```bash
+```shell script
     vi conf/config.sh
 ```
 
-```bash
-
+```shell script
 ### deploy user
 deployUser=hadoop
+
+### ssh port
+SSH_PORT=22
 
 ##The Port of Streamis
 STREAMIS_PORT=9400
@@ -96,12 +105,9 @@ GATEWAY_PORT=9001
 
 ```
 
-## 4.安装和启动
-----------
+4.执行安装脚本
 
-- 后台安装
-
-```bash
+```shell script
 sh bin/install.sh
 ```
 
@@ -112,10 +118,10 @@ sh bin/install.sh
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**第一次安装**必须选是。
 
 
-- 启动
+5.启动
 
-```bash
-sh bin/start-streamis.sh
+```shell script
+sh bin/start.sh
 ```
 
 - 启动验证
@@ -125,7 +131,7 @@ sh bin/start-streamis.sh
 ![components](../../images/zh_CN/eureka_streamis.png)
 
 
-- 前端部署
+### 前端部署
 
 1.安装nginx
  
@@ -139,7 +145,7 @@ sudo yum install -y nginx
 mkdir ${STREAMIS_FRONT_PATH}
 cd ${STREAMIS_FRONT_PATH}
 #放置前端包
-unzip streamis-web.zip
+unzip streamis-${streamis-version}.zip
 ```
 
 3.修改nginx配置文件<br>
@@ -155,8 +161,8 @@ server {
     listen       9088;# 访问端口
     server_name  localhost;
     location / {
-        root   ${STREAMIS_FRONT_PAH}; # 请修改成Streamis恰当南的静态文件目录
-    index  index.html index.html;
+        root   ${STREAMIS_FRONT_PATH}/dist; # 请修改成Streamis前端的静态文件目录
+        index  index.html index.html;
     }
     location /api {
     proxy_pass http://${Linkis_GATEWAY_IP}:${LINKIS_GATEWY_PORT}; #后端Linkis的地址,请修改成Linkis网关的ip和端口
@@ -183,32 +189,18 @@ server {
 }
 ```
 
-4.重启nginx
+4.加载nginx配置
 
 ```bash
-sudo systemctl restart nginx
+sudo nginx -s reload
 ```
 
 ## 5. 接入DSS
 
-请在 **DSS 数据库**之中，执行以下SQL：
+如您想正常使用 Streamis0.2.0 前端，还需安装 DSS StreamisAppConn 插件，请参考: [StreamisAppConn 插件安装文档](development/StreamisAppConn安装文档.md)
 
-请注意：是在 **DSS 数据库**之中，执行以下SQL！！！
+## 6.Linkis Flink引擎编译安装
+如您想正常执行 Streamis0.2.0，还需安装 Linkis Flink 引擎，请参考: [Linkis Flink 引擎安装文档](https://linkis.apache.org/zh-CN/docs/1.1.2/engine_usage/flink/)
 
-请注意：是在 **DSS 数据库**之中，执行以下SQL！！！
-
-特别需要注意的是：需将以下SQL url 字段的值 ：`http://127.0.0.1:9188/#/realtimeJobCenter?projectName=${projectName}&workspaceName=${workspaceName}` 中的 IP 和 端口，替换为 Streamis 的 IP 和 端口
-
-请注意：以下SQL，只需替换 IP 和 端口 即可，其他无需改动。
-
-```roomsql
-INSERT INTO `dss_dictionary` ( `workspace_id`, `parent_key`, `dic_name`, `dic_name_en`, `dic_key`, `dic_value`, `dic_value_en`, `title`, `title_en`, `url`, `url_type`,`icon`, `order_num`, `remark`, `create_user`, `create_time`, `update_user`, `update_time`) 
-VALUES ('0','p_develop_process','流式生产中心','Streamis Product Center','pdp_streamis_product_center','streamis_prod',NULL,NULL,NULL,
-'http://127.0.0.1:9188/#/realtimeJobCenter?projectName=${projectName}&workspaceName=${workspaceName}','0','kaifa-icon','1','工程开发流程-流式生产中心','SYSTEM','2020-12-28 17:32:35',NULL,'2021-02-22 17:49:02');
-```
-
-如何验证 DSS 已经成功集成了 Streamis？
-
-请进入 DSS 的工程首页，如果能正常切换到 流式生产中心，则表示 DSS 已经成功集成了 Streamis。如下图：
-
-![DSS 集成 Streamis](../../images/zh_CN/DSS_integration_Streamis.png)
+## 7.Streamis组件升级文档/脚本
+如您想从Streamis较低版本升级到 Streamis0.2.0 ，请参考：[Streamis升级文档](development/Streamis升级文档.md)
