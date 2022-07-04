@@ -47,7 +47,7 @@ npm run build
 
 ### 3.2 Linkis 和 DSS 环境
 
-- Linkis (>=1.1.1)，Streamis 的执行依赖于 Linkis 的 Flink 引擎，并且依赖 **Linkis-1.1.1** 及以上版本。
+- Linkis (>=1.1.1)，Streamis 的执行依赖于 Linkis 的 Flink 引擎，并且依赖 **Linkis-1.1.1** 及以上版本，部分功能需要Linkis-1.1.2支持。
 - DataSphere Studio (>=1.1.0)，Streamis 流式作业的开发和调试，依赖于 DSS-Scriptis，Streamis 流式生产中心则需嵌入到 DSS 工程框架体系之中，所以依赖于 **DSS-1.1.0** 及以上版本。
 
 在正式安装 Streamis 之前，请先安装 Linkis1.1.1 和 DSS1.1.0 及以上版本，并且保证 Linkis Flink 引擎 和 DSS 可以正常使用，DSS 和 Linkis 安装，可参照 [DSS & Linkis 一键安装部署文档](https://github.com/WeBankFinTech/DataSphereStudio-Doc/blob/main/zh_CN/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/DSS%E5%8D%95%E6%9C%BA%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.md)。
