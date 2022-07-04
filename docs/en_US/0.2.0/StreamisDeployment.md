@@ -40,10 +40,10 @@ After the compilation is successful, the installation package will be generated 
 - JDK (above 1.8.0_141), [How to install JDK](https://www.runoob.com/java/java-environment-setup.html)
 
 ### 3.2 Linkis and DSS environments
-- The execution of Streamis depends on Linkis, and it needs to be version 1.1.1 and above, so you need to install Linkis above 1.1.1 and ensure that the Flink engine can be used normally. Specifically, you can create a new and edit a flinksql script on Scriptis
+- The execution of Streamis depends on Linkis, and it needs to be version 1.1.1 and above, so you need to install Linkis above 1.1.1 and ensure that the Flink engine can be used normally.Some functions need to be supported by linkis-1.1.2.
 - Datasphere studio (> =1.1.0), the development and debugging of streaming jobs depend on DSS scriptis, and the streaming production center needs to be embedded in the DSS engineering framework system, so it depends on * * dss-1.1.0 * * and above.
 
-Before the formal installation of streamis, please install linkis1.1.1 and dss1.1.0 or above, and ensure that the linkis Flink engine and DSS can be used normally. For the installation of DSS and linkis, please refer to the [dss & linkis one click installation and deployment document](https://github.com/WeBankFinTech/DataSphereStudio-Doc/blob/main/zh_CN/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/DSS%E5%8D%95%E6%9C%BA%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.md).
+Before the formal installation of streamis, please install linkis-1.1.1 and dss-1.1.0 or above, and ensure that the linkis Flink engine and DSS can be used normally. For the installation of DSS and linkis, please refer to the [dss & linkis one click installation and deployment document](https://github.com/WeBankFinTech/DataSphereStudio-Doc/blob/main/zh_CN/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/DSS%E5%8D%95%E6%9C%BA%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.md).
 
 How to verify that DSS and linkis are basically available? You can create a flinksql script on DSS scriptis and execute it. If flinksql can execute correctly and return the result set, it means that the DSS and linkis environments are available.
 
