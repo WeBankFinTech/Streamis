@@ -6,11 +6,9 @@
 
 ## 2. 代码提交规范
 
-由于0.1.0是 Streamis 的第一个版本，该版本作为 Streamis 初始版本，所有代码无需先提 PR，都采用直接 Push 到 dev-0.1.0 的模式（**项目初始版本的特权**）。
+但是在正式发布Release Notes时，为了保证Release Notes的完整性，请各位模块负责人按照需求文档，先提好各个 issue，并将 issue 加入到 [Project-0.2.0](https://github.com/WeBankFinTech/Streamis/projects/2)。
 
-但是在正式发布Release Notes时，为了保证Release Notes的完整性，请各位模块负责人按照需求文档，先提好各个 issue，并将 issue 加入到 [Project-0.1.0](https://github.com/WeBankFinTech/Streamis/projects/1)。
-
-请注意：Streamis-0.1.0 使用 [Project-0.1.0](https://github.com/WeBankFinTech/Streamis/projects/1) 作为 DPMS 工具，来全程追踪和管理版本的进度。
+请注意：Streamis-0.2.0 使用 [Project-0.2.0](https://github.com/WeBankFinTech/Streamis/projects/2) 作为 DPMS 工具，来全程追踪和管理版本的进度。
 
 ## 2. 后台开发规范
 
