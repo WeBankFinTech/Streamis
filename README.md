@@ -35,16 +35,16 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 &nbsp; &nbsp; &nbsp; &nbsp;Supports multi-version management, full life cycle management, monitoring alarm, checkpoint and savepoint management capabilities of streaming jobs.
 
-![prod center](docs/images/stream_product_center.png)
+![prod center](docs/images/stream_product_center_en.png)
 
 &nbsp; &nbsp; &nbsp; &nbsp;Running information page:
 
-![Running information](docs/images/stream_job_detail.png)
+![Running information](docs/images/stream_job_detail_en.png)
 
 &nbsp; &nbsp; &nbsp; &nbsp;Configurations page：
 
-![Configurations](docs/images/stream_job_config_1.png)
-![Configurations](docs/images/stream_job_config_2.png)
+![Configurations](docs/images/stream_job_config_en_1.png)
+![Configurations](docs/images/stream_job_config_en_2.png)
 
 &nbsp; &nbsp; &nbsp; &nbsp;For more features, please refer to: [User Manual](docs/en_US/userManual/StreamisUserManual.md).
 
