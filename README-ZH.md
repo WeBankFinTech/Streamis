@@ -35,15 +35,16 @@ Dimension节点、Transform节点、Sink节点 和 [Visualis](https://github.com
 
 &nbsp; &nbsp; &nbsp; &nbsp;支持流式作业的多版本管理、全生命周期管理、监控告警、checkpoint 和 savepoint 管理能力。
 
-![流式应用生产](docs/images/生产中心.png)
+![流式应用生产](docs/images/stream_product_center.png)
 
 &nbsp; &nbsp; &nbsp; &nbsp;流式应用运行情况：
 
-![流式应用运行情况](docs/images/流式作业运行情况.png)
+![流式应用运行情况](docs/images/stream_job_detail.png)
 
 &nbsp; &nbsp; &nbsp; &nbsp;流式应用参数配置：
 
-![流式应用配置](docs/images/流式应用配置.png)
+![流式应用配置](docs/images/stream_job_config_1.png)
+![流式应用配置](docs/images/stream_job_config_2.png)
 
 &nbsp; &nbsp; &nbsp; &nbsp;更多功能，请参考：[Streamis 用户手册](docs/zh_CN/0.2.0/使用文档/Streamis用户手册.md)。
 
@@ -51,10 +52,10 @@ Dimension节点、Transform节点、Sink节点 和 [Visualis](https://github.com
 
 ## 依赖的生态组件
 
-| 依赖的应用工具 | 描述 | Streamis 兼容版本 |
-| -------------- | -------------------------------------------------------------- | --------------|
-| [DataSphereStudio](https://github.com/WeBankFinTech/DataSphereStudio) | 数据应用开发管理集成框架。以工作流式的图形化拖拽开发体验，将满足从数据交换、脱敏清洗、分析挖掘、质量检测、可视化展现、定时调度到数据输出应用等，数据应用开发全流程场景需求。 | >= DSS1.0.1（已发布）|
-| [Linkis](https://github.com/apache/incubator-linkis) | 计算中间件 Apache Linkis，通过提供 REST/WebSocket/JDBC/SDK 等标准接口，上层应用可以方便地连接访问 MySQL/Spark/Hive/Presto/Flink 等底层引擎。 | >= Linkis1.0.3（已发布） |
+| 依赖的应用工具    | 描述                                                         | Streamis 兼容版本 |
+|--------------|---------------------------------------------------------------|--------------|
+| [DataSphereStudio](https://github.com/WeBankFinTech/DataSphereStudio) | 数据应用开发管理集成框架。以工作流式的图形化拖拽开发体验，将满足从数据交换、脱敏清洗、分析挖掘、质量检测、可视化展现、定时调度到数据输出应用等，数据应用开发全流程场景需求。 | &gt;= DSS1.1.0（已发布）|
+| [Linkis](https://github.com/apache/incubator-linkis) | 计算中间件 Apache Linkis，通过提供 REST/WebSocket/JDBC/SDK 等标准接口，上层应用可以方便地连接访问 MySQL/Spark/Hive/Presto/Flink 等底层引擎。 | &gt;= Linkis1.1.1（已发布），部分功能需要Linkis 1.1.2支持 |
 
 ----
 
@@ -72,13 +73,7 @@ Dimension节点、Transform节点、Sink节点 和 [Visualis](https://github.com
 
 ## 编译和安装部署
 
-&nbsp; &nbsp; &nbsp; &nbsp;请参照 [编译指引](docs/zh_CN/0.2.0/development/Streamis编译文档.md) ，用于编译 Streamis。
-
-&nbsp; &nbsp; &nbsp; &nbsp;在安装Streamis之前，请先安装 Linkis1.0.3 和 DSS1.0.1，可参照：[DSS + Linkis 安装部署文档](https://github.com/WeBankFinTech/DataSphereStudio-Doc/blob/main/zh_CN/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/DSS%E5%8D%95%E6%9C%BA%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.md)
-
-&nbsp; &nbsp; &nbsp; &nbsp;同时，请确保 Linkis Flink 引擎已可正常使用，可参照：[Linkis Flink 引擎插件安装文档](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/zh_CN/Deployment_Documents/EngineConnPlugin%E5%BC%95%E6%93%8E%E6%8F%92%E4%BB%B6%E5%AE%89%E8%A3%85%E6%96%87%E6%A1%A3.md)
-
-&nbsp; &nbsp; &nbsp; &nbsp;最后，请参考 [Streamis 安装部署文档](docs/zh_CN/0.2.0/Streamis安装文档.md) ，用于安装部署 Streamis。
+&nbsp; &nbsp; &nbsp; &nbsp;请参考 [Streamis 安装部署文档](docs/zh_CN/0.2.0/Streamis安装文档.md) ，用于安装部署 Streamis 及其依赖环境。
 
 
 ----
@@ -100,8 +95,10 @@ Dimension节点、Transform节点、Sink节点 和 [Visualis](https://github.com
  |       | 支持 FlinkSQL 和 FlinkJar 包等方式发布 | 支持 |
  |       | 流式应用的多版本管理能力 | 支持 |
  |       | 流式应用的参数配置和告警能力 | 支持 |
- | 服务高可用 | 应用高可用，服务多点，故障不影响使用 | 支持 | 
+ | 服务高可用 | 应用高可用，服务多点，状态快照实现容错处理，故障不影响使用 | 支持 | 
  | 系统管理 | 节点、资源管理 | 支持 |
+ |权限管理  |任务的操作权限控制 |支持 |
+ 
 ----
 
 ## 架构
