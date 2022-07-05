@@ -2,7 +2,7 @@
 
 ## 1. 前言
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本文是Streamis0.1.0的快速入门文档，涵盖了Stremis的基本使用流程，更多的操作使用细节，将会在用户使用文档中提供。  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本文是Streamis0.2.0的快速入门文档，涵盖了Stremis的基本使用流程，更多的操作使用细节，将会在用户使用文档中提供。  
 
 
 ## 2. Streamis整合至DSS
@@ -11,43 +11,26 @@
 
 ##### 		2.1 **如何接入？**
 
-​		在**DSS数据库**中执行以下SQL：
-
-​		**特别注意：**
-
-​		需要将以下SQL中URL字段的值：http://127.0.0.1:9188/#/realtimeJobCenter?projectName=${projectName}&workspaceName=${workspaceName}
-
-中的IP（127.0.0.1）和端口（9188）替换成您部署的streamis的IP与端口，其他内容无需改动
-
-```
-INSERT INTO `dss_dictionary` ( `workspace_id`, `parent_key`, `dic_name`, `dic_name_en`, `dic_key`, `dic_value`, `dic_value_en`, `title`, `title_en`, `url`, `url_type`,`icon`, `order_num`, `remark`, `create_user`, `create_time`, `update_user`, `update_time`) 
-VALUES ('0','p_develop_process','流式生产中心','Streamis Product Center','pdp_streamis_product_center','streamis_prod',NULL,NULL,NULL,
-'http://127.0.0.1:9188/#/realtimeJobCenter?projectName=${projectName}&workspaceName=${workspaceName}','0','kaifa-icon','1','工程开发流程-流式生产中心','SYSTEM','2020-12-28 17:32:35',NULL,'2021-12-30 17:49:02');
-```
+按照 [StreamisAppConn安装文档](../development/StreamisAppConn安装文档.md) 安装部署StreamisAppConn成功后，Streamis系统会自动嵌入DSS系统中。
 
 #####       2.2 如何验证 DSS 已经成功集成了 Streamis？
 
-​		请进入 DSS 的工程首页，创建一个工程
+请进入 DSS 的工程首页，创建一个工程
 
-![image-20211230173334826](../../../images/image-20211230173334826.png)
+![image-20211230173334826](../../../images/create_stream_product_center.png)
 
-进入到工程里面，点击右上角"开发中心"按钮切换到”流式生产中心“
+进入到工程里面，点击左上角按钮切换到”流式生产中心“，如果出现streamis的首页，则表示 DSS 已经成功集成了 Streamis。如下图：
 
-![image-20211230173621711](../../../images/image-20211230173621711.png)
-
-如果出现streamis的首页，则表示则表示 DSS 已经成功集成了 Streamis。如下图：
-
-![image-20211230173839138](../../../images/生产中心.png)
-
+![image-20211230173839138](../../../images/stream_product_center.png)
 
 
 ## 3. 核心指标 
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;进入到首页，上半部显示的是核心指标。
+进入到streamis首页，上半部显示的是核心指标。
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;核心指标显示上传到该项目执行的Flink任务的状态汇总，状态暂时有7种，显示状态名称和处于该状态的任务数量，具体内容如下图。
+核心指标显示当前用户可查看到的上传到该项目执行的Flink任务的状态汇总，状态暂时有9种，显示状态名称和处于该状态的任务数量，具体内容如下图。
 
-![核心指标](../../../images/homePage.png)
+![核心指标](../../../images/home_page.png)
 
 <center>图 3.1 首页核心指标</center>
 
@@ -57,17 +40,17 @@ VALUES ('0','p_develop_process','流式生产中心','Streamis Product Center','
 
 ## 4.1. Script开发SQL
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;创建一个脚本文件，脚本类型选择Flink,如下图所示：
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;顶部Scriptis菜单创建一个脚本文件，脚本类型选择Flink,如下图所示：
 
-![image-20211230174445688](../../../images/image-20211230174445688.png)
+![进入FlinkSQL](../../../images/enter_flinksql.png)
+
+![create_script_file.png](../../../images/create_script_file.png)
 
 编写FlinkSQL，source,sink,transform等。
 
-![image-20211230174723105](../../../images/image-20211230174723105.png)
+![flinksql_script_file](../../../images/flinksql_script_file.png)
 
-点击运行后，即可调试该脚本，点击任务管理器可看到当前运行的引擎
-
-![image-20211230175424588](../../../images/image-20211230175424588.png)
+点击运行后，即可调试该脚本
 
 ## 4.2. 发布至Streamis
 
@@ -128,19 +111,32 @@ VALUES ('0','p_develop_process','流式生产中心','Streamis Product Center','
 
 ### 4.2.2 示例
 
-​	dzshengjiavars为flinksql文件，meta.json是该任务的元数据信息。
+​	streamisjobtest为flinksql文件，meta.json是该任务的元数据信息。
 
-![image-20211231092520768](../../../images/image-20211231092520768.png)
+![flinksql_job_use_demo](../../../images/flinksql_job_use_demo.png)
 
 <br/>
 
-![image-20211231092959561](../../../images/image-20211231092959561.png)
+![flinksql_job_use_demo2](../../../images/flinksql_job_use_demo2.png)
 
 将SQL文件和meta.json文件打包成一个zip文件，注意：只能打包成zip文件，其他格式如rar、7z等格式无法识别。
 
+如果上传zip文件出现下面错误，请调整下nginx的配置`vi /etc/nginx/conf.d/streamis.conf`，添加属性`client_max_body_size`，如下图所示。
+![upload_jobtask_error](../../../images/upload_jobtask_error.png)
+![upload_jobtask_error_solve](../../../images/upload_jobtask_error_solve.png)
+-----
+
 在streamis中将该zip包导入，导入任务后，任务的运行状态变成"未启动",版本会+1（导入新的job任务版本从1开始），最新发布时间会更新至最新时间。
 
-![image-20211231094103002](../../../images/image-20211231094103002.png)
+点击相应的作业名称、配置或左边3个竖点中（参数配置/告警配置/运行历史/运行日志）可进入job任务详情，点击 启动 可执行作业。
+
+点击左边3个竖点中 快照【savepoint】 可保存快照。
+
+![job_list](../../../images/job_list.png)
+
+点击批量操作，可选中多个作业任务重启，快照重启会先生成快照再重新启动，直接重启不会生成快照
+
+![jobbulk_operate](../../../images/jobbulk_operate.png)
 
 #### 
 
@@ -151,7 +147,7 @@ VALUES ('0','p_develop_process','流式生产中心','Streamis Product Center','
 
 ## 5.1 运行情况
 
-​	实时数据展示待二期开发。![image-20211231100653747](../../../images/流式作业运行情况.png)
+![stream_job_detail](../../../images/stream_job_detail.png)
 
 ## 5.2 执行历史
 
@@ -161,17 +157,16 @@ VALUES ('0','p_develop_process','流式生产中心','Streamis Product Center','
 
 历史日志中可以查看当前任务启动的flink引擎的日志，可以根据关键字等查看关键日志，点击查看最新日志，可以查看当前引擎的最新日志。
 
-
-
-![image-20211231100801179](../../../images/image-20211231100801179.png)
-
-![](../../../images/image-20211231101048962.png)
+![stream_job_history](../../../images/stream_job_history.png)
 
 ## 5.3 配置
 
 给Streamis任务配置一些flink资源参数以及checkpoint的参数
 
-![image-20211231101503678](../../../images/流式应用配置.png)
+![image-20211231101503678](../../../images/stream_job_config_1.png)
+![image-20211231101503678](../../../images/stream_job_config_2.png)
+
+
 
 ## 5.4任务详情
 
@@ -181,25 +176,17 @@ VALUES ('0','p_develop_process','流式生产中心','Streamis Product Center','
 
 <br/>
 
-**Flink Jar任务详情**
+- **Flink Jar任务详情**
 
-![任务详情](../../../images/jarDetail.png)
-
-<center>Flink Jar任务详情</center> 
-
-<br/>
+![任务详情](../../../images/stream_job_flinkjar_jobcontent.png)
 
 &nbsp;&nbsp;Flink Jar任务详情展示了任务Jar包的内容和参数， 同时提供下载该Jar包的功能。
 
 <br/>
 
-**Flink SQL任务详情**
+- **Flink SQL任务详情**
 
-![image-20211231101738880](../../../images/image-20211231101738880.png)
-
-<center>Flink SQL任务详情</center> 
-
-<br/>
+![任务详情](../../../images/stream_job_flinksql_jobcontent.png)
 
 &nbsp;&nbsp;Flink SQL任务详情展示了该任务的SQL语句。
 
@@ -211,3 +198,12 @@ VALUES ('0','p_develop_process','流式生产中心','Streamis Product Center','
 
 ![image-20211231102020703](../../../images/image-20211231102020703.png)
 
+## 6 工程资源文件
+Streamis首页-核心指标右上角-工程资源文件。
+工程资源文件提供了上传和管理项目所需资源文件的功能，如下图所示：
+
+![project_source_file_list](../../../images/project_source_file_list.png)
+
+上传项目文件
+
+![project_source_file_import](../../../images/project_source_file_import.png)
