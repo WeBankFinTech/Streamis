@@ -23,7 +23,7 @@ cd ${STREAMIS_CODE_HOME}
 mvn -N install
 mvn clean install
 ```
-编译成功后将会在项目的 assembly/target 目录下生成安装包wedatasphere-streamis-${streamis-version}-dist.tar.gz
+编译成功后将会在项目的 `assembly/target` 目录下生成安装包 `wedatasphere-streamis-${streamis-version}-dist.tar.gz`
 
 - 前端编译方式如下：
 
@@ -34,7 +34,7 @@ cd ${STREAMIS_CODE_HOME}/web
 npm i
 npm run build
 ```
-编译成功后，在${STREAMIS_CODE_HOME}/web目录下生成streamis-${streamis-version}-dist.zip
+编译成功后，在 `${STREAMIS_CODE_HOME}/web` 目录下生成 `streamis-${streamis-version}-dist.zip`
 
 ## 3.安装准备
 
@@ -47,7 +47,7 @@ npm run build
 
 ### 3.2 Linkis 和 DSS 环境
 
-- Linkis (>=1.1.1)，Streamis 的执行依赖于 Linkis 的 Flink 引擎，并且依赖 **Linkis-1.1.1** 及以上版本。
+- Linkis (>=1.1.1)，Streamis 的执行依赖于 Linkis 的 Flink 引擎，并且依赖 **Linkis-1.1.1** 及以上版本，部分功能需要Linkis-1.1.2支持。
 - DataSphere Studio (>=1.1.0)，Streamis 流式作业的开发和调试，依赖于 DSS-Scriptis，Streamis 流式生产中心则需嵌入到 DSS 工程框架体系之中，所以依赖于 **DSS-1.1.0** 及以上版本。
 
 在正式安装 Streamis 之前，请先安装 Linkis1.1.1 和 DSS1.1.0 及以上版本，并且保证 Linkis Flink 引擎 和 DSS 可以正常使用，DSS 和 Linkis 安装，可参照 [DSS & Linkis 一键安装部署文档](https://github.com/WeBankFinTech/DataSphereStudio-Doc/blob/main/zh_CN/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/DSS%E5%8D%95%E6%9C%BA%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.md)。
@@ -189,7 +189,7 @@ server {
 }
 ```
 
-5.加载nginx配置
+4.加载nginx配置
 
 ```bash
 sudo nginx -s reload
@@ -200,4 +200,7 @@ sudo nginx -s reload
 如您想正常使用 Streamis0.2.0 前端，还需安装 DSS StreamisAppConn 插件，请参考: [StreamisAppConn 插件安装文档](development/StreamisAppConn安装文档.md)
 
 ## 6.Linkis Flink引擎编译安装
-如您想正常执行 Streamis0.2.0，还需安装 Linkis Flink 引擎，请参考: [Linkis Flink 引擎安装文档](development/Flink引擎编译文档.md)
+如您想正常执行 Streamis0.2.0，还需安装 Linkis Flink 引擎，请参考: [Linkis Flink 引擎安装文档](https://linkis.apache.org/zh-CN/docs/1.1.2/engine_usage/flink/)
+
+## 7.Streamis组件升级文档/脚本
+如您想从Streamis较低版本升级到 Streamis0.2.0 ，请参考：[Streamis升级文档](development/Streamis升级文档.md)

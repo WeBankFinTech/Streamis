@@ -35,15 +35,16 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 &nbsp; &nbsp; &nbsp; &nbsp;Supports multi-version management, full life cycle management, monitoring alarm, checkpoint and savepoint management capabilities of streaming jobs.
 
-![prod center](docs/images/homePage_en.png)
+![prod center](docs/images/stream_product_center_en.png)
 
 &nbsp; &nbsp; &nbsp; &nbsp;Running information page:
 
-![Running information](docs/images/statusDetail_en.png)
+![Running information](docs/images/stream_job_detail_en.png)
 
 &nbsp; &nbsp; &nbsp; &nbsp;Configurations page：
 
-![Configurations](docs/images/config_en.png)
+![Configurations](docs/images/stream_job_config_en_1.png)
+![Configurations](docs/images/stream_job_config_en_2.png)
 
 &nbsp; &nbsp; &nbsp; &nbsp;For more features, please refer to: [User Manual](docs/en_US/userManual/StreamisUserManual.md).
 
@@ -53,8 +54,8 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 | Depended Component | Description | Streamis compatibility |
 | -------------- | -------------------------------------------------------------- | --------------|
-| [DataSphereStudio](https://github.com/WeBankFinTech/DataSphereStudio) | Data application development management framework. With a unified UI, the workflow-like graphical drag-and-drop development experience meets the entire lifecycle of data application development from data import, desensitization cleaning, data analysis, data mining, quality inspection, visualization, scheduling to data output applications, etc. | >= DSS1.0.1 (Released) |
-| [Linkis](https://github.com/apache/incubator-linkis) | Apache Linkis, builds a layer of computation middleware, by using standard interfaces such as REST/WS/JDBC provided by Linkis, the upper applications can easily access the underlying engines such as MySQL/Spark/Hive/Presto/Flink, etc. | >= Linkis1.0.3 (Released) |
+| [DataSphereStudio](https://github.com/WeBankFinTech/DataSphereStudio) | Data application development management framework. With a unified UI, the workflow-like graphical drag-and-drop development experience meets the entire lifecycle of data application development from data import, desensitization cleaning, data analysis, data mining, quality inspection, visualization, scheduling to data output applications, etc. | &gt;= DSS1.1.0 (Released) |
+| [Linkis](https://github.com/apache/incubator-linkis) | Apache Linkis, builds a layer of computation middleware, by using standard interfaces such as REST/WS/JDBC provided by Linkis, the upper applications can easily access the underlying engines such as MySQL/Spark/Hive/Presto/Flink, etc. | &gt;= Linkis1.1.1 (Released),some functions need to be supported by linkis 1.1.2 |
 
 ## Demo Trial environment
 
@@ -70,13 +71,7 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 ## Compile and install deployment
 
-&nbsp; &nbsp; &nbsp; &nbsp;Please refer to [Compilation guidelines](docs/en_US/0.1.0/StreamisCompiledDocument.md) used to compile Streamis.
-
-&nbsp; &nbsp; &nbsp; &nbsp;Before installing Streamis, please install Linkis1.0.3 and DSS1.0.1 first, please refer to: [DSS deployment documents](https://github.com/WeBankFinTech/DataSphereStudio/blob/master/docs/en_US/ch1/DataSphereStudio_Compile_Manual.md) and [Linkis deployment documents](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/en_US/Deployment_Documents/Quick_Deploy_Linkis1.0.md)
-
-&nbsp; &nbsp; &nbsp; &nbsp;At the same time, please make sure that the Linkis Flink engine can be used normally, please refer to: [Linkis Flink Engine Plug-in Installation Document](https://github.com/WeBankFinTech/Linkis-Doc/blob/master/en_US/Deployment_Documents/EngineConnPlugin_installation_document.md)
-
-&nbsp; &nbsp; &nbsp; &nbsp;Finally, please refer to [Streamis Installation and Deployment Document](docs/en_US/0.1.0/StreamisDeployment.md) for installing and deploying Streamis.
+please refer to [Streamis Installation and Deployment Document](docs/en_US/0.2.0/StreamisDeployment.md) for installing and deploying Streamis.
 
 ----
 
@@ -98,8 +93,9 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 | | Support FlinkSQL and FlinkJar package release | Support |
 | | Multi-version management capabilities | Support |
 | | Configuration and alert management capabilities | Support |
-| Service high availability | Multiple services, failure does not affect the use | Application high availability |
+| Service high availability | Multiple services,State snapshot for fault tolerance, failure does not affect the use | Application high availability |
 | System Management | Node and Resource Management | Support |
+| Permission management | Task operation permission control | Support |
 
 ----
 
