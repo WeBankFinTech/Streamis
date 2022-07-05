@@ -48,7 +48,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
    * @param jobState job state used to launch
    * @return the job id.
    */
-  override def launch(job: LaunchJob, jobState: JobState): JobClient[LinkisJobInfo] = {
+  override def innerLaunch(job: LaunchJob, jobState: JobState): JobClient[LinkisJobInfo] = {
     // Transform the JobState into the params in LaunchJob
     Option(jobState).foreach(state => {
       val startUpParams = TaskUtils.getStartupMap(job.getParams)
