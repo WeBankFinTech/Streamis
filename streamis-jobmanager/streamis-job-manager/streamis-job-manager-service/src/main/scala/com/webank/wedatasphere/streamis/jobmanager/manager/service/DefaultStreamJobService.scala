@@ -16,7 +16,8 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import java.util
-import java.util.Date
+import java.util.{Date, Map}
+
 import com.github.pagehelper.PageInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
@@ -35,8 +36,9 @@ import org.apache.commons.lang.StringUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-
 import javax.annotation.Resource
+import org.apache.commons.collections.MapUtils
+
 import scala.collection.JavaConverters._
 
 
@@ -178,8 +180,15 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     }
     validateUpload(metaJsonInfo.getProjectName, metaJsonInfo.getJobName, userName)
     //  生成StreamJob，根据StreamJob生成StreamJobVersion
-    val version = createStreamJob(metaJsonInfo, userName)
-    //  上传所有非meta.json的文件
+    val version = createStreamJob(metaJsonInfo, userName);
+    val configContent = readerUtils.parseConfJson(inputPath).asInstanceOf[util.Map[String, Any]]
+    if(MapUtils.isNotEmpty(configContent)){
+      info(s"mapContent ${configContent} parsed according to the conf.json file")
+      streamJobConfService.saveJobConfig(version.getJobId, configContent)
+    }else{
+      logger.warn("the conf.json file does not exist in the ZIP format material package")
+    }
+    //  上传所有非meta.json、conf.json、.zip的文件
     uploadFiles(metaJsonInfo, version, inputZipPath)
     version
   }

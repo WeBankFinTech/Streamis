@@ -60,6 +60,7 @@
 
 	xxx.zip
 	    ├── meta.json
+	    ├── conf.json  #可选文件
 	    ├── test.sql
 	    ├── test.jar
 	    ├── file3
@@ -106,6 +107,34 @@
 	"hdfs.jars"； [],   	# 依赖的HDFS jars，如：hdfs:///user/hadoop/test1.jar
 	"dependency.jars": [],	# 依赖的jars，如：test2.jar
 	"resources": []			# 依赖的资源文件，如：test.properties
+}
+```
+
+其中conf.json是job的配置文件，是一个可选的文件，格式为：
+```
+{
+    "wds.linkis.flink.resource": {      //资源配置
+        "wds.linkis.flink.app.parallelism": "4",              #parallelism并行度，默认4
+        "wds.linkis.flink.jobmanager.memory": "1024",         #JobManager Memory，默认1024
+        "wds.linkis.flink.taskmanager.cpus": "2",             #TaskManager CPUs，默认2
+        "wds.linkis.flink.taskmanager.memory": "4096",        #TaskManager Memory，默认4096
+        "wds.linkis.flink.taskmanager.numberOfTaskSlots": "2",#TaskManager Slot数量，默认2
+        "wds.linkis.rm.yarnqueue": ""                         #使用Yarn队列
+    },
+    "wds.linkis.flink.custom": {        #Flink参数，K/V可自定义
+        "aa": "aaa", 
+        "bb": "bbb",
+        ...
+    },
+    "wds.linkis.flink.produce": {       #生产配置
+        "wds.linkis.flink.checkpoint.switch": "OFF",           #Checkpoint开关
+        "wds.linkis.flink.savepoint.path": "",                  #快照文件位置
+        "wds.linkis.flink.app.fail-restart.switch": "OFF",     #作业失败自动拉起开关
+        "wds.linkis.flink.app.start-auto-restore.switch": "ON" #作业启动状态自恢复
+    },
+    "wds.linkis.flink.authority": {      #权限设置
+        "wds.linkis.flink.authority.visible": ""        #可见人员
+    }
 }
 ```
 

@@ -32,6 +32,7 @@ import java.util.*;
 public class ReaderUtils {
     private static final String metaFileName = "meta.txt";
     private static final String metaFileJsonName = "meta.json";
+    private static final String confFileJsonName = "conf.json";
     private static final String type = "type";
     private static final String fileName = "filename";
     private static final String projectName = "projectname";
@@ -86,7 +87,7 @@ public class ReaderUtils {
         File[] files = file.listFiles();
         if (files != null) {
             for (File filePath : files) {
-                if (!metaFileJsonName.equals(filePath.getName()) && !filePath.getName().endsWith(".zip")) {
+                if (!metaFileJsonName.equals(filePath.getName()) &&!confFileJsonName.equals(filePath.getName()) && !filePath.getName().endsWith(".zip")) {
                     if (!checkName(filePath.getName())) {
                         throw FileExceptionManager.createException(30601,filePath.getName());
                     }
@@ -150,6 +151,38 @@ public class ReaderUtils {
         }
         return IoUtils.generateInputInputStream(basePath + File.separator + metaFileJsonName);
     }
+
+    public Map<String, Object> parseConfJson(String dirPath) throws IOException, FileException {
+        return parseJson(dirPath, confFileJsonName);
+    }
+
+    public Map<String, Object> parseJson(String dirPath,String fimeName) throws IOException, FileException {
+        getBasePath(dirPath);
+        try (InputStream inputStream = generateInputStream(basePath,fimeName);
+             InputStreamReader streamReader = new InputStreamReader(inputStream);
+             BufferedReader reader = new BufferedReader(streamReader);) {
+            return readJson(reader,HashMap.class);
+        }
+    }
+
+    private InputStream generateInputStream(String basePath,String fimeName) throws IOException, FileException {
+        File metaFile = new File(basePath + File.separator + fimeName);
+        if (!metaFile.exists()) {
+            throw new FileException(30603, fimeName);
+        }
+        return IoUtils.generateInputInputStream(basePath + File.separator + fimeName);
+    }
+
+    private <T> T readJson(BufferedReader reader,Class<T> valueType) throws IOException {
+        String line = null;
+        StringBuilder sb = new StringBuilder();
+        while ((line = reader.readLine()) != null) {
+            sb.append(line);
+        }
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(sb.toString(), valueType);
+    }
+
 
     private PublishRequestVo read(InputStream inputStream) throws IOException, FileException {
         try (InputStreamReader streamReader = new InputStreamReader(inputStream);
