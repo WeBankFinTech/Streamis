@@ -15,6 +15,10 @@ import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Set;
 
+/**
+ *The aspect {@code SpringRestfulCatchAOP} already has exception handling in the controller layer,
+ * and the request with return type {@code Message} cannot be handled by {@code @ExceptionHandler}.
+ */
 @RestControllerAdvice
 public class ValidExceptionHander {
 
