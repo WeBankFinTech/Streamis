@@ -71,7 +71,7 @@
         <xstream.version>1.4.19</xstream.version>
         <jobmanager.version>0.2.0</jobmanager.version>
         <mysql.connector.version>5.1.47</mysql.connector.version>
-        <validation.api.version>2.0.1.Final</validation.api.version>
+        <hibernate.validator.version>6.1.7.Final</hibernate.validator.version>
     </properties>
 
 
@@ -162,9 +162,9 @@
                 <version>${xstream.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-                <version>${validation.api.version}</version>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>${hibernate.validator.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
