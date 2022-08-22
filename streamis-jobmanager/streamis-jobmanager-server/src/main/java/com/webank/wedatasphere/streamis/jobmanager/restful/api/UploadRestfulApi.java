@@ -24,8 +24,10 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobServ
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.ZipHelper;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
 import org.slf4j.Logger;
@@ -93,6 +95,46 @@ public class UploadRestfulApi {
             return Message.ok().data("jobId",job.getJobId());
         } catch (Exception e){
             LOG.error("Failed to upload zip {} to project {} for user {}.", fileName, projectName, userName, e);
+            return Message.error(ExceptionUtils.getRootCauseMessage(e));
+        } finally{
+            IOUtils.closeQuietly(os);
+            IOUtils.closeQuietly(is);
+        }
+    }
+
+    @RequestMapping(path = "/initJob", method = RequestMethod.POST)
+    public Message initJob(HttpServletRequest request,
+                           @RequestParam(name = "projectName", required = false) String projectName,
+                           @RequestParam(name = "jobFilePath", required = false) String jobFilePath) throws IOException, JobException {
+        String userName = SecurityFilter.getLoginUsername(request);
+        if (StringUtils.isBlank(projectName)){
+            return Message.error("Project name cannot be empty(项目名不能为空，请指定)");
+        }
+        if (StringUtils.isBlank(jobFilePath)){
+            return Message.error("jobFilePath can not be blank");
+        }
+        if(!ZipHelper.isZip(jobFilePath)){
+            throw JobExceptionManager.createException(30302);
+        }
+        if (!projectPrivilegeService.hasEditPrivilege(request, projectName)) return Message.error("the current user has no operation permission");
+
+        InputStream is = null;
+        OutputStream os = null;
+        try{
+            LOG.info("user {} start initJob to project {} according to jobFilePath {}.",userName, projectName,jobFilePath);
+            String fileName = FilenameUtils.getName(jobFilePath);
+            String inputPath = IoUtils.generateIOPath(userName, "streamis", fileName);
+            File file = new File(inputPath);
+            if(file.getParentFile().exists()){
+                FileUtils.deleteDirectory(file.getParentFile());
+            }
+            is = IoUtils.generateInputInputStream(jobFilePath);
+            os = IoUtils.generateExportOutputStream(inputPath);
+            IOUtils.copy(is, os);
+            StreamJobVersion job = streamJobService.uploadJob(projectName, userName, inputPath);
+            return Message.ok().data("jobId",job.getJobId());
+        } catch (Exception e){
+            LOG.error("Failed to init {} to project {} for user {}.", jobFilePath, projectName, userName, e);
             return Message.error(ExceptionUtils.getRootCauseMessage(e));
         } finally{
             IOUtils.closeQuietly(os);

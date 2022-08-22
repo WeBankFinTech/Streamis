@@ -159,7 +159,7 @@ sudo nginx -s reload
 If you want to use the streamis0.2.0 front end normally, you also need to install the DSS StreamisAppConn plug-in. Please refer to: [StreamisAppConn plug-in installation document](development/StreamisAppConnInstallationDocument.md)
 
 ## 6. Linkis Flink engine compilation and installation
-If you want to run streamis0.2.0 normally, you also need to install the linkis Flink engine. Please refer to: [linkis Flink engine installation document](https://linkis.apache.org/zh-CN/docs/1.1.2/engine_usage/flink/)
+If you want to run streamis0.2.0 normally, you also need to install the linkis Flink engine. Please refer to: [linkis Flink engine installation document](https://linkis.apache.org/zh-CN/docs/1.1.2/engine-usage/flink/)
 
 ## 7. Streamis component upgrade document / script
 If you want to upgrade from a lower version of streamis to streamis0.2.0, please refer to: [streamis upgrade document](development/StreamisUpgradeDocumentation.md)
