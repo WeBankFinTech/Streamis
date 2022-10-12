@@ -492,7 +492,7 @@ export default {
         dssLabels: this.getCurrentDsslabels()
       };
       // 返回结构不一样
-      axios.get(`http://${window.location.host}/api/rest_j/v1/dss/framework/orchestrator/exportOrchestrator`,{
+      axios.get(`${window.location.protocol}//${window.location.host}/api/rest_j/v1/dss/framework/orchestrator/exportOrchestrator`,{
         params,
         responseType: 'arraybuffer'
       }).then((res) => {

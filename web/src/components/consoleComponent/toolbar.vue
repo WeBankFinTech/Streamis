@@ -298,7 +298,7 @@ export default {
         temPath = temPath.substring(0, temPath.lastIndexOf('/'));
         apiPath = `${this.getResultUrl}/resultsetsToExcel`
       }
-      let url = `http://${window.location.host}/api/rest_j/v1/` + apiPath +'?path=' + temPath + '&charset=' + charset + '&outputFileType=' + splitor + '&nullValue=' + nullValue + '&outputFileName=' + filename;
+      let url = `${window.location.protocol}//${window.location.host}/api/rest_j/v1/` + apiPath +'?path=' + temPath + '&charset=' + charset + '&outputFileType=' + splitor + '&nullValue=' + nullValue + '&outputFileName=' + filename;
       // 如果是api执行页获取结果集，需要带上taskId
       if(this.getResultUrl !== 'filesystem') {
         url += `&taskId=${this.comData.taskID}`
