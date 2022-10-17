@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>streamis-jobmanager</artifactId>
+        <groupId>com.webank.wedatasphere.streamis</groupId>
+        <version>0.2.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>streamis-job-log</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>streamis-job-log-collector</module>
+        <module>flink-streamis-log-collector</module>
+        <module>streamis-job-log-server</module>
+        <module>streamis-job-log-common</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+
+</project>
