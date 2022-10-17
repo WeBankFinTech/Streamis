@@ -14,6 +14,7 @@ class LogRequestPayload {
   private var onlyKeywords: String = _
   private var lastRows = 0
   private var logType: String = _
+  private var logHistory: Boolean = false
   def getPageSize: Int = pageSize
   def setPageSize(pageSize: Int): Unit = this.pageSize = pageSize
 
@@ -32,4 +33,8 @@ class LogRequestPayload {
   def getLogType: String = logType
 
   def setLogType(logType: String): Unit = this.logType = logType
+
+  def isLogHistory: Boolean = logHistory
+
+  def setLogHistory(logHistory: Boolean): Unit = this.logHistory = logHistory
 }

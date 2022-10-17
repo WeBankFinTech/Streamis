@@ -18,6 +18,7 @@ trait FlinkLogIterator extends Iterator[String] with Closeable {
   val engineConnLogOperator: EngineConnLogOperator
   def init(): Unit
   def getLogPath: String
+  def getLogDirSuffix: String
   def getLogs: util.ArrayList[String]
   def getEndLine: Long
 }
@@ -28,6 +29,7 @@ class SimpleFlinkJobLogIterator(override val requestPayload: LogRequestPayload,
   private var logs: util.ArrayList[String] = _
   private var index = 0
   private var logPath: String = _
+  private var logDirSuffix: String = _
   private var isClosed = true
   private var endLine = 0
 
@@ -69,4 +71,8 @@ class SimpleFlinkJobLogIterator(override val requestPayload: LogRequestPayload,
   override def getLogs: util.ArrayList[String] = logs
 
   override def getEndLine: Long = endLine
+
+  def setLogDirSuffix(logDirSuffix: String) : Unit = this.logDirSuffix = logDirSuffix
+
+  override def getLogDirSuffix: String = logDirSuffix
 }
