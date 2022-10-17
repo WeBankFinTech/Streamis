@@ -19,9 +19,9 @@ import org.apache.linkis.computation.client.once.action.EngineConnOperateAction
 import org.apache.linkis.computation.client.operator.impl.EngineConnLogOperator
 
 /**
- * Extend the engine conn log operator
+ * Extend the flink client log operator
  */
-class FlinkYarnLogOperator extends EngineConnLogOperator{
+class FlinkYarnLogOperator extends FlinkClientLogOperator {
 
   private var applicationId: String = _
 
@@ -30,8 +30,9 @@ class FlinkYarnLogOperator extends EngineConnLogOperator{
   }
 
   protected override def addParameters(builder: EngineConnOperateAction.Builder): Unit = {
-    builder.addParameter("yarnApplicationId", this.applicationId)
     super.addParameters(builder)
+    builder.operatorName(getName)
+    builder.addParameter("yarnApplicationId", this.applicationId)
   }
 
   override def getName: String = FlinkYarnLogOperator.OPERATOR_NAME
