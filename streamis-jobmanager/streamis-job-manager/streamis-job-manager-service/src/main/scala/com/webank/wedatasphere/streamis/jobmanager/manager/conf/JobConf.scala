@@ -27,6 +27,8 @@ object JobConf {
 
   val STREAMIS_JOB_MONITOR_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.job.monitor.enable", true)
 
+  val STREAMIS_JOB_PARAM_BLANK_PLACEHOLDER: CommonVars[String] =  CommonVars("wds.streamis.job.param.blank.placeholder", "\u0001")
+
   val FLINK_JOB_STATUS_NOT_STARTED: CommonVars[Int] = CommonVars("wds.streamis.job.status.not-started", 0,"Not Started")
 
   val FLINK_JOB_STATUS_COMPLETED: CommonVars[Int] = CommonVars("wds.streamis.job.status.completed", 1,"Completed")
