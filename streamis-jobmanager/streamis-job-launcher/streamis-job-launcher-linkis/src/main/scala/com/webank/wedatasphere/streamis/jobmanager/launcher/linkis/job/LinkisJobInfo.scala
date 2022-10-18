@@ -11,5 +11,11 @@ trait LinkisJobInfo extends JobInfo {
    */
   def getECMInstance: ServiceInstance
 
+  /**
+   * Job log directory suffix
+   * @return
+   */
+  def getLogDirSuffix: String
 
+  def setLogDirSuffix(logDirSuffix: String): Unit
 }

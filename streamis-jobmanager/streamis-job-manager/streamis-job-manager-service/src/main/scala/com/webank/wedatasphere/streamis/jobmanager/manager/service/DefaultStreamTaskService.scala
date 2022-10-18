@@ -22,7 +22,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobInfo, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{Checkpoint, Savepoint}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobClient, FlinkJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobClient, FlinkJobInfo, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.SpringContextHolder
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf.FLINK_JOB_STATUS_FAILED
@@ -398,11 +398,24 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
         val jobClient = jobLaunchManager.connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
         jobClient match {
           case client: FlinkJobClient =>
+            requestPayload.setLogHistory(JobConf.isCompleted(streamTask.getStatus))
             val logIterator = client.fetchLogs(requestPayload)
             returnMap.put("logPath", logIterator.getLogPath)
             returnMap.put("logs", logIterator.getLogs)
             returnMap.put("endLine", logIterator.getEndLine)
             logIterator.close()
+            jobClient.getJobInfo match {
+              case linkisInfo: LinkisJobInfo =>
+                if (StringUtils.isBlank(linkisInfo.getLogDirSuffix) && StringUtils.isNotBlank(logIterator.getLogDirSuffix)){
+                  Utils.tryAndWarn {
+                    // Update the linkis job info and store into database
+                    linkisInfo.setLogDirSuffix(logIterator.getLogDirSuffix)
+                    streamTask.setLinkisJobInfo(DWSHttpClient.jacksonJson.writeValueAsString(linkisInfo));
+                    streamTaskMapper.updateTask(streamTask)
+                  }
+                }
+              case _ =>
+            }
         }
       }{ case e: Exception =>
         // Just warn the exception
