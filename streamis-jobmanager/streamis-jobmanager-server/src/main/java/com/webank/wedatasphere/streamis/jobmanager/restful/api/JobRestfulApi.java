@@ -15,6 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
@@ -22,16 +23,22 @@ import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.FlinkJobInfo;
+import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.*;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamTaskService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent;
+import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.linkis.httpclient.dws.DWSHttpClient;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
 import org.slf4j.Logger;
@@ -43,10 +50,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @RequestMapping(path = "/streamis/streamJobManager/job")
 @RestController
@@ -210,7 +214,7 @@ public class JobRestfulApi {
         realTimeTrafficDTOS.add(realTimeTrafficDTO);
 
 
-        jobDetailsVO.setLinkisJobInfo(streamTaskService.getTask(jobId,version));
+        jobDetailsVO.setLinkisJobInfo(streamTaskService.getTaskJobInfo(jobId,version));
         jobDetailsVO.setDataNumber(dataNumberDTOS);
         jobDetailsVO.setLoadCondition(loadConditionDTOs);
         jobDetailsVO.setRealTimeTraffic(realTimeTrafficDTOS);
@@ -236,6 +240,102 @@ public class JobRestfulApi {
         }
         List<StreamTaskListVo> details = streamTaskService.queryHistory(jobId, version);
         return Message.ok().data("details", details);
+    }
+
+    @RequestMapping(path = "/addTask", method = RequestMethod.GET)
+    public Message addTask(HttpServletRequest req,
+                           @RequestParam(value = "jobName") String jobName,
+                           @RequestParam(value = "appId") String appId,
+                           @RequestParam(value = "appUrl") String appUrl) {
+        String username = SecurityFilter.getLoginUsername(req);
+        LOG.info("User {} try to add a new task for Streamis job {} with appId: {}, appUrl: {}.", username, jobName, appId, appUrl);
+        List<StreamJob> streamJobs = streamJobService.getJobByName(jobName);
+        if(CollectionUtils.isEmpty(streamJobs)) {
+            return Message.error("Not exits Streamis job " + jobName);
+        } else if(streamJobs.size() > 1) {
+            return Message.error("Too many Streamis Job named " + jobName + ", we cannot distinguish between them.");
+        } else if(!"spark.jar".equals(streamJobs.get(0).getJobType())) {
+            return Message.error("Only spark.jar Job support to add new tasks.");
+        }
+        if (!streamJobService.hasPermission(streamJobs.get(0), username) &&
+                !this.privilegeService.hasEditPrivilege(req, streamJobs.get(0).getProjectName())) {
+            return Message.error("Have no permission to add new task for StreamJob [" + jobName + "].");
+        }
+        // 如果存在正在运行的，先将其停止掉
+        StreamTask streamTask = streamTaskService.getLatestTaskByJobId(streamJobs.get(0).getId());
+        if(streamTask != null && JobConf.isRunning(streamTask.getStatus())) {
+            LOG.warn("Streamis Job {} exists running task, update its status to stopped at first.", jobName);
+            streamTask.setStatus((Integer) JobConf.FLINK_JOB_STATUS_STOPPED().getValue());
+            streamTaskService.updateTask(streamTask);
+        } else {
+            // 这里取个巧，从该工程该用户有权限的Job中找到一个Flink的历史作业，作为这个Spark Streaming作业的jobId和jobInfo
+            // 替换掉JobInfo中的 yarn 信息，这样我们前端就可以在不修改任何逻辑的情况下正常展示Spark Streaming作业了
+            PageInfo<QueryJobListVo> jobList = streamJobService.getByProList(streamJobs.get(0).getProjectName(), username, null, 0, null);
+            Optional<QueryJobListVo> copyJob = jobList.getList().stream().min((job1, job2) -> {
+                if (job1.getStatus() > 0) {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            });
+            if(!copyJob.isPresent()) {
+                return Message.error("If no Flink Job has submitted, the register to Streamis cannot be succeeded.");
+            }
+            StreamTask copyTask = streamTaskService.getLatestTaskByJobId(copyJob.get().getId());
+            LOG.warn("Streamis Job {} will bind the linkisJobInfo from history Flink Job {} with linkisJobId: {}, linkisJobInfo: {}.",
+                    jobName, copyJob.get().getName(), copyTask.getLinkisJobId(), copyTask.getLinkisJobInfo());
+            streamTask = streamTaskService.createTask(streamJobs.get(0).getId(), (Integer) JobConf.FLINK_JOB_STATUS_RUNNING().getValue(), username);
+            streamTask.setLinkisJobId(copyTask.getLinkisJobId());
+            streamTask.setLinkisJobInfo(copyTask.getLinkisJobInfo());
+        }
+        streamTask.setStartTime(new Date());
+        streamTask.setLastUpdateTime(new Date());
+        FlinkJobInfo flinkJobInfo;
+        try {
+            flinkJobInfo = DWSHttpClient.jacksonJson().readValue(streamTask.getLinkisJobInfo(), FlinkJobInfo.class);
+        } catch (JsonProcessingException e) {
+            LOG.error("Job {} deserialize the jobInfo from history Job failed!", jobName, e);
+            return Message.error("Deserialize the jobInfo from history Job failed!");
+        }
+        flinkJobInfo.setApplicationId(appId);
+        flinkJobInfo.setApplicationUrl(appUrl);
+        flinkJobInfo.setName(jobName);
+        flinkJobInfo.setStatus(JobConf.getStatusString((Integer) JobConf.FLINK_JOB_STATUS_RUNNING().getValue()));
+        StreamTaskUtils.refreshInfo(streamTask, flinkJobInfo);
+        streamTaskService.updateTask(streamTask);
+        LOG.info("Streamis Job {} has added a new task successfully.", jobName);
+        return Message.ok();
+    }
+
+    @RequestMapping(path = "/stopTask", method = RequestMethod.GET)
+    public Message stopTask(HttpServletRequest req,
+                           @RequestParam(value = "jobName") String jobName,
+                            @RequestParam(value = "appId") String appId,
+                            @RequestParam(value = "appUrl") String appUrl) {
+        String username = SecurityFilter.getLoginUsername(req);
+        LOG.info("User {} try to stop task for Streamis job {} with appId: {}, appUrl: {}.", username, jobName, appId, appUrl);
+        List<StreamJob> streamJobs = streamJobService.getJobByName(jobName);
+        if(CollectionUtils.isEmpty(streamJobs)) {
+            return Message.error("Not exits Streamis job " + jobName);
+        } else if(streamJobs.size() > 1) {
+            return Message.error("Too many Streamis Job named " + jobName + ", we cannot distinguish between them.");
+        } else if(!"spark.jar".equals(streamJobs.get(0).getJobType())) {
+            return Message.error("Only spark.jar Job support to add new tasks.");
+        }
+        if (!streamJobService.hasPermission(streamJobs.get(0), username) &&
+                !this.privilegeService.hasEditPrivilege(req, streamJobs.get(0).getProjectName())) {
+            return Message.error("Have no permission to add new task for StreamJob [" + jobName + "].");
+        }
+        // 如果存在正在运行的，将其停止掉
+        StreamTask streamTask = streamTaskService.getLatestTaskByJobId(streamJobs.get(0).getId());
+        if(streamTask != null && JobConf.isRunning(streamTask.getStatus())) {
+            LOG.warn("Streamis Job {} is exists running task, update its status to stopped.", jobName);
+            streamTask.setStatus((Integer) JobConf.FLINK_JOB_STATUS_STOPPED().getValue());
+            streamTaskService.updateTask(streamTask);
+        } else {
+            LOG.warn("Streamis Job {} is not exists running task, ignore to stop it.", jobName);
+        }
+        return Message.ok();
     }
 
     @RequestMapping(path = "/progress", method = RequestMethod.GET)
