@@ -15,6 +15,9 @@ trait StreamJobService {
 
 
   def getJobById(jobId: Long): StreamJob
+
+  def getJobByName(jobName: String): util.List[StreamJob]
+
   /**
    * Page list query
    * @param projectName project name
