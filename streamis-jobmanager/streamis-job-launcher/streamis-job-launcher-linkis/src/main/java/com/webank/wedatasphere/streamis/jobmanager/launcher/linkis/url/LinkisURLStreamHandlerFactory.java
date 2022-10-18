@@ -15,7 +15,6 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.url;
 
-import org.apache.commons.lang.StringUtils;
 
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
