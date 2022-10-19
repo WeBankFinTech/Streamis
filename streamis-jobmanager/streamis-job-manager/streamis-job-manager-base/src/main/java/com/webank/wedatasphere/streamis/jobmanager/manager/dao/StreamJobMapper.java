@@ -30,6 +30,7 @@ public interface StreamJobMapper {
 
     StreamJob getJobById(@Param("jobId") Long jobId);
 
+    List<StreamJob> getJobByName(@Param("jobName") String jobName);
 
     List<StreamJobVersion> getJobVersions(@Param("jobId") Long jobId);
 
