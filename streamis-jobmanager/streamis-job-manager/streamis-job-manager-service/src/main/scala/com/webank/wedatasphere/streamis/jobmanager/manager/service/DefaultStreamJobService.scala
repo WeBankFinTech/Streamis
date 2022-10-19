@@ -24,8 +24,8 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobCon
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamAlertMapper, StreamJobMapper, StreamTaskMapper}
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{QueryJobListVo, TaskCoreNumVo, VersionDetailVo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity._
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{QueryJobListVo, TaskCoreNumVo, VersionDetailVo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.{JobCreateErrorException, JobFetchErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent
@@ -128,6 +128,9 @@ class DefaultStreamJobService extends StreamJobService with Logging {
   override def createStreamJob(metaJsonInfo: MetaJsonInfo, userName: String): StreamJobVersion = {
     if(StringUtils.isBlank(metaJsonInfo.getJobType))
       throw new JobCreateErrorException(30030, s"jobType is needed.")
+    else if(!JobConf.SUPPORTED_JOB_TYPES.getValue.contains(metaJsonInfo.getJobType)) {
+      throw new JobCreateErrorException(30030, s"jobType ${metaJsonInfo.getJobType} is not supported.")
+    }
     if(metaJsonInfo.getJobContent == null || metaJsonInfo.getJobContent.isEmpty)
       throw new JobCreateErrorException(30030, s"jobContent is needed.")
     val job = streamJobMapper.getCurrentJob(metaJsonInfo.getProjectName, metaJsonInfo.getJobName)
