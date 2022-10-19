@@ -483,7 +483,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       }).asJava
   }
 
-  def getTask(jobId:Long, version: String): FlinkJobInfo ={
+  def getTaskJobInfo(jobId:Long, version: String): FlinkJobInfo ={
     val str = streamTaskMapper.getTask(jobId, version)
     if (StringUtils.isBlank(str)) {
       return new FlinkJobInfo
@@ -524,6 +524,9 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     }
   }
 
+
+  override def getLatestTaskByJobId(jobId: Long): StreamTask = streamTaskMapper.getLatestByJobId(jobId)
+
   /**
    * Create new task use the latest job version
    *
@@ -557,6 +560,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           }
      }
   }
+
+  override def updateTask(streamTask: StreamTask): Unit = streamTaskMapper.updateTask(streamTask)
 
   /**
    * Just launch task by task id
