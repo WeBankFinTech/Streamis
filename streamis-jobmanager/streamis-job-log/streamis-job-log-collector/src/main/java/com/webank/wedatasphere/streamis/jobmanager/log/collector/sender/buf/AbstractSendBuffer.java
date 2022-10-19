@@ -1,4 +1,4 @@
-package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender;
+package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf;
 
 /**
  * Abstract sender buffer;
@@ -31,6 +31,17 @@ public abstract class AbstractSendBuffer<E> implements SendBuffer<E>{
     public AbstractSendBuffer(){
         this(Integer.MAX_VALUE);
     }
+
+    @Override
+    public boolean isReadMode() {
+        return accessFlag == Flag.READ_MODE;
+    }
+
+    @Override
+    public boolean isWriteMode() {
+        return accessFlag == Flag.WRITE_MODE;
+    }
+
     @Override
     public int capacity() {
         return this.capacity;
@@ -47,6 +58,11 @@ public abstract class AbstractSendBuffer<E> implements SendBuffer<E>{
         this.limit = this.position;
         this.position = 0;
         this.accessFlag = Flag.READ_MODE;
+    }
+
+    @Override
+    public void rewind() {
+        position = 0;
     }
 
     @Override
