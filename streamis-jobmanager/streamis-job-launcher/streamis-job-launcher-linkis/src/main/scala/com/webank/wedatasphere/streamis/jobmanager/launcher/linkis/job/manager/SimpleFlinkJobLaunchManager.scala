@@ -69,7 +69,6 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
       jobInfo.setCompletedMsg(message)
     }
     jobInfo.setResources(nodeInfo.get("nodeResource").asInstanceOf[util.Map[String, Object]])
-    jobInfo.setStatus("failed")
     // Set job state info into
 //    Option(jobState).foreach(state => {
 //      val stateInfo = new JobStateInfo
