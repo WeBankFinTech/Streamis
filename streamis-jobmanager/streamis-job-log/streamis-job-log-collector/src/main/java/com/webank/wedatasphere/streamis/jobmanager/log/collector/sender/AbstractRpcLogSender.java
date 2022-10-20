@@ -5,10 +5,7 @@ import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf.Immu
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf.SendBuffer;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.LogElement;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
@@ -139,8 +136,17 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
          */
         private int consumers = 0;
 
+        /**
+         * Futures of consumers
+         */
+        private final Map<String, SendLogCacheConsumer<T>> sendLogCacheConsumers = new ConcurrentHashMap<>();
+        /**
+         * Context lock
+         */
+        private final ReentrantLock ctxLock;
         public RpcLogContext(SendLogCache<T> logCache){
             this.logCache = logCache;
+            this.ctxLock = new ReentrantLock();
             this.consumePool = new ThreadPoolExecutor(0, maxCacheConsume,
                     60L, TimeUnit.SECONDS,
                     new SynchronousQueue<>(), new ThreadFactory() {
@@ -161,33 +167,58 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
             });
         }
 
-        public synchronized void startCacheConsumer(){
-            if (consumers >= maxCacheConsume){
-                throw new IllegalStateException("Over the limit number of cache consumers: [" + maxCacheConsume + "]");
-            }
-            String id = UUID.randomUUID().toString();
-            SendBuffer<T> sendBuffer = new ImmutableSendBuffer<>(sendBufSize);
-            this.consumePool.submit(new SendLogCacheConsumer<T>(id, logCache, sendBuffer, rpcSenderConfig) {
-                @Override
-                protected void onFlushAndSend(SendBuffer<T> sendBuffer) {
-                    // First to aggregate the buffer
-                    E aggEntity = aggregateBuffer(sendBuffer);
-                    Optional.ofNullable(getSendLogExceptionStrategy()).ifPresent(
-                            strategy -> strategy.doSend(() -> {
-                                doSend(aggEntity, rpcSenderConfig);
-                                return null;
-                            }, sendBuffer));
+        public void startCacheConsumer(){
+            this.ctxLock.lock();
+            try {
+                if (consumers >= maxCacheConsume) {
+                    throw new IllegalStateException("Over the limit number of cache consumers: [" + maxCacheConsume + "]");
                 }
-            });
-            this.consumers ++;
+                String id = UUID.randomUUID().toString();
+                SendBuffer<T> sendBuffer = new ImmutableSendBuffer<>(sendBufSize);
+                SendLogCacheConsumer<T> consumer = new SendLogCacheConsumer<T>(id, logCache, sendBuffer, rpcSenderConfig) {
+                    @Override
+                    protected void onFlushAndSend(SendBuffer<T> sendBuffer) {
+                        // First to aggregate the buffer
+                        E aggEntity = aggregateBuffer(sendBuffer);
+                        Optional.ofNullable(getSendLogExceptionStrategy()).ifPresent(
+                                strategy -> strategy.doSend(() -> {
+                                    doSend(aggEntity, rpcSenderConfig);
+                                    return null;
+                                }, sendBuffer));
+                    }
+                };
+                Future<?> future = this.consumePool.submit(consumer);
+                consumer.setFuture(future);
+                sendLogCacheConsumers.put(id, consumer);
+                this.consumers++;
+            } finally {
+                this.ctxLock.unlock();
+            }
         }
 
         public SendLogCache<T> getLogCache(){
             return this.logCache;
         }
 
-        public void destroyCacheConsumer(){
+        /**
+         * Destroy cache consumer
+         * @param id id
+         */
+        public void destroyCacheConsumer(String id){
+            SendLogCacheConsumer<T> consumer = sendLogCacheConsumers.remove(id);
+            consumer.shutdown();
+        }
 
+        /**
+         * Destroy all the consumers
+         */
+        public void destroyCacheConsumers(){
+            this.ctxLock.lock();
+            try {
+                sendLogCacheConsumers.forEach( (key, consumer)-> consumer.shutdown());
+            } finally {
+                this.ctxLock.unlock();
+            }
         }
     }
     /**
