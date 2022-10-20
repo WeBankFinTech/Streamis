@@ -22,6 +22,7 @@ import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.FlinkJobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf;
@@ -51,6 +52,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RequestMapping(path = "/streamis/streamJobManager/job")
@@ -277,6 +279,7 @@ public class JobRestfulApi {
         if(streamTask != null && JobConf.isRunning(streamTask.getStatus())) {
             LOG.warn("Streamis Job {} exists running task, update its status from Running to stopped at first.", jobName);
             streamTask.setStatus((Integer) JobConf.FLINK_JOB_STATUS_STOPPED().getValue());
+            streamTask.setErrDesc("stopped by App's new task.");
             streamTaskService.updateTask(streamTask);
         } else if(streamTask == null) {
             // 这里取个巧，从该工程该用户有权限的Job中找到一个Flink的历史作业，作为这个Spark Streaming作业的jobId和jobInfo
@@ -306,21 +309,65 @@ public class JobRestfulApi {
         }
         streamTask.setStartTime(new Date());
         streamTask.setLastUpdateTime(new Date());
+        StreamTask finalStreamTask = streamTask;
+        return withFlinkJobInfo(jobName, streamTask.getLinkisJobInfo(), flinkJobInfo -> {
+            flinkJobInfo.setApplicationId(appId);
+            flinkJobInfo.setApplicationUrl(appUrl);
+            flinkJobInfo.setName(jobName);
+            flinkJobInfo.setStatus(JobConf.getStatusString((Integer) JobConf.FLINK_JOB_STATUS_RUNNING().getValue()));
+            StreamTaskUtils.refreshInfo(finalStreamTask, flinkJobInfo);
+            streamTaskService.updateTask(finalStreamTask);
+            LOG.info("Streamis Job {} has added a new task successfully.", jobName);
+            return Message.ok();
+        });
+    }
+
+    private Message withFlinkJobInfo(String jobName, String flinkJobInfoStr, Function<FlinkJobInfo, Message> flinkJobInfoFunction) {
         FlinkJobInfo flinkJobInfo;
         try {
-            flinkJobInfo = DWSHttpClient.jacksonJson().readValue(streamTask.getLinkisJobInfo(), FlinkJobInfo.class);
+            flinkJobInfo = DWSHttpClient.jacksonJson().readValue(flinkJobInfoStr, FlinkJobInfo.class);
         } catch (JsonProcessingException e) {
-            LOG.error("Job {} deserialize the jobInfo from history Job failed!", jobName, e);
-            return Message.error("Deserialize the jobInfo from history Job failed!");
+            LOG.error("Job {} deserialize the flinkJobInfo string to object failed!", jobName, e);
+            return Message.error("Deserialize the flinkJobInfo string to object failed!");
         }
-        flinkJobInfo.setApplicationId(appId);
-        flinkJobInfo.setApplicationUrl(appUrl);
-        flinkJobInfo.setName(jobName);
-        flinkJobInfo.setStatus(JobConf.getStatusString((Integer) JobConf.FLINK_JOB_STATUS_RUNNING().getValue()));
-        StreamTaskUtils.refreshInfo(streamTask, flinkJobInfo);
-        streamTaskService.updateTask(streamTask);
-        LOG.info("Streamis Job {} has added a new task successfully.", jobName);
-        return Message.ok();
+        return flinkJobInfoFunction.apply(flinkJobInfo);
+    }
+
+    @RequestMapping(path = "/updateTask", method = RequestMethod.GET)
+    public Message updateTask(HttpServletRequest req,
+                              @RequestParam(value = "jobName") String jobName,
+                              @RequestParam(value = "appId") String appId,
+                              @RequestParam(value = "metrics") String metrics) {
+        String username = SecurityFilter.getLoginUsername(req);
+        LOG.info("User {} try to update task for Streamis job {} with appId: {}.", username, jobName, appId);
+        List<StreamJob> streamJobs = streamJobService.getJobByName(jobName);
+        if(CollectionUtils.isEmpty(streamJobs)) {
+            return Message.error("Not exits Streamis job " + jobName);
+        } else if(streamJobs.size() > 1) {
+            return Message.error("Too many Streamis Job named " + jobName + ", we cannot distinguish between them.");
+        } else if(!"spark.jar".equals(streamJobs.get(0).getJobType())) {
+            return Message.error("Only spark.jar Job support to update task.");
+        }
+        StreamTask streamTask = streamTaskService.getLatestTaskByJobId(streamJobs.get(0).getId());
+        if(streamTask == null) {
+            LOG.warn("Job {} is not exists running task, ignore to update its metrics.", jobName);
+            return Message.ok("not exists running task, ignore it.");
+        }
+        return withFlinkJobInfo(jobName, streamTask.getLinkisJobInfo(), flinkJobInfo -> {
+           if(!flinkJobInfo.getApplicationId().equals(appId)) {
+               LOG.warn("Job {} with running task <appId: {}> is not equals to the request appId: {}, ignore to update its metrics.",
+                       jobName, flinkJobInfo.getApplicationId(), appId);
+               return Message.ok("the request appId is not equals to the running task appId " + flinkJobInfo.getApplicationId());
+           }
+            JobStateInfo jobStateInfo = new JobStateInfo();
+           jobStateInfo.setTimestamp(System.currentTimeMillis());
+           jobStateInfo.setLocation(metrics);
+           flinkJobInfo.setJobStates(new JobStateInfo[]{jobStateInfo});
+            StreamTaskUtils.refreshInfo(streamTask, flinkJobInfo);
+            streamTaskService.updateTask(streamTask);
+            LOG.info("Streamis Job {} has updated the task metrics successfully.", jobName);
+            return Message.ok();
+        });
     }
 
     @RequestMapping(path = "/stopTask", method = RequestMethod.GET)
@@ -345,13 +392,23 @@ public class JobRestfulApi {
         // 如果存在正在运行的，将其停止掉
         StreamTask streamTask = streamTaskService.getLatestTaskByJobId(streamJobs.get(0).getId());
         if(streamTask != null && JobConf.isRunning(streamTask.getStatus())) {
-            LOG.warn("Streamis Job {} is exists running task, update its status to stopped.", jobName);
-            streamTask.setStatus((Integer) JobConf.FLINK_JOB_STATUS_STOPPED().getValue());
-            streamTaskService.updateTask(streamTask);
+            return withFlinkJobInfo(jobName, streamTask.getLinkisJobInfo(), flinkJobInfo -> {
+                if(flinkJobInfo.getApplicationId().equals(appId)) {
+                    LOG.warn("Streamis Job {} is exists running task, update its status to stopped.", jobName);
+                    streamTask.setStatus((Integer) JobConf.FLINK_JOB_STATUS_STOPPED().getValue());
+                    streamTask.setErrDesc("stopped by App itself.");
+                    streamTaskService.updateTask(streamTask);
+                    return Message.ok();
+                } else {
+                    LOG.warn("Job {} with running task <appId: {}> is not equals to the request appId: {}, ignore to stop it.",
+                            jobName, flinkJobInfo.getApplicationId(), appId);
+                    return Message.ok("the request appId is not equals to the running task appId " + flinkJobInfo.getApplicationId());
+                }
+            });
         } else {
             LOG.warn("Streamis Job {} is not exists running task, ignore to stop it.", jobName);
+            return Message.ok();
         }
-        return Message.ok();
     }
 
     @RequestMapping(path = "/progress", method = RequestMethod.GET)
@@ -411,6 +468,12 @@ public class JobRestfulApi {
         logType = StringUtils.isBlank(logType) ? "client" : logType;
         String username = SecurityFilter.getLoginUsername(req);
         StreamJob streamJob = this.streamJobService.getJobById(jobId);
+        if(streamJob == null) {
+            return Message.error("not exists job " + jobId);
+        } else if(!JobConf.SUPPORTED_MANAGEMENT_JOB_TYPES().getValue().contains(streamJob.getJobType()) &&
+            "client".equals(logType)) {
+            return Message.error("Job " + streamJob.getName() + " is not supported to get client logs.");
+        }
         if (!streamJobService.hasPermission(streamJob, username) &&
                 !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
             return Message.error("Have no permission to fetch logs from StreamJob [" + jobId + "]");
