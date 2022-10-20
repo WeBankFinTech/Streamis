@@ -1,5 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf;
 
+import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisLogEvent;
+
 import java.util.Arrays;
 import java.util.function.Function;
 
@@ -30,14 +32,13 @@ public class ImmutableSendBuffer<E> extends AbstractSendBuffer<E>{
     }
 
     @Override
+    @SuppressWarnings("all")
     public int writeBuf(E[] elements, int srcIndex, int length) {
         if (srcIndex < elements.length){
             int startPos = nextPosition(Math.min(elements.length - srcIndex, length), Flag.WRITE_MODE);
             if (startPos >= 0){
                 int writes = position() - startPos;
-                for (int i = srcIndex; i < writes; i ++){
-                    buf[startPos++] = elements[i];
-                }
+                System.arraycopy(this.buf, startPos, elements, srcIndex, writes);
                 return writes;
             }
         }
@@ -68,4 +69,5 @@ public class ImmutableSendBuffer<E> extends AbstractSendBuffer<E>{
     public SendBuffer<E> compact(Function<E, Boolean> dropAble) {
         return null;
     }
+
 }

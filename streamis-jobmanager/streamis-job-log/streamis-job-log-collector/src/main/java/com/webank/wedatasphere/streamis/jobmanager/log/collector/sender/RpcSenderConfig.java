@@ -64,6 +64,7 @@ public class RpcSenderConfig {
      * The time for server recovery
      */
     private int serverRecoveryTimeInSec = 5;
+
     /**
      * Retry max delay time of sender
      */
