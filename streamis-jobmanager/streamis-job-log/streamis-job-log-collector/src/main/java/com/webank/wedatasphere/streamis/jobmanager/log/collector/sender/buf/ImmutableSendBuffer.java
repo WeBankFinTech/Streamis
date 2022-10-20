@@ -1,7 +1,5 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf;
 
-import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisLogEvent;
-
 import java.util.Arrays;
 import java.util.function.Function;
 
@@ -38,7 +36,7 @@ public class ImmutableSendBuffer<E> extends AbstractSendBuffer<E>{
             int startPos = nextPosition(Math.min(elements.length - srcIndex, length), Flag.WRITE_MODE);
             if (startPos >= 0){
                 int writes = position() - startPos;
-                System.arraycopy(this.buf, startPos, elements, srcIndex, writes);
+                System.arraycopy(elements, srcIndex, this.buf, startPos, writes);
                 return writes;
             }
         }
@@ -46,8 +44,17 @@ public class ImmutableSendBuffer<E> extends AbstractSendBuffer<E>{
     }
 
     @Override
+    @SuppressWarnings("all")
     public int readBuf(E[] elements, int srcIndex, int length) {
-        return 0;
+        if (srcIndex < elements.length){
+            int startPos = nextPosition(Math.min(elements.length - srcIndex, length), Flag.READ_MODE);
+            if (startPos >= 0){
+                int reads = position() - startPos;
+                System.arraycopy(this.buf, startPos, elements, srcIndex, reads);
+                return reads;
+            }
+        }
+        return -1;
     }
 
     @Override
@@ -61,13 +68,35 @@ public class ImmutableSendBuffer<E> extends AbstractSendBuffer<E>{
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public E readBuf() {
+        int startPos = nextPosition(1, Flag.READ_MODE);
+        if (startPos >= 0){
+            return (E)buf[startPos];
+        }
         return null;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public SendBuffer<E> compact(Function<E, Boolean> dropAble) {
-        return null;
+        checkFlag(Flag.READ_MODE);
+        int offset = 0;
+        int compact = position() - 1;
+        for(int i = position(); i < capacity; i ++){
+           Object element = buf[i];
+           if (dropAble.apply((E)element)){
+               buf[i] = null;
+               offset ++;
+           } else {
+               compact = i - offset;
+               buf[compact] = element;
+           }
+        }
+        position(compact + 1);
+        limit(this.capacity);
+        setFlag(Flag.WRITE_MODE);
+        return this;
     }
 
 }
