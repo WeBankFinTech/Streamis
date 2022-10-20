@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender;
 
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.ExceptionListener;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.cache.LogCache;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf.ImmutableSendBuffer;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf.SendBuffer;
@@ -42,7 +43,11 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
      */
     private volatile RpcLogContext rpcLogContext;
 
-
+    protected boolean isTerminated = false;
+    /**
+     * Use the listener instead of log4j structure
+     */
+    protected ExceptionListener exceptionListener;
     public AbstractRpcLogSender(RpcSenderConfig rpcSenderConfig, int cacheSize, int sendBufSize){
         this(rpcSenderConfig, cacheSize, sendBufSize, Integer.MAX_VALUE);
     }
@@ -59,8 +64,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
 
     @Override
     public  LogCache<T> getOrCreateLogCache() {
-        getOrCreateRpcLogContext();
-        return null;
+        return getOrCreateRpcLogContext().getLogCache();
     }
 
     @Override
@@ -69,13 +73,20 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
         try {
             getOrCreateLogCache().cacheLog(log);
         } catch (InterruptedException e) {
-            // Exception handler
+            // Invoke exception listener
+            Optional.ofNullable(exceptionListener).ifPresent(listener ->
+                    listener.onException(this, e, null));
         }
     }
 
     @Override
     public void syncSendLog(T log) {
 
+    }
+
+    @Override
+    public void setExceptionListener(ExceptionListener listener) {
+        this.exceptionListener = listener;
     }
 
     @Override
@@ -95,7 +106,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
      * @param aggregatedEntity agg entity
      * @param rpcSenderConfig rpc sender config
      */
-    protected abstract void doSend(E aggregatedEntity, RpcSenderConfig rpcSenderConfig);
+    protected abstract void doSend(E aggregatedEntity, RpcSenderConfig rpcSenderConfig) throws Exception;
 
     /**
      * Send log exception strategy
@@ -302,7 +313,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
             return 0;
         }
 
-        // Equal to the poll method in ArrayBlockingQuue
+        // Equal to the poll method in ArrayBlockingQueue
         @Override
         public T takeLog(long timeout, TimeUnit unit) throws InterruptedException {
             long nanos = unit.toNanos(timeout);
@@ -410,6 +421,8 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
             int send = sendBuffer.writeBuf((T[]) items, takeIndex, len);
             if (send < len){
                 // Buffer full exception
+                exceptionListener.onException(this, null, "The sender buffer is full," +
+                        " expected: [" + len + "], actual: [" + send + "]");
             }
             // Allow data loss
             return send;
