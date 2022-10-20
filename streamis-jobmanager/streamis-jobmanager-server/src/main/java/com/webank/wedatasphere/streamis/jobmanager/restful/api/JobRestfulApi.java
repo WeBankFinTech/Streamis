@@ -373,7 +373,9 @@ public class JobRestfulApi {
             }
             StreamTask newStreamTask = streamTaskService.createTask(streamJobs.get(0).getId(), (Integer) JobConf.FLINK_JOB_STATUS_RUNNING().getValue(), username);
             streamTask.setId(newStreamTask.getId());
-            streamTask.setStatus((Integer) JobConf.FLINK_JOB_STATUS_RUNNING().getValue());
+            streamTask.setVersion(newStreamTask.getVersion());
+            streamTask.setErrDesc("");
+            streamTask.setStatus(newStreamTask.getStatus());
             streamTask.setSubmitUser(username);
         }
         streamTask.setStartTime(new Date());
@@ -383,7 +385,7 @@ public class JobRestfulApi {
             flinkJobInfo.setApplicationId(appId);
             flinkJobInfo.setApplicationUrl(appUrl);
             flinkJobInfo.setName(jobName);
-            flinkJobInfo.setStatus(JobConf.getStatusString((Integer) JobConf.FLINK_JOB_STATUS_RUNNING().getValue()));
+            flinkJobInfo.setStatus(JobConf.getStatusString(finalStreamTask.getStatus()));
             StreamTaskUtils.refreshInfo(finalStreamTask, flinkJobInfo);
             streamTaskService.updateTask(finalStreamTask);
             LOG.info("Streamis Job {} has added a new task successfully.", jobName);
