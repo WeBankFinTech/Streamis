@@ -281,11 +281,11 @@ public class JobRestfulApi {
         } else if(streamTask == null) {
             // 这里取个巧，从该工程该用户有权限的Job中找到一个Flink的历史作业，作为这个Spark Streaming作业的jobId和jobInfo
             // 替换掉JobInfo中的 yarn 信息，这样我们前端就可以在不修改任何逻辑的情况下正常展示Spark Streaming作业了
-            PageInfo<QueryJobListVo> jobList = streamJobService.getByProList(streamJobs.get(0).getProjectName(), username, null, 0, null);
-            List<QueryJobListVo> copyJobs = jobList.getList().stream().filter(job -> !job.getJobType().startsWith("spark") && job.getStatus() > 0)
+            PageInfo<QueryJobListVo> jobList = streamJobService.getByProList(streamJobs.get(0).getProjectName(), username, null, null, null);
+            List<QueryJobListVo> copyJobs = jobList.getList().stream().filter(job -> !job.getJobType().startsWith("spark."))
                     .collect(Collectors.toList());
             if(copyJobs.isEmpty()) {
-                return Message.error("no Flink Job has submitted, the register to Streamis cannot be succeeded.");
+                return Message.error("no Flink Job has been submitted, the register to Streamis cannot be succeeded.");
             }
             int index = 0;
             while(streamTask == null && index < copyJobs.size()) {
@@ -301,7 +301,7 @@ public class JobRestfulApi {
                 }
             }
             if(streamTask == null) {
-                return Message.error("no Flink Job has submitted, the register to Streamis cannot be succeeded.");
+                return Message.error("no Flink task has been executed, the register to Streamis cannot be succeeded.");
             }
         }
         streamTask.setStartTime(new Date());
