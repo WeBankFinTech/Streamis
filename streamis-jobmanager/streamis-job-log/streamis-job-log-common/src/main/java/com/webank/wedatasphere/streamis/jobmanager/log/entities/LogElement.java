@@ -1,6 +1,5 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.entities;
 
-import java.util.concurrent.TimeUnit;
 
 /**
  * Element defined of log
