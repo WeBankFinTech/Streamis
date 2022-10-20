@@ -39,6 +39,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.linkis.common.utils.Utils;
 import org.apache.linkis.httpclient.dws.DWSHttpClient;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
@@ -50,7 +51,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -194,44 +194,107 @@ public class JobRestfulApi {
 
     @RequestMapping(path = "/details", method = RequestMethod.GET)
     public Message detailsJob(HttpServletRequest req, @RequestParam(value = "jobId", required = false) Long jobId,
-                              @RequestParam(value = "version", required = false) String version) throws JobException {
+                              @RequestParam(value = "version", required = false) String version) throws JobException, JsonProcessingException {
         if (jobId == null) {
             JobExceptionManager.createException(30301, "jobId");
         }
-        // TODO This is just sample datas, waiting for it completed. We have planned it to a later release, welcome all partners to join us to realize this powerful feature.
+
+        StreamJob streamJob = streamJobService.getJobById(jobId);
+        if(streamJob == null) {
+            return Message.error("not exists job " + jobId);
+        }
+        FlinkJobInfo flinkJobInfo = streamTaskService.getTaskJobInfo(jobId,version);
         JobDetailsVo jobDetailsVO = new JobDetailsVo();
         List<JobDetailsVo.DataNumberDTO> dataNumberDTOS = new ArrayList<>();
-        JobDetailsVo.DataNumberDTO dataNumberDTO = new JobDetailsVo.DataNumberDTO();
-        dataNumberDTO.setDataName("kafka topic");
-        dataNumberDTO.setDataNumber(109345);
-        dataNumberDTOS.add(dataNumberDTO);
-
         List<JobDetailsVo.LoadConditionDTO> loadConditionDTOs = new ArrayList<>();
-        JobDetailsVo.LoadConditionDTO loadConditionDTO = new JobDetailsVo.LoadConditionDTO();
-        loadConditionDTO.setType("jobManager");
-        loadConditionDTO.setHost("localhost");
-        loadConditionDTO.setMemory("1.5");
-        loadConditionDTO.setTotalMemory("2.0");
-        loadConditionDTO.setGcLastTime("2020-08-01");
-        loadConditionDTO.setGcLastConsume("1");
-        loadConditionDTO.setGcTotalTime("2min");
-        loadConditionDTOs.add(loadConditionDTO);
-
         List<JobDetailsVo.RealTimeTrafficDTO> realTimeTrafficDTOS = new ArrayList<>();
-        JobDetailsVo.RealTimeTrafficDTO realTimeTrafficDTO = new JobDetailsVo.RealTimeTrafficDTO();
-        realTimeTrafficDTO.setSourceKey("kafka topic");
-        realTimeTrafficDTO.setSourceSpeed("100 Records/S");
-        realTimeTrafficDTO.setTransformKey("transform");
-        realTimeTrafficDTO.setSinkKey("hbase key");
-        realTimeTrafficDTO.setSinkSpeed("10 Records/S");
-        realTimeTrafficDTOS.add(realTimeTrafficDTO);
+        JobStateInfo[] jobStateInfos = flinkJobInfo.getJobStates();
+        if(JobConf.SUPPORTED_MANAGEMENT_JOB_TYPES().getValue().contains(streamJob.getJobType()) ||
+                (jobStateInfos == null || jobStateInfos.length == 0)) {
+            // TODO This is just sample datas, waiting for it completed. We have planned it to a later release, welcome all partners to join us to realize this powerful feature.
+            JobDetailsVo.DataNumberDTO dataNumberDTO = new JobDetailsVo.DataNumberDTO();
+            dataNumberDTO.setDataName("kafka topic");
+            dataNumberDTO.setDataNumber(109345);
+            dataNumberDTOS.add(dataNumberDTO);
 
+            JobDetailsVo.LoadConditionDTO loadConditionDTO = new JobDetailsVo.LoadConditionDTO();
+            loadConditionDTO.setType("jobManager");
+            loadConditionDTO.setHost("localhost");
+            loadConditionDTO.setMemory("1.5");
+            loadConditionDTO.setTotalMemory("2.0");
+            loadConditionDTO.setGcLastTime("2020-08-01");
+            loadConditionDTO.setGcLastConsume("1");
+            loadConditionDTO.setGcTotalTime("2min");
+            loadConditionDTOs.add(loadConditionDTO);
 
-        jobDetailsVO.setLinkisJobInfo(streamTaskService.getTaskJobInfo(jobId,version));
+            JobDetailsVo.RealTimeTrafficDTO realTimeTrafficDTO = new JobDetailsVo.RealTimeTrafficDTO();
+            realTimeTrafficDTO.setSourceKey("kafka topic");
+            realTimeTrafficDTO.setSourceSpeed("100 Records/S");
+            realTimeTrafficDTO.setTransformKey("transform");
+            realTimeTrafficDTO.setSinkKey("hbase key");
+            realTimeTrafficDTO.setSinkSpeed("10 Records/S");
+            realTimeTrafficDTOS.add(realTimeTrafficDTO);
+
+        } else {
+            String metricsStr = jobStateInfos[0].getLocation();
+            Map<String, Object> metricsMap = DWSHttpClient.jacksonJson().readValue(metricsStr, Map.class);
+            JobDetailsVo.DataNumberDTO dataNumberDTO = new JobDetailsVo.DataNumberDTO();
+            dataNumberDTO.setDataName("waitingBatchs");
+            dataNumberDTO.setDataNumber(Math.toIntExact((Long) metricsMap.get("waitingBatchs")));
+            dataNumberDTOS.add(dataNumberDTO);
+            List<Map<String, Object>> executors = (List<Map<String, Object>>) metricsMap.get("executors");
+            if(executors != null && !executors.isEmpty()) {
+                executors.forEach(map -> {
+                    JobDetailsVo.LoadConditionDTO loadConditionDTO = new JobDetailsVo.LoadConditionDTO();
+                    loadConditionDTO.setType((String) map.get("type"));
+                    loadConditionDTO.setHost((String) map.get("host"));
+                    loadConditionDTO.setMemory((String) map.get("memory"));
+                    loadConditionDTO.setTotalMemory((String) map.get("totalMemory"));
+                    loadConditionDTO.setGcLastTime((String) map.get("gcLastTime"));
+                    loadConditionDTO.setGcLastConsume((String) map.get("gcLastConsume"));
+                    loadConditionDTO.setGcTotalTime((String) map.get("gcTotalTime"));
+                    loadConditionDTOs.add(loadConditionDTO);
+                });
+            } else {
+                JobDetailsVo.LoadConditionDTO loadConditionDTO = new JobDetailsVo.LoadConditionDTO();
+                loadConditionDTO.setType("sparkAppMaster");
+                loadConditionDTO.setHost("<Unknown>");
+                loadConditionDTO.setMemory("<Unknown>");
+                loadConditionDTO.setTotalMemory("<Unknown>");
+                loadConditionDTO.setGcLastTime("<Unknown>");
+                loadConditionDTO.setGcLastConsume("<Unknown>");
+                loadConditionDTO.setGcTotalTime("<Unknown>");
+                loadConditionDTOs.add(loadConditionDTO);
+            }
+            JobDetailsVo.RealTimeTrafficDTO realTimeTrafficDTO = new JobDetailsVo.RealTimeTrafficDTO();
+            List<Map<String, Object>> batchMetrics = (List<Map<String, Object>>) metricsMap.get("batchMetrics");
+            if(batchMetrics != null && !batchMetrics.isEmpty()) {
+                batchMetrics.stream().max(Comparator.comparing(map -> String.valueOf(map.get("batchTime")))).ifPresent(batchMetric -> {
+                    realTimeTrafficDTO.setSourceKey((String) metricsMap.getOrDefault("source", "<Unknown>"));
+                    realTimeTrafficDTO.setSourceSpeed(batchMetric.get("inputRecords") + " Records");
+                    realTimeTrafficDTO.setTransformKey("processing");
+                    realTimeTrafficDTO.setSinkKey((String) metricsMap.getOrDefault("sink", "<Unknown>"));
+                    String totalDelay = "<Unknown>";
+                    if(batchMetric.containsKey("totalDelay") && batchMetric.get("totalDelay") != null) {
+                        totalDelay = Utils.msDurationToString((long) batchMetric.get("totalDelay")) + " totalDelay";
+                    } else if(batchMetric.containsKey("taskExecuteTime") && batchMetric.get("taskExecuteTime") != null) {
+                        totalDelay = Utils.msDurationToString((long) batchMetric.get("taskExecuteTime")) + " executeTime(Last Batch)";
+                    }
+                    realTimeTrafficDTO.setSinkSpeed(totalDelay);
+                });
+            } else {
+                realTimeTrafficDTO.setSourceKey("<Unknown Source>");
+                realTimeTrafficDTO.setSourceSpeed("<Unknown> Records/S");
+                realTimeTrafficDTO.setTransformKey("<Unknown Transform>");
+                realTimeTrafficDTO.setSinkKey("<Unknown Sink>");
+                realTimeTrafficDTO.setSinkSpeed("<Unknown> Records/S");
+            }
+            realTimeTrafficDTOS.add(realTimeTrafficDTO);
+        }
         jobDetailsVO.setDataNumber(dataNumberDTOS);
         jobDetailsVO.setLoadCondition(loadConditionDTOs);
         jobDetailsVO.setRealTimeTraffic(realTimeTrafficDTOS);
-
+        jobDetailsVO.setLinkisJobInfo(flinkJobInfo);
         return Message.ok().data("details", jobDetailsVO);
     }
 
@@ -276,12 +339,7 @@ public class JobRestfulApi {
         }
         // 如果存在正在运行的，先将其停止掉
         StreamTask streamTask = streamTaskService.getLatestTaskByJobId(streamJobs.get(0).getId());
-        if(streamTask != null && JobConf.isRunning(streamTask.getStatus())) {
-            LOG.warn("Streamis Job {} exists running task, update its status from Running to stopped at first.", jobName);
-            streamTask.setStatus((Integer) JobConf.FLINK_JOB_STATUS_STOPPED().getValue());
-            streamTask.setErrDesc("stopped by App's new task.");
-            streamTaskService.updateTask(streamTask);
-        } else if(streamTask == null) {
+        if(streamTask == null) {
             // 这里取个巧，从该工程该用户有权限的Job中找到一个Flink的历史作业，作为这个Spark Streaming作业的jobId和jobInfo
             // 替换掉JobInfo中的 yarn 信息，这样我们前端就可以在不修改任何逻辑的情况下正常展示Spark Streaming作业了
             PageInfo<QueryJobListVo> jobList = streamJobService.getByProList(streamJobs.get(0).getProjectName(), username, null, null, null);
@@ -306,6 +364,19 @@ public class JobRestfulApi {
             if(streamTask == null) {
                 return Message.error("no Flink task has been executed, the register to Streamis cannot be succeeded.");
             }
+        } else {
+            if(JobConf.isRunning(streamTask.getStatus())) {
+                LOG.warn("Streamis Job {} exists running task, update its status from Running to stopped at first.", jobName);
+                streamTask.setStatus((Integer) JobConf.FLINK_JOB_STATUS_STOPPED().getValue());
+                streamTask.setErrDesc("stopped by App's new task.");
+                streamTaskService.updateTask(streamTask);
+            }
+            StreamTask newStreamTask = streamTaskService.createTask(streamJobs.get(0).getId(), (Integer) JobConf.FLINK_JOB_STATUS_RUNNING().getValue(), username);
+            streamTask.setId(newStreamTask.getId());
+            streamTask.setVersion(newStreamTask.getVersion());
+            streamTask.setErrDesc("");
+            streamTask.setStatus(newStreamTask.getStatus());
+            streamTask.setSubmitUser(username);
         }
         streamTask.setStartTime(new Date());
         streamTask.setLastUpdateTime(new Date());
@@ -314,7 +385,7 @@ public class JobRestfulApi {
             flinkJobInfo.setApplicationId(appId);
             flinkJobInfo.setApplicationUrl(appUrl);
             flinkJobInfo.setName(jobName);
-            flinkJobInfo.setStatus(JobConf.getStatusString((Integer) JobConf.FLINK_JOB_STATUS_RUNNING().getValue()));
+            flinkJobInfo.setStatus(JobConf.getStatusString(finalStreamTask.getStatus()));
             StreamTaskUtils.refreshInfo(finalStreamTask, flinkJobInfo);
             streamTaskService.updateTask(finalStreamTask);
             LOG.info("Streamis Job {} has added a new task successfully.", jobName);
@@ -359,7 +430,7 @@ public class JobRestfulApi {
                        jobName, flinkJobInfo.getApplicationId(), appId);
                return Message.ok("the request appId is not equals to the running task appId " + flinkJobInfo.getApplicationId());
            }
-            JobStateInfo jobStateInfo = new JobStateInfo();
+           JobStateInfo jobStateInfo = new JobStateInfo();
            jobStateInfo.setTimestamp(System.currentTimeMillis());
            jobStateInfo.setLocation(metrics);
            flinkJobInfo.setJobStates(new JobStateInfo[]{jobStateInfo});
