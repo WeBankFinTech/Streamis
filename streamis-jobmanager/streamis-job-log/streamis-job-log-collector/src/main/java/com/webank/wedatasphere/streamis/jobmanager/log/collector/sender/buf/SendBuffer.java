@@ -1,4 +1,4 @@
-package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender;
+package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf;
 
 import java.util.function.Function;
 
@@ -15,6 +15,17 @@ public interface SendBuffer<E> {
     int capacity();
 
     /**
+     * Is read mode
+     * @return boolean
+     */
+    boolean isReadMode();
+
+    /**
+     * Is write mode
+     * @return boolean
+     */
+    boolean isWriteMode();
+    /**
      * Scale-up or scale-in
      * @param newCapacity  new capacity
      */
@@ -27,10 +38,14 @@ public interface SendBuffer<E> {
     int remaining();
 
     /**
-     * transient between write-mode and read-mode
+     * Transient between write-mode and read-mode
      */
     void flip();
 
+    /**
+     * Restart from the beginning of window
+     */
+    void rewind();
     /**
      * Clear to reuse the buffer
      */
