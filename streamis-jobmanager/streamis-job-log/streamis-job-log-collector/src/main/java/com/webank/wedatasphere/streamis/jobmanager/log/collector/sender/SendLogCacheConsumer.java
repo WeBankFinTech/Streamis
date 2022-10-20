@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender;
 
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcLogSenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf.SendBuffer;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.LogElement;
 
@@ -38,12 +39,13 @@ public abstract class SendLogCacheConsumer<T extends LogElement> implements Runn
 
     public SendLogCacheConsumer(String id, SendLogCache<T> cache,
                                 SendBuffer<T> sendBuffer,
-                                RpcSenderConfig rpcSenderConfig){
+                                RpcLogSenderConfig rpcSenderConfig){
         this.id = id;
         this.cache = cache;
         this.sendBuffer = sendBuffer;
-        this.bufferExpireTimeInMills = rpcSenderConfig.getBufferExpireTimeInSec() > 0 ? TimeUnit.SECONDS
-                .toMillis(rpcSenderConfig.getBufferExpireTimeInSec()) : -1;
+        long expireTimeInSec = rpcSenderConfig.getBufferConfig().getExpireTimeInSec();
+        this.bufferExpireTimeInMills = expireTimeInSec > 0 ? TimeUnit.SECONDS
+                .toMillis(expireTimeInSec) : -1;
 
     }
 
@@ -93,6 +95,9 @@ public abstract class SendLogCacheConsumer<T extends LogElement> implements Runn
 
     public void shutdown(){
         this.isTerminated = true;
+        if (null != this.future){
+            this.future.cancel(true);
+        }
     }
 
     public Future<?> getFuture() {
