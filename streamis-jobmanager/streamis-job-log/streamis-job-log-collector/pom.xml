@@ -14,6 +14,33 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <httpclient.version>4.5.13</httpclient.version>
+        <httpmine.version>4.5.4</httpmine.version>
+        <jackson-databind.version>2.13.2.2</jackson-databind.version>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.webank.wedatasphere.streamis</groupId>
+            <artifactId>streamis-job-log-common</artifactId>
+            <version>0.2.0</version>
+        </dependency>
+        <!--http client module-->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${httpclient.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <version>${httpmine.version}</version>
+        </dependency>
+        <!-- jackson module -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson-databind.version}</version>
+        </dependency>
+    </dependencies>
 </project>
