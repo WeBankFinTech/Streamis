@@ -25,4 +25,10 @@ public interface LogElement {
      */
     String[] getContents();
 
+    /**
+     * The importance of log
+     * 0: useless, 1: normal, 2:important
+     * @return
+     */
+    int mark();
 }
