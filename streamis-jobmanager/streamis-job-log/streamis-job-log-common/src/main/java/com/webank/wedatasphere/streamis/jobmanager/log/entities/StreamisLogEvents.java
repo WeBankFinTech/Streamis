@@ -16,4 +16,9 @@ public class StreamisLogEvents implements LogElement{
     public String[] getContents() {
         return new String[0];
     }
+
+    @Override
+    public int mark() {
+        return 0;
+    }
 }
