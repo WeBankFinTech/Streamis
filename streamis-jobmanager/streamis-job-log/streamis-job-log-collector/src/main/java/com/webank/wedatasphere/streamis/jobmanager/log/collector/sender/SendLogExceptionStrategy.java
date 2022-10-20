@@ -20,14 +20,14 @@ public abstract class SendLogExceptionStrategy<T extends LogElement> {
      * Retry count
      * @return retry
      */
-    abstract int retryCount();
+    public abstract int retryCount();
 
     /**
      *
      * @param e exception
      * @return boolean
      */
-    abstract RetryDescription onException(Exception e, SendBuffer<T> sendBuffer);
+    public abstract RetryDescription onException(Exception e, SendBuffer<T> sendBuffer);
 
     <V>V doSend(Callable<V> sendOperation, SendBuffer<T> sendBuffer){
         int retryCount = retryCount();
@@ -47,7 +47,7 @@ public abstract class SendLogExceptionStrategy<T extends LogElement> {
         return null;
     }
 
-    private static class RetryDescription{
+    protected static class RetryDescription{
 
         private final boolean canRetry;
 
