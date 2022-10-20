@@ -3,6 +3,7 @@ package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf.SendBuffer;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.LogElement;
 
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -29,14 +30,20 @@ public abstract class SendLogCacheConsumer<T extends LogElement> implements Runn
     private final SendBuffer<T> sendBuffer;
 
     private final String id;
+
+    /**
+     * Future for execution
+     */
+    private Future<?> future;
+
     public SendLogCacheConsumer(String id, SendLogCache<T> cache,
                                 SendBuffer<T> sendBuffer,
                                 RpcSenderConfig rpcSenderConfig){
         this.id = id;
         this.cache = cache;
         this.sendBuffer = sendBuffer;
-        this.bufferExpireTimeInMills = rpcSenderConfig.getSendBufferExpireTimeInSec() > 0 ? TimeUnit.SECONDS
-                .toMillis(rpcSenderConfig.getSendBufferExpireTimeInSec()) : -1;
+        this.bufferExpireTimeInMills = rpcSenderConfig.getBufferExpireTimeInSec() > 0 ? TimeUnit.SECONDS
+                .toMillis(rpcSenderConfig.getBufferExpireTimeInSec()) : -1;
 
     }
 
@@ -86,6 +93,14 @@ public abstract class SendLogCacheConsumer<T extends LogElement> implements Runn
 
     public void shutdown(){
         this.isTerminated = true;
+    }
+
+    public Future<?> getFuture() {
+        return future;
+    }
+
+    public void setFuture(Future<?> future) {
+        this.future = future;
     }
 
     private long requireNewFlushTime(){

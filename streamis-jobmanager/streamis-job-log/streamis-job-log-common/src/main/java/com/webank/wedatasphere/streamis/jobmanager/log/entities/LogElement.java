@@ -15,10 +15,9 @@ public interface LogElement {
 
     /**
      * Log time
-     * @param unit unit
      * @return log time
      */
-    long getLogTime(TimeUnit unit);
+    long getLogTimeStamp();
 
     /**
      * Get content
