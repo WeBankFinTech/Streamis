@@ -1,6 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.http;
 
-import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.RpcSenderConfig;
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcLogSenderConfig;
 import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -38,7 +38,7 @@ public class HttpClientTool {
      * @param rpcSenderConfig rpc sender config
      * @return http client
      */
-    public static HttpClient createHttpClient(RpcSenderConfig rpcSenderConfig){
+    public static HttpClient createHttpClient(RpcLogSenderConfig rpcSenderConfig){
         int connectTimeout = rpcSenderConfig.getConnectionTimeout() > 0? rpcSenderConfig.getConnectionTimeout() : DEFAULT_CONNECT_TIMEOUT;
         int socketTimeout = rpcSenderConfig.getSocketTimeout() > 0? rpcSenderConfig.getSocketTimeout() : DEFAULT_SOCKET_TIMEOUT;
         RequestConfig requestConfig = RequestConfig.custom()
@@ -46,12 +46,13 @@ public class HttpClientTool {
                 .setConnectionRequestTimeout(socketTimeout)
                 .setSocketTimeout(socketTimeout)
                 .build();
-        int maxConn = rpcSenderConfig.getMaxConsumeThread() > 0? rpcSenderConfig.getMaxConsumeThread() : DEFAULT_MAX_CONN;
+        int maxConsumeThread = rpcSenderConfig.getCacheConfig().getMaxConsumeThread();
+        int maxConn = maxConsumeThread > 0? maxConsumeThread : DEFAULT_MAX_CONN;
         HttpClientBuilder clientBuilder = HttpClients.custom();
-        String tokenValue = rpcSenderConfig.getTokenCode();
+        String tokenValue = rpcSenderConfig.getAuthConfig().getTokenCode();
         List<Header> defaultHeaders = new ArrayList<>();
         if (null != tokenValue && !tokenValue.trim().equals("")){
-            defaultHeaders.add(new BasicHeader(rpcSenderConfig.getTokenCodeKey(), tokenValue));
+            defaultHeaders.add(new BasicHeader(rpcSenderConfig.getAuthConfig().getTokenCodeKey(), tokenValue));
         }
         clientBuilder.setDefaultRequestConfig(requestConfig).setDefaultHeaders(defaultHeaders)
                 .useSystemProperties().setMaxConnTotal(maxConn);

@@ -1,16 +1,13 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.http;
 
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcAuthConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.AbstractRpcLogSender;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.RpcLogSender;
-import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.RpcSenderConfig;
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcLogSenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.SendLogExceptionStrategy;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf.SendBuffer;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.http.request.EntityPostAction;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.LogElement;
-import org.apache.http.HttpException;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ConnectTimeoutException;
 
@@ -43,10 +40,9 @@ public abstract class AbstractHttpLogSender<T extends LogElement, E> extends Abs
      */
     private final AtomicLong serverRecoveryTimePoint = new AtomicLong(-1L);
 
-    public AbstractHttpLogSender(RpcSenderConfig rpcSenderConfig, int cacheSize, int sendBufSize) {
-        super(rpcSenderConfig, cacheSize, sendBufSize);
+    public AbstractHttpLogSender(RpcLogSenderConfig rpcSenderConfig) {
+        super(rpcSenderConfig);
         this.globalHttpClient = HttpClientTool.createHttpClient(rpcSenderConfig);
-        final RpcLogSender<T> sender = this;
         this.sendRetryStrategy = new SendLogExceptionStrategy<T>(this) {
 
             private final Class<?>[] retryOnExceptions = new Class<?>[]{
@@ -92,7 +88,7 @@ public abstract class AbstractHttpLogSender<T extends LogElement, E> extends Abs
     }
 
     @Override
-    protected void doSend(E aggregatedEntity, RpcSenderConfig rpcSenderConfig) throws IOException {
+    protected void doSend(E aggregatedEntity, RpcLogSenderConfig rpcSenderConfig) throws IOException {
         if (System.currentTimeMillis() >= serverRecoveryTimePoint.get()) {
             if (aggregatedEntity instanceof LogElement) {
                 long timestamp = ((LogElement) aggregatedEntity).getLogTimeStamp();
@@ -102,7 +98,8 @@ public abstract class AbstractHttpLogSender<T extends LogElement, E> extends Abs
                 }
             }
             EntityPostAction<E> postAction = new EntityPostAction<>(rpcSenderConfig.getAddress(), aggregatedEntity);
-            postAction.getRequestHeaders().put(rpcSenderConfig.getTokenUserKey(), rpcSenderConfig.getTokenUser());
+            RpcAuthConfig authConfig = rpcSenderConfig.getAuthConfig();
+            postAction.getRequestHeaders().put(authConfig.getTokenUserKey(), authConfig.getTokenUser());
             // Ignore the response
             postAction.execute(this.globalHttpClient);
             // Init the counter
