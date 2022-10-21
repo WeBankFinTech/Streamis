@@ -1,6 +1,35 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.entities;
 
-public class StreamisLogEvents implements LogElement{
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.io.Serializable;
+
+public class StreamisLogEvents implements LogElement, Serializable {
+
+    /**
+     * Application name
+     */
+    private String appName;
+    /**
+     * Log time
+     */
+    private final long logTimeInMills;
+
+    private final StreamisLogEvent[] events;
+
+    public StreamisLogEvents(String applicationName, StreamisLogEvent[] events){
+        this.appName = applicationName;
+        this.events = events;
+        long maxTime = -1;
+        for(StreamisLogEvent event : events){
+            long time = event.getLogTimeStamp();
+            if (time > maxTime){
+                maxTime = time;
+            }
+        }
+        this.logTimeInMills = maxTime;
+    }
+
     @Override
     public int getSequenceId() {
         return 0;
@@ -8,12 +37,30 @@ public class StreamisLogEvents implements LogElement{
 
     @Override
     public long getLogTimeStamp() {
-        return 0;
+        return this.logTimeInMills;
     }
 
 
     @Override
+    @JsonIgnore
     public String[] getContents() {
-        return new String[0];
+        String[] contents = new String[events.length];
+        for(int i = 0 ; i < contents.length; i++){
+            contents[i] = events[i].getContent();
+        }
+        return contents;
+    }
+
+    @Override
+    public int mark() {
+        return 1;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public StreamisLogEvent[] getEvents() {
+        return events;
     }
 }

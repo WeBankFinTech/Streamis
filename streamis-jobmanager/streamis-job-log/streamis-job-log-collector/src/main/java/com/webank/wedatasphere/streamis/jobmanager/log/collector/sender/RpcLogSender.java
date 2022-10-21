@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender;
 
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.ExceptionListener;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.cache.LogCache;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.LogElement;
 
@@ -26,6 +27,11 @@ public interface RpcLogSender<T extends LogElement>  {
      */
     void syncSendLog(T log);
 
+    /**
+     * Exception listener
+     * @param listener listener
+     */
+    void setExceptionListener(ExceptionListener listener);
     /**
      * Close sender
      */
