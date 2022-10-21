@@ -3,7 +3,6 @@ package com.webank.wedatasphere.streamis.jobmanager.log.collector;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.cache.LogCache;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcLogSenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.StreamisLogAppenderConfig;
-import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.StreamisLogAppenderConfigBuilder;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.StreamisRpcLogSender;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisLogEvent;
 import org.apache.logging.log4j.core.Filter;
@@ -18,12 +17,10 @@ import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import java.io.Serializable;
-import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Streamis rpc log appender
@@ -84,16 +81,21 @@ public class StreamisRpcLogAppender extends AbstractAppender {
         if (Objects.isNull(layout)){
             layout = PatternLayout.createDefaultLayout();
         }
-        // Search the config builder
-        List<StreamisLogAppenderConfigBuilder> configBuilders = new ArrayList<>();
+        // Search the config autowired class
+        List<StreamisConfigAutowired> configAutowiredEntities = new ArrayList<>();
         StreamisLogAppenderConfig logAppenderConfig = null;
-        ServiceLoader.load(StreamisLogAppenderConfigBuilder.class,
-                StreamisRpcLogAppender.class.getClassLoader()).iterator().forEachRemaining(configBuilders::add);
-        if (!configBuilders.isEmpty()){
-            logAppenderConfig = configBuilders.get(0).build(applicationName, filter, rpcLogSenderConfig);
+        ServiceLoader.load(StreamisConfigAutowired.class,
+                StreamisRpcLogAppender.class.getClassLoader()).iterator().forEachRemaining(configAutowiredEntities::add);
+        StreamisLogAppenderConfig.Builder builder = new StreamisLogAppenderConfig.Builder(applicationName, filter, rpcLogSenderConfig);
+        for (StreamisConfigAutowired autowired : configAutowiredEntities){
+            logAppenderConfig = autowired.logAppenderConfig(builder);
         }
         if (Objects.isNull(logAppenderConfig)){
-            logAppenderConfig = new StreamisLogAppenderConfig(applicationName, filter, rpcLogSenderConfig);
+            logAppenderConfig = builder.build();
+        }
+        applicationName = logAppenderConfig.getApplicationName();
+        if (null == applicationName || applicationName.trim().equals("")){
+            throw new IllegalArgumentException("Application name cannot be empty");
         }
         return new StreamisRpcLogAppender(name, filter, layout, ignoreExceptions, Property.EMPTY_ARRAY, logAppenderConfig);
     }
