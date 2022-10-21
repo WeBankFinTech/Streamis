@@ -31,7 +31,7 @@ public class ImmutableSendBuffer<E> extends AbstractSendBuffer<E>{
 
     @Override
     @SuppressWarnings("all")
-    public int writeBuf(E[] elements, int srcIndex, int length) {
+    public int writeBuf(Object[] elements, int srcIndex, int length) {
         if (srcIndex < elements.length){
             int startPos = nextPosition(Math.min(elements.length - srcIndex, length), Flag.WRITE_MODE);
             if (startPos >= 0){
@@ -45,7 +45,7 @@ public class ImmutableSendBuffer<E> extends AbstractSendBuffer<E>{
 
     @Override
     @SuppressWarnings("all")
-    public int readBuf(E[] elements, int srcIndex, int length) {
+    public int readBuf(Object[] elements, int srcIndex, int length) {
         if (srcIndex < elements.length){
             int startPos = nextPosition(Math.min(elements.length - srcIndex, length), Flag.READ_MODE);
             if (startPos >= 0){
