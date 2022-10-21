@@ -151,6 +151,7 @@ export default {
     },
     cancel() {
       this.fromLine = 1
+      this.endLine = 0
       this.spinShow = false
       this.query = {
         ignoreKeywords: '',
