@@ -23,27 +23,38 @@ public class StreamisLogAppenderConfig {
         this.senderConfig = null != rpcLogSenderConfig? rpcLogSenderConfig : new RpcLogSenderConfig();
     }
 
+    public static class Builder{
+        private String applicationName;
+
+        private Filter filter;
+
+        private RpcLogSenderConfig rpcLogSenderConfig;
+
+        public Builder(String applicationName, Filter filter,
+                       RpcLogSenderConfig rpcLogSenderConfig){
+            this.applicationName = applicationName;
+            this.filter = filter;
+            this.rpcLogSenderConfig = rpcLogSenderConfig;
+        }
+
+        StreamisLogAppenderConfig.Builder setAppName(){
+            return null;
+        }
+
+        public StreamisLogAppenderConfig build(){
+            return null;
+        }
+    }
     public String getApplicationName() {
         return applicationName;
-    }
-
-    public void setApplicationName(String applicationName) {
-        this.applicationName = applicationName;
     }
 
     public Filter getFilter() {
         return filter;
     }
 
-    public void setFilter(Filter filter) {
-        this.filter = filter;
-    }
-
     public RpcLogSenderConfig getSenderConfig() {
         return senderConfig;
     }
 
-    public void setSenderConfig(RpcLogSenderConfig senderConfig) {
-        this.senderConfig = senderConfig;
-    }
 }
