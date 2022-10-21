@@ -30,8 +30,11 @@ public class StreamisRpcLogSender extends AbstractHttpLogSender<StreamisLogEvent
     @Override
     protected StreamisLogEvents aggregateBuffer(SendBuffer<StreamisLogEvent> sendBuffer) {
         int remain = sendBuffer.remaining();
-        StreamisLogEvent[] logEvents = new StreamisLogEvent[remain];
-        sendBuffer.readBuf(logEvents, 0, logEvents.length);
-        return new StreamisLogEvents(applicationName, logEvents);
+        if (remain > 0) {
+            StreamisLogEvent[] logEvents = new StreamisLogEvent[remain];
+            sendBuffer.readBuf(logEvents, 0, logEvents.length);
+            return new StreamisLogEvents(applicationName, logEvents);
+        }
+        return null;
     }
 }

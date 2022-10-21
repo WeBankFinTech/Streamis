@@ -421,7 +421,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
 
         @SuppressWarnings("unchecked")
         private int sendBuf(SendBuffer<T> sendBuffer, Object[] items, int takeIndex, int len){
-            int send = sendBuffer.writeBuf((T[]) items, takeIndex, len);
+            int send = sendBuffer.writeBuf(items, takeIndex, len);
             if (send < len){
                 // Buffer full exception
                 exceptionListener.onException(this, null, "The sender buffer is full," +

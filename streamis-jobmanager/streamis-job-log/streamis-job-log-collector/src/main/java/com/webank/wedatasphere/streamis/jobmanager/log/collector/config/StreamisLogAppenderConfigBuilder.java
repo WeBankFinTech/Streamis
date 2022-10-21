@@ -17,8 +17,11 @@ public abstract class StreamisLogAppenderConfigBuilder {
      * @param senderConfig sender config
      * @return
      */
-    public abstract StreamisLogAppenderConfig build(String applicationName,
-                                             Filter filter, RpcLogSenderConfig senderConfig);
+    public StreamisLogAppenderConfig build(String applicationName,
+                                             Filter filter, RpcLogSenderConfig senderConfig){
+        return null;
+    }
 
-   abstract Map<String, String> loadConfigProps();
+
+   public abstract Map<String, String> loadConfigProps();
 }

@@ -64,7 +64,7 @@ public interface SendBuffer<E> {
      * @param length the length to read
      * @return write num
      */
-    int writeBuf(E[] elements, int srcIndex, int length);
+    int writeBuf(Object[] elements, int srcIndex, int length);
 
     /**
      * Read buffer element
@@ -79,7 +79,7 @@ public interface SendBuffer<E> {
      * @param length the length to write
      * @return read num
      */
-    int readBuf(E[] elements, int srcIndex, int length);
+    int readBuf(Object[] elements, int srcIndex, int length);
 
     /**
      * Compact the buffer, avoid the useless elements
