@@ -1,6 +1,9 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender;
 
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.ExceptionListener;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.cache.LogCache;
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcLogSenderConfig;
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.SendLogCacheConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf.ImmutableSendBuffer;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf.SendBuffer;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.LogElement;
@@ -35,32 +38,35 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
     /**
      * Connect config
      */
-    protected RpcSenderConfig rpcSenderConfig;
+    protected RpcLogSenderConfig rpcSenderConfig;
 
     /**
      * Rpc log context
      */
     private volatile RpcLogContext rpcLogContext;
 
+    protected boolean isTerminated = false;
+    /**
+     * Use the listener instead of log4j structure
+     */
+    protected ExceptionListener exceptionListener;
 
-    public AbstractRpcLogSender(RpcSenderConfig rpcSenderConfig, int cacheSize, int sendBufSize){
-        this(rpcSenderConfig, cacheSize, sendBufSize, Integer.MAX_VALUE);
-    }
-
-    public AbstractRpcLogSender(RpcSenderConfig rpcSenderConfig, int cacheSize, int sendBufSize, int maxCacheConsume){
+    public AbstractRpcLogSender(RpcLogSenderConfig rpcSenderConfig){
         this.rpcSenderConfig = rpcSenderConfig;
+        SendLogCacheConfig cacheConfig = rpcSenderConfig.getCacheConfig();
+        this.cacheSize = cacheConfig.getSize();
+        this.maxCacheConsume = cacheConfig.getMaxConsumeThread();
+        this.sendBufSize = rpcSenderConfig.getBufferConfig().getSize();
+
         if (sendBufSize > cacheSize) {
             throw new IllegalArgumentException("Size of send buffer is larger than cache size");
         }
-        this.cacheSize = cacheSize;
-        this.sendBufSize = sendBufSize;
-        this.maxCacheConsume = maxCacheConsume;
+
     }
 
     @Override
     public  LogCache<T> getOrCreateLogCache() {
-        getOrCreateRpcLogContext();
-        return null;
+        return getOrCreateRpcLogContext().getLogCache();
     }
 
     @Override
@@ -69,7 +75,9 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
         try {
             getOrCreateLogCache().cacheLog(log);
         } catch (InterruptedException e) {
-            // Exception handler
+            // Invoke exception listener
+            Optional.ofNullable(exceptionListener).ifPresent(listener ->
+                    listener.onException(this, e, null));
         }
     }
 
@@ -79,8 +87,14 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
     }
 
     @Override
-    public void close() {
+    public void setExceptionListener(ExceptionListener listener) {
+        this.exceptionListener = listener;
+    }
 
+    @Override
+    public void close() {
+        getOrCreateRpcLogContext().destroyCacheConsumers();
+        this.isTerminated = true;
     }
 
     /**
@@ -95,7 +109,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
      * @param aggregatedEntity agg entity
      * @param rpcSenderConfig rpc sender config
      */
-    protected abstract void doSend(E aggregatedEntity, RpcSenderConfig rpcSenderConfig);
+    protected abstract void doSend(E aggregatedEntity, RpcLogSenderConfig rpcSenderConfig) throws Exception;
 
     /**
      * Send log exception strategy
@@ -302,7 +316,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
             return 0;
         }
 
-        // Equal to the poll method in ArrayBlockingQuue
+        // Equal to the poll method in ArrayBlockingQueue
         @Override
         public T takeLog(long timeout, TimeUnit unit) throws InterruptedException {
             long nanos = unit.toNanos(timeout);
@@ -407,9 +421,11 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
 
         @SuppressWarnings("unchecked")
         private int sendBuf(SendBuffer<T> sendBuffer, Object[] items, int takeIndex, int len){
-            int send = sendBuffer.writeBuf((T[]) items, takeIndex, len);
+            int send = sendBuffer.writeBuf(items, takeIndex, len);
             if (send < len){
                 // Buffer full exception
+                exceptionListener.onException(this, null, "The sender buffer is full," +
+                        " expected: [" + len + "], actual: [" + send + "]");
             }
             // Allow data loss
             return send;
