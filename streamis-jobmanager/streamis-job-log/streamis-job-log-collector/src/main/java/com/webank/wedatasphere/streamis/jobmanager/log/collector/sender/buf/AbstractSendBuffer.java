@@ -55,6 +55,7 @@ public abstract class AbstractSendBuffer<E> implements SendBuffer<E>{
 
     @Override
     public void flip() {
+        checkFlag(Flag.WRITE_MODE);
         this.limit = this.position;
         this.position = 0;
         this.accessFlag = Flag.READ_MODE;
@@ -94,9 +95,7 @@ public abstract class AbstractSendBuffer<E> implements SendBuffer<E>{
      * @return the current position value
      */
     final int nextPosition(int offset, Flag accessFlag){
-        if (this.accessFlag != accessFlag){
-            throw new IllegalStateException("Illegal access flag [" + accessFlag + "] for send buffer");
-        }
+        checkFlag(accessFlag);
         int p = position;
         // Reach the limit, return -1 value
         if (p >= limit){
@@ -104,10 +103,20 @@ public abstract class AbstractSendBuffer<E> implements SendBuffer<E>{
         }
         if (p + offset > limit){
             this.position = limit;
+        } else {
+            this.position = p + offset;
         }
         return p;
     }
 
+    final void checkFlag(Flag accessFlag){
+        if (this.accessFlag != accessFlag){
+            throw new IllegalStateException("Illegal access flag [" + accessFlag + "] for send buffer");
+        }
+    }
+    final void setFlag(Flag accessFlag){
+        this.accessFlag = accessFlag;
+    }
     /**
      *
      * @return the current position
@@ -116,6 +125,9 @@ public abstract class AbstractSendBuffer<E> implements SendBuffer<E>{
         return this.position;
     }
 
+    final void position(int position){
+        this.position = position;
+    }
     /**
      * Do the actual clear
      */
