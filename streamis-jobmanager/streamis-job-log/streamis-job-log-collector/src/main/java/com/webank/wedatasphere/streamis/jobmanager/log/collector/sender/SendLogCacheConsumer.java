@@ -53,13 +53,16 @@ public abstract class SendLogCacheConsumer<T extends LogElement> implements Runn
     public void run() {
         int remain;
         long expireTimeInMills = requireNewFlushTime();
+        int capacity = sendBuffer.capacity();
         while (!this.isTerminated) {
             try {
-                if ((expireTimeInMills > 0 && expireTimeInMills >= System.currentTimeMillis())
-                        || (remain = this.sendBuffer.remaining()) <= 0) {
+                remain = this.sendBuffer.remaining();
+                if ((expireTimeInMills > 0 && expireTimeInMills <= System.currentTimeMillis()) || remain <= 0) {
                     // Transient to the read mode
-                    sendBuffer.flip();
-                    onFlushAndSend(sendBuffer);
+                    if (remain < capacity) {
+                        sendBuffer.flip();
+                        onFlushAndSend(sendBuffer);
+                    }
                     expireTimeInMills = requireNewFlushTime();
                     if (sendBuffer.isReadMode()) {
                         // Clear the buffer and transient to the write mode, otherwise continue writing
@@ -84,10 +87,15 @@ public abstract class SendLogCacheConsumer<T extends LogElement> implements Runn
                 if (this.isTerminated && e instanceof InterruptedException){
                     return;
                 } else {
-                   System.err.println("SendLogCacheConsumer[" + Thread.currentThread().getName() + "] occurred exception [" + e.getLocalizedMessage() + "]");
+                    System.err.println("SendLogCacheConsumer[" + Thread.currentThread().getName() + "] occurred exception [" + e.getLocalizedMessage() + "]");
                    // For the unknown exception clear the cache
                    sendBuffer.clear();
                    expireTimeInMills = requireNewFlushTime();
+                }
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    // Ignore
                 }
             }
         }
