@@ -22,7 +22,7 @@ class SparkTaskMetricsParser extends AbstractTaskMetricsParser {
                                dataNumberDTOS: util.List[JobDetailsVo.DataNumberDTO],
                                loadConditionDTOs: util.List[JobDetailsVo.LoadConditionDTO],
                                realTimeTrafficDTOS: util.List[JobDetailsVo.RealTimeTrafficDTO]): Unit = {
-    val addDataNumberDTO: String => () = key => {
+    val addDataNumberDTO: String => Unit = key => {
       val batch = new JobDetailsVo.DataNumberDTO
       batch.setDataName(key)
       batch.setDataNumber(metricsMap.get(key).toString.toInt)
