@@ -20,8 +20,8 @@
     <appenders>
         <StreamRpcLog name="StreamRpcLog" appName="stream_application">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %-60c %x - %m%n"/>
-            <RpcLogSender address="http://172.21.2.220/log/collector" sendRetryCnt="3"
-                          connectionTimeout="3000" socketTimeout="15000" serverRecoveryTimeInSec="5" maxDelayTimeInSec="60">
+            <RpcLogSender sendRetryCnt="3" connectionTimeout="3000"
+                          socketTimeout="15000" serverRecoveryTimeInSec="5" maxDelayTimeInSec="60">
                 <AuthConfig tokenCodeKey="" tokenCode="" tokenUser="" tokenUserKey=""/>
                 <SendLogCache size="200" maxConsumeThread="10"/>
                 <SendBuffer size="50" expireTimeInSec="2"/>

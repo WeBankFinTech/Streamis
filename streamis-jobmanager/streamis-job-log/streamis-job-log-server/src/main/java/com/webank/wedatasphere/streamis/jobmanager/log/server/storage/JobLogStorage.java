@@ -10,9 +10,9 @@ public interface JobLogStorage {
 
     /**
      * Create buckets
-     * @param jobName job name
+     * @param appName application name
      * @param bucketConfig bucket config
      * @return config
      */
-    JobLogBucket getOrCreateBucket(String jobName, JobLogBucketConfig bucketConfig);
+    JobLogBucket getOrCreateBucket(String appName, JobLogBucketConfig bucketConfig);
 }
