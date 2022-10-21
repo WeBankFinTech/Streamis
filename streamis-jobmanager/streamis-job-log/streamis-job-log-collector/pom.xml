@@ -16,7 +16,8 @@
         <maven.compiler.target>8</maven.compiler.target>
         <httpclient.version>4.5.13</httpclient.version>
         <httpmine.version>4.5.4</httpmine.version>
-        <jackson-databind.version>2.13.2.2</jackson-databind.version>
+        <log4j.version>2.17.1</log4j.version>
+        <slf4j.version>1.7.15</slf4j.version>
     </properties>
 
     <dependencies>
@@ -36,11 +37,33 @@
             <artifactId>httpmime</artifactId>
             <version>${httpmine.version}</version>
         </dependency>
-        <!-- jackson module -->
+        <!--log4j2-->
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson-databind.version}</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>${log4j.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
