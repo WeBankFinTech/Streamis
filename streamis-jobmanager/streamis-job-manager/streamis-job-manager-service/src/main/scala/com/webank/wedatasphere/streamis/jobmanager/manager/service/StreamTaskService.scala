@@ -18,8 +18,8 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.FlinkJobInfo
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{ExecResultVo, JobProgressVo, JobStatusVo, PauseResultVo, StreamTaskListVo}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{ExecResultVo, JobDetailsVo, JobProgressVo, JobStatusVo, PauseResultVo, StreamTaskListVo}
 import java.util
 import java.util.concurrent.Future
 /**
@@ -153,5 +153,7 @@ trait StreamTaskService {
 
 
    def getStateInfo(taskId: Long): JobState
+
+  def getJobDetailsVO(streamJob: StreamJob, version: String): JobDetailsVo
 
 }
