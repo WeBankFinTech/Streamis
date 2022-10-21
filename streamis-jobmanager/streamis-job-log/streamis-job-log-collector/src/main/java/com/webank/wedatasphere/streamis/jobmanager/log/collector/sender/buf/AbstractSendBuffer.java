@@ -103,6 +103,8 @@ public abstract class AbstractSendBuffer<E> implements SendBuffer<E>{
         }
         if (p + offset > limit){
             this.position = limit;
+        } else {
+            this.position = p + offset;
         }
         return p;
     }
