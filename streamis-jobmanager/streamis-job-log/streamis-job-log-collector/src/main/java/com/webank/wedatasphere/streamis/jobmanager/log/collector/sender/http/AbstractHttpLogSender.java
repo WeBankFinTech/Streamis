@@ -15,6 +15,7 @@ import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.UnknownHostException;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -55,6 +56,7 @@ public abstract class AbstractHttpLogSender<T extends LogElement, E> extends Abs
 
             @Override
             public SendLogExceptionStrategy.RetryDescription onException(Exception e, SendBuffer<T> sendBuffer) {
+                e.printStackTrace();
                 boolean shouldRetry = false;
                 // Limit of exception number is the same as the retry times
                 if (exceptionCounter.incrementAndGet() > retryCount()){
@@ -62,7 +64,7 @@ public abstract class AbstractHttpLogSender<T extends LogElement, E> extends Abs
                             TimeUnit.SECONDS.toMillis(rpcSenderConfig.getServerRecoveryTimeInSec()));
                 } else {
                     for (Class<?> retryOnException : retryOnExceptions) {
-                        if (retryOnException.isAssignableFrom(e.getClass())) {
+                        if (retryOnException.equals(e.getClass())) {
                             shouldRetry = true;
                             break;
                         }
@@ -76,7 +78,7 @@ public abstract class AbstractHttpLogSender<T extends LogElement, E> extends Abs
                     sendBuffer.compact( element -> element.mark() > 1);
                     shouldRetry = false;
                 }
-                exceptionListener.onException(sender, e, null);
+                Optional.ofNullable(exceptionListener).ifPresent(listener -> listener.onException(sender, e, null));
                 return new RetryDescription(shouldRetry);
             }
         };
@@ -97,6 +99,7 @@ public abstract class AbstractHttpLogSender<T extends LogElement, E> extends Abs
                     return;
                 }
             }
+
             EntityPostAction<E> postAction = new EntityPostAction<>(rpcSenderConfig.getAddress(), aggregatedEntity);
             RpcAuthConfig authConfig = rpcSenderConfig.getAuthConfig();
             postAction.getRequestHeaders().put(authConfig.getTokenUserKey(), authConfig.getTokenUser());

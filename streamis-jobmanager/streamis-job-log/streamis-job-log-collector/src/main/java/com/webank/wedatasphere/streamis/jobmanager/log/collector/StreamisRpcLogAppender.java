@@ -18,6 +18,7 @@ import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import java.io.Serializable;
+import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
