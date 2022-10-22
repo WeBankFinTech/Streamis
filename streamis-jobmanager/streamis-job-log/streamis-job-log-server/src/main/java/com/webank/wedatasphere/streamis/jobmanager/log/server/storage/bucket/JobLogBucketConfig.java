@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket;
 
+import com.webank.wedatasphere.streamis.jobmanager.log.server.config.StreamJobLogConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.exception.StreamJobLogException;
 import org.apache.linkis.common.conf.CommonVars;
 
@@ -19,7 +20,7 @@ public class JobLogBucketConfig {
                 this.bucketClass = (Class<? extends JobLogBucket>) defaultBucketClass;
             }
         } catch (ClassNotFoundException e) {
-//            throw new StreamJobLogException.Runtime(-1, "", e);
+            throw new StreamJobLogException.Runtime(-1, "Cannot find the bucket class, message: " + e.getMessage());
         }
     }
 
@@ -31,7 +32,7 @@ public class JobLogBucketConfig {
     /**
      * Root path for bucket
      */
-    private String bucketRootPath;
+    private String bucketRootPath = StreamJobLogConfig.BUCKET_ROOT_PATH.getValue();
 
     /**
      * Attribute
@@ -39,29 +40,24 @@ public class JobLogBucketConfig {
     protected Map<String, Object> attributes = new HashMap<>();
 
     /**
-     * Max size of bucket active part
+     * Max size of bucket active part (MB)
      */
-    private int maxBucketActivePartSize;
-
-    /**
-     * Max number of bucket part
-     */
-    private int maxBucketPartNum;
+    private long maxBucketActivePartSize = StreamJobLogConfig.BUCKET_MAX_ACTIVE_PART_SIZE.getValue();
 
     /**
      * The compress format used for bucket parts
      */
-    private String bucketPartCompress;
+    private String bucketPartCompress = StreamJobLogConfig.BUCKET_PART_COMPRESS.getValue();
 
     /**
-     * Max hold time in minutes for bucket part
+     * Max hold time in days for bucket part
      */
-    private long bucketPartHoldTimeInMin;
+    private int bucketPartHoldTimeInDay = StreamJobLogConfig.BUCKET_PART_HOLD_DAY.getValue();
 
     /**
      * Layout pattern
      */
-    private String LogLayOutPattern = "%msg%n";
+    private String LogLayOutPattern = StreamJobLogConfig.BUCKET_LAYOUT.getValue();
 
     public Class<? extends JobLogBucket> getBucketClass() {
         return bucketClass;
@@ -87,20 +83,12 @@ public class JobLogBucketConfig {
         this.attributes = attributes;
     }
 
-    public int getMaxBucketActivePartSize() {
+    public long getMaxBucketActivePartSize() {
         return maxBucketActivePartSize;
     }
 
-    public void setMaxBucketActivePartSize(int maxBucketActivePartSize) {
+    public void setMaxBucketActivePartSize(long maxBucketActivePartSize) {
         this.maxBucketActivePartSize = maxBucketActivePartSize;
-    }
-
-    public int getMaxBucketPartNum() {
-        return maxBucketPartNum;
-    }
-
-    public void setMaxBucketPartNum(int maxBucketPartNum) {
-        this.maxBucketPartNum = maxBucketPartNum;
     }
 
     public String getBucketPartCompress() {
@@ -111,12 +99,12 @@ public class JobLogBucketConfig {
         this.bucketPartCompress = bucketPartCompress;
     }
 
-    public long getBucketPartHoldTimeInMin() {
-        return bucketPartHoldTimeInMin;
+    public int getBucketPartHoldTimeInDay() {
+        return bucketPartHoldTimeInDay;
     }
 
-    public void setBucketPartHoldTimeInMin(long bucketPartHoldTimeInMin) {
-        this.bucketPartHoldTimeInMin = bucketPartHoldTimeInMin;
+    public void setBucketPartHoldTimeInDay(int bucketPartHoldTimeInDay) {
+        this.bucketPartHoldTimeInDay = bucketPartHoldTimeInDay;
     }
 
     public String getLogLayOutPattern() {
