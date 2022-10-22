@@ -18,12 +18,15 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.transform.builder
 import org.apache.linkis.common.conf.CommonVars
 import org.apache.linkis.manager.label.entity.engine.RunType.RunType
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
+import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.StreamisTransformJobBuilder
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisJobEngineConnImpl, StreamisTransformJob, StreamisTransformJobContent, StreamisTransformJobImpl}
 import org.springframework.beans.factory.annotation.Autowired
 
+import java.util
+import scala.collection.JavaConverters.mapAsJavaMapConverter
 /**
   * Created by enjoyyin on 2021/9/22.
   */
@@ -39,7 +42,12 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
   override def build(streamJob: StreamJob): StreamisTransformJob = {
     val transformJob = createStreamisTransformJob()
     transformJob.setStreamJob(streamJob)
-    transformJob.setConfigMap(streamJobConfService.getJobConfig(streamJob.getId))
+    val jobConfig: util.Map[String, Any] = Option(streamJobConfService.getJobConfig(streamJob.getId))
+      .getOrElse(new util.HashMap[String, Any]())
+    // Put and overwrite internal group, users cannot customize the internal configuration
+    jobConfig.put(JobConf.STREAMIS_INTERNAL_CONFIG_GROUP.getValue, new util.HashMap[String, Any]())
+    internalLogConfig(jobConfig)
+    transformJob.setConfigMap(jobConfig)
 //    transformJob.setConfig(configurationService.getFullTree(streamJob.getId))
     val streamJobVersions = streamJobMapper.getJobVersions(streamJob.getId)
     // 无需判断streamJobVersions是否非空，因为TaskService已经判断了
@@ -48,6 +56,14 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
     transformJob
   }
 
+  /**
+   * Log internal configuration
+   * @param internal internal config group
+   */
+  private def internalLogConfig(internal: util.Map[String, Any]): Unit = {
+    internal.put(JobConf.STREAMIS_JOB_LOG_GATEWAY.key, JobConf.STREAMIS_JOB_LOG_GATEWAY.getValue)
+    internal.put(JobConf.STREAMIS_JOB_LOG_COLLECT_PATH.key, JobConf.STREAMIS_JOB_LOG_COLLECT_PATH.getValue)
+  }
 }
 
 abstract class AbstractFlinkStreamisTransformJobBuilder extends AbstractStreamisTransformJobBuilder{

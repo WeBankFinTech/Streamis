@@ -56,7 +56,7 @@ public class StreamisLogAppenderConfig {
          * @param applicationName application name
          * @return builder
          */
-        StreamisLogAppenderConfig.Builder setAppName(String applicationName){
+        public StreamisLogAppenderConfig.Builder setAppName(String applicationName){
             this.applicationName = applicationName;
             return this;
         }
@@ -66,7 +66,7 @@ public class StreamisLogAppenderConfig {
          * @param filter filter
          * @return builder
          */
-        StreamisLogAppenderConfig.Builder setFilter(Filter filter){
+        public StreamisLogAppenderConfig.Builder setFilter(Filter filter){
             this.filters.clear();
             this.filters.add(filter);
             return this;
@@ -77,8 +77,18 @@ public class StreamisLogAppenderConfig {
          * @param filter filter
          * @return builder
          */
-        StreamisLogAppenderConfig.Builder withFilter(Filter filter){
+        public StreamisLogAppenderConfig.Builder withFilter(Filter filter){
             filters.add(filter);
+            return this;
+        }
+
+        /**
+         * Rpc address
+         * @param address address
+         * @return builder
+         */
+        public StreamisLogAppenderConfig.Builder setRpcAddress(String address){
+            this.rpcLogSenderConfig.setAddress(address);
             return this;
         }
 
@@ -87,7 +97,7 @@ public class StreamisLogAppenderConfig {
          * @param connectionTimeout connection timeout
          * @return builder
          */
-        StreamisLogAppenderConfig.Builder setRpcConnTimeout(int connectionTimeout){
+        public StreamisLogAppenderConfig.Builder setRpcConnTimeout(int connectionTimeout){
             this.rpcLogSenderConfig.setConnectionTimeout(connectionTimeout);
             return this;
         }
@@ -97,7 +107,7 @@ public class StreamisLogAppenderConfig {
          * @param socketTimeout socket timeout
          * @return builder
          */
-        StreamisLogAppenderConfig.Builder setRpcSocketTimeout(int socketTimeout){
+        public StreamisLogAppenderConfig.Builder setRpcSocketTimeout(int socketTimeout){
             this.rpcLogSenderConfig.setSocketTimeout(socketTimeout);
             return this;
         }
@@ -107,7 +117,7 @@ public class StreamisLogAppenderConfig {
          * @param sendRetryCnt send retry count
          * @return builder
          */
-        StreamisLogAppenderConfig.Builder setRpcSendRetryCnt(int sendRetryCnt){
+        public StreamisLogAppenderConfig.Builder setRpcSendRetryCnt(int sendRetryCnt){
             this.rpcLogSenderConfig.setSendRetryCnt(sendRetryCnt);
             return this;
         }
@@ -117,7 +127,7 @@ public class StreamisLogAppenderConfig {
          * @param serverRecoveryTimeInSec server recovery time
          * @return builder
          */
-        StreamisLogAppenderConfig.Builder setRpcServerRecoveryTimeInSec(int serverRecoveryTimeInSec){
+        public StreamisLogAppenderConfig.Builder setRpcServerRecoveryTimeInSec(int serverRecoveryTimeInSec){
             this.rpcLogSenderConfig.setServerRecoveryTimeInSec(serverRecoveryTimeInSec);
             return this;
         }
@@ -127,7 +137,7 @@ public class StreamisLogAppenderConfig {
          * @param maxDelayTimeInSec max delay time in seconds
          * @return builder
          */
-        StreamisLogAppenderConfig.Builder setRpcMaxDelayTimeInSec(int maxDelayTimeInSec){
+        public StreamisLogAppenderConfig.Builder setRpcMaxDelayTimeInSec(int maxDelayTimeInSec){
             this.rpcLogSenderConfig.setMaxDelayTimeInSec(maxDelayTimeInSec);
             return this;
         }
@@ -137,7 +147,7 @@ public class StreamisLogAppenderConfig {
          * @param tokenCodeKey key of token code
          * @return builder
          */
-        StreamisLogAppenderConfig.Builder setRpcAuthTokenCodeKey(String tokenCodeKey){
+        public StreamisLogAppenderConfig.Builder setRpcAuthTokenCodeKey(String tokenCodeKey){
             this.rpcLogSenderConfig.getAuthConfig().setTokenCodeKey(tokenCodeKey);
             return this;
         }
@@ -147,7 +157,7 @@ public class StreamisLogAppenderConfig {
          * @param tokenUserKey key of token user
          * @return builder
          */
-        StreamisLogAppenderConfig.Builder setRpcAuthTokenUserKey(String tokenUserKey){
+        public StreamisLogAppenderConfig.Builder setRpcAuthTokenUserKey(String tokenUserKey){
             this.rpcLogSenderConfig.getAuthConfig().setTokenUserKey(tokenUserKey);
             return this;
         }
@@ -157,7 +167,7 @@ public class StreamisLogAppenderConfig {
          * @param tokenUser token user
          * @return builder
          */
-        StreamisLogAppenderConfig.Builder setRpcAuthTokenUser(String tokenUser){
+        public StreamisLogAppenderConfig.Builder setRpcAuthTokenUser(String tokenUser){
             this.rpcLogSenderConfig.getAuthConfig().setTokenUser(tokenUser);
             return this;
         }
@@ -167,7 +177,7 @@ public class StreamisLogAppenderConfig {
          * @param tokenCode token code
          * @return builder
          */
-        StreamisLogAppenderConfig.Builder setRpcAuthTokenCode(String tokenCode){
+        public StreamisLogAppenderConfig.Builder setRpcAuthTokenCode(String tokenCode){
             this.rpcLogSenderConfig.getAuthConfig().setTokenCode(tokenCode);
             return this;
         }
@@ -177,7 +187,7 @@ public class StreamisLogAppenderConfig {
          * @param cacheSize cache size
          * @return builder
          */
-        StreamisLogAppenderConfig.Builder setRpcCacheSize(int cacheSize){
+        public StreamisLogAppenderConfig.Builder setRpcCacheSize(int cacheSize){
             this.rpcLogSenderConfig.getCacheConfig().setSize(cacheSize);
             return this;
         }
@@ -187,7 +197,7 @@ public class StreamisLogAppenderConfig {
          * @param maxConsumeThread max consume thread
          * @return builder
          */
-        StreamisLogAppenderConfig.Builder setRpcCacheMaxConsumeThread(int maxConsumeThread){
+        public StreamisLogAppenderConfig.Builder setRpcCacheMaxConsumeThread(int maxConsumeThread){
             this.rpcLogSenderConfig.getCacheConfig().setMaxConsumeThread(maxConsumeThread);
             return this;
         }
@@ -197,7 +207,7 @@ public class StreamisLogAppenderConfig {
          * @param bufferSize buffer size
          * @return builder
          */
-        StreamisLogAppenderConfig.Builder setRpcBufferSize(int bufferSize){
+        public StreamisLogAppenderConfig.Builder setRpcBufferSize(int bufferSize){
             this.rpcLogSenderConfig.getBufferConfig().setSize(bufferSize);
             return this;
         }
@@ -207,7 +217,7 @@ public class StreamisLogAppenderConfig {
          * @param expireTimeInSec expire time
          * @return builder
          */
-        StreamisLogAppenderConfig.Builder setRpcBufferExpireTimeInSec(int expireTimeInSec){
+        public StreamisLogAppenderConfig.Builder setRpcBufferExpireTimeInSec(int expireTimeInSec){
             this.rpcLogSenderConfig.getBufferConfig().setExpireTimeInSec(expireTimeInSec);
             return this;
         }
