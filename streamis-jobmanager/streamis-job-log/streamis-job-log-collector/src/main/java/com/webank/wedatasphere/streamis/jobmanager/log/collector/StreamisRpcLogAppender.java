@@ -33,17 +33,17 @@ public class StreamisRpcLogAppender extends AbstractAppender {
     /**
      * Appender config
      */
-    private StreamisLogAppenderConfig appenderConfig;
+    private final StreamisLogAppenderConfig appenderConfig;
 
     /**
      * Rpc log sender
      */
-    private StreamisRpcLogSender rpcLogSender;
+    private final StreamisRpcLogSender rpcLogSender;
 
     /**
      * Cache
      */
-    private LogCache<StreamisLogEvent> logCache;
+    private final LogCache<StreamisLogEvent> logCache;
     protected StreamisRpcLogAppender(String name, Filter filter,
                                      Layout<? extends Serializable> layout,
                                      boolean ignoreExceptions, Property[] properties,
@@ -53,7 +53,7 @@ public class StreamisRpcLogAppender extends AbstractAppender {
         this.rpcLogSender = new StreamisRpcLogSender(this.appenderConfig.getApplicationName(),
                 this.appenderConfig.getSenderConfig());
         this.logCache = this.rpcLogSender.getOrCreateLogCache();
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.rpcLogSender.close()));
+        Runtime.getRuntime().addShutdownHook(new Thread(this.rpcLogSender::close));
     }
 
     @Override
