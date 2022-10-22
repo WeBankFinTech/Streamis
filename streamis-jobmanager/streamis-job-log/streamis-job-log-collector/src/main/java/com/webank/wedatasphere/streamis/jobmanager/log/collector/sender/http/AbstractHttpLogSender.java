@@ -2,7 +2,6 @@ package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.http;
 
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcAuthConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.AbstractRpcLogSender;
-import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.RpcLogSender;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcLogSenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.SendLogExceptionStrategy;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf.SendBuffer;
@@ -99,14 +98,16 @@ public abstract class AbstractHttpLogSender<T extends LogElement, E> extends Abs
                     return;
                 }
             }
-
-            EntityPostAction<E> postAction = new EntityPostAction<>(rpcSenderConfig.getAddress(), aggregatedEntity);
-            RpcAuthConfig authConfig = rpcSenderConfig.getAuthConfig();
-            postAction.getRequestHeaders().put(authConfig.getTokenUserKey(), authConfig.getTokenUser());
-            // Ignore the response
-            postAction.execute(this.globalHttpClient);
-            // Init the counter
-            this.exceptionCounter.set(0);
+            String address = rpcSenderConfig.getAddress();
+            if (null != address && !address.trim().equals("")) {
+                EntityPostAction<E> postAction = new EntityPostAction<>(rpcSenderConfig.getAddress(), aggregatedEntity);
+                RpcAuthConfig authConfig = rpcSenderConfig.getAuthConfig();
+                postAction.getRequestHeaders().put(authConfig.getTokenUserKey(), authConfig.getTokenUser());
+                // Ignore the response
+                postAction.execute(this.globalHttpClient);
+                // Init the counter
+                this.exceptionCounter.set(0);
+            }
         }
     }
 }
