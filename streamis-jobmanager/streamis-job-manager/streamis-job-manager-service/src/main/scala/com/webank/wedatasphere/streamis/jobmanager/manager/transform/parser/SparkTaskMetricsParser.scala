@@ -64,9 +64,9 @@ class SparkTaskMetricsParser extends AbstractTaskMetricsParser {
         realTimeTrafficDTO.setTransformKey("processing")
         realTimeTrafficDTO.setSinkKey(metricsMap.getOrDefault("sink", "<Unknown>").asInstanceOf[String])
         val sinkSpeed = if (batchMetric.containsKey("totalDelay") && batchMetric.get("totalDelay") != null)
-          Utils.msDurationToString(batchMetric.get("totalDelay").asInstanceOf[Long]) + " totalDelay"
+          Utils.msDurationToString(batchMetric.get("totalDelay").toString.toInt) + " totalDelay"
         else if (batchMetric.containsKey("taskExecuteTime") && batchMetric.get("taskExecuteTime") != null)
-          Utils.msDurationToString(batchMetric.get("taskExecuteTime").asInstanceOf[Long]) + " executeTime(Last Batch)"
+          Utils.msDurationToString(batchMetric.get("taskExecuteTime").toString.toInt) + " executeTime(Last Batch)"
         else "<Unknown>"
         realTimeTrafficDTO.setSinkSpeed(sinkSpeed)
       case _ =>
