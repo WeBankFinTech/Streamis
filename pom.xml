@@ -46,6 +46,7 @@
 
     <properties>
         <linkis.version>1.1.3</linkis.version>
+        <junit.version>4.12</junit.version>
         <dss.version>1.1.0</dss.version>
         <streamis.version>0.2.0</streamis.version>
         <scala.version>2.11.12</scala.version>
