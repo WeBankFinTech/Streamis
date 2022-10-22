@@ -18,6 +18,11 @@ public interface JobLogBucket {
     JobLogStorageWriter getBucketStorageWriter();
 
     /**
+     * Bucket name
+     * @return bucket name
+     */
+    String getBucketName();
+    /**
      * Close the bucket
      */
     void close();
