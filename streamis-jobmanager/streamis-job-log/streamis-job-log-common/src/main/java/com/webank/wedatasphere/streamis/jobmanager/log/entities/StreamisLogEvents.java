@@ -21,13 +21,19 @@ public class StreamisLogEvents implements LogElement, Serializable {
         this.appName = applicationName;
         this.events = events;
         long maxTime = -1;
-        for(StreamisLogEvent event : events){
-            long time = event.getLogTimeStamp();
-            if (time > maxTime){
-                maxTime = time;
+        StreamisLogEvent lastEvent = events[events.length - 1];
+        if (null == lastEvent) {
+            for (StreamisLogEvent event : events) {
+                long time = event.getLogTimeStamp();
+                if (time > maxTime) {
+                    maxTime = time;
+                }
             }
+            this.logTimeInMills = maxTime;
+        }else {
+            this.logTimeInMills = lastEvent.getLogTimeStamp();
         }
-        this.logTimeInMills = maxTime;
+
     }
 
     @Override

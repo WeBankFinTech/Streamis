@@ -91,6 +91,24 @@ public class Json {
         return null;
     }
 
+    public static String toJson(Object obj, Class<?> model, boolean beautify){
+        ObjectWriter writer = mapper.writer();
+        if(null != obj){
+            try{
+                if(null != model){
+                    writer = writer.withView(model);
+                }
+                if(beautify){
+                    return writer.withDefaultPrettyPrinter().writeValueAsString(obj);
+                }
+                return writer.writeValueAsString(obj);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return null;
+    }
+
     /**
      * Convert object using serialization and deserialization
      *
