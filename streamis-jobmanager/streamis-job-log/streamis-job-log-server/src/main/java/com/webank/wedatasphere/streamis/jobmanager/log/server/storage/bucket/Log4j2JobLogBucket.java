@@ -120,12 +120,13 @@ public class Log4j2JobLogBucket implements JobLogBucket{
 //                .withFileOwner()
                 .withFileName(fileName)
                 .withFilePattern(resolveFilePattern(fileName, config.getBucketPartCompress()))
+                .withPolicy(SizeBasedTriggeringPolicy.createPolicy(config.getMaxBucketActivePartSize() + "MB"))
                 .withStrategy(createRolloverStrategy(log4jConfig, fileName, ROLLOVER_MAX.getValue(), config.getBucketPartHoldTimeInDay()))
                 .setConfiguration(log4jConfig)
                 .build();
         appender.start();
         log4jConfig.addAppender(appender);
-        LoggerConfig loggerConfig = LoggerConfig.newBuilder().withLevel(Level.ALL)
+        LoggerConfig loggerConfig = LoggerConfig.newBuilder().withAdditivity(false).withLevel(Level.ALL)
                 .withRefs(new AppenderRef[]{
                         AppenderRef.createAppenderRef(bucketName, null, null)
                 })
@@ -251,13 +252,13 @@ public class Log4j2JobLogBucket implements JobLogBucket{
      */
     private String resolveFileName(String bucketRootPath, String bucketName){
         // {projectName}.{jobName}
-        String fileName = FilenameUtils.normalize(bucketName.substring(bucketName.indexOf(".")));
+        String fileName = FilenameUtils.normalize(bucketName);
         String basePath = bucketRootPath;
         if (!basePath.endsWith("/")){
             basePath += "/";
         }
         basePath += fileName.replace(".", "/");
-        return basePath + "/" + fileName;
+        return basePath + "/" + fileName.substring(bucketName.indexOf(".") + 1) + ".log";
     }
 
     /**
