@@ -5,6 +5,7 @@ import org.apache.logging.log4j.core.filter.CompositeFilter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -47,7 +48,9 @@ public class StreamisLogAppenderConfig {
         public Builder(String applicationName, Filter filter,
                        RpcLogSenderConfig rpcLogSenderConfig){
             this.applicationName = applicationName;
-            this.filters.add(filter);
+            if (Objects.nonNull(filter)) {
+                this.filters.add(filter);
+            }
             this.rpcLogSenderConfig = Optional.ofNullable(rpcLogSenderConfig).orElse(new RpcLogSenderConfig());
         }
 
