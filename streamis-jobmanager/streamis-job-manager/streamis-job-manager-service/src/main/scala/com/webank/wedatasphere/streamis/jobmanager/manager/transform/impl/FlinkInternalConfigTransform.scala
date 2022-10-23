@@ -32,12 +32,18 @@ class FlinkInternalConfigTransform extends FlinkConfigTransform {
 }
 
 object FlinkInternalConfigTransform {
+  /**
+   * Defined in FlinkStreamisConfigDefine.LOG_GATEWAY_ADDRESS of 'flink-streamis-log-collector'
+   */
+  private val LOG_GATEWAY_CONFIG_NAME = CommonVars("wds.streamis.flink.config.name.log-gateway", "stream.log.gateway.address").getValue
 
-  private val FLINK_LOG_GATEWAY_CONFIG_NAME = CommonVars("wds.streamis.flink.config.name.log-gateway", "stream.log.gateway.address").getValue
+  /**
+   * Defined in FlinkStreamisConfigDefine.LOG_GATEWAY_ADDRESS of 'flink-streamis-log-collector'
+   */
+  private val LOG_COLLECT_PATH_CONFIG_NAME = CommonVars("wds.streamis.flink.config.name.log-collect-path", "stream.log.collect.path").getValue
 
-  private val FLINK_LOG_COLLECT_PATH_CONFIG_NAME = CommonVars("wds.streamis.flink.config.name.log-collect-path", "stream.log.collect.path").getValue
 
-  val INTERNAL_CONFIG_MAP = Map(JobConf.STREAMIS_JOB_LOG_GATEWAY.key -> FLINK_LOG_GATEWAY_CONFIG_NAME,
-    JobConf.STREAMIS_JOB_LOG_COLLECT_PATH.key -> FLINK_LOG_COLLECT_PATH_CONFIG_NAME
+  val INTERNAL_CONFIG_MAP = Map(JobConf.STREAMIS_JOB_LOG_GATEWAY.key -> LOG_GATEWAY_CONFIG_NAME,
+    JobConf.STREAMIS_JOB_LOG_COLLECT_PATH.key -> LOG_COLLECT_PATH_CONFIG_NAME
   )
 }
