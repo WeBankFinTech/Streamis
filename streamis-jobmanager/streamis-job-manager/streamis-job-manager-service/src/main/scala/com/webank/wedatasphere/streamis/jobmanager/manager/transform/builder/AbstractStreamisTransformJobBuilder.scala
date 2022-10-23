@@ -45,8 +45,9 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
     val jobConfig: util.Map[String, Any] = Option(streamJobConfService.getJobConfig(streamJob.getId))
       .getOrElse(new util.HashMap[String, Any]())
     // Put and overwrite internal group, users cannot customize the internal configuration
-    jobConfig.put(JobConf.STREAMIS_INTERNAL_CONFIG_GROUP.getValue, new util.HashMap[String, Any]())
-    internalLogConfig(jobConfig)
+    val internalGroup = new util.HashMap[String, Any]()
+    jobConfig.put(JobConf.STREAMIS_INTERNAL_CONFIG_GROUP.getValue, internalGroup)
+    internalLogConfig(internalGroup)
     transformJob.setConfigMap(jobConfig)
 //    transformJob.setConfig(configurationService.getFullTree(streamJob.getId))
     val streamJobVersions = streamJobMapper.getJobVersions(streamJob.getId)
