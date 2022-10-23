@@ -39,6 +39,11 @@ object JobConf {
    */
   val STREAMIS_JOB_LOG_COLLECT_PATH: CommonVars[String] = CommonVars("wds.streamis.job.log.collect.path", "/api/rest_j/v1/streamis/streamJobManager/log/collect/events")
 
+  /**
+   * Enable to use material container
+   */
+  val STREAMIS_JOB_MATERIAL_CONTAINER_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.job.material.container.enable", false)
+
   val FLINK_JOB_STATUS_NOT_STARTED: CommonVars[Int] = CommonVars("wds.streamis.job.status.not-started", 0,"Not Started")
 
   val FLINK_JOB_STATUS_COMPLETED: CommonVars[Int] = CommonVars("wds.streamis.job.status.completed", 1,"Completed")
