@@ -24,6 +24,10 @@ import org.apache.linkis.common.conf.CommonVars
 object JobConfKeyConstants {
 
   /**
+   * Config group for streamis internal configuration
+   */
+  val GROUP_INTERNAL: CommonVars[String] = CommonVars("wds.streamis.job.internal.config.group", "wds.streamis.internal.params")
+  /**
    * Group: Flink extra
    */
   val GROUP_FLINK_EXTRA: CommonVars[String] = CommonVars("wds.streamis.job.config.key.group.flink-extra", "wds.linkis.flink.custom")

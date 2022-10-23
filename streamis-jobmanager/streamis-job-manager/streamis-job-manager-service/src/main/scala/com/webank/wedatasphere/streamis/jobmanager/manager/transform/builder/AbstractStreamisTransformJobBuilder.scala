@@ -15,6 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.builder
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import org.apache.linkis.common.conf.CommonVars
 import org.apache.linkis.manager.label.entity.engine.RunType.RunType
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
@@ -46,7 +47,7 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
       .getOrElse(new util.HashMap[String, Any]())
     // Put and overwrite internal group, users cannot customize the internal configuration
     val internalGroup = new util.HashMap[String, Any]()
-    jobConfig.put(JobConf.STREAMIS_INTERNAL_CONFIG_GROUP.getValue, internalGroup)
+    jobConfig.put(JobConfKeyConstants.GROUP_INTERNAL.getValue, internalGroup)
     internalLogConfig(internalGroup)
     transformJob.setConfigMap(jobConfig)
 //    transformJob.setConfig(configurationService.getFullTree(streamJob.getId))
