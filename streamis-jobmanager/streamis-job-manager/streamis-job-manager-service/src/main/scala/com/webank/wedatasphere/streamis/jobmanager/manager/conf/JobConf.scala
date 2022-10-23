@@ -30,11 +30,6 @@ object JobConf {
   val STREAMIS_JOB_PARAM_BLANK_PLACEHOLDER: CommonVars[String] =  CommonVars("wds.streamis.job.param.blank.placeholder", "\u0001")
 
   /**
-   * Config group for streamis internal configuration
-   */
-  val STREAMIS_INTERNAL_CONFIG_GROUP: CommonVars[String] = CommonVars("wds.streamis.job.internal.config.group", "wds.streamis.internal.params")
-
-  /**
    * Gateway for stream job log module
    */
   val STREAMIS_JOB_LOG_GATEWAY: CommonVars[String] = CommonVars("wds.streamis.job.log.gateway", Configuration.getGateWayURL())
