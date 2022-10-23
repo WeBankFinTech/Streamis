@@ -23,6 +23,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.Checkpoint
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl.FlinkCheckpointConfigTransform.CHECKPOINT_PATH_CONFIG_NAME
+import org.apache.linkis.common.conf.CommonVars
 import org.apache.linkis.common.utils.Logging
 
 import scala.collection.JavaConverters._
@@ -62,5 +63,5 @@ class FlinkCheckpointConfigTransform extends FlinkConfigTransform with Logging{
 }
 
 object FlinkCheckpointConfigTransform{
-  val CHECKPOINT_PATH_CONFIG_NAME = "state.checkpoints.dir"
+  private val CHECKPOINT_PATH_CONFIG_NAME = CommonVars("wds.streamis.flink.config.name.checkpoint-path", "state.checkpoints.dir").getValue
 }
