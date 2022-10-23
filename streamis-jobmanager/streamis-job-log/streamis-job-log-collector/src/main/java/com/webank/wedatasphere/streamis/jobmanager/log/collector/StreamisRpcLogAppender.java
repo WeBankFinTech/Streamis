@@ -99,8 +99,8 @@ public class StreamisRpcLogAppender extends AbstractAppender {
         if (null == applicationName || applicationName.trim().equals("")){
             throw new IllegalArgumentException("Application name cannot be empty");
         }
-        LOGGER.info("StreamisRpcLogAppender: init with config {}", Json.toJson(logAppenderConfig, null));
-        return new StreamisRpcLogAppender(name, filter, layout, ignoreExceptions, Property.EMPTY_ARRAY, logAppenderConfig);
+        System.out.println("StreamisRpcLogAppender: init with config" + Json.toJson(logAppenderConfig, null));
+        return new StreamisRpcLogAppender(name, logAppenderConfig.getFilter(), layout, ignoreExceptions, Property.EMPTY_ARRAY, logAppenderConfig);
     }
 
 }

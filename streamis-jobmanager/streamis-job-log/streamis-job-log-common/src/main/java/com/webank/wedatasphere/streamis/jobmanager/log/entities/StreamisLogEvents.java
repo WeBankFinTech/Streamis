@@ -13,10 +13,12 @@ public class StreamisLogEvents implements LogElement, Serializable {
     /**
      * Log time
      */
-    private final long logTimeInMills;
+    private long logTimeInMills;
 
-    private final StreamisLogEvent[] events;
+    private StreamisLogEvent[] events;
+    public StreamisLogEvents(){
 
+    }
     public StreamisLogEvents(String applicationName, StreamisLogEvent[] events){
         this.appName = applicationName;
         this.events = events;
@@ -68,5 +70,21 @@ public class StreamisLogEvents implements LogElement, Serializable {
 
     public StreamisLogEvent[] getEvents() {
         return events;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public void setLogTimeStamp(long logTimeInMills) {
+        this.logTimeInMills = logTimeInMills;
+    }
+
+    public void setEvents(StreamisLogEvent[] events) {
+        this.events = events;
+    }
+
+    public void setSequenceId(int sequenceId){
+        // Ignore
     }
 }
