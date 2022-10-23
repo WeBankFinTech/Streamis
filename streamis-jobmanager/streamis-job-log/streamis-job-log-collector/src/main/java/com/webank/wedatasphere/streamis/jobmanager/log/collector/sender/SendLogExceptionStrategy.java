@@ -41,7 +41,6 @@ public abstract class SendLogExceptionStrategy<T extends LogElement> {
                 if (Objects.isNull(retryDescription) || !retryDescription.canRetry) {
                     break;
                 }
-
             }
         }
         return null;

@@ -5,6 +5,7 @@ import com.webank.wedatasphere.streamis.jobmanager.plugin.StreamisConfigAutowire
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.GlobalConfiguration;
+import org.apache.flink.runtime.util.EnvironmentInformation;
 import org.apache.flink.yarn.configuration.YarnConfigOptions;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Filter;
@@ -29,11 +30,13 @@ public class FlinkStreamisConfigAutowired implements StreamisConfigAutowired {
 
     public FlinkStreamisConfigAutowired(){
         // First to load configuration
-        this.configuration = loadConfiguration();
+        // We should sleep and wait for append of the flink-yaml.conf
     }
     @Override
     public StreamisLogAppenderConfig logAppenderConfig(StreamisLogAppenderConfig.Builder builder) throws Exception{
-        String applicationName = this.configuration.getString(YarnConfigOptions.APPLICATION_NAME);
+        this.configuration = loadConfiguration();
+        String applicationName  =
+                this.configuration.getString(YarnConfigOptions.APPLICATION_NAME);
         if (StringUtils.isNotBlank(applicationName)){
             builder.setAppName(applicationName);
         }
@@ -48,12 +51,16 @@ public class FlinkStreamisConfigAutowired implements StreamisConfigAutowired {
         List<String> filterStrategies = this.configuration.get(LOG_FILTER_STRATEGIES);
         for(String filterStrategy : filterStrategies){
             if ("LevelMatch".equals(filterStrategy)){
-                builder.withFilter(LevelMatchFilter.newBuilder()
+                builder.withFilter(LevelMatchFilter.newBuilder().setOnMatch(Filter.Result.ACCEPT).setOnMismatch(Filter.Result.DENY)
                         .setLevel(Level.getLevel(this.configuration.getString(LOG_FILTER_LEVEL_MATCH))).build());
             } else if ("RegexMatch".equals(filterStrategy)){
                 builder.withFilter(RegexFilter.createFilter( this.configuration.getString(LOG_FILTER_REGEX),
                         null, true, Filter.Result.ACCEPT, Filter.Result.DENY));
             }
+        }
+        String hadoopUser = EnvironmentInformation.getHadoopUser();
+        if (hadoopUser.equals("<no hadoop dependency found>") || hadoopUser.equals("<unknown>")){
+            hadoopUser = "";
         }
         return builder.setRpcConnTimeout(this.configuration.getInteger(LOG_RPC_CONN_TIMEOUT))
                 .setRpcSocketTimeout(this.configuration.getInteger(LOG_RPC_SOCKET_TIMEOUT))
@@ -63,7 +70,8 @@ public class FlinkStreamisConfigAutowired implements StreamisConfigAutowired {
                 .setRpcAuthTokenCodeKey(this.configuration.getString(LOG_RPC_AUTH_TOKEN_CODE_KEY))
                 .setRpcAuthTokenUserKey(this.configuration.getString(LOG_RPC_AUTH_TOKEN_USER_KEY))
                 .setRpcAuthTokenCode(this.configuration.getString(LOG_RPC_AUTH_TOKEN_CODE))
-                .setRpcAuthTokenUser(this.configuration.getString(LOG_RPC_AUTH_TOKEN_USER))
+                .setRpcAuthTokenUser(this.configuration.getString(LOG_RPC_AUTH_TOKEN_USER,
+                        hadoopUser))
                 .setRpcCacheSize(this.configuration.getInteger(LOG_RPC_CACHE_SIZE))
                 .setRpcCacheMaxConsumeThread(this.configuration.getInteger(LOG_PRC_CACHE_MAX_CONSUME_THREAD))
                 .setRpcBufferSize(this.configuration.getInteger(LOG_RPC_BUFFER_SIZE))
@@ -86,11 +94,12 @@ public class FlinkStreamisConfigAutowired implements StreamisConfigAutowired {
      * the configuration directory of Flink yarn container is always ".",
      * @return configuration
      */
-    private Configuration loadConfiguration(){
-        String configDir = System.getenv("FLINK_CONF_DIR");
-        if (null == configDir){
-            configDir = ".";
-        }
+    private synchronized Configuration loadConfiguration(){
+//        String configDir = System.getenv("FLINK_CONF_DIR");
+//        if (null == configDir){
+//            configDir = ".";
+//        }
+        String configDir = ".";
         Properties properties = System.getProperties();
         Enumeration<?> enumeration = properties.propertyNames();
         Configuration dynamicConfiguration = new Configuration();
