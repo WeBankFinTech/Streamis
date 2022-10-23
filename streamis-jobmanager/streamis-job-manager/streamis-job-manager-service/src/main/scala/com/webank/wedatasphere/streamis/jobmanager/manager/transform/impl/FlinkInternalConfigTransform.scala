@@ -1,4 +1,5 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl.FlinkInternalConfigTransform.INTERNAL_CONFIG_MAP
@@ -17,7 +18,7 @@ class FlinkInternalConfigTransform extends FlinkConfigTransform {
    *
    * @return
    */
-  override protected def configGroup(): String = JobConf.STREAMIS_INTERNAL_CONFIG_GROUP.getValue
+  override protected def configGroup(): String = JobConfKeyConstants.GROUP_INTERNAL.getValue
 
   override protected def transform(internalConfig: util.Map[String, Any], job: LaunchJob): LaunchJob = {
     transformConfig(internalConfig.asScala.map{
