@@ -4,7 +4,9 @@ import com.webank.wedatasphere.streamis.jobmanager.log.collector.cache.LogCache;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcLogSenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.StreamisLogAppenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.StreamisRpcLogSender;
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.http.Json;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisLogEvent;
+import com.webank.wedatasphere.streamis.jobmanager.plugin.StreamisConfigAutowired;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
@@ -27,23 +29,21 @@ import java.util.ServiceLoader;
  */
 @Plugin(name = "StreamRpcLog", category = "Core", elementType = "appender", printObject = true)
 public class StreamisRpcLogAppender extends AbstractAppender {
-
     private static final String DEFAULT_APPENDER_NAME = "StreamRpcLog";
-
     /**
      * Appender config
      */
-    private StreamisLogAppenderConfig appenderConfig;
+    private final StreamisLogAppenderConfig appenderConfig;
 
     /**
      * Rpc log sender
      */
-    private StreamisRpcLogSender rpcLogSender;
+    private final StreamisRpcLogSender rpcLogSender;
 
     /**
      * Cache
      */
-    private LogCache<StreamisLogEvent> logCache;
+    private final LogCache<StreamisLogEvent> logCache;
     protected StreamisRpcLogAppender(String name, Filter filter,
                                      Layout<? extends Serializable> layout,
                                      boolean ignoreExceptions, Property[] properties,
@@ -52,8 +52,10 @@ public class StreamisRpcLogAppender extends AbstractAppender {
         this.appenderConfig = appenderConfig;
         this.rpcLogSender = new StreamisRpcLogSender(this.appenderConfig.getApplicationName(),
                 this.appenderConfig.getSenderConfig());
+        this.rpcLogSender.setExceptionListener((subject, t, message) ->
+                LOGGER.error((null != subject? subject.getClass().getSimpleName() : "") + ": " + message, t));
         this.logCache = this.rpcLogSender.getOrCreateLogCache();
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.rpcLogSender.close()));
+        Runtime.getRuntime().addShutdownHook(new Thread(this.rpcLogSender::close));
     }
 
     @Override
@@ -74,7 +76,7 @@ public class StreamisRpcLogAppender extends AbstractAppender {
                                                         @PluginAttribute("ignoreExceptions") boolean ignoreExceptions,
                                                         @PluginElement("Filter") final Filter filter,
                                                         @PluginElement("Layout") Layout<? extends Serializable> layout,
-                                                        @PluginElement("RpcLogSender")RpcLogSenderConfig rpcLogSenderConfig){
+                                                         @PluginElement("RpcLogSender")RpcLogSenderConfig rpcLogSenderConfig) throws Exception{
         if (null == name || name.trim().equals("")){
             name = DEFAULT_APPENDER_NAME;
         }
@@ -97,7 +99,8 @@ public class StreamisRpcLogAppender extends AbstractAppender {
         if (null == applicationName || applicationName.trim().equals("")){
             throw new IllegalArgumentException("Application name cannot be empty");
         }
-        return new StreamisRpcLogAppender(name, filter, layout, ignoreExceptions, Property.EMPTY_ARRAY, logAppenderConfig);
+        System.out.println("StreamisRpcLogAppender: init with config" + Json.toJson(logAppenderConfig, null));
+        return new StreamisRpcLogAppender(name, logAppenderConfig.getFilter(), layout, ignoreExceptions, Property.EMPTY_ARRAY, logAppenderConfig);
     }
 
 }
