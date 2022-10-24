@@ -175,19 +175,22 @@ public class JobRestfulApi {
         StreamJob streamJob = this.streamJobService.getJobById(jobId);
         if(streamJob == null) {
             return Message.error("not exists job " + jobId);
-        } else if(!JobConf.SUPPORTED_MANAGEMENT_JOB_TYPES().getValue().contains(streamJob.getJobType())) {
-            return Message.error("Job " + streamJob.getName() + " is not supported to stop.");
         }
         if (!streamJobService.hasPermission(streamJob, userName) &&
                 !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
             return Message.error("Have no permission to kill/stop StreamJob [" + jobId + "]");
         }
-        try {
-            PauseResultVo resultVo = streamTaskService.pause(jobId, 0L, userName, Objects.nonNull(snapshot)? snapshot : false);
-            return snapshot? Message.ok().data("path", resultVo.getSnapshotPath()) : Message.ok();
-        } catch (Exception e) {
-            LOG.error("{} kill job {} failed!", userName, jobId, e);
-            return Message.error(ExceptionUtils.getRootCauseMessage(e));
+        if(JobConf.SUPPORTED_MANAGEMENT_JOB_TYPES().getValue().contains(streamJob.getJobType())) {
+            try {
+                PauseResultVo resultVo = streamTaskService.pause(jobId, 0L, userName, Objects.nonNull(snapshot)? snapshot : false);
+                return snapshot? Message.ok().data("path", resultVo.getSnapshotPath()) : Message.ok();
+            } catch (Exception e) {
+                LOG.error("{} kill job {} failed!", userName, jobId, e);
+                return Message.error(ExceptionUtils.getRootCauseMessage(e));
+            }
+        } else {
+            LOG.error("{} try to kill not-supported-management job {} with name {}.", userName, jobId, streamJob.getName());
+            return tryStopTask(req, userName, streamJob, null);
         }
     }
 
@@ -334,6 +337,9 @@ public class JobRestfulApi {
         if(streamTask == null) {
             LOG.warn("Job {} is not exists running task, ignore to update its metrics.", jobName);
             return Message.ok("not exists running task, ignore it.");
+        } else if(JobConf.isCompleted(streamTask.getStatus())) {
+            LOG.warn("The task of job {} is completed, ignore to update its metrics.", jobName);
+            return Message.ok("Task is completed, ignore to update its metrics.");
         }
         return withFlinkJobInfo(jobName, streamTask.getLinkisJobInfo(), flinkJobInfo -> {
            if(!flinkJobInfo.getApplicationId().equals(appId)) {
@@ -367,28 +373,32 @@ public class JobRestfulApi {
         } else if(!"spark.jar".equals(streamJobs.get(0).getJobType())) {
             return Message.error("Only spark.jar Job support to stop task.");
         }
-        if (!streamJobService.hasPermission(streamJobs.get(0), username) &&
-                !this.privilegeService.hasEditPrivilege(req, streamJobs.get(0).getProjectName())) {
-            return Message.error("Have no permission to stop task for StreamJob [" + jobName + "].");
+        return tryStopTask(req, username, streamJobs.get(0), appId);
+    }
+
+    private Message tryStopTask(HttpServletRequest req, String username, StreamJob streamJob, String appId) {
+        if (!streamJobService.hasPermission(streamJob, username) &&
+                !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
+            return Message.error("Have no permission to stop task for StreamJob [" + streamJob.getName() + "].");
         }
         // 如果存在正在运行的，将其停止掉
-        StreamTask streamTask = streamTaskService.getLatestTaskByJobId(streamJobs.get(0).getId());
+        StreamTask streamTask = streamTaskService.getLatestTaskByJobId(streamJob.getId());
         if(streamTask != null && JobConf.isRunning(streamTask.getStatus())) {
-            return withFlinkJobInfo(jobName, streamTask.getLinkisJobInfo(), flinkJobInfo -> {
-                if(flinkJobInfo.getApplicationId().equals(appId)) {
-                    LOG.warn("Streamis Job {} is exists running task, update its status to stopped.", jobName);
+            return withFlinkJobInfo(streamJob.getName(), streamTask.getLinkisJobInfo(), flinkJobInfo -> {
+                if(appId == null || flinkJobInfo.getApplicationId().equals(appId)) {
+                    LOG.warn("Streamis Job {} is exists running task, update its status to stopped.", streamJob.getName());
                     streamTask.setStatus((Integer) JobConf.FLINK_JOB_STATUS_STOPPED().getValue());
                     streamTask.setErrDesc("stopped by App itself.");
                     streamTaskService.updateTask(streamTask);
                     return Message.ok();
                 } else {
                     LOG.warn("Job {} with running task <appId: {}> is not equals to the request appId: {}, ignore to stop it.",
-                            jobName, flinkJobInfo.getApplicationId(), appId);
+                            streamJob.getName(), flinkJobInfo.getApplicationId(), appId);
                     return Message.ok("the request appId is not equals to the running task appId " + flinkJobInfo.getApplicationId());
                 }
             });
         } else {
-            LOG.warn("Streamis Job {} is not exists running task, ignore to stop it.", jobName);
+            LOG.warn("Streamis Job {} is not exists running task, ignore to stop it.", streamJob.getName());
             return Message.ok();
         }
     }
