@@ -2,19 +2,27 @@ package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.http;
 
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcAuthConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.AbstractRpcLogSender;
-import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.RpcLogSender;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcLogSenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.SendLogExceptionStrategy;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf.SendBuffer;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.http.request.EntityPostAction;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.LogElement;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpResponseException;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.logging.log4j.core.util.IOUtils;
 
 import javax.net.ssl.SSLException;
+import javax.sound.midi.SysexMessage;
+import javax.xml.ws.Response;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -56,7 +64,6 @@ public abstract class AbstractHttpLogSender<T extends LogElement, E> extends Abs
 
             @Override
             public SendLogExceptionStrategy.RetryDescription onException(Exception e, SendBuffer<T> sendBuffer) {
-                e.printStackTrace();
                 boolean shouldRetry = false;
                 // Limit of exception number is the same as the retry times
                 if (exceptionCounter.incrementAndGet() > retryCount()){
@@ -67,6 +74,11 @@ public abstract class AbstractHttpLogSender<T extends LogElement, E> extends Abs
                         if (retryOnException.equals(e.getClass())) {
                             shouldRetry = true;
                             break;
+                        }
+                    }
+                    if (!shouldRetry && e instanceof HttpResponseException){
+                        if (((HttpResponseException) e).getStatusCode() < 500){
+                            shouldRetry = true;
                         }
                     }
                 }
@@ -99,14 +111,34 @@ public abstract class AbstractHttpLogSender<T extends LogElement, E> extends Abs
                     return;
                 }
             }
-
-            EntityPostAction<E> postAction = new EntityPostAction<>(rpcSenderConfig.getAddress(), aggregatedEntity);
-            RpcAuthConfig authConfig = rpcSenderConfig.getAuthConfig();
-            postAction.getRequestHeaders().put(authConfig.getTokenUserKey(), authConfig.getTokenUser());
-            // Ignore the response
-            postAction.execute(this.globalHttpClient);
-            // Init the counter
-            this.exceptionCounter.set(0);
+            String address = rpcSenderConfig.getAddress();
+            if (null != address && !address.trim().equals("")) {
+                EntityPostAction<E> postAction = new EntityPostAction<>(rpcSenderConfig.getAddress(), aggregatedEntity);
+                RpcAuthConfig authConfig = rpcSenderConfig.getAuthConfig();
+                postAction.getRequestHeaders().put(authConfig.getTokenUserKey(), authConfig.getTokenUser());
+                HttpResponse response = null;
+                try {
+                    response = postAction.execute(this.globalHttpClient);
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    if (statusCode > 200){
+                        throw new HttpResponseException(statusCode,
+                                IOUtils.toString(new InputStreamReader(
+                                        response.getEntity().getContent(), StandardCharsets.UTF_8)));
+                    }
+                }finally {
+                    // Close the response and release the conn
+                    if (null != response){
+                        if (response instanceof CloseableHttpResponse){
+                            ((CloseableHttpResponse)response).close();
+                        } else {
+                            // Destroy the stream
+                            response.getEntity().getContent().close();
+                        }
+                    }
+                }
+                // Init the counter
+                this.exceptionCounter.set(0);
+            }
         }
     }
 }
