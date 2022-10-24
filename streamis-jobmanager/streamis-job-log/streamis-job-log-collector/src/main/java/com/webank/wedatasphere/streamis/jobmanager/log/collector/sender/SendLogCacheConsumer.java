@@ -87,6 +87,7 @@ public abstract class SendLogCacheConsumer<T extends LogElement> implements Runn
                 if (this.isTerminated && e instanceof InterruptedException){
                     return;
                 } else {
+                    e.printStackTrace();
                     System.err.println("SendLogCacheConsumer[" + Thread.currentThread().getName() + "] occurred exception [" + e.getLocalizedMessage() + "]");
                    // For the unknown exception clear the cache
                    sendBuffer.clear();

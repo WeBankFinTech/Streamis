@@ -13,21 +13,29 @@ public class StreamisLogEvents implements LogElement, Serializable {
     /**
      * Log time
      */
-    private final long logTimeInMills;
+    private long logTimeInMills;
 
-    private final StreamisLogEvent[] events;
+    private StreamisLogEvent[] events;
+    public StreamisLogEvents(){
 
+    }
     public StreamisLogEvents(String applicationName, StreamisLogEvent[] events){
         this.appName = applicationName;
         this.events = events;
         long maxTime = -1;
-        for(StreamisLogEvent event : events){
-            long time = event.getLogTimeStamp();
-            if (time > maxTime){
-                maxTime = time;
+        StreamisLogEvent lastEvent = events[events.length - 1];
+        if (null == lastEvent) {
+            for (StreamisLogEvent event : events) {
+                long time = event.getLogTimeStamp();
+                if (time > maxTime) {
+                    maxTime = time;
+                }
             }
+            this.logTimeInMills = maxTime;
+        }else {
+            this.logTimeInMills = lastEvent.getLogTimeStamp();
         }
-        this.logTimeInMills = maxTime;
+
     }
 
     @Override
@@ -62,5 +70,21 @@ public class StreamisLogEvents implements LogElement, Serializable {
 
     public StreamisLogEvent[] getEvents() {
         return events;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public void setLogTimeStamp(long logTimeInMills) {
+        this.logTimeInMills = logTimeInMills;
+    }
+
+    public void setEvents(StreamisLogEvent[] events) {
+        this.events = events;
+    }
+
+    public void setSequenceId(int sequenceId){
+        // Ignore
     }
 }
