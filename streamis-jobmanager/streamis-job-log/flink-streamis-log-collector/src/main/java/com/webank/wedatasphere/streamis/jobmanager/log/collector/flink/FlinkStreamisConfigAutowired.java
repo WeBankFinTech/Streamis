@@ -60,7 +60,7 @@ public class FlinkStreamisConfigAutowired implements StreamisConfigAutowired {
         }
         String hadoopUser = EnvironmentInformation.getHadoopUser();
         if (hadoopUser.equals("<no hadoop dependency found>") || hadoopUser.equals("<unknown>")){
-            hadoopUser = "";
+            hadoopUser = System.getProperty("user.name");
         }
         return builder.setRpcConnTimeout(this.configuration.getInteger(LOG_RPC_CONN_TIMEOUT))
                 .setRpcSocketTimeout(this.configuration.getInteger(LOG_RPC_SOCKET_TIMEOUT))
