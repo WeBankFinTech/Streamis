@@ -57,6 +57,7 @@ public abstract class AbstractHttpAction<T extends HttpRequestBase> implements H
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException("URI maybe has wrong format", e);
         }
+        requestHeaders.forEach(requestBase::setHeader);
         return httpClient.execute(requestBase);
     }
 }

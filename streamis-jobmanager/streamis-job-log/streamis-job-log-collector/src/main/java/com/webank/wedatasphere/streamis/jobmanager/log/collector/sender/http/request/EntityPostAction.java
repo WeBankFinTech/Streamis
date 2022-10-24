@@ -72,7 +72,6 @@ public class EntityPostAction<T> extends PostAction{
             }
         } else if (node instanceof ValueNode){
             ContentType strContent = ContentType.create("text/plain", StandardCharsets.UTF_8);
-            System.out.println("p: " + prefix + ", data: " + node.asText());
             builder.addTextBody(prefix, node.asText(), strContent);
         }
     }
