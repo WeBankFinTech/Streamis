@@ -11,9 +11,21 @@ public interface JobLogBucketState {
      */
     String getBucketPath();
 
+    /**
+     * Write rate
+     * @return rate
+     */
     double getBucketWriteRate();
 
+    /**
+     * Bucket parts
+     * @return number
+     */
     int getBucketParts();
 
-    int getBucketWriteTime();
+    /**
+     * Last rite time
+     * @return time
+     */
+    long getBucketWriteTime();
 }

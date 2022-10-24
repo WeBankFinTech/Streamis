@@ -12,18 +12,21 @@ public class StreamisLogEvent implements LogElement, Serializable {
     /**
      * Log time
      */
-    private final long logTimeInMills;
+    private long logTimeInMills;
 
     /**
      * Log content
      */
-    private final String content;
+    private String content;
 
     /**
      * Mark
      */
     private int mark;
 
+    public StreamisLogEvent(){
+
+    }
     public StreamisLogEvent(String content, long logTimeInMills){
         this.content = content;
         this.logTimeInMills = logTimeInMills;
@@ -53,7 +56,19 @@ public class StreamisLogEvent implements LogElement, Serializable {
         return this.mark;
     }
 
-    public void mark(int mark){
+    public void setLogTimeStamp(long logTimeInMills) {
+        this.logTimeInMills = logTimeInMills;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setMark(int mark) {
         this.mark = mark;
+    }
+
+    public void setSequenceId(int sequenceId){
+        // Ignore
     }
 }
