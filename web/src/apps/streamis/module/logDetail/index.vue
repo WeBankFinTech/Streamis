@@ -177,6 +177,7 @@ export default {
     },
     handleQuery() {
       this.fromLine = 1
+      this.endLine = 0
       this.getDatas()
     }
   }
