@@ -113,6 +113,11 @@ public class FlinkStreamisConfigDefine {
             .stringType().defaultValue("ERROR").withDescription("Level value of LevelMatch filter strategy");
 
     /**
+     * Level value of ThresholdMatch filter strategy
+     */
+    public static final ConfigOption<String> LOG_FILTER_THRESHOLD_MATCH = ConfigOptions.key("stream.log.filter.threshold.level")
+            .stringType().defaultValue("ERROR").withDescription("Level value of ThresholdMatch filter strategy");
+    /**
      * Regex value of RegexMatch filter strategy
      */
     public static final ConfigOption<String> LOG_FILTER_REGEX = ConfigOptions.key("stream.log.filter.regex.value")
