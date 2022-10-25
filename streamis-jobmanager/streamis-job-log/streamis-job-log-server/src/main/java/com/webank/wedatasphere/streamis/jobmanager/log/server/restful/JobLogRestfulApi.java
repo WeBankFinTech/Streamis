@@ -1,6 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.server.restful;
 
-import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisLogEvents;
+import com.webank.wedatasphere.streamis.jobmanager.log.server.entities.StreamisLogEvents;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.exception.StreamJobLogException;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.service.StreamisJobLogService;
 import org.apache.commons.lang.StringUtils;
