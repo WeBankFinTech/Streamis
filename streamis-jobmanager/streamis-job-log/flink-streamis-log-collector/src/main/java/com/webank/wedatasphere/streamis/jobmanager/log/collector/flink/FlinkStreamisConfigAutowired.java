@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.filter.LevelMatchFilter;
 import org.apache.logging.log4j.core.filter.RegexFilter;
+import org.apache.logging.log4j.core.filter.ThresholdFilter;
 
 import java.util.Enumeration;
 import java.util.List;
@@ -53,7 +54,10 @@ public class FlinkStreamisConfigAutowired implements StreamisConfigAutowired {
             if ("LevelMatch".equals(filterStrategy)){
                 builder.withFilter(LevelMatchFilter.newBuilder().setOnMatch(Filter.Result.ACCEPT).setOnMismatch(Filter.Result.DENY)
                         .setLevel(Level.getLevel(this.configuration.getString(LOG_FILTER_LEVEL_MATCH))).build());
-            } else if ("RegexMatch".equals(filterStrategy)){
+            }else if ("ThresholdFilter".equals(filterStrategy)){
+                builder.withFilter(ThresholdFilter.createFilter(Level
+                        .getLevel(this.configuration.getString(LOG_FILTER_THRESHOLD_MATCH)), Filter.Result.ACCEPT, Filter.Result.DENY));
+            }else if ("RegexMatch".equals(filterStrategy)){
                 builder.withFilter(RegexFilter.createFilter( this.configuration.getString(LOG_FILTER_REGEX),
                         null, true, Filter.Result.ACCEPT, Filter.Result.DENY));
             }
