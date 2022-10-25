@@ -97,6 +97,8 @@ public class StreamisJobLogStorage implements JobLogStorage{
                             LOG.info("Close the idle bucket: [ name: {}, last-write-time: {} ]",
                                     bucketName, dateFormat.format(bucketState.getBucketWriteTime()));
                             bucket.close();
+                            // Delete the bucket
+                            buckets.remove(bucketName);
                         }
 
                     });
