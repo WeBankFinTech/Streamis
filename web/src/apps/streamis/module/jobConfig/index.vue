@@ -227,7 +227,7 @@ export default {
         });
         if ((this.diyMap[key] || []).length <= 1) {
           const only = (this.diyMap[key] || [])[0] || {};
-          emptyWarning = !((!only.key || !only.key.trim()) && (!only.value || !only.value.trim()))
+          emptyWarning = (!only.key || !only.key.trim()) && (!only.value || !only.value.trim())
         }
       });
       console.log('configuration', configuration, this.valueMap)
