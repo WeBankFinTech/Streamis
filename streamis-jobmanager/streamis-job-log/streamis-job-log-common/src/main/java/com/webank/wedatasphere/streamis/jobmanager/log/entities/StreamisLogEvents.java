@@ -1,8 +1,9 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.webank.wedatasphere.streamis.jobmanager.log.json.JsonTool;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class StreamisLogEvents implements LogElement, Serializable {
 
@@ -50,7 +51,6 @@ public class StreamisLogEvents implements LogElement, Serializable {
 
 
     @Override
-    @JsonIgnore
     public String[] getContents() {
         String[] contents = new String[events.length];
         for(int i = 0 ; i < contents.length; i++){
@@ -86,5 +86,26 @@ public class StreamisLogEvents implements LogElement, Serializable {
 
     public void setSequenceId(int sequenceId){
         // Ignore
+    }
+
+    public String toJson(){
+        return "{" +
+                "\"logTimeStamp\":" + logTimeInMills +
+                ",\"appName\":" + (Objects.isNull(appName)? null : "\"" + JsonTool.encodeStrValue(appName) + "\"")  +
+                ",\"events\":[" +
+                (Objects.isNull(events) || events.length <=0 ? "" : joinEvents(events, ",") ) + "]" +
+                ",\"sequenceId\":0"
+                + "}";
+    }
+
+    private String joinEvents(StreamisLogEvent[] events, String separator){
+        StringBuilder builder = new StringBuilder();
+        for(int i = 0; i < events.length; i ++){
+            builder.append(events[i].toJson());
+            if (i < events.length - 1){
+                builder.append(separator);
+            }
+        }
+        return builder.toString();
     }
 }
