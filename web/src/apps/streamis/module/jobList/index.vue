@@ -742,6 +742,7 @@ export default {
         this.queryProcess(bulk_sbj);
       } catch (error) {
         console.warn(error);
+        this.modalContent = '停止任务失败，失败信息：' + error
         // this.modalLoading = false
       }
     },
