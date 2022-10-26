@@ -25,7 +25,10 @@ class SparkTaskMetricsParser extends AbstractTaskMetricsParser {
     val addDataNumberDTO: String => Unit = key => {
       val batch = new JobDetailsVo.DataNumberDTO
       batch.setDataName(key)
-      batch.setDataNumber(metricsMap.get(key).toString.toInt)
+      batch.setDataNumber(metricsMap.get(key) match {
+        case null => -1
+        case num => num.toString.toInt
+      })
       dataNumberDTOS.add(batch)
     }
     addDataNumberDTO("waitingBatchs")
