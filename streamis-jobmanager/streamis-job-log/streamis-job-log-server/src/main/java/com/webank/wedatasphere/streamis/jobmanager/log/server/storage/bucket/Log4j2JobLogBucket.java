@@ -274,4 +274,5 @@ public class Log4j2JobLogBucket implements JobLogBucket{
         }
         return filePattern;
     }
+
 }

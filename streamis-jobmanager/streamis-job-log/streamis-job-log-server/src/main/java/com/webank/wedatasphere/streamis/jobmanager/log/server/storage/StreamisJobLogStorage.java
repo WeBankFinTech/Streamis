@@ -79,28 +79,35 @@ public class StreamisJobLogStorage implements JobLogStorage{
     public synchronized void init() {
         if (Objects.isNull(monitorThread)){
             monitorThread = Utils.defaultScheduler().scheduleAtFixedRate(() -> {
-                Thread.currentThread().setName(StreamJobLogConfig.BUCKET_MONITOR_NAME.getValue());
-                long maxIdleTime = StreamJobLogConfig.BUCKET_MAX_IDLE_TIME.getValue().toLong();
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                if (buckets.size() > 0) {
-                    StringBuilder builder = new StringBuilder("Buckets in LogStorage: [\n");
-                    buckets.forEach((bucketName, bucket) -> {
-                        JobLogBucketState bucketState = bucket.getBucketState();
-                        builder.append("bucket: [ name: ")
-                                .append(bucketName)
-                                .append(", path: ").append(bucketState.getBucketPath())
-                                .append(", parts: ").append(bucketState.getBucketParts())
-                                .append(", write-rate: ").append(bucketState.getBucketWriteRate()).append("/s")
-                                .append(", last-write-time: ").append(dateFormat.format(bucketState.getBucketWriteTime()))
-                                .append(" ]\n");
-                        if (bucketState.getBucketWriteTime() + maxIdleTime <= System.currentTimeMillis()){
-                            LOG.info("Close the idle bucket: [ name: {}, last-write-time: {} ]",
-                                    bucketName, dateFormat.format(bucketState.getBucketWriteTime()));
-                            bucket.close();
-                        }
+                String threadName = Thread.currentThread().getName();
+                try {
+                    Thread.currentThread().setName(StreamJobLogConfig.BUCKET_MONITOR_NAME.getValue());
+                    long maxIdleTime = StreamJobLogConfig.BUCKET_MAX_IDLE_TIME.getValue().toLong();
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    if (buckets.size() > 0) {
+                        StringBuilder builder = new StringBuilder("Buckets in LogStorage: [\n");
+                        buckets.forEach((bucketName, bucket) -> {
+                            JobLogBucketState bucketState = bucket.getBucketState();
+                            builder.append("bucket: [ name: ")
+                                    .append(bucketName)
+                                    .append(", path: ").append(bucketState.getBucketPath())
+                                    .append(", parts: ").append(bucketState.getBucketParts())
+                                    .append(", write-rate: ").append(bucketState.getBucketWriteRate()).append("/s")
+                                    .append(", last-write-time: ").append(dateFormat.format(bucketState.getBucketWriteTime()))
+                                    .append(" ]\n");
+                            if (bucketState.getBucketWriteTime() + maxIdleTime <= System.currentTimeMillis()) {
+                                LOG.info("Close the idle bucket: [ name: {}, last-write-time: {} ]",
+                                        bucketName, dateFormat.format(bucketState.getBucketWriteTime()));
+                                bucket.close();
+                                // Delete the bucket
+                                buckets.remove(bucketName);
+                            }
 
-                    });
-                    LOG.info(builder.toString());
+                        });
+                        LOG.info(builder.toString());
+                    }
+                } finally {
+                    Thread.currentThread().setName(threadName);
                 }
 
             },BUCKET_MONITOR_INTERVAL.getValue().toLong(), BUCKET_MONITOR_INTERVAL.getValue().toLong(), TimeUnit.MILLISECONDS);
