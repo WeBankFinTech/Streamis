@@ -91,7 +91,7 @@ public class StreamisLogEvents implements LogElement, Serializable {
     public String toJson(){
         return "{" +
                 "\"logTimeStamp\":" + logTimeInMills +
-                ",\"appName\":" + (Objects.isNull(appName)? null : "\"" + JsonTool.encodeStrValue(appName) + "\"")  +
+                ",\"appName\":" + (Objects.isNull(appName)? null : "\"" + JsonTool.escapeStrValue(appName) + "\"")  +
                 ",\"events\":[" +
                 (Objects.isNull(events) || events.length <=0 ? "" : joinEvents(events, ",") ) + "]" +
                 ",\"sequenceId\":0"
