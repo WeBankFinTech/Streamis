@@ -1,8 +1,10 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import com.webank.wedatasphere.streamis.jobmanager.log.json.JsonTool;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Log event for streamis
@@ -42,7 +44,6 @@ public class StreamisLogEvent implements LogElement, Serializable {
     }
 
     @Override
-    @JsonIgnore
     public String[] getContents() {
         return new String[]{content};
     }
@@ -70,5 +71,14 @@ public class StreamisLogEvent implements LogElement, Serializable {
 
     public void setSequenceId(int sequenceId){
         // Ignore
+    }
+
+    public String toJson(){
+        return "{" +
+                "\"logTimeStamp\":" + logTimeInMills +
+                ",\"content\":" + (Objects.isNull(content)? null : "\"" + JsonTool.encodeStrValue(content) + "\"") +
+                ",\"sequenceId\":0"
+                + "}";
+
     }
 }
