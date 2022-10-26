@@ -108,4 +108,5 @@ public class StreamisLogEvents implements LogElement, Serializable {
         }
         return builder.toString();
     }
+
 }
