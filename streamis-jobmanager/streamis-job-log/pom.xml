@@ -12,8 +12,11 @@
     <artifactId>streamis-job-log</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>streamis-job-log-collector</module>
-        <module>flink-streamis-log-collector</module>
+        <module>job-log-collector/streamis-job-log-collector-core</module>
+        <module>job-log-collector/streamis-job-log-collector</module>
+        <module>job-log-collector/streamis-job-log-collector1x</module>
+        <module>job-log-collector/flink-streamis-log-collector</module>
+        <module>job-log-collector/xspark-streamis-log-collector</module>
         <module>streamis-job-log-server</module>
         <module>streamis-job-log-common</module>
     </modules>
