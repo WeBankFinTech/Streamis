@@ -20,7 +20,7 @@
             }}</Button>
           </Upload>
           <div v-if="!!file">
-            {{ $t('message.streamis.uploadJar.choosedJar') }}: {{ file.name }}
+            {{ $t('message.streamis.uploadJar.choosedFile') }}: {{ file.name }}
           </div>
         </FormItem>
         <FormItem
@@ -74,6 +74,16 @@ export default {
             required: true,
             message: this.$t('message.streamis.projectFile.versionEmpty'),
             trigger: 'blur'
+          },
+          {
+            validator: this.checkVersionName,
+            trigger: 'blur',
+          }
+        ],
+        comment: [
+          {
+            validator: this.checkComment,
+            trigger: 'blur',
           }
         ]
       },
@@ -126,7 +136,24 @@ export default {
       this.file = ''
       this.$refs['uploadForm'].resetFields()
       this.$emit('fileModalCancel')
-    }
+    },
+    checkVersionName(rule, value, callback){
+      const _this = this;
+      const reg = new RegExp('^[0-9.]*$');
+      if(!reg.test(value)){
+        return callback(new Error(_this.$t('message.streamis.projectFile.versionPlaceholder')))
+      }else{
+        callback()
+      }
+    },
+    checkComment(rule, value, callback){
+      const _this = this;
+      if(value.length > 50){
+        return callback(new Error(_this.$t('message.streamis.projectFile.commentLength')))
+      }else{
+        callback()
+      }
+    },
   }
 }
 </script>

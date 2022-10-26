@@ -180,7 +180,8 @@
         "choosedJar" : "选中的Jar包",
         "jarError": "文件必须是Jar包",
         "jarEmpty": "必须选择Jar包",
-        "jobNameEmpty": "作业名称不能为空"
+        "jobNameEmpty": "作业名称不能为空",
+        "choosedFile": "选中的文件"
       },
       "projectFile": {
         "file": "文件",
@@ -188,6 +189,7 @@
         "overrideImport": "覆盖式导入",
         "chooseUploadFile": "请选择您要导入的资源文件",
         "versionPlaceholder": "只支持数字和.，例如0.1.0",
+        "commentLength": "文本长度过长,不能超过50个字符",
         "versionEmpty": "版本不能为空",
         "fileEmpty": "文件不能为空",
         "delete": "删除",
