@@ -179,7 +179,8 @@
         "selectJar": "Please choose Jar",
         "upload": "Upload",
         "choosedJar" : "Choosed Jar",
-        "jarError": "File must be Jar"
+        "jarError": "File must be Jar",
+        "choosedFile": "Choosed File"
       },
       "projectFile": {
         "file": "File",
@@ -187,6 +188,7 @@
         "overrideImport": "Override import",
         "chooseUploadFile": "Please choose the import resource file",
         "versionPlaceholder": "Only number and ., such as 0.1.0",
+        "commentLength": "The length of comment text is too long",
         "versionEmpty": "Version Cannot be empty",
         "fileEmpty": "File cannot be empty",
         "delete": "Delete",
