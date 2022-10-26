@@ -190,7 +190,7 @@ public class JobRestfulApi {
             }
         } else {
             LOG.error("{} try to kill not-supported-management job {} with name {}.", userName, jobId, streamJob.getName());
-            return tryStopTask(req, userName, streamJob, null);
+            return tryStopTask(streamJob, null);
         }
     }
 
@@ -372,10 +372,10 @@ public class JobRestfulApi {
         String username = SecurityFilter.getLoginUsername(req);
         LOG.info("User {} try to stop task for Streamis job {} with appId: {}, appUrl: {}.", username, jobName, appId, appUrl);
         return withStreamJob(req, projectName, jobName, username,
-                streamJob -> tryStopTask(req, username, streamJob, appId));
+                streamJob -> tryStopTask(streamJob, appId));
     }
 
-    private Message tryStopTask(HttpServletRequest req, String username, StreamJob streamJob, String appId) {
+    private Message tryStopTask(StreamJob streamJob, String appId) {
         // 如果存在正在运行的，将其停止掉
         StreamTask streamTask = streamTaskService.getLatestTaskByJobId(streamJob.getId());
         if(streamTask != null && JobConf.isRunning(streamTask.getStatus())) {
