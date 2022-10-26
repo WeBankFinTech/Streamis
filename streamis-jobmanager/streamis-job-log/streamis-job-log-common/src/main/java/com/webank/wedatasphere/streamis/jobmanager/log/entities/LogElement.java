@@ -30,4 +30,5 @@ public interface LogElement {
      * @return
      */
     int mark();
+
 }
