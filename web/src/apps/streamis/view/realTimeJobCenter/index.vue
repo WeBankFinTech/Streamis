@@ -16,10 +16,14 @@ export default {
   data() {
     return {
       navHeight: 0,
+      projectName: this.$route.query.projectName || (new URLSearchParams(window.location.search)).get('projectName')
     };
   },
   mounted() {
     // this.init();
+    if(!this.$route.query.projectName){
+      this.$router.push(`/realTimeJobCenter?projectName=${this.projectName}`)
+    }
   },
   methods: {
     resize(height) {
