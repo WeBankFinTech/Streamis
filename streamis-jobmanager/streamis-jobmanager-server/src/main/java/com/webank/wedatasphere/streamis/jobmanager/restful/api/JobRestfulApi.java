@@ -235,6 +235,11 @@ public class JobRestfulApi {
     private Message withStreamJob(HttpServletRequest req, String projectName,
                                   String jobName, String username,
                                   Function<StreamJob, Message> streamJobFunction) {
+        if(StringUtils.isBlank(projectName)) {
+            return Message.error("projectName cannot be empty!");
+        } else if(StringUtils.isBlank(jobName)) {
+            return Message.error("jobName cannot be empty!");
+        }
         List<QueryJobListVo> streamJobs = streamJobService.getByProList(projectName, username, jobName, null, null).getList();
         if(CollectionUtils.isEmpty(streamJobs)) {
             return Message.error("Not exits Streamis job " + jobName);
@@ -259,6 +264,9 @@ public class JobRestfulApi {
                            @RequestParam(value = "appUrl") String appUrl) {
         String username = SecurityFilter.getLoginUsername(req);
         LOG.info("User {} try to add a new task for Streamis job {} with appId: {}, appUrl: {}.", username, jobName, appId, appUrl);
+        if(StringUtils.isBlank(appId)) {
+            return Message.error("appId cannot be empty!");
+        }
         return withStreamJob(req, projectName, jobName, username, streamJob -> {
             // 如果存在正在运行的，先将其停止掉
             StreamTask streamTask = streamTaskService.getLatestTaskByJobId(streamJob.getId());
