@@ -435,7 +435,8 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
             this.count -= i;
             if (clearItems){
                 int index = this.takeIndex;
-                for (; i > 0; i --){
+                int j = i;
+                for (; j > 0; j --){
                     this.items[index] = null;
                     if (++index == items.length){
                         index = 0;
