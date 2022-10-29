@@ -328,14 +328,15 @@ public class JobRestfulApi {
         return flinkJobInfoFunction.apply(flinkJobInfo);
     }
 
-    @RequestMapping(path = "/updateTask", method = RequestMethod.GET)
+    @RequestMapping(path = "/updateTask", method = RequestMethod.POST)
     public Message updateTask(HttpServletRequest req,
-                              @RequestParam(value = "projectName") String projectName,
-                              @RequestParam(value = "jobName") String jobName,
-                              @RequestParam(value = "appId") String appId,
-                              @RequestParam(value = "metrics") String metrics) {
+                              @RequestBody Map<String, String> json) {
         String username = SecurityFilter.getLoginUsername(req);
-        LOG.info("User {} try to update task for Streamis job {} with appId: {}.", username, jobName, appId);
+        String projectName = json.get("projectName");
+        String jobName = json.get("jobName");
+        String appId = json.get("appId");
+        String metrics = json.get("metrics");
+        LOG.info("User {} try to update task for Streamis job {} with appId: {}, metrics: {}.", username, jobName, appId, metrics);
         return withStreamJob(req, projectName, jobName, username, streamJob -> {
             StreamTask streamTask = streamTaskService.getLatestTaskByJobId(streamJob.getId());
             if (streamTask == null) {
