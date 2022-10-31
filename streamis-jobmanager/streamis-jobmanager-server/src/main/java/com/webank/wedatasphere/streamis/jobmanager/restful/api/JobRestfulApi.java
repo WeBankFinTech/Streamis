@@ -336,14 +336,13 @@ public class JobRestfulApi {
         return flinkJobInfoFunction.apply(flinkJobInfo);
     }
 
-    @RequestMapping(path = "/updateTask", method = RequestMethod.POST)
+    @RequestMapping(path = "/updateTask", method = RequestMethod.GET)
     public Message updateTask(HttpServletRequest req,
-                              @RequestBody Map<String, String> json) {
+                              @RequestParam(value = "projectName") String projectName,
+                              @RequestParam(value = "jobName") String jobName,
+                              @RequestParam(value = "appId") String appId,
+                              @RequestParam(value = "metrics") String metrics) {
         String username = SecurityFilter.getLoginUsername(req);
-        String projectName = json.get("projectName");
-        String jobName = json.get("jobName");
-        String appId = json.get("appId");
-        String metrics = json.get("metrics");
         LOG.info("User {} try to update task for Streamis job {} with appId: {}, metrics: {}.", username, jobName, appId, metrics);
         return withStreamJob(req, projectName, jobName, username, streamJob -> {
             StreamTask streamTask = streamTaskService.getLatestTaskByJobId(streamJob.getId());
@@ -370,6 +369,16 @@ public class JobRestfulApi {
                 return Message.ok();
             });
         });
+    }
+
+    @RequestMapping(path = "/updateTask", method = RequestMethod.POST)
+    public Message updateTask(HttpServletRequest req,
+                              @RequestBody Map<String, String> json) {
+        String projectName = json.get("projectName");
+        String jobName = json.get("jobName");
+        String appId = json.get("appId");
+        String metrics = json.get("metrics");
+        return updateTask(req, projectName, jobName, appId, metrics);
     }
 
     @RequestMapping(path = "/stopTask", method = RequestMethod.GET)
