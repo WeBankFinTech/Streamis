@@ -1,14 +1,11 @@
-package com.webank.wedatasphere.streamis.jobmanager.log.server.storage;
+package com.webank.wedatasphere.streamis.jobmanager.log.server.storage.context;
 
 import com.webank.wedatasphere.streamis.jobmanager.log.server.exception.StreamJobLogException;
-import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.utils.MemUtils;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.*;
-import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.util.UUID;
 
 /**
  * Storage context (represent the driver/disk)
@@ -16,20 +13,31 @@ import java.nio.file.attribute.PosixFilePermissions;
 public class JobLogStorageContext{
 
     /**
+     * Context id
+     */
+    private final String id;
+
+    /**
      * Store path
      */
-    private Path storePath;
+    private final Path storePath;
 
     /**
      * Store information
      */
-    private FileStore storeInfo;
+    private final FileStore storeInfo;
     /**
      * Score of storage context
      */
-    public double score;
+    private final double score;
+
+    /**
+     * Storage weight
+     */
+    private double storeWeight;
 
     public JobLogStorageContext(String path, double score){
+        this.id = UUID.randomUUID().toString();
         this.storePath = Paths.get(path);
         this.storeInfo = initStorePath(this.storePath);
         this.score = score;
@@ -70,6 +78,10 @@ public class JobLogStorageContext{
         return score;
     }
 
+    public String getId() {
+        return id;
+    }
+
     /**
      * Total space
      * @return bytes return
@@ -97,18 +109,6 @@ public class JobLogStorageContext{
     }
 
     /**
-     * The percent of usable disk
-     * @return bytes return
-     * @throws IOException
-     */
-    public double getUsablePercent() throws IOException{
-        long result = storeInfo.getUnallocatedSpace();
-        if (result < 0){
-            result = Long.MAX_VALUE;
-        }
-        return result;
-    }
-    /**
      * Unallocated space
      * @return bytes return
      * @throws IOException
@@ -119,5 +119,26 @@ public class JobLogStorageContext{
             result = Long.MAX_VALUE;
         }
         return result;
+    }
+
+    public double getStoreWeight() {
+        return storeWeight;
+    }
+
+    public void setStoreWeight(double storeWeight) {
+        this.storeWeight = storeWeight;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof JobLogStorageContext){
+            return this.id.equals(((JobLogStorageContext) o).id);
+        }
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id.hashCode();
     }
 }

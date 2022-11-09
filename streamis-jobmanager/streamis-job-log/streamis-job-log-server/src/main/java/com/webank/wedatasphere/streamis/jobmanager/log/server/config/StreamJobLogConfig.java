@@ -9,6 +9,21 @@ import org.apache.linkis.common.conf.TimeType;
 public class StreamJobLogConfig {
 
     /**
+     * The threshold of log storage
+     */
+    public static final CommonVars<Double> STORAGE_THRESHOLD = CommonVars.apply("wds.stream.job.log.storage.threshold", 0.9);
+
+    /**
+     * Max weight of storage context
+     */
+    public static final CommonVars<Integer> STORAGE_CONTEXT_MAX_WEIGHT = CommonVars.apply("wds.stream.job.log.storage.context.max-weight", 5);
+
+    /**
+     * Paths of storage context
+     */
+    public static final CommonVars<String> STORAGE_CONTEXT_PATHS = CommonVars.apply("wds.stream.job.log.storage.context.paths", "/data/stream/log");
+
+    /**
      * Bucket monitor name
      */
     public static final CommonVars<String> BUCKET_MONITOR_NAME = CommonVars.apply("wds.stream.job.log.storage.bucket.monitor.name", "Log-Storage-Bucket-Monitor");

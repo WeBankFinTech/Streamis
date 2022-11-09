@@ -1,6 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket;
 
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.LogElement;
+import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.context.JobLogStorageContext;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.linkis.common.conf.CommonVars;
@@ -21,8 +22,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Job log bucket for log4j
@@ -40,6 +45,10 @@ public class Log4j2JobLogBucket implements JobLogBucket{
     private final String bucketName;
 
     /**
+     * Logger name
+     */
+    private final String loggerName;
+    /**
      * Logger context
      */
     private final LoggerContext loggerContext;
@@ -49,6 +58,10 @@ public class Log4j2JobLogBucket implements JobLogBucket{
      */
     private final Logger logger;
 
+    /**
+     * Storage context
+     */
+    private final JobLogStorageContext storageContext;
     /**
      * Storage writer
      */
@@ -70,19 +83,40 @@ public class Log4j2JobLogBucket implements JobLogBucket{
     private long preIntervalTime;
 
     /**
+     * Active thread
+     */
+    private final AtomicLong activeThread = new AtomicLong(0);
+    /**
      * Interval counter
      */
     private final AtomicLong intervalCounter = new AtomicLong(0);
 
     /**
+     * Shutdown flag
+     */
+    private final AtomicBoolean isShutdown = new AtomicBoolean(false);
+
+    /**
+     * Shutdown lock
+     */
+    private final ReentrantLock shutdownLock = new ReentrantLock();
+
+    /**
+     * Shutdown condition
+     */
+    private final Condition canShutdown = shutdownLock.newCondition();
+    /**
      * Store the write rate
      */
     private double writeRate;
-    public Log4j2JobLogBucket(String bucketName, JobLogBucketConfig config){
+    public Log4j2JobLogBucket(String bucketName, JobLogStorageContext storageContext, JobLogBucketConfig config){
         this.bucketName = bucketName;
+        // Build unique logger name
+        this.loggerName = bucketName + System.currentTimeMillis() + "_" + Thread.currentThread().getId();
+        this.storageContext = storageContext;
         // Create logger context
         this.loggerContext = (LoggerContext) LogManager.getContext(false);
-        this.logger = initLogger(this.bucketName, config, this.loggerContext);
+        this.logger = initLogger(this.bucketName, this.loggerName, this.storageContext, config, this.loggerContext);
         this.jobLogStorageWriter = createStorageWriter();
         this.jobLogBucketState = createBucketState();
     }
@@ -97,26 +131,43 @@ public class Log4j2JobLogBucket implements JobLogBucket{
     }
 
     @Override
+    public JobLogStorageContext getStorageContext() {
+        return this.storageContext;
+    }
+
+    @Override
     public String getBucketName() {
         return this.bucketName;
     }
 
     @Override
     public void close() {
+       this.isShutdown.set(true);
+       this.shutdownLock.lock();
+       try{
+           if(!this.canShutdown.await(5, TimeUnit.SECONDS)){
+               LOG.warn("Shutdown the bucket: [{}] directly because the timeout of waiting", bucketName);
+           }
+       } catch (InterruptedException e) {
+           // Ignore
+       } finally {
+           this.shutdownLock.unlock();
+       }
        Configuration log4jConfig =  this.loggerContext.getConfiguration();
        // First to stop appender
-       log4jConfig.getAppender(this.bucketName).stop();
-       log4jConfig.getLoggerConfig(this.bucketName).removeAppender(this.bucketName);
-       log4jConfig.removeLogger(this.bucketName);
+       log4jConfig.getAppender(this.loggerName).stop();
+       log4jConfig.getLoggerConfig(this.loggerName).removeAppender(this.loggerName);
+       log4jConfig.removeLogger(this.loggerName);
        loggerContext.updateLoggers();
     }
 
-    private synchronized Logger initLogger(String bucketName, JobLogBucketConfig config, LoggerContext loggerContext){
+    private synchronized Logger initLogger(String bucketName, String loggerName,
+                                           JobLogStorageContext storageContext, JobLogBucketConfig config, LoggerContext loggerContext){
         Configuration log4jConfig = loggerContext.getConfiguration();
-        String fileName = resolveFileName(config.getBucketRootPath(), bucketName);
+        String fileName = resolveFileName(storageContext.getStorePath().toString(), bucketName);
         RollingFileAppender appender = RollingFileAppender.newBuilder()
                 .setLayout(PatternLayout.newBuilder().withPattern(config.getLogLayOutPattern()).build())
-                .setName(bucketName)
+                .setName(loggerName)
 //                .withFileOwner()
                 .withFileName(fileName)
                 .withFilePattern(resolveFilePattern(fileName, config.getBucketPartCompress()))
@@ -128,14 +179,14 @@ public class Log4j2JobLogBucket implements JobLogBucket{
         log4jConfig.addAppender(appender);
         LoggerConfig loggerConfig = LoggerConfig.newBuilder().withAdditivity(false).withLevel(Level.ALL)
                 .withRefs(new AppenderRef[]{
-                        AppenderRef.createAppenderRef(bucketName, null, null)
+                        AppenderRef.createAppenderRef(loggerName, null, null)
                 })
-                .withLoggerName(bucketName).withConfig(log4jConfig).build();
+                .withLoggerName(loggerName).withConfig(log4jConfig).build();
         loggerConfig.addAppender(appender, null, null);
-        log4jConfig.addLogger(bucketName, loggerConfig);
+        log4jConfig.addLogger(loggerName, loggerConfig);
         // Should we update the logger context ?
         loggerContext.updateLoggers();
-        return loggerContext.getLogger(bucketName);
+        return loggerContext.getLogger(loggerName);
     }
 
     /**
@@ -146,16 +197,34 @@ public class Log4j2JobLogBucket implements JobLogBucket{
         return new JobLogStorageWriter() {
             @Override
             public <T extends LogElement> void write(LogElement logEl) {
-                String[] contents = logEl.getContents();
-                if (null != contents){
-                    for(String content : contents){
-                        write(content);
+                activeThread.incrementAndGet();
+                try {
+                    String[] contents = logEl.getContents();
+                    if (null != contents) {
+                        for (String content : contents) {
+                            write(content, true);
+                        }
+                    }
+                }finally {
+                    if (activeThread.decrementAndGet() <= 0 && isShutdown.get()){
+                        notifyShutdown();
                     }
                 }
             }
 
             @Override
             public void write(String logLine) {
+                activeThread.incrementAndGet();
+                try {
+                    write(logLine, false);
+                }finally {
+                    if (activeThread.decrementAndGet() <= 0 && isShutdown.get()){
+                        notifyShutdown();
+                    }
+                }
+            }
+
+            private void write(String logLine, boolean batch){
                 logger.info(logLine);
                 long currentTime = System.currentTimeMillis();
                 long intervalCnt = intervalCounter.getAndIncrement();
@@ -167,9 +236,7 @@ public class Log4j2JobLogBucket implements JobLogBucket{
                     intervalCounter.set(0);
                 }
                 lastWriteTime = currentTime;
-
             }
-
             @Override
             public void close() {
                 // Ignore
@@ -215,6 +282,15 @@ public class Log4j2JobLogBucket implements JobLogBucket{
                 return lastWriteTime;
             }
         };
+    }
+
+    private void notifyShutdown(){
+        this.shutdownLock.lock();
+        try{
+            this.canShutdown.notifyAll();
+        }finally {
+            this.shutdownLock.unlock();
+        }
     }
     /**
      * Create rollover strategy
