@@ -2,6 +2,8 @@ package com.webank.wedatasphere.streamis.jobmanager.log.collector.log4j2;
 
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcLogSenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.StreamisLogAppenderConfig;
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.message.filters.LogMessageFilter;
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.message.filters.LogMessageFilterAdapter;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.filter.CompositeFilter;
 
@@ -19,8 +21,8 @@ public class StreamisLog4j2AppenderConfig extends StreamisLogAppenderConfig {
     private final Filter filter;
 
     public StreamisLog4j2AppenderConfig(String applicationName, Filter filter,
-                                        RpcLogSenderConfig rpcLogSenderConfig){
-        super(applicationName, rpcLogSenderConfig);
+                                        RpcLogSenderConfig rpcLogSenderConfig, List<LogMessageFilter> messageFilters){
+        super(applicationName, rpcLogSenderConfig, messageFilters);
         this.filter = filter;
     }
 
@@ -45,7 +47,11 @@ public class StreamisLog4j2AppenderConfig extends StreamisLogAppenderConfig {
          */
         public StreamisLog4j2AppenderConfig.Builder setFilter(Filter filter){
             this.filters.clear();
+            this.messageFilters.clear();
             this.filters.add(filter);
+            if (filter instanceof LogMessageFilterAdapter){
+                this.messageFilters.add(((LogMessageFilterAdapter) filter).getLogMessageFilter());
+            }
             return this;
         }
 
@@ -56,6 +62,9 @@ public class StreamisLog4j2AppenderConfig extends StreamisLogAppenderConfig {
          */
         public StreamisLog4j2AppenderConfig.Builder withFilter(Filter filter){
             filters.add(filter);
+            if (filter instanceof LogMessageFilterAdapter){
+                this.messageFilters.add(((LogMessageFilterAdapter) filter).getLogMessageFilter());
+            }
             return this;
         }
 
@@ -70,7 +79,7 @@ public class StreamisLog4j2AppenderConfig extends StreamisLogAppenderConfig {
             } else if (!filters.isEmpty()){
                 logFilter = filters.get(0);
             }
-            return new StreamisLog4j2AppenderConfig(applicationName, logFilter, rpcLogSenderConfig);
+            return new StreamisLog4j2AppenderConfig(applicationName, logFilter, rpcLogSenderConfig, messageFilters);
         }
     }
     public Filter getFilter() {

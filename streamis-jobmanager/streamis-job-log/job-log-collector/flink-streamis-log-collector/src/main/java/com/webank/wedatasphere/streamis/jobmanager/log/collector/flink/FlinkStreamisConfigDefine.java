@@ -122,4 +122,16 @@ public class FlinkStreamisConfigDefine {
      */
     public static final ConfigOption<String> LOG_FILTER_REGEX = ConfigOptions.key("stream.log.filter.regex.value")
             .stringType().defaultValue(".*").withDescription("Regex value of RegexMatch filter strategy");
+
+    /**
+     * Accept keywords of Keyword filter strategy
+     */
+    public static final ConfigOption<String> LOG_FILTER_KEYWORDS = ConfigOptions.key("stream.log.filter.keywords")
+            .stringType().defaultValue("ERROR").withDescription("Accept keywords of Keyword filter strategy");
+
+    /**
+     * Exclude keywords of Keyword filter strategy
+     */
+    public static final ConfigOption<String> LOG_FILTER_KEYWORDS_EXCLUDE = ConfigOptions.key("stream.log.filter.keywords.exclude")
+            .stringType().defaultValue("").withDescription("Exclude keywords of Keyword filter strategy");
 }
