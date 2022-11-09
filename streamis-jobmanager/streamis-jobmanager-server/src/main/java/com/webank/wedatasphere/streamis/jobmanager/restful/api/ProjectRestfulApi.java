@@ -21,6 +21,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobServ
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
+import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -41,7 +42,7 @@ public class ProjectRestfulApi {
         if(StringUtils.isBlank(projectName)){
             throw new ProjectException("params cannot be empty!");
         }
-        String username = SecurityFilter.getLoginUsername(req);
+        String username = ModuleUserUtils.getOperationUser(req);
         TaskCoreNumVo taskCoreNumVO = streamJobService.countByCores(projectName,username);
         return Message.ok().data("taskCore",taskCoreNumVO);
     }
