@@ -83,7 +83,7 @@ public class StreamisRpcLogAppender extends AbstractAppender {
         String content = new String(getLayout().toByteArray(event));
         if (messageFilterFunction.apply(event.getLoggerName(), content)) {
             // Transform to stream log event;
-            StreamisLogEvent logEvent = new StreamisLogEvent(content, System.currentTimeMillis());
+            StreamisLogEvent logEvent = new StreamisLogEvent(content, event.getTimeMillis());
             try {
                 this.logCache.cacheLog(logEvent);
             } catch (InterruptedException e) {
