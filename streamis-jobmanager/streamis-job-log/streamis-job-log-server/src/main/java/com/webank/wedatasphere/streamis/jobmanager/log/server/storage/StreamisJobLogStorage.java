@@ -3,6 +3,7 @@ package com.webank.wedatasphere.streamis.jobmanager.log.server.storage;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.config.StreamJobLogConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.JobLogBucket;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.JobLogBucketConfig;
+import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.JobLogBucketDriftPolicy;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.JobLogBucketState;
 import org.apache.linkis.common.utils.Utils;
 import org.slf4j.Logger;
@@ -72,6 +73,11 @@ public class StreamisJobLogStorage implements JobLogStorage{
             }
             return null;
         });
+    }
+
+    @Override
+    public void setBucketDriftPolicy(JobLogBucketDriftPolicy bucketDriftPolicy) {
+
     }
 
     @Override

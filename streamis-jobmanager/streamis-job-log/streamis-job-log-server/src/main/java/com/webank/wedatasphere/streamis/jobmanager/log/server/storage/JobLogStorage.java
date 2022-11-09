@@ -2,6 +2,7 @@ package com.webank.wedatasphere.streamis.jobmanager.log.server.storage;
 
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.JobLogBucket;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.JobLogBucketConfig;
+import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.JobLogBucketDriftPolicy;
 
 /**
  * Storage of job log
@@ -17,6 +18,11 @@ public interface JobLogStorage {
      */
     JobLogBucket getOrCreateBucket(String userName, String appName, JobLogBucketConfig bucketConfig);
 
+    /**
+     * Set bucket drift policy
+     * @param bucketDriftPolicy bucket drift policy
+     */
+    void setBucketDriftPolicy(JobLogBucketDriftPolicy bucketDriftPolicy);
     /**
      * Init method
      */
