@@ -28,6 +28,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobServ
 import org.apache.linkis.httpclient.dws.DWSHttpClient;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
+import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
@@ -101,7 +102,7 @@ public class JobConfRestfulApi {
     public Message queryConfig(@PathVariable("jobId") Long jobId, HttpServletRequest request){
         Message result = Message.ok("success");
         try {
-            String userName = SecurityFilter.getLoginUsername(request);
+            String userName = ModuleUserUtils.getOperationUser(request, "query job config json");
             StreamJob streamJob = this.streamJobService.getJobById(jobId);
             if (!streamJobService.hasPermission(streamJob, userName) &&
                     !this.privilegeService.hasAccessPrivilege(request, streamJob.getProjectName())){
@@ -128,7 +129,7 @@ public class JobConfRestfulApi {
                               HttpServletRequest request){
         Message result = Message.ok("success");
         try{
-            String userName = SecurityFilter.getLoginUsername(request);
+            String userName = ModuleUserUtils.getOperationUser(request, "save job config json");
             StreamJob streamJob = this.streamJobService.getJobById(jobId);
             // Accept the developer to modify
             if (!streamJobService.isCreator(jobId, userName) &&
@@ -153,7 +154,7 @@ public class JobConfRestfulApi {
             if (Objects.isNull(jobId)){
                 throw new JobErrorException(-1, "Params 'jobId' cannot be empty");
             }
-            String userName = SecurityFilter.getLoginUsername(req);
+            String userName = ModuleUserUtils.getOperationUser(req, "view config tree");
             StreamJob streamJob = this.streamJobService.getJobById(jobId);
             if (!this.streamJobService.hasPermission(streamJob, userName)
                     && !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())){
@@ -172,7 +173,7 @@ public class JobConfRestfulApi {
     public Message saveConfigTree(@RequestBody JsonNode json, HttpServletRequest req){
         Message result = Message.ok("success");
         try{
-            String userName = SecurityFilter.getLoginUsername(req);
+            String userName = ModuleUserUtils.getOperationUser(req, "save config tree");
             JobConfValueSet fullTrees = DWSHttpClient.jacksonJson().readValue(json.get("fullTree").traverse(), JobConfValueSet.class);
             // Accept the developer to modify
             if (!streamJobService.isCreator(fullTrees.getJobId(), userName) &&

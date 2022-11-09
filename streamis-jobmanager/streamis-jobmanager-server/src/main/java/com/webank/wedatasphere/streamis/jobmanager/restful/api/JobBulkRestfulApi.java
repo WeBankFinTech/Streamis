@@ -14,7 +14,7 @@ import com.webank.wedatasphere.streamis.jobmanager.vo.JobBulkRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.linkis.scheduler.queue.SchedulerEventState;
 import org.apache.linkis.server.Message;
-import org.apache.linkis.server.security.SecurityFilter;
+import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -60,7 +60,7 @@ public class JobBulkRestfulApi {
         }
         Message result = Message.ok("success");
         try{
-          String username = SecurityFilter.getLoginUsername(request);
+          String username = ModuleUserUtils.getOperationUser(request, "bulk execute job");
           LOG.info("Bulk execution[operator: {} sbj_type: {}, subjects: ({})]", username,
                   execBulkRequest.getBulkSubjectType(), StringUtils.join(execBulkRequest.getBulkSubject(), ","));
           // TODO Check the permission of task id
@@ -113,7 +113,7 @@ public class JobBulkRestfulApi {
         }
         Message result = Message.ok("success");
         try{
-            String username = SecurityFilter.getLoginUsername(request);
+            String username = ModuleUserUtils.getOperationUser(request, "bulk pause job");
             LOG.info("Bulk pause[operator: {}, sbj_type: {}, snapshot: {}, subjects: ({})]",
                     username, pauseRequest.getBulkSubjectType(), pauseRequest.isSnapshot(),
                     StringUtils.join(pauseRequest.getBulkSubject(), ","));
