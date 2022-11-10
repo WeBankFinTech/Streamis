@@ -104,7 +104,7 @@ public class FlinkStreamisConfigDefine {
      * Log filter strategy list
      */
     public static final ConfigOption<List<String>> LOG_FILTER_STRATEGIES = ConfigOptions.key("stream.log.filter.strategies")
-            .stringType().asList().defaultValues("LevelMatch").withDescription("Log filter strategy list");
+            .stringType().asList().defaultValues("Keyword").withDescription("Log filter strategy list");
 
     /**
      * Level value of LevelMatch filter strategy
