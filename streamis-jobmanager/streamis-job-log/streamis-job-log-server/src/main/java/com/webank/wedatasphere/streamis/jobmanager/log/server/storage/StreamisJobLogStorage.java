@@ -95,7 +95,7 @@ public class StreamisJobLogStorage implements JobLogStorage{
                     });
                     if (Objects.nonNull(constructor)) {
                         try {
-                            return (JobLogBucket) constructor.newInstance(bucketName, bucketConfig);
+                            return (JobLogBucket) constructor.newInstance(bucketName, context, bucketConfig);
                         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
                             LOG.warn("Cannot create storage log bucket from [{}]", bucketClass.getName(), e);
                         }
