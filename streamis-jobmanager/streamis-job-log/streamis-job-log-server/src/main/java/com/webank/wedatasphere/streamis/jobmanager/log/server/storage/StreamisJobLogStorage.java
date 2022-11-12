@@ -148,7 +148,7 @@ public class StreamisJobLogStorage implements JobLogStorage{
                         LOG.warn("Unable to calculate weight array of storage context list", e);
                     }
                     if (buckets.size() > 0) {
-                        StringBuilder builder = new StringBuilder("Buckets in LogStorage: [\n");
+                        StringBuilder builder = new StringBuilder("Buckets(").append(buckets.size()).append(") in LogStorage: [\n");
                         buckets.forEach((bucketName, bucket) -> {
                             JobLogBucketState bucketState = bucket.getBucketState();
                             builder.append("bucket: [ name: ")

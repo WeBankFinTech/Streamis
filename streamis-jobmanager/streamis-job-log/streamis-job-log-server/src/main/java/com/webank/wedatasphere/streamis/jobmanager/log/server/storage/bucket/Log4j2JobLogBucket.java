@@ -254,7 +254,7 @@ public class Log4j2JobLogBucket implements JobLogBucket{
             @Override
             public String getBucketPath() {
                 if (StringUtils.isBlank(bucketPath)) {
-                    Appender appender = loggerContext.getConfiguration().getAppender(bucketName);
+                    Appender appender = loggerContext.getConfiguration().getAppender(loggerName);
                     if (appender instanceof RollingFileAppender) {
                         bucketPath =  new File(((RollingFileAppender) appender).getFileName()).getParent();
                     }

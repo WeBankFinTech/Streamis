@@ -9,6 +9,11 @@ import org.apache.linkis.common.conf.TimeType;
 public class StreamJobLogConfig {
 
     /**
+     * Set the log restful api as no-auth
+     */
+    public static final CommonVars<Boolean> NO_AUTH_REST = CommonVars.apply("wds.stream.job.log.restful.no-auth", false);
+
+    /**
      * The threshold of log storage
      */
     public static final CommonVars<Double> STORAGE_THRESHOLD = CommonVars.apply("wds.stream.job.log.storage.threshold", 0.9);
