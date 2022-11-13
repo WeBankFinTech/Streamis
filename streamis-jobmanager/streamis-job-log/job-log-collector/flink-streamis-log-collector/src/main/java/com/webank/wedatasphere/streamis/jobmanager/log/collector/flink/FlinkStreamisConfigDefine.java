@@ -134,4 +134,10 @@ public class FlinkStreamisConfigDefine {
      */
     public static final ConfigOption<String> LOG_FILTER_KEYWORDS_EXCLUDE = ConfigOptions.key("stream.log.filter.keywords.exclude")
             .stringType().defaultValue("").withDescription("Exclude keywords of Keyword filter strategy");
+
+    /**
+     * Debug mode
+     */
+    public static final ConfigOption<Boolean> DEBUG_MODE = ConfigOptions.key("stream.log.debug")
+            .booleanType().defaultValue(false).withDescription("Debug mode");
 }

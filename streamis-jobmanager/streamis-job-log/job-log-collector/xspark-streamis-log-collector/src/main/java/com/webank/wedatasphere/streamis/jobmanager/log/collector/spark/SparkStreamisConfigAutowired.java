@@ -13,6 +13,8 @@ import java.util.Optional;
  */
 public class SparkStreamisConfigAutowired implements StreamisConfigAutowired {
 
+    private static final String DEBUG_MODE = "log.debug.mode";
+
     private static final String APP_NAME_CONFIG = "app.name";
 
     private static final String SERVER_ADDRESS_CONFIG = "streamis.url";
@@ -30,6 +32,10 @@ public class SparkStreamisConfigAutowired implements StreamisConfigAutowired {
     private static final String FILTER_KEYWORD_EXCLUDE = "filter.keywords.exclude";
     @Override
     public StreamisLogAppenderConfig logAppenderConfig(StreamisLogAppenderConfig.Builder builder) throws Exception {
+        String debugMode = System.getProperty(DEBUG_MODE, "false");
+        if (null != debugMode && debugMode.equals("true")){
+            builder.setDebugMode(true);
+        }
         // Load the config from system properties
         Optional.ofNullable(System.getProperty(APP_NAME_CONFIG)).ifPresent(appName -> {
             String projectName = System.getProperty(PROJECT_NAME_CONFIG);

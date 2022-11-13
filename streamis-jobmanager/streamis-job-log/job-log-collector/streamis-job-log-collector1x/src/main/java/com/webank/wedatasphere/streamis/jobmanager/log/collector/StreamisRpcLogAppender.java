@@ -218,4 +218,8 @@ public class StreamisRpcLogAppender extends AppenderSkeleton {
     public void setRpcBufferExpireTimeInSec(int expireTimeInSec){
         this.rpcLogSenderConfig.getBufferConfig().setExpireTimeInSec(expireTimeInSec);
     }
+
+    public void setDebugMode(boolean debugMode){
+        this.rpcLogSenderConfig.setDebugMode(debugMode);
+    }
 }

@@ -51,7 +51,7 @@ public class StreamisRpcLogAppender extends AbstractAppender {
     /**
      * Filter function
      */
-    private BiFunction<String, String, Boolean> messageFilterFunction = (logger, message) -> false;
+    private BiFunction<String, String, Boolean> messageFilterFunction = (logger, message) -> true;
 
     protected StreamisRpcLogAppender(String name, Filter filter,
                                      Layout<? extends Serializable> layout,

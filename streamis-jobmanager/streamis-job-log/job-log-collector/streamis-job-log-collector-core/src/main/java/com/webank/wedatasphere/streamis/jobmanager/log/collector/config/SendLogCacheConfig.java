@@ -13,7 +13,9 @@ public class SendLogCacheConfig {
     /**
      * Max number of consuming thread
      */
-    private int maxConsumeThread = 10;
+    private int maxConsumeThread = 2;
+
+    private boolean discard = true;
 
     public SendLogCacheConfig(){
 
@@ -47,4 +49,5 @@ public class SendLogCacheConfig {
                 ", maxConsumeThread=" + maxConsumeThread +
                 '}';
     }
+
 }

@@ -75,7 +75,8 @@ public class FlinkStreamisConfigAutowired implements StreamisConfigAutowired {
         if (hadoopUser.equals("<no hadoop dependency found>") || hadoopUser.equals("<unknown>")){
             hadoopUser = System.getProperty("user.name");
         }
-        return builder.setRpcConnTimeout(this.configuration.getInteger(LOG_RPC_CONN_TIMEOUT))
+        return builder.setDebugMode(this.configuration.getBoolean(DEBUG_MODE))
+                .setRpcConnTimeout(this.configuration.getInteger(LOG_RPC_CONN_TIMEOUT))
                 .setRpcSocketTimeout(this.configuration.getInteger(LOG_RPC_SOCKET_TIMEOUT))
                 .setRpcSendRetryCnt(this.configuration.getInteger(LOG_RPC_SEND_RETRY_COUNT))
                 .setRpcServerRecoveryTimeInSec(this.configuration.getInteger(LOG_RPC_SERVER_RECOVERY_TIME))

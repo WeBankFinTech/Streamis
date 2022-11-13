@@ -212,6 +212,17 @@ public class StreamisLogAppenderConfig {
             this.messageFilters.add(messageFilter);
             return this;
         }
+
+        /**
+         * Switch to debug
+         * @param debugMode debug mode
+         * @return builder
+         */
+        public StreamisLogAppenderConfig.Builder setDebugMode(boolean debugMode){
+            this.rpcLogSenderConfig.setDebugMode(debugMode);
+            return this;
+        }
+
         public StreamisLogAppenderConfig build(){
             return new StreamisLogAppenderConfig(applicationName, rpcLogSenderConfig, messageFilters);
         }
