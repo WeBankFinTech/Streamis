@@ -123,10 +123,14 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
             synchronized (this){
                 if (null == this.rpcLogContext){
                     // Use fair lock
-                    SendLogCache<T> logCache = new QueuedSendLogCache(this.cacheSize,false);
+                    SendLogCache<T> logCache = new QueuedSendLogCache(this.cacheSize,
+                            this.rpcSenderConfig.getCacheConfig().isDiscard(),
+                            this.rpcSenderConfig.getCacheConfig().getDiscardWindow() * 1000,false);
                     this.rpcLogContext = new RpcLogContext(logCache);
-                    // Start cache consumer
-                    this.rpcLogContext.startCacheConsumer();
+                    // Start cache consumers
+                    for(int i = 0; i < maxCacheConsume; i++) {
+                        this.rpcLogContext.startCacheConsumer();
+                    }
                 }
             }
 
@@ -285,7 +289,11 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
         // Control flow
         final AtomicLong control = new AtomicLong(Long.MAX_VALUE - 1);
 
+        // If enable to discard log
+        boolean discard;
+
         int discardCount = 0;
+
         // Time clock
         long clock = System.currentTimeMillis();
 
@@ -301,11 +309,14 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
         // Condition for waiting puts(cacheLog)
         private final Condition notFull;
 
-        public QueuedSendLogCache(int capacity, boolean fair) {
+        public QueuedSendLogCache(int capacity, boolean discard, int discardWind, boolean fair) {
             this.items = new Object[capacity];
             lock = new ReentrantLock(fair);
             this.notEmpty = lock.newCondition();
             this.notFull = lock.newCondition();
+            this.discard = discard;
+            // Make the discard window size as the control interval
+            this.controlInterval = discardWind;
             this.clock = System.currentTimeMillis() + controlInterval;
         }
 
@@ -320,7 +331,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
                 }
                 try{
                     flowControl();
-                    if (control.decrementAndGet() <= 0){
+                    if (discard && control.decrementAndGet() <= 0){
                         if (logElement.mark() < 2){
                             discardCount++;
                             return;

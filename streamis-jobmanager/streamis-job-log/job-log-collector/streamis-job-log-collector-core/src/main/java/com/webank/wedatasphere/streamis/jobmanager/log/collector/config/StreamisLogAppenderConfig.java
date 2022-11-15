@@ -214,6 +214,25 @@ public class StreamisLogAppenderConfig {
         }
 
         /**
+         * Set to discard the useless log
+         * @param discard discard
+         * @return builder
+         */
+        public StreamisLogAppenderConfig.Builder setDiscard(boolean discard){
+            this.rpcLogSenderConfig.getCacheConfig().setDiscard(discard);
+            return this;
+        }
+
+        /**
+         * Set the window size of discarding
+         * @param windowSize
+         * @return
+         */
+        public StreamisLogAppenderConfig.Builder setDiscardWindow(int windowSize){
+            this.rpcLogSenderConfig.getCacheConfig().setDiscardWindow(windowSize);
+            return this;
+        }
+        /**
          * Switch to debug
          * @param debugMode debug mode
          * @return builder

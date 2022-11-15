@@ -15,7 +15,15 @@ public class SendLogCacheConfig {
      */
     private int maxConsumeThread = 2;
 
+    /**
+     * The switch to discard log
+     */
     private boolean discard = true;
+
+    /**
+     * Discard window in second
+     */
+    private int discardWindow = 2;
 
     public SendLogCacheConfig(){
 
@@ -42,12 +50,32 @@ public class SendLogCacheConfig {
         this.maxConsumeThread = maxConsumeThread;
     }
 
+    public boolean isDiscard() {
+        return discard;
+    }
+
+    public void setDiscard(boolean discard) {
+        this.discard = discard;
+    }
+
+    public int getDiscardWindow() {
+        return discardWindow;
+    }
+
+    public void setDiscardWindow(int discardWindow) {
+        this.discardWindow = discardWindow;
+    }
+
     @Override
     public String toString() {
         return "SendLogCacheConfig{" +
                 "size=" + size +
                 ", maxConsumeThread=" + maxConsumeThread +
+                ", discard=" + discard +
+                ", discardWindow=" + discardWindow +
                 '}';
     }
+
+
 
 }

@@ -222,4 +222,12 @@ public class StreamisRpcLogAppender extends AppenderSkeleton {
     public void setDebugMode(boolean debugMode){
         this.rpcLogSenderConfig.setDebugMode(debugMode);
     }
+
+    public void setDiscard(boolean discard){
+        this.rpcLogSenderConfig.getCacheConfig().setDiscard(discard);
+    }
+
+    public void setDiscardWindow(int window){
+        this.rpcLogSenderConfig.getCacheConfig().setDiscardWindow(window);
+    }
 }

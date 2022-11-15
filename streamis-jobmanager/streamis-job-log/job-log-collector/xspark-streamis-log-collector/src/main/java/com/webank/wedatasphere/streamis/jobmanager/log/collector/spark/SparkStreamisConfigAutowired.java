@@ -15,6 +15,10 @@ public class SparkStreamisConfigAutowired implements StreamisConfigAutowired {
 
     private static final String DEBUG_MODE = "log.debug.mode";
 
+    private static final String DISCARD_SWITCH = "log.discard";
+
+    private static final String DISCARD_WINDOW = "log.discard.window";
+
     private static final String APP_NAME_CONFIG = "app.name";
 
     private static final String SERVER_ADDRESS_CONFIG = "streamis.url";
@@ -32,11 +36,23 @@ public class SparkStreamisConfigAutowired implements StreamisConfigAutowired {
     private static final String FILTER_KEYWORD_EXCLUDE = "filter.keywords.exclude";
     @Override
     public StreamisLogAppenderConfig logAppenderConfig(StreamisLogAppenderConfig.Builder builder) throws Exception {
+        // Load the config from system properties
         String debugMode = System.getProperty(DEBUG_MODE, "false");
         if (null != debugMode && debugMode.equals("true")){
             builder.setDebugMode(true);
         }
-        // Load the config from system properties
+        String discard = System.getProperty(DISCARD_SWITCH, "true");
+        if (null != discard && discard.equals("true")){
+            builder.setDiscard(true);
+        }
+        String discardWind = System.getProperty(DISCARD_WINDOW, "2");
+        if (null != discardWind){
+            try{
+                builder.setDiscardWindow(Integer.parseInt(discardWind));
+            } catch (Exception e){
+                // Ignore
+            }
+        }
         Optional.ofNullable(System.getProperty(APP_NAME_CONFIG)).ifPresent(appName -> {
             String projectName = System.getProperty(PROJECT_NAME_CONFIG);
             if (null != projectName && !projectName.trim().equals("")){

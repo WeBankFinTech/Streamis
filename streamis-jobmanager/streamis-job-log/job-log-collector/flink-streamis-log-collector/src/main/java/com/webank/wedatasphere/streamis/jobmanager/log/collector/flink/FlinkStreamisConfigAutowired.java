@@ -88,6 +88,8 @@ public class FlinkStreamisConfigAutowired implements StreamisConfigAutowired {
                         hadoopUser))
                 .setRpcCacheSize(this.configuration.getInteger(LOG_RPC_CACHE_SIZE))
                 .setRpcCacheMaxConsumeThread(this.configuration.getInteger(LOG_PRC_CACHE_MAX_CONSUME_THREAD))
+                .setDiscard(this.configuration.getBoolean(LOG_RPC_CACHE_DISCARD))
+                .setDiscardWindow(this.configuration.getInteger(LOG_RPC_CACHE_DISCARD_WINDOW))
                 .setRpcBufferSize(this.configuration.getInteger(LOG_RPC_BUFFER_SIZE))
                 .setRpcBufferExpireTimeInSec(this.configuration.getInteger(LOG_RPC_BUFFER_EXPIRE_TIME)).build();
     }

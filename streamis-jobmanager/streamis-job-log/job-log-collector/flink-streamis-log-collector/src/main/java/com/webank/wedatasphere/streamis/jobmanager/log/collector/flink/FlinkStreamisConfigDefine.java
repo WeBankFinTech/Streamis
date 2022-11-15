@@ -2,6 +2,7 @@ package com.webank.wedatasphere.streamis.jobmanager.log.collector.flink;
 
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
+import scala.Int;
 
 import java.util.List;
 
@@ -86,8 +87,19 @@ public class FlinkStreamisConfigDefine {
      * Max cache consume threads in log RPC module
      */
     public static final ConfigOption<Integer> LOG_PRC_CACHE_MAX_CONSUME_THREAD = ConfigOptions.key("stream.log.rpc.cache.max-consume-thread")
-            .intType().defaultValue(10).withDescription("Max cache consume threads in log RPC module");
+            .intType().defaultValue(2).withDescription("Max cache consume threads in log RPC module");
 
+    /**
+     * If discard the useless log
+     */
+    public static final ConfigOption<Boolean> LOG_RPC_CACHE_DISCARD = ConfigOptions.key("stream.log.rpc.cache.discard")
+            .booleanType().defaultValue(true).withDescription("If discard the useless log");
+
+    /**
+     * The window size of discarding
+     */
+    public static final ConfigOption<Integer> LOG_RPC_CACHE_DISCARD_WINDOW = ConfigOptions.key("stream.log.rpc.cache.discard-window")
+            .intType().defaultValue(2).withDescription("The window size of discarding");
     /**
      * Buffer size in log RPC module
      */

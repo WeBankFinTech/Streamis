@@ -55,7 +55,7 @@ public class HttpClientTool {
             defaultHeaders.add(new BasicHeader(rpcSenderConfig.getAuthConfig().getTokenCodeKey(), tokenValue));
         }
         clientBuilder.setDefaultRequestConfig(requestConfig).setDefaultHeaders(defaultHeaders)
-                .useSystemProperties().setMaxConnTotal(maxConn);
+                .useSystemProperties().setMaxConnTotal(maxConn).setMaxConnPerRoute(maxConn);
         CloseableHttpClient httpClient = clientBuilder.build();
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                     @Override
