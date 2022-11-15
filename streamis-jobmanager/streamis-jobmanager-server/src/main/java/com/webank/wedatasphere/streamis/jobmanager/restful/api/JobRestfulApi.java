@@ -263,14 +263,20 @@ public class JobRestfulApi {
                            @RequestParam(value = "appId") String appId,
                            @RequestParam(value = "appUrl") String appUrl) {
         String username = SecurityFilter.getLoginUsername(req);
-        LOG.info("User {} try to add a new task for Streamis job {} with appId: {}, appUrl: {}.", username, jobName, appId, appUrl);
+        LOG.info("User {} try to add a new task for Streamis job {}.{} with appId: {}, appUrl: {}.", username, projectName, jobName, appId, appUrl);
         if(StringUtils.isBlank(appId)) {
             return Message.error("appId cannot be empty!");
         }
         return withStreamJob(req, projectName, jobName, username, streamJob -> {
             // 如果存在正在运行的，先将其停止掉
             StreamTask streamTask = streamTaskService.getLatestTaskByJobId(streamJob.getId());
-            if(streamTask == null) {
+            if(streamTask != null && JobConf.isRunning(streamTask.getStatus())) {
+                LOG.warn("Streamis Job {} exists running task, update its status from Running to stopped at first.", jobName);
+                streamTask.setStatus((Integer) JobConf.FLINK_JOB_STATUS_STOPPED().getValue());
+                streamTask.setErrDesc("stopped by App's new task.");
+                streamTaskService.updateTask(streamTask);
+            }
+            if(streamTask == null || StringUtils.isBlank(streamTask.getLinkisJobInfo())) {
                 // 这里取个巧，从该工程该用户有权限的Job中找到一个Flink的历史作业，作为这个Spark Streaming作业的jobId和jobInfo
                 // 替换掉JobInfo中的 yarn 信息，这样我们前端就可以在不修改任何逻辑的情况下正常展示Spark Streaming作业了
                 PageInfo<QueryJobListVo> jobList = streamJobService.getByProList(streamJob.getProjectName(), username, null, null, null);
@@ -280,9 +286,10 @@ public class JobRestfulApi {
                     return Message.error("no Flink Job has been submitted, the register to Streamis cannot be succeeded.");
                 }
                 int index = 0;
+                streamTask = null;
                 while(streamTask == null && index < copyJobs.size()) {
                     StreamTask copyTask = streamTaskService.getLatestTaskByJobId(copyJobs.get(index).getId());
-                    if(copyTask == null) {
+                    if(copyTask == null || StringUtils.isBlank(copyTask.getLinkisJobInfo())) {
                         index ++;
                     } else {
                         LOG.warn("Streamis Job {} will bind the linkisJobInfo from history Flink Job {} with linkisJobId: {}, linkisJobInfo: {}.",
@@ -296,12 +303,6 @@ public class JobRestfulApi {
                     return Message.error("no Flink task has been executed, the register to Streamis cannot be succeeded.");
                 }
             } else {
-                if(JobConf.isRunning(streamTask.getStatus())) {
-                    LOG.warn("Streamis Job {} exists running task, update its status from Running to stopped at first.", jobName);
-                    streamTask.setStatus((Integer) JobConf.FLINK_JOB_STATUS_STOPPED().getValue());
-                    streamTask.setErrDesc("stopped by App's new task.");
-                    streamTaskService.updateTask(streamTask);
-                }
                 StreamTask newStreamTask = streamTaskService.createTask(streamJob.getId(), (Integer) JobConf.FLINK_JOB_STATUS_RUNNING().getValue(), username);
                 streamTask.setId(newStreamTask.getId());
                 streamTask.setVersion(newStreamTask.getVersion());
@@ -343,7 +344,7 @@ public class JobRestfulApi {
                               @RequestParam(value = "appId") String appId,
                               @RequestParam(value = "metrics") String metrics) {
         String username = SecurityFilter.getLoginUsername(req);
-        LOG.info("User {} try to update task for Streamis job {} with appId: {}, metrics: {}.", username, jobName, appId, metrics);
+        LOG.info("User {} try to update task for Streamis job {}.{} with appId: {}, metrics: {}.", username, projectName, jobName, appId, metrics);
         return withStreamJob(req, projectName, jobName, username, streamJob -> {
             StreamTask streamTask = streamTaskService.getLatestTaskByJobId(streamJob.getId());
             if (streamTask == null) {
@@ -388,7 +389,7 @@ public class JobRestfulApi {
                             @RequestParam(value = "appId") String appId,
                             @RequestParam(value = "appUrl") String appUrl) {
         String username = SecurityFilter.getLoginUsername(req);
-        LOG.info("User {} try to stop task for Streamis job {} with appId: {}, appUrl: {}.", username, jobName, appId, appUrl);
+        LOG.info("User {} try to stop task for Streamis job {}.{} with appId: {}, appUrl: {}.", username, projectName, jobName, appId, appUrl);
         return withStreamJob(req, projectName, jobName, username,
                 streamJob -> tryStopTask(streamJob, appId));
     }
