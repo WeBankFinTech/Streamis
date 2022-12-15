@@ -15,6 +15,10 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
+import java.util
+import java.util.concurrent.Future
+import java.util.{Calendar, function}
+
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
@@ -22,22 +26,23 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobInfo, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{Checkpoint, Savepoint}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobClient, FlinkJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobClient, FlinkJobInfo, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.SpringContextHolder
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf.FLINK_JOB_STATUS_FAILED
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{ExecResultVo, JobProgressVo, JobStatusVo, PauseResultVo, ScheduleResultVo, StreamTaskListVo}
-import com.webank.wedatasphere.streamis.jobmanager.manager.exception.{JobErrorException, JobExecuteErrorException, JobFetchErrorException, JobPauseErrorException, JobTaskErrorException}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo._
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
+import com.webank.wedatasphere.streamis.jobmanager.manager.exception.{JobExecuteErrorException, JobFetchErrorException, JobPauseErrorException, JobTaskErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.FutureScheduler
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events.AbstractStreamisSchedulerEvent.StreamisEventInfo
-import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events.{AbstractStreamisSchedulerEvent, StreamisPhaseInSchedulerEvent}
+import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events.StreamisPhaseInSchedulerEvent
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events.StreamisPhaseInSchedulerEvent.ScheduleCommand
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.exception.TransformFailedErrorException
-import com.webank.wedatasphere.streamis.jobmanager.manager.transform.{StreamisTransformJobBuilder, Transform}
+import com.webank.wedatasphere.streamis.jobmanager.manager.transform.{StreamisTransformJobBuilder, TaskMetricsParser, Transform}
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.DateUtils
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils
+import javax.annotation.Resource
 import org.apache.commons.lang.StringUtils
 import org.apache.linkis.common.utils.{Logging, Utils}
 import org.apache.linkis.httpclient.dws.DWSHttpClient
@@ -47,10 +52,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-import java.util
-import java.util.{Calendar, Date, function}
-import java.util.concurrent.Future
-import javax.annotation.Resource
 import scala.collection.JavaConverters._
 
 
@@ -60,6 +61,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   @Autowired private var streamTaskMapper:StreamTaskMapper=_
   @Autowired private var streamJobMapper:StreamJobMapper=_
   @Autowired private var streamisTransformJobBuilders: Array[StreamisTransformJobBuilder] = _
+  @Autowired private var taskMetricsParser: Array[TaskMetricsParser] = _
 
   @Resource
   private var jobLaunchManager: JobLaunchManager[_ <: JobInfo] = _
@@ -398,11 +400,24 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
         val jobClient = jobLaunchManager.connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
         jobClient match {
           case client: FlinkJobClient =>
+            requestPayload.setLogHistory(JobConf.isCompleted(streamTask.getStatus))
             val logIterator = client.fetchLogs(requestPayload)
             returnMap.put("logPath", logIterator.getLogPath)
             returnMap.put("logs", logIterator.getLogs)
             returnMap.put("endLine", logIterator.getEndLine)
             logIterator.close()
+            jobClient.getJobInfo match {
+              case linkisInfo: LinkisJobInfo =>
+                if (StringUtils.isBlank(linkisInfo.getLogDirSuffix) && StringUtils.isNotBlank(logIterator.getLogDirSuffix)){
+                  Utils.tryAndWarn {
+                    // Update the linkis job info and store into database
+                    linkisInfo.setLogDirSuffix(logIterator.getLogDirSuffix)
+                    streamTask.setLinkisJobInfo(DWSHttpClient.jacksonJson.writeValueAsString(linkisInfo));
+                    streamTaskMapper.updateTask(streamTask)
+                  }
+                }
+              case _ =>
+            }
         }
       }{ case e: Exception =>
         // Just warn the exception
@@ -470,7 +485,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       }).asJava
   }
 
-  def getTask(jobId:Long, version: String): FlinkJobInfo ={
+  def getTaskJobInfo(jobId:Long, version: String): FlinkJobInfo ={
     val str = streamTaskMapper.getTask(jobId, version)
     if (StringUtils.isBlank(str)) {
       return new FlinkJobInfo
@@ -511,6 +526,9 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     }
   }
 
+
+  override def getLatestTaskByJobId(jobId: Long): StreamTask = streamTaskMapper.getLatestByJobId(jobId)
+
   /**
    * Create new task use the latest job version
    *
@@ -544,6 +562,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           }
      }
   }
+
+  override def updateTask(streamTask: StreamTask): Unit = streamTaskMapper.updateTask(streamTask)
 
   /**
    * Just launch task by task id
@@ -703,4 +723,15 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     }
   }
 
+  override def getJobDetailsVO(streamJob: StreamJob, version: String): JobDetailsVo = {
+    val flinkJobInfo = getTaskJobInfo(streamJob.getId, version)
+    val jobStateInfos = flinkJobInfo.getJobStates
+    val metricsStr = if (JobConf.SUPPORTED_MANAGEMENT_JOB_TYPES.getValue.contains(streamJob.getJobType)) null
+      else if(jobStateInfos == null || jobStateInfos.length == 0) null
+      else jobStateInfos(0).getLocation
+    taskMetricsParser.find(_.canParse(streamJob)).map(_.parse(metricsStr)).filter { jobDetailsVO =>
+      jobDetailsVO.setLinkisJobInfo(flinkJobInfo)
+      true
+    }.getOrElse(throw new JobFetchErrorException(30030, s"Cannot find a TaskMetricsParser to parse job details."))
+  }
 }
