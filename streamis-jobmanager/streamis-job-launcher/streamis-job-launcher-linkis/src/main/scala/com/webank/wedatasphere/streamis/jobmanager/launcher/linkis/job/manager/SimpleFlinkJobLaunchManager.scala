@@ -15,16 +15,16 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState, JobStateInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobClient, FlinkJobInfo, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.SimpleFlinkJobLaunchManager.INSTANCE_NAME
-import org.apache.commons.lang.StringEscapeUtils
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobClient, FlinkJobInfo, LinkisJobInfo}
+import org.apache.commons.lang3.StringEscapeUtils
 import org.apache.linkis.common.utils.{RetryHandler, Utils}
 import org.apache.linkis.computation.client.once.simple.{SimpleOnceJob, SubmittableSimpleOnceJob}
 import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
-import org.apache.linkis.computation.client.operator.impl.{EngineConnApplicationInfoOperator, EngineConnLogOperator}
+import org.apache.linkis.computation.client.operator.impl.EngineConnApplicationInfoOperator
 import org.apache.linkis.httpclient.dws.DWSHttpClient
 import org.apache.linkis.ujes.client.exception.UJESJobException
 
