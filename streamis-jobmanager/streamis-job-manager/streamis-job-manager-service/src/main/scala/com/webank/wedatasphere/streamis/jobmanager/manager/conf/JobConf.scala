@@ -15,7 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.conf
 
-import org.apache.linkis.common.conf.{CommonVars, TimeType}
+import org.apache.linkis.common.conf.{CommonVars, Configuration, TimeType}
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteErrorException
 
 
@@ -26,6 +26,18 @@ object JobConf {
   val STREAMIS_DEFAULT_TENANT: CommonVars[String] = CommonVars("wds.streamis.job.tenant.default", "")
 
   val STREAMIS_JOB_MONITOR_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.job.monitor.enable", true)
+
+  val STREAMIS_JOB_PARAM_BLANK_PLACEHOLDER: CommonVars[String] =  CommonVars("wds.streamis.job.param.blank.placeholder", "\u0001")
+
+  /**
+   * Gateway for stream job log module
+   */
+  val STREAMIS_JOB_LOG_GATEWAY: CommonVars[String] = CommonVars("wds.streamis.job.log.gateway", Configuration.getGateWayURL())
+
+  /**
+   * Path for collecting stream job log
+   */
+  val STREAMIS_JOB_LOG_COLLECT_PATH: CommonVars[String] = CommonVars("wds.streamis.job.log.collect.path", "/api/rest_j/v1/streamis/streamJobManager/log/collect/events")
 
   val FLINK_JOB_STATUS_NOT_STARTED: CommonVars[Int] = CommonVars("wds.streamis.job.status.not-started", 0,"Not Started")
 
@@ -82,4 +94,7 @@ object JobConf {
 
   val TASK_SUBMIT_TIME_MAX: CommonVars[TimeType] = CommonVars("wds.streamis.task.submit.time.max", new TimeType("5m"))
 
+  val SUPPORTED_JOB_TYPES: CommonVars[String] = CommonVars("wds.streamis.supported.job.types", "flink.jar,flink.sql,spark.jar")
+
+  val SUPPORTED_MANAGEMENT_JOB_TYPES: CommonVars[String] = CommonVars("wds.streamis.management.supported.job.types", "flink.jar,flink.sql")
 }
