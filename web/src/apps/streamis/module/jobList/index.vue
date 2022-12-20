@@ -130,6 +130,7 @@
                 <div class="version" @click="versionDetail(row)">
                   {{ row.version }}
                 </div>
+                <div class="versionForwards">{{row.versionForwards > 0 ? '(+' + row.versionForwards + ')' : ''}}</div>
               </div>
             </template>
             <template slot-scope="{ row, index }" slot="operation">
@@ -467,6 +468,8 @@ export default {
       const params = {
         pageNow: current,
         pageSize,
+        // 本地开发用的
+        // projectName: 'stream_job'
         projectName: this.projectName
       }
       const { jobName, jobStatus } = this.query
@@ -547,10 +550,20 @@ export default {
         })
     },
     handleAction(data, index) {
+      // 先调用这个接口：PUT /api/rest_j/v1/streamis/streamJobManager/job/execute/inspect?jobId=作业ID
+      // 如果接口正常返回，则解析data数据里的inspections检查项目列表，如果检查项不为空，则以列表的值作为键，查找同级的键值对，例如"version":{"now":{..}, "last":{..}"和"snapshot":{"path":"..."}，并显示弹窗
       console.log(data)
       const { id } = data
-      const path = 'streamis/streamJobManager/job/execute'
       const second = { jobId: id }
+
+      const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
+      api.fetch(checkPath, {}, 'put').then(res => {
+        console.log('res: ', res);
+      }).catch(err => {
+        console.log('err: ', err);
+      })
+
+      const path = 'streamis/streamJobManager/job/execute'
       data.buttonLoading = true
       this.choosedRowId = id
       this.$set(this.tableDatas, index, data)
@@ -657,6 +670,10 @@ export default {
             this.loading = false
             this.modalVisible = true
             this.versionDatas = [res.detail]
+            this.versionDatas.forEach(item => {
+              item.versionStatus = '--'
+              if (item.version === data.version) item.versionStatus = this.$t('message.streamis.versionDetail.using')
+            })
           }
         })
         .catch(e => {
@@ -815,6 +832,7 @@ export default {
   display: flex;
   justify-content: flex-start;
   align-items: center;
+  position: relative;
 }
 .version {
   background-color: #008000;
@@ -823,6 +841,13 @@ export default {
   font-size: 16px;
   cursor: pointer;
   padding: 0px 3px;
+}
+.versionForwards {
+  color: red;
+  font-size: 12px;
+  position: absolute;
+  right: 8px;
+  top: -4px;
 }
 .btn-wrap {
   display: flex;

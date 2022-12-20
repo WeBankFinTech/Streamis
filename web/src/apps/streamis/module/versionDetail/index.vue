@@ -44,6 +44,10 @@ export default {
           key: 'version'
         },
         {
+          title: this.$t('message.streamis.versionDetail.versionStatus'),
+          key: 'versionStatus'
+        },
+        {
           title: this.$t('message.streamis.versionDetail.description'),
           key: 'description'
         },
