@@ -71,7 +71,7 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 ## Compile and install deployment
 
-please refer to [Streamis Installation and Deployment Document](docs/en_US/0.2.4/StreamisDeployment.md) for installing and deploying Streamis.
+please refer to [Streamis Installation and Deployment Document](docs/en_US/0.2.5/StreamisDeployment.md) for installing and deploying Streamis.
 
 ----
 
