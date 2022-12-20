@@ -1,12 +1,10 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.server.restful;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisLogEvent;
+import com.webank.wedatasphere.streamis.jobmanager.log.server.config.StreamJobLogConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.entities.StreamisLogEvents;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.exception.StreamJobLogException;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.service.StreamisJobLogService;
 import org.apache.commons.lang.StringUtils;
-import org.apache.linkis.common.utils.JsonUtils;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
 import org.slf4j.Logger;
@@ -18,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 
 @RestController
 @RequestMapping(path = "/streamis/streamJobManager/log")
@@ -36,9 +33,24 @@ public class JobLogRestfulApi {
             if (StringUtils.isBlank(events.getAppName())){
                 return Message.ok("Ignore the stream log events without application name");
             }
-            String userName = SecurityFilter.getLoginUsername(request);
-            if (StringUtils.isBlank(userName)){
-                throw new StreamJobLogException(-1, "The request should has token user");
+            String userName;
+            if (StreamJobLogConfig.NO_AUTH_REST.getValue()){
+                userName = request.getHeader("Token-User");
+                if (StringUtils.isBlank(userName)){
+                    try {
+                        userName = SecurityFilter.getLoginUsername(request);
+                    }catch(Exception e){
+                        // Ignore
+                    }
+                    if (StringUtils.isBlank(userName)){
+                        userName = "hadoop";
+                    }
+                }
+            }else {
+                userName = SecurityFilter.getLoginUsername(request);
+                if (StringUtils.isBlank(userName)) {
+                    throw new StreamJobLogException(-1, "The request should has token user");
+                }
             }
             this.streamisJobLogService.store(userName, events);
             result = Message.ok();
