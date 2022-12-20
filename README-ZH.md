@@ -46,7 +46,7 @@ Dimension节点、Transform节点、Sink节点 和 [Visualis](https://github.com
 ![流式应用配置](docs/images/stream_job_config_1.png)
 ![流式应用配置](docs/images/stream_job_config_2.png)
 
-&nbsp; &nbsp; &nbsp; &nbsp;更多功能，请参考：[Streamis 用户手册](docs/zh_CN/0.2.0/使用文档/Streamis用户手册.md)。
+&nbsp; &nbsp; &nbsp; &nbsp;更多功能，请参考：[Streamis 用户手册](docs/zh_CN/0.2.4/使用文档/Streamis用户手册.md)。
 
 ----
 
@@ -73,14 +73,14 @@ Dimension节点、Transform节点、Sink节点 和 [Visualis](https://github.com
 
 ## 编译和安装部署
 
-&nbsp; &nbsp; &nbsp; &nbsp;请参考 [Streamis 安装部署文档](docs/zh_CN/0.2.0/Streamis安装文档.md) ，用于安装部署 Streamis 及其依赖环境。
+&nbsp; &nbsp; &nbsp; &nbsp;请参考 [Streamis 安装部署文档](docs/zh_CN/0.2.4/Streamis安装文档.md) ，用于安装部署 Streamis 及其依赖环境。
 
 
 ----
 
 ## 示例和使用指引
 
-&nbsp; &nbsp; &nbsp; &nbsp;请到 [用户使用文档](docs/zh_CN/0.2.0/使用文档/Streamis用户手册.md) ，了解如何快速使用 Streamis。
+&nbsp; &nbsp; &nbsp; &nbsp;请到 [用户使用文档](docs/zh_CN/0.2.4/使用文档/Streamis用户手册.md) ，了解如何快速使用 Streamis。
 
 ----
 
