@@ -1,4 +1,4 @@
-Streamis 升级文档，本文主要介绍在原有安装Streamis服务的基础上适配DSS1.1.0和Linkis1.1.1的升级步骤，Streamis0.2.0相对与Streamis0.1.0版本最大的区别在于接入了DSS AppConn，对job的启停做了优化。
+Streamis 升级文档，本文主要介绍在原有安装Streamis服务的基础上适配DSS1.1.0和Linkis1.1.1的升级步骤，Streamis0.2.4相对与Streamis0.1.0版本最大的区别在于接入了DSS AppConn，对job的启停做了优化。
 
 # 1.升级Streamis前的工作
 您在升级Streamis之前，请先安装 Linkis1.1.1 和 DSS1.1.0 及以上版本，并且保证 Linkis Flink 引擎 和 DSS 可以正常使用，DSS 和 Linkis 安装，可参照 [DSS & Linkis 一键安装部署文档](https://github.com/WeBankFinTech/DataSphereStudio-Doc/blob/main/zh_CN/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/DSS%E5%8D%95%E6%9C%BA%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.md)。
