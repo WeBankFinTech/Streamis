@@ -55,6 +55,8 @@
       "jobListTableColumns":{
         "jobName": "作业名称",
         "jobType": "作业类型",
+        "launchMode": "运行模式",
+        "manageMode": "管理模式",
         "taskStatus": "运行状态",
         "lastReleaseTime": "最近发布时间",
         "label": "标签",
@@ -77,6 +79,8 @@
         "modalTitle":"版本详情",
         "jobId":"作业id",
         "version":"版本",
+        "using":"使用中",
+        "versionStatus":"版本状态",
         "description":"描述",
         "createTime":"创建时间",
         "creator":"创建者",
