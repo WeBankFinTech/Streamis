@@ -20,7 +20,7 @@
     <appenders>
         <StreamRpcLog name="StreamRpcLog" appName="stream_application">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %-60c %x - %m%n"/>
-            <RpcLogSender sendRetryCnt="3" connectionTimeout="3000"
+            <RpcLogSender debugMode="true" sendRetryCnt="3" connectionTimeout="3000"
                           socketTimeout="20000" serverRecoveryTimeInSec="5" maxDelayTimeInSec="60">
                 <AuthConfig tokenCodeKey="" tokenCode="" tokenUser="" tokenUserKey=""/>
                 <SendLogCache size="300" maxConsumeThread="10"/>

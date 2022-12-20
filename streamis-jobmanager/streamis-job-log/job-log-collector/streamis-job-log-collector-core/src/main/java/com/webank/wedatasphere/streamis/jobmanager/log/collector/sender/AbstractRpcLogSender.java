@@ -11,6 +11,7 @@ import com.webank.wedatasphere.streamis.jobmanager.log.entities.LogElement;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -35,6 +36,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
      * Max thread num of send
      */
     int maxCacheConsume;
+
     /**
      * Connect config
      */
@@ -57,7 +59,6 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
         this.cacheSize = cacheConfig.getSize();
         this.maxCacheConsume = cacheConfig.getMaxConsumeThread();
         this.sendBufSize = rpcSenderConfig.getBufferConfig().getSize();
-
         if (sendBufSize > cacheSize) {
             throw new IllegalArgumentException("Size of send buffer is larger than cache size");
         }
@@ -121,10 +122,15 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
         if (null == this.rpcLogContext){
             synchronized (this){
                 if (null == this.rpcLogContext){
-                    SendLogCache<T> logCache = new QueuedSendLogCache(this.cacheSize, false);
+                    // Use fair lock
+                    SendLogCache<T> logCache = new QueuedSendLogCache(this.cacheSize,
+                            this.rpcSenderConfig.getCacheConfig().isDiscard(),
+                            this.rpcSenderConfig.getCacheConfig().getDiscardWindow() * 1000,false);
                     this.rpcLogContext = new RpcLogContext(logCache);
-                    // Start cache consumer
-                    this.rpcLogContext.startCacheConsumer();
+                    // Start cache consumers
+                    for(int i = 0; i < maxCacheConsume; i++) {
+                        this.rpcLogContext.startCacheConsumer();
+                    }
                 }
             }
 
@@ -153,7 +159,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
         /**
          * Futures of consumers
          */
-        private final Map<String, SendLogCacheConsumer<T>> sendLogCacheConsumers = new ConcurrentHashMap<>();
+        private final LinkedList<SendLogCacheConsumer<T>> sendLogCacheConsumers = new LinkedList<>();
         /**
          * Context lock
          */
@@ -181,33 +187,38 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
             });
         }
 
-        public void startCacheConsumer(){
+        public boolean startCacheConsumer(){
+            if (consumers >= maxCacheConsume) {
+//                    throw new IllegalStateException("Over the limit number of cache consumers: [" + maxCacheConsume + "]");
+                return false;
+            }
             this.ctxLock.lock();
             try {
-                if (consumers >= maxCacheConsume) {
-                    throw new IllegalStateException("Over the limit number of cache consumers: [" + maxCacheConsume + "]");
+                if (consumers < maxCacheConsume) {
+                    String id = UUID.randomUUID().toString();
+                    SendBuffer<T> sendBuffer = new ImmutableSendBuffer<>(sendBufSize);
+                    SendLogCacheConsumer<T> consumer = new SendLogCacheConsumer<T>(id, logCache, sendBuffer, rpcSenderConfig) {
+                        @Override
+                        protected void onFlushAndSend(SendBuffer<T> sendBuffer) {
+                            // First to aggregate the buffer
+                            E aggEntity = aggregateBuffer(sendBuffer);
+                            Optional.ofNullable(getSendLogExceptionStrategy()).ifPresent(
+                                    strategy -> strategy.doSend(() -> {
+                                        doSend(aggEntity, rpcSenderConfig);
+                                        return null;
+                                    }, sendBuffer));
+                        }
+                    };
+                    Future<?> future = this.consumePool.submit(consumer);
+                    consumer.setFuture(future);
+                    sendLogCacheConsumers.add(consumer);
+                    this.consumers++;
+                    return true;
                 }
-                String id = UUID.randomUUID().toString();
-                SendBuffer<T> sendBuffer = new ImmutableSendBuffer<>(sendBufSize);
-                SendLogCacheConsumer<T> consumer = new SendLogCacheConsumer<T>(id, logCache, sendBuffer, rpcSenderConfig) {
-                    @Override
-                    protected void onFlushAndSend(SendBuffer<T> sendBuffer) {
-                        // First to aggregate the buffer
-                        E aggEntity = aggregateBuffer(sendBuffer);
-                        Optional.ofNullable(getSendLogExceptionStrategy()).ifPresent(
-                                strategy -> strategy.doSend(() -> {
-                                    doSend(aggEntity, rpcSenderConfig);
-                                    return null;
-                                }, sendBuffer));
-                    }
-                };
-                Future<?> future = this.consumePool.submit(consumer);
-                consumer.setFuture(future);
-                sendLogCacheConsumers.put(id, consumer);
-                this.consumers++;
             } finally {
                 this.ctxLock.unlock();
             }
+            return false;
         }
 
         public SendLogCache<T> getLogCache(){
@@ -215,12 +226,24 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
         }
 
         /**
-         * Destroy cache consumer
-         * @param id id
+         * Destroy cache consumer(select the tail one)
          */
-        public void destroyCacheConsumer(String id){
-            SendLogCacheConsumer<T> consumer = sendLogCacheConsumers.remove(id);
-            consumer.shutdown();
+        public boolean destroyCacheConsumer(){
+            if (this.consumers <= 1){
+                return false;
+            }
+            this.ctxLock.lock();
+            try {
+                if (this.consumers > 1 && this.sendLogCacheConsumers.size() > 1) {
+                    SendLogCacheConsumer<T> consumer = sendLogCacheConsumers.removeLast();
+                    consumer.shutdown();
+                    this.consumers --;
+                    return true;
+                }
+            } finally {
+                this.ctxLock.unlock();
+            }
+            return false;
         }
 
         /**
@@ -229,7 +252,9 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
         public void destroyCacheConsumers(){
             this.ctxLock.lock();
             try {
-                sendLogCacheConsumers.forEach( (key, consumer)-> consumer.shutdown());
+                sendLogCacheConsumers.forEach(SendLogCacheConsumer::shutdown);
+                sendLogCacheConsumers.clear();
+                this.consumers = 0;
             } finally {
                 this.ctxLock.unlock();
             }
@@ -252,6 +277,29 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
         // Count
         int count;
 
+        // Wait time in caching
+        final AtomicLong cacheWaitTime = new AtomicLong(0);
+
+        // Wait time in taking
+        final AtomicLong takeWaitTime = new AtomicLong(0);
+
+        // Performance of processing
+        final AtomicLong process = new AtomicLong(0);
+
+        // Control flow
+        final AtomicLong control = new AtomicLong(Long.MAX_VALUE - 1);
+
+        // If enable to discard log
+        boolean discard;
+
+        int discardCount = 0;
+
+        // Time clock
+        long clock = System.currentTimeMillis();
+
+        // interval to control
+        long controlInterval = 1 * 1000;
+
         // Reentrant lock
         final ReentrantLock lock;
 
@@ -261,11 +309,15 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
         // Condition for waiting puts(cacheLog)
         private final Condition notFull;
 
-        public QueuedSendLogCache(int capacity, boolean fair) {
+        public QueuedSendLogCache(int capacity, boolean discard, int discardWind, boolean fair) {
             this.items = new Object[capacity];
             lock = new ReentrantLock(fair);
             this.notEmpty = lock.newCondition();
             this.notFull = lock.newCondition();
+            this.discard = discard;
+            // Make the discard window size as the control interval
+            this.controlInterval = discardWind;
+            this.clock = System.currentTimeMillis() + controlInterval;
         }
 
         @Override
@@ -273,10 +325,23 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
             // Skip the null element
             if (Objects.nonNull(logElement)){
                 final ReentrantLock lock = this.lock;
-                lock.lockInterruptibly();
+                boolean tryLock = lock.tryLock();
+                if (!tryLock){
+                    lock.lockInterruptibly();
+                }
                 try{
+                    flowControl();
+                    if (discard && control.decrementAndGet() <= 0){
+                        if (logElement.mark() < 2){
+                            discardCount++;
+                            return;
+                        }
+                    }
                     while (count == items.length){
+//                        System.out.println("The queue is full, maybe lost the data");
+                        long ws = System.currentTimeMillis();
                         notFull.await();
+                        cacheWaitTime.addAndGet(System.currentTimeMillis() - ws);
                     }
                     enqueue(logElement);
                 }finally{
@@ -324,13 +389,17 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
             T element;
             lock.lockInterruptibly();
             try{
+                flowControl();
                 while (count == 0){
-                    if (nanos < 0){
+                    long ws = System.currentTimeMillis();
+                    if (nanos <= 0){
                         return null;
                     }
                     nanos = notEmpty.awaitNanos(nanos);
+                    takeWaitTime.addAndGet(System.currentTimeMillis() - ws);
                 }
                 element = dequeue();
+                process.incrementAndGet();
             } finally {
                 lock.unlock();
             }
@@ -387,6 +456,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
                 final ReentrantLock lock = this.lock;
                 lock.lock();
                 try{
+                    flowControl();
                     int n = Math.min(maxElements, count);
                     int take = takeIndex;
                     int i = 0;
@@ -406,6 +476,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
                                 break;
                             }
                         }
+                        process.addAndGet(i);
                         return i;
                     } finally {
                         if (i > 0){
@@ -471,6 +542,32 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
             // Not need to support iterator
             notFull.signal();
             return element;
+        }
+
+        /**
+         * Flow control
+         */
+        private void flowControl(){
+            long ws = System.currentTimeMillis();
+            if (clock <= ws) {
+                long interval = ws - clock + controlInterval;
+                clock = ws + controlInterval;
+                if (rpcSenderConfig.isDebugMode()) {
+                    System.out.println("cacheWait: " + cacheWaitTime.get() + ", takeWait:" + takeWaitTime.get() + ", discarded: " + discardCount);
+                }
+                if (takeWaitTime.get() <= 0 && process.get() > 0){
+                    this.control.set((long) ((double)process.get() * ((double)controlInterval / (double)interval)));
+                    if (rpcSenderConfig.isDebugMode()) {
+                        System.out.println("new window control: " + this.control.get());
+                    }
+                } else {
+                    this.control.set(Long.MAX_VALUE);
+                }
+                cacheWaitTime.set(0);
+                takeWaitTime.set(0);
+                process.set(0);
+                discardCount = 0;
+            }
         }
     }
 }

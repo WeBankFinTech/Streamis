@@ -2,6 +2,7 @@ package com.webank.wedatasphere.streamis.jobmanager.log.collector.flink;
 
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.StreamisLogAppenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.log4j2.StreamisLog4j2AppenderConfig;
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.log4j2.filters.KeywordThresholdFilter;
 import com.webank.wedatasphere.streamis.jobmanager.plugin.StreamisConfigAutowired;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.configuration.Configuration;
@@ -56,12 +57,17 @@ public class FlinkStreamisConfigAutowired implements StreamisConfigAutowired {
                 if ("LevelMatch".equals(filterStrategy)) {
                     ((StreamisLog4j2AppenderConfig.Builder)builder).withFilter(LevelMatchFilter.newBuilder().setOnMatch(Filter.Result.ACCEPT).setOnMismatch(Filter.Result.DENY)
                             .setLevel(Level.getLevel(this.configuration.getString(LOG_FILTER_LEVEL_MATCH))).build());
-                } else if ("ThresholdFilter".equals(filterStrategy)) {
+                } else if ("ThresholdMatch".equals(filterStrategy)) {
                     ((StreamisLog4j2AppenderConfig.Builder)builder).withFilter(ThresholdFilter.createFilter(Level
                             .getLevel(this.configuration.getString(LOG_FILTER_THRESHOLD_MATCH)), Filter.Result.ACCEPT, Filter.Result.DENY));
                 } else if ("RegexMatch".equals(filterStrategy)) {
                     ((StreamisLog4j2AppenderConfig.Builder)builder).withFilter(RegexFilter.createFilter(this.configuration.getString(LOG_FILTER_REGEX),
                             null, true, Filter.Result.ACCEPT, Filter.Result.DENY));
+                } else if ("Keyword".equals(filterStrategy)){
+                    ((StreamisLog4j2AppenderConfig.Builder)builder).withFilter(
+                            new KeywordThresholdFilter(
+                                    StringUtils.split(this.configuration.getString(LOG_FILTER_KEYWORDS), ","),
+                                    StringUtils.split(this.configuration.getString(LOG_FILTER_KEYWORDS_EXCLUDE), ",")));
                 }
             }
         }
@@ -69,7 +75,8 @@ public class FlinkStreamisConfigAutowired implements StreamisConfigAutowired {
         if (hadoopUser.equals("<no hadoop dependency found>") || hadoopUser.equals("<unknown>")){
             hadoopUser = System.getProperty("user.name");
         }
-        return builder.setRpcConnTimeout(this.configuration.getInteger(LOG_RPC_CONN_TIMEOUT))
+        return builder.setDebugMode(this.configuration.getBoolean(DEBUG_MODE))
+                .setRpcConnTimeout(this.configuration.getInteger(LOG_RPC_CONN_TIMEOUT))
                 .setRpcSocketTimeout(this.configuration.getInteger(LOG_RPC_SOCKET_TIMEOUT))
                 .setRpcSendRetryCnt(this.configuration.getInteger(LOG_RPC_SEND_RETRY_COUNT))
                 .setRpcServerRecoveryTimeInSec(this.configuration.getInteger(LOG_RPC_SERVER_RECOVERY_TIME))
@@ -81,9 +88,12 @@ public class FlinkStreamisConfigAutowired implements StreamisConfigAutowired {
                         hadoopUser))
                 .setRpcCacheSize(this.configuration.getInteger(LOG_RPC_CACHE_SIZE))
                 .setRpcCacheMaxConsumeThread(this.configuration.getInteger(LOG_PRC_CACHE_MAX_CONSUME_THREAD))
+                .setDiscard(this.configuration.getBoolean(LOG_RPC_CACHE_DISCARD))
+                .setDiscardWindow(this.configuration.getInteger(LOG_RPC_CACHE_DISCARD_WINDOW))
                 .setRpcBufferSize(this.configuration.getInteger(LOG_RPC_BUFFER_SIZE))
                 .setRpcBufferExpireTimeInSec(this.configuration.getInteger(LOG_RPC_BUFFER_EXPIRE_TIME)).build();
     }
+
 
     /**
      * According to :
