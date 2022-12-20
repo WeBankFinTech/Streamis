@@ -30,11 +30,6 @@ public class JobLogBucketConfig {
     private Class<? extends JobLogBucket> bucketClass;
 
     /**
-     * Root path for bucket
-     */
-    private String bucketRootPath = StreamJobLogConfig.BUCKET_ROOT_PATH.getValue();
-
-    /**
      * Attribute
      */
     protected Map<String, Object> attributes = new HashMap<>();
@@ -65,14 +60,6 @@ public class JobLogBucketConfig {
 
     public void setBucketClass(Class<? extends JobLogBucket> bucketClass) {
         this.bucketClass = bucketClass;
-    }
-
-    public String getBucketRootPath() {
-        return bucketRootPath;
-    }
-
-    public void setBucketRootPath(String bucketRootPath) {
-        this.bucketRootPath = bucketRootPath;
     }
 
     public Map<String, Object> getAttributes() {

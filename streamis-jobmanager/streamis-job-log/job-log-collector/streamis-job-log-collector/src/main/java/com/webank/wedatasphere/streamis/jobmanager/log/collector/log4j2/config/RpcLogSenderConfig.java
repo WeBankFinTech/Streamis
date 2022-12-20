@@ -26,12 +26,15 @@ public class RpcLogSenderConfig extends com.webank.wedatasphere.streamis.jobmana
             @PluginAttribute("address") String address, @PluginAttribute("sendRetryCnt") String sendRetryCnt,
             @PluginAttribute("connectionTimeout") String connectionTimeout, @PluginAttribute("socketTimeout") String socketTimeout,
             @PluginAttribute("serverRecoveryTimeInSec") String serverRecoveryTimeInSec, @PluginAttribute("maxDelayTimeInSec") String maxDelayTimeInSec,
+            @PluginAttribute("debugMode")String debugMode,
             @PluginElement("AuthConfig")RpcAuthConfig authConfig, @PluginElement("SendLogCache") SendLogCacheConfig cacheConfig,
             @PluginElement("SendBuffer")SendBufferConfig bufferConfig){
-        return new RpcLogSenderConfig(address, Integers.parseInt(sendRetryCnt, 3),
+        RpcLogSenderConfig config =  new RpcLogSenderConfig(address, Integers.parseInt(sendRetryCnt, 3),
                 Integers.parseInt(connectionTimeout, 3000), Integers.parseInt(socketTimeout, 15000),
                 Integers.parseInt(serverRecoveryTimeInSec, 5), Integers.parseInt(maxDelayTimeInSec, 60),
                 authConfig, cacheConfig, bufferConfig);
+        config.setDebugMode(Boolean.parseBoolean(debugMode));
+        return config;
     }
 
 }
