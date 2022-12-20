@@ -56,6 +56,8 @@
       "jobListTableColumns":{
         "jobName": "Job name",
         "jobType": "Job type",
+        "launchMode": "Launch Mode",
+        "manageMode": "Manage Mode",
         "taskStatus": "Task status",
         "lastReleaseTime": "Last release time",
         "label": "Label",
@@ -78,6 +80,8 @@
         "modalTitle":"Version detail",
         "jobId":"Job id",
         "version":"Version",
+        "using":"Using",
+        "versionStatus":"VersionStatus",
         "description":"Description",
         "createTime":"Create time",
         "creator":"Creator",
