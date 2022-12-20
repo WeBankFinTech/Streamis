@@ -8,18 +8,22 @@ public class StreamisLogAppenderTest {
     private static final Logger LOG = LoggerFactory.getLogger(StreamisLogAppenderTest.class);
     @Test
     public void appenderLog() throws InterruptedException {
-        int total = 1000;
-        int tps = 100;
+        int total = 10000;
+        int tps = 1000;
         long timer = System.currentTimeMillis() + 1000;
-        for(int i = 0; i < total; i ++){
-            if (i > 0 && i % tps == 0){
+        for (int i = 0; i < total; i++) {
+            if (i > 0 && i % tps == 0) {
                 long sleep = timer - System.currentTimeMillis();
-                if (sleep > 0){
-                    Thread.sleep(sleep);
+                if (sleep > 0) {
+                    try {
+                        Thread.sleep(sleep);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
                 timer = System.currentTimeMillis() + 1000;
             }
-            LOG.info("Stream Log appender test, sequence id: " + i);
+            LOG.info("ERROR: Stream Log appender test, sequence id: " + i);
         }
     }
 }

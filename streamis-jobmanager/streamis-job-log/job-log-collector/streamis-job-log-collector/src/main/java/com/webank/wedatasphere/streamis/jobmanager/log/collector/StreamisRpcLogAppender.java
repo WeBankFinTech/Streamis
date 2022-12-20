@@ -4,6 +4,7 @@ import com.webank.wedatasphere.streamis.jobmanager.log.collector.cache.LogCache;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcLogSenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.StreamisLogAppenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.log4j2.StreamisLog4j2AppenderConfig;
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.message.filters.LogMessageFilter;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.StreamisRpcLogSender;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisLogEvent;
 import com.webank.wedatasphere.streamis.jobmanager.plugin.StreamisConfigAutowired;
@@ -23,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Streamis rpc log appender
@@ -44,6 +47,12 @@ public class StreamisRpcLogAppender extends AbstractAppender {
      * Cache
      */
     private final LogCache<StreamisLogEvent> logCache;
+
+    /**
+     * Filter function
+     */
+    private BiFunction<String, String, Boolean> messageFilterFunction = (logger, message) -> true;
+
     protected StreamisRpcLogAppender(String name, Filter filter,
                                      Layout<? extends Serializable> layout,
                                      boolean ignoreExceptions, Property[] properties,
@@ -55,18 +64,31 @@ public class StreamisRpcLogAppender extends AbstractAppender {
         this.rpcLogSender.setExceptionListener((subject, t, message) ->
                 LOGGER.error((null != subject? subject.getClass().getSimpleName() : "") + ": " + message, t));
         this.logCache = this.rpcLogSender.getOrCreateLogCache();
+        List<LogMessageFilter> messageFilters = appenderConfig.getMessageFilters();
+        if (null != messageFilters && messageFilters.size() > 0){
+            messageFilterFunction = (logger, message) ->{
+                for(LogMessageFilter messageFilter : messageFilters){
+                    if (!messageFilter.doFilter(logger, message)){
+                        return false;
+                    }
+                }
+               return true;
+            };
+        }
         Runtime.getRuntime().addShutdownHook(new Thread(this.rpcLogSender::close));
     }
 
     @Override
     public void append(LogEvent event) {
         String content = new String(getLayout().toByteArray(event));
-        // Transform to stream log event;
-        StreamisLogEvent logEvent = new StreamisLogEvent(content, System.currentTimeMillis());
-        try {
-            this.logCache.cacheLog(logEvent);
-        } catch (InterruptedException e) {
-            LOGGER.error("StreamisRpcLogAppender: {} interrupted when cache the log into the RPC sender, message: {}", this.getName(), e.getMessage());
+        if (messageFilterFunction.apply(event.getLoggerName(), content)) {
+            // Transform to stream log event;
+            StreamisLogEvent logEvent = new StreamisLogEvent(content, event.getTimeMillis());
+            try {
+                this.logCache.cacheLog(logEvent);
+            } catch (InterruptedException e) {
+                LOGGER.error("StreamisRpcLogAppender: {} interrupted when cache the log into the RPC sender, message: {}", this.getName(), e.getMessage());
+            }
         }
     }
 
