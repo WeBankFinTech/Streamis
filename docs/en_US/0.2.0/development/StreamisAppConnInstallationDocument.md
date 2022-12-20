@@ -1,7 +1,7 @@
 Streamisappconn installation document this article mainly introduces the deployment, configuration and installation of streamisappconn in DSS (datasphere studio) 1.1.0
 
 # 1. Preparation for deploying streamisappconn
-Before deploying streamisappconn, please complete the installation of streamis0.2.4 and other related components, and ensure that the basic functions of the project are available.
+Before deploying streamisappconn, please complete the installation of streamis0.2.5 and other related components, and ensure that the basic functions of the project are available.
 
 # 2. Download and compilation of streamisappconn plug-in
 1) Download binary package
