@@ -2,6 +2,7 @@ package com.webank.wedatasphere.streamis.jobmanager.log.collector.flink;
 
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
+import scala.Int;
 
 import java.util.List;
 
@@ -86,8 +87,19 @@ public class FlinkStreamisConfigDefine {
      * Max cache consume threads in log RPC module
      */
     public static final ConfigOption<Integer> LOG_PRC_CACHE_MAX_CONSUME_THREAD = ConfigOptions.key("stream.log.rpc.cache.max-consume-thread")
-            .intType().defaultValue(10).withDescription("Max cache consume threads in log RPC module");
+            .intType().defaultValue(2).withDescription("Max cache consume threads in log RPC module");
 
+    /**
+     * If discard the useless log
+     */
+    public static final ConfigOption<Boolean> LOG_RPC_CACHE_DISCARD = ConfigOptions.key("stream.log.rpc.cache.discard")
+            .booleanType().defaultValue(true).withDescription("If discard the useless log");
+
+    /**
+     * The window size of discarding
+     */
+    public static final ConfigOption<Integer> LOG_RPC_CACHE_DISCARD_WINDOW = ConfigOptions.key("stream.log.rpc.cache.discard-window")
+            .intType().defaultValue(2).withDescription("The window size of discarding");
     /**
      * Buffer size in log RPC module
      */
@@ -104,7 +116,7 @@ public class FlinkStreamisConfigDefine {
      * Log filter strategy list
      */
     public static final ConfigOption<List<String>> LOG_FILTER_STRATEGIES = ConfigOptions.key("stream.log.filter.strategies")
-            .stringType().asList().defaultValues("LevelMatch").withDescription("Log filter strategy list");
+            .stringType().asList().defaultValues("Keyword").withDescription("Log filter strategy list");
 
     /**
      * Level value of LevelMatch filter strategy
@@ -122,4 +134,22 @@ public class FlinkStreamisConfigDefine {
      */
     public static final ConfigOption<String> LOG_FILTER_REGEX = ConfigOptions.key("stream.log.filter.regex.value")
             .stringType().defaultValue(".*").withDescription("Regex value of RegexMatch filter strategy");
+
+    /**
+     * Accept keywords of Keyword filter strategy
+     */
+    public static final ConfigOption<String> LOG_FILTER_KEYWORDS = ConfigOptions.key("stream.log.filter.keywords")
+            .stringType().defaultValue("ERROR").withDescription("Accept keywords of Keyword filter strategy");
+
+    /**
+     * Exclude keywords of Keyword filter strategy
+     */
+    public static final ConfigOption<String> LOG_FILTER_KEYWORDS_EXCLUDE = ConfigOptions.key("stream.log.filter.keywords.exclude")
+            .stringType().defaultValue("").withDescription("Exclude keywords of Keyword filter strategy");
+
+    /**
+     * Debug mode
+     */
+    public static final ConfigOption<Boolean> DEBUG_MODE = ConfigOptions.key("stream.log.debug")
+            .booleanType().defaultValue(false).withDescription("Debug mode");
 }
