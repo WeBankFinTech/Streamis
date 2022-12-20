@@ -1,6 +1,9 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.collector.config;
 
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.message.filters.LogMessageFilter;
+
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -14,9 +17,15 @@ public class StreamisLogAppenderConfig {
 
     protected final RpcLogSenderConfig senderConfig;
 
-    protected StreamisLogAppenderConfig(String applicationName, RpcLogSenderConfig rpcLogSenderConfig){
+    /**
+     * Message filters
+     */
+    protected final List<LogMessageFilter> messageFilters;
+    protected StreamisLogAppenderConfig(String applicationName, RpcLogSenderConfig rpcLogSenderConfig,
+                                        List<LogMessageFilter> messageFilters){
         this.applicationName = applicationName;
         this.senderConfig = null != rpcLogSenderConfig? rpcLogSenderConfig : new RpcLogSenderConfig();
+        this.messageFilters = messageFilters;
     }
 
     public static class Builder{
@@ -29,6 +38,11 @@ public class StreamisLogAppenderConfig {
          * Sender config
          */
         protected final RpcLogSenderConfig rpcLogSenderConfig;
+
+        /**
+         * Message filters
+         */
+        protected final List<LogMessageFilter> messageFilters = new ArrayList<>();
 
         public Builder(String applicationName,
                        RpcLogSenderConfig rpcLogSenderConfig){
@@ -189,8 +203,47 @@ public class StreamisLogAppenderConfig {
             return this;
         }
 
+        /**
+         * Add log message filter
+         * @param messageFilter message filter
+         * @return builder
+         */
+        public StreamisLogAppenderConfig.Builder withMessageFilter(LogMessageFilter messageFilter){
+            this.messageFilters.add(messageFilter);
+            return this;
+        }
+
+        /**
+         * Set to discard the useless log
+         * @param discard discard
+         * @return builder
+         */
+        public StreamisLogAppenderConfig.Builder setDiscard(boolean discard){
+            this.rpcLogSenderConfig.getCacheConfig().setDiscard(discard);
+            return this;
+        }
+
+        /**
+         * Set the window size of discarding
+         * @param windowSize
+         * @return
+         */
+        public StreamisLogAppenderConfig.Builder setDiscardWindow(int windowSize){
+            this.rpcLogSenderConfig.getCacheConfig().setDiscardWindow(windowSize);
+            return this;
+        }
+        /**
+         * Switch to debug
+         * @param debugMode debug mode
+         * @return builder
+         */
+        public StreamisLogAppenderConfig.Builder setDebugMode(boolean debugMode){
+            this.rpcLogSenderConfig.setDebugMode(debugMode);
+            return this;
+        }
+
         public StreamisLogAppenderConfig build(){
-            return new StreamisLogAppenderConfig(applicationName, rpcLogSenderConfig);
+            return new StreamisLogAppenderConfig(applicationName, rpcLogSenderConfig, messageFilters);
         }
     }
     public String getApplicationName() {
@@ -202,4 +255,7 @@ public class StreamisLogAppenderConfig {
         return senderConfig;
     }
 
+    public List<LogMessageFilter> getMessageFilters() {
+        return messageFilters;
+    }
 }

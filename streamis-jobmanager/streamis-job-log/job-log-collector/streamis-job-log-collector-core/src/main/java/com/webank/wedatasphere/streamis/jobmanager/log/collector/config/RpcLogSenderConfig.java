@@ -39,6 +39,10 @@ public class RpcLogSenderConfig {
     private int maxDelayTimeInSec = 60;
 
     /**
+     * If open debug mode
+     */
+    private boolean debugMode = false;
+    /**
      * Auth config
      */
     private RpcAuthConfig authConfig = new RpcAuthConfig();
@@ -149,6 +153,14 @@ public class RpcLogSenderConfig {
         this.serverRecoveryTimeInSec = serverRecoveryTimeInSec;
     }
 
+    public boolean isDebugMode() {
+        return debugMode;
+    }
+
+    public void setDebugMode(boolean debugMode) {
+        this.debugMode = debugMode;
+    }
+
     @Override
     public String toString() {
         return "RpcLogSenderConfig{" +
@@ -161,6 +173,8 @@ public class RpcLogSenderConfig {
                 ", authConfig=" + authConfig +
                 ", cacheConfig=" + cacheConfig +
                 ", bufferConfig=" + bufferConfig +
+                ", debug=" + debugMode +
                 '}';
     }
+
 }
