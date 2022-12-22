@@ -29,6 +29,10 @@ public class StreamJob {
     private String description;
     private String submitUser;
     private Date createTime;
+    /**
+     * Current version tab in used
+     */
+    private String currentVersion;
 
     public Long getWorkspaceName() {
         return workspaceName;
@@ -111,4 +115,11 @@ public class StreamJob {
         this.jobType = jobType;
     }
 
+    public String getCurrentVersion() {
+        return currentVersion;
+    }
+
+    public void setCurrentVersion(String currentVersion) {
+        this.currentVersion = currentVersion;
+    }
 }

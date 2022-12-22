@@ -17,7 +17,6 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import java.util
 import java.util.Date
-
 import com.github.pagehelper.PageInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
@@ -27,6 +26,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamAlertMappe
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity._
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{QueryJobListVo, TaskCoreNumVo, VersionDetailVo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.{JobCreateErrorException, JobFetchErrorException}
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.DefaultStreamJobService.JobDeployValidateResult
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.{ReaderUtils, ZipHelper}
@@ -102,7 +102,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
   }
 
 
-  override def updateVersion(preVersion: String): String = {
+  override def rollingJobVersion(preVersion: String): String = {
     val newVersion = preVersion.substring(1).toInt + 1
     val codeFormat = "%05d"
     "v" + String.format(codeFormat, new Integer(newVersion))
@@ -125,7 +125,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
   }
 
 
-  override def createStreamJob(metaJsonInfo: MetaJsonInfo, userName: String): StreamJobVersion = {
+  override def deployStreamJob(metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean): StreamJobVersion = {
     if(StringUtils.isBlank(metaJsonInfo.getJobType))
       throw new JobCreateErrorException(30030, s"jobType is needed.")
     else if(!JobConf.SUPPORTED_JOB_TYPES.getValue.contains(metaJsonInfo.getJobType)) {
@@ -137,27 +137,33 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     val streamJob = new StreamJob()
     val jobVersion = new StreamJobVersion()
     if (job == null) {
+      jobVersion.setVersion("v00001")
       streamJob.setCreateBy(userName)
       streamJob.setSubmitUser(userName)
       streamJob.setJobType(metaJsonInfo.getJobType)
       streamJob.setDescription(metaJsonInfo.getDescription)
-      jobVersion.setVersion("v00001")
+      streamJob.setCurrentVersion(jobVersion.getVersion)
       streamJob.setCreateTime(new Date())
       streamJob.setLabel(metaJsonInfo.getTags)
       streamJob.setName(metaJsonInfo.getJobName)
       streamJob.setProjectName(metaJsonInfo.getProjectName)
       streamJobMapper.insertJob(streamJob)
     } else {
-      if(job.getJobType != metaJsonInfo.getJobType)
-        throw new JobCreateErrorException(30030, s"StreamJob-${job.getName} has already created with jobType ${job.getJobType}, you cannot change it to ${metaJsonInfo.getJobType}.")
-      streamJob.setId(job.getId)
-      if (StringUtils.isNotEmpty(metaJsonInfo.getDescription))
-        streamJob.setDescription(metaJsonInfo.getDescription)
-      streamJobMapper.updateJob(streamJob)
       val jobVersions = streamJobMapper.getJobVersions(job.getId)
       if (jobVersions == null || jobVersions.isEmpty) jobVersion.setVersion("v00001")
       else
-        jobVersion.setVersion(updateVersion(jobVersions.get(0).getVersion))
+        jobVersion.setVersion(rollingJobVersion(jobVersions.get(0).getVersion))
+      if(job.getJobType != metaJsonInfo.getJobType)
+        throw new JobCreateErrorException(30030, s"StreamJob-${job.getName} has already created with jobType ${job.getJobType}, you cannot change it to ${metaJsonInfo.getJobType}.")
+      streamJob.setId(job.getId)
+      if (updateVersion){
+        // update version
+        streamJob.setCurrentVersion(jobVersion.getVersion)
+      }
+      if (StringUtils.isNotEmpty(metaJsonInfo.getDescription))
+        streamJob.setDescription(metaJsonInfo.getDescription)
+      streamJobMapper.updateJob(streamJob)
+
     }
     jobVersion.setJobId(streamJob.getId)
     jobVersion.setJobContent(metaJsonInfo.getMetaInfo)
@@ -181,9 +187,9 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     if (StringUtils.isNotBlank(projectName) && projectName!=metaJsonInfo.getProjectName) {
       throw new JobCreateErrorException(30030, s"the projectName ${metaJsonInfo.getProjectName} is not matching the project ")
     }
-    validateUpload(metaJsonInfo.getProjectName, metaJsonInfo.getJobName, userName)
+    val validateResult = validateJobDeploy(metaJsonInfo.getProjectName, metaJsonInfo.getJobName, userName)
     //  生成StreamJob，根据StreamJob生成StreamJobVersion
-    val version = createStreamJob(metaJsonInfo, userName)
+    val version = deployStreamJob(metaJsonInfo, userName, validateResult.updateVersion)
     //  上传所有非meta.json的文件
     uploadFiles(metaJsonInfo, version, inputZipPath)
     version
@@ -192,10 +198,10 @@ class DefaultStreamJobService extends StreamJobService with Logging {
   @throws(classOf[ErrorException])
   @Transactional(rollbackFor = Array(classOf[Exception]))
   override def createOrUpdate(userName: String, metaJsonInfo: MetaJsonInfo): StreamJobVersion = {
-    validateUpload(metaJsonInfo.getProjectName, metaJsonInfo.getJobName, userName)
+    val validateResult = validateJobDeploy(metaJsonInfo.getProjectName, metaJsonInfo.getJobName, userName)
     val readerUtils = new ReaderUtils
     metaJsonInfo.setMetaInfo(readerUtils.readAsJson(metaJsonInfo))
-    createStreamJob(metaJsonInfo, userName)
+    deployStreamJob(metaJsonInfo, userName, validateResult.updateVersion)
   }
 
   override def getJobContent(jobId: Long, version: String): StreamisTransformJobContent = {
@@ -254,22 +260,36 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     streamAlertMapper.getAlertByJobIdAndVersion(username,jobId,job.getId)
   }
 
-  private def validateUpload(projectName: String, jobName: String, userName: String): Unit = {
+  private def validateJobDeploy(projectName: String, jobName: String, userName: String): JobDeployValidateResult = {
     if(StringUtils.isBlank(jobName)) throw new JobCreateErrorException(30030, s"jobName is needed.")
     if(StringUtils.isBlank(projectName)) throw new JobCreateErrorException(30030, s"projectName is needed.")
+    var updateVersion = true
     // Try to lock the stream job to create version
-    Option(streamJobMapper.queryAndLockJobInCondition(projectName, jobName)).foreach(streamJob => {
-      // Use the project privilege at restful api
-//      if (streamJob.getCreateBy != userName)
-//        throw new JobCreateErrorException(30030, s"You have no permission to update StreamJob-$jobName.")
-      val jobVersions = streamJobMapper.getJobVersions(streamJob.getId)
-      if (jobVersions != null && !jobVersions.isEmpty) {
-        val tasks = streamTaskMapper.getTasksByJobIdAndJobVersionId(streamJob.getId, jobVersions.get(0).getId)
-        if (tasks != null && !tasks.isEmpty && !JobConf.isCompleted(tasks.get(0).getStatus)) {
-          throw new JobCreateErrorException(30030, s"StreamJob-$jobName is in status ${tasks.get(0).getStatus}, you cannot upload the zip.")
+    Option(streamJobMapper.queryAndLockJobInCondition(projectName, jobName)) match {
+      case Some(streamJob) =>
+        // Use the project privilege at restful api
+        //      if (streamJob.getCreateBy != userName)
+        //        throw new JobCreateErrorException(30030, s"You have no permission to update StreamJob-$jobName.")
+        val jobVersions = streamJobMapper.getJobVersions(streamJob.getId)
+        if (jobVersions != null && !jobVersions.isEmpty) {
+          val tasks = streamTaskMapper.getTasksByJobIdAndJobVersionId(streamJob.getId, jobVersions.get(0).getId)
+          if (tasks != null && !tasks.isEmpty && !JobConf.isCompleted(tasks.get(0).getStatus)) {
+            logger.warn(s"StreamJob-$jobName is in status ${tasks.get(0).getStatus}, your deployment will not update the version in job")
+            updateVersion = false
+            //          throw new JobCreateErrorException(30030, s"StreamJob-$jobName is in status ${tasks.get(0).getStatus}, you cannot upload the zip.")
+          }
         }
-      }
-    })
+      case _ =>
+    }
+    JobDeployValidateResult(updateVersion)
   }
 
+}
+
+object DefaultStreamJobService{
+  /**
+   * Deploy validate result
+   * @param updateVersion should update version
+   */
+  case class JobDeployValidateResult(updateVersion: Boolean)
 }

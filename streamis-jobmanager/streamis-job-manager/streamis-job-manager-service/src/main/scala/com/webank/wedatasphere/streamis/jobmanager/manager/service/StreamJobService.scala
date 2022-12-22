@@ -43,10 +43,10 @@ trait StreamJobService {
   def versionDetail(jobId: Long, version: String): VersionDetailVo
 
   /**
-   * Update version
+   * Rolling job version
    * @param preVersion version
    */
-  def updateVersion(preVersion: String): String
+  def rollingJobVersion(preVersion: String): String
 
   /**
    * Upload files
@@ -57,12 +57,13 @@ trait StreamJobService {
   def uploadFiles(metaJsonInfo: MetaJsonInfo, version: StreamJobVersion, path: String): Unit
 
   /**
-   * Create stream job
+   * Deploy stream job
    * @param metaJsonInfo meta json
    * @param userName username
+   * @param updateVersion should update version
    * @return
    */
-  def createStreamJob(metaJsonInfo: MetaJsonInfo, userName: String): StreamJobVersion
+  def deployStreamJob(metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean): StreamJobVersion
 
   /**
    * Upload job
