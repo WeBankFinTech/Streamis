@@ -39,7 +39,7 @@ interact_echo(){
   done
 }
 
-interact_echo "Are you sure the current version of Streamis is 0.1.0 and need to upgrade to 0.2.4 ?"
+interact_echo "Are you sure the current version of Streamis is 0.2.x < 0.2.5 and need to upgrade to 0.2.5 ?"
 if [[ $? == 0 ]]; then
   source ${workDir}/conf/db.sh
   echo "<------ Will connect to [${MYSQL_HOST}:${MYSQL_PORT}] to upgrade the tables in database... ------>"
