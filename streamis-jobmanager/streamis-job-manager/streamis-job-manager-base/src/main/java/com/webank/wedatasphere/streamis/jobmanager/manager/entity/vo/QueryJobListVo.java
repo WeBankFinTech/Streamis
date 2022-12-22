@@ -30,6 +30,10 @@ public class QueryJobListVo {
     private Integer status;
     private String version;
     private Date lastVersionTime;
+    /**
+     * Number of version forward
+     */
+    private Integer versionForwards;
     private String description;
 
     public Long getId() {
@@ -134,5 +138,13 @@ public class QueryJobListVo {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Integer getVersionForwards() {
+        return versionForwards;
+    }
+
+    public void setVersionForwards(Integer versionForwards) {
+        this.versionForwards = versionForwards;
     }
 }
