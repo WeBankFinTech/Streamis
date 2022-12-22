@@ -135,6 +135,7 @@ CREATE TABLE `linkis_stream_job` (
   `job_type` varchar(30) DEFAULT NULL COMMENT '目前只支持flink.sql、flink.jar',
   `submit_user` varchar(100) DEFAULT NULL,
   `workspace_name` varchar(50) DEFAULT NULL,
+  `current_version` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY(`project_name`, `name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='作业表';

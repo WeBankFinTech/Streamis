@@ -44,6 +44,7 @@
         <result column="status" property="status" jdbcType="VARCHAR"/>
         <result column="version" property="version" jdbcType="INTEGER"/>
         <result column="lastVersionTime" property="lastVersionTime" jdbcType="TIMESTAMP"/>
+        <result column="version_forward" property="versionForwards" jdbcType="INTEGER"/>
     </resultMap>
 
     <resultMap id="StreamJobVersionMap"
@@ -72,7 +73,7 @@
     </resultMap>
 
     <sql id="Job_Column">
-        `id`,`project_name`, `workspace_name`,`name`,`create_by`, `create_time`,`label`,`description`,`submit_user`,`job_type`
+        `id`,`project_name`, `workspace_name`,`name`,`create_by`, `create_time`,`label`,`description`,`submit_user`,`job_type`, `current_version`
     </sql>
 
     <sql id="JobVersion_Column">
@@ -97,16 +98,15 @@
 <!--    </select>-->
 
     <select id="getJobLists" resultMap="StreamJobVOMap">
-        select * from (
+        select *, (SELECT COUNT(1) FROM linkis_stream_job_version v WHERE v.job_id = id AND v.id > version_id) AS version_forward from (
         SELECT j.`id`,j.`project_name`, j.`workspace_name`,j.`name`,j.`create_by`, j.`create_time`,j.`label`,j.`description`,
-        j.`job_type`, (CASE WHEN t.`status` IS NULL THEN 0 ELSE t.status END)  AS STATUS, ll.version AS VERSION,
-        ll.create_time AS lastVersionTime, t.start_time, lsp.id AS project_id FROM
+        j.`job_type`, (CASE WHEN t.`status` IS NULL THEN 0 ELSE t.status END)  AS status, j.`current_version` AS version, v.id as version_id,
+        v.create_time AS lastVersionTime, t.start_time, lsp.id AS project_id FROM
         linkis_stream_job j
-        LEFT JOIN (SELECT id,job_id, MAX(VERSION) VERSION FROM linkis_stream_job_version GROUP BY job_id) l ON j.id = l.job_id
-        LEFT JOIN linkis_stream_job_version ll ON l.job_id=ll.job_id AND l.version=ll.version
-        LEFT JOIN (SELECT MAX(start_time) start_time, MAX(VERSION) VERSION,job_id FROM linkis_stream_task GROUP BY job_id) tt
-        ON tt.job_id = l.job_id AND tt.version = l.version
-        LEFT JOIN linkis_stream_task t ON tt.job_id = t.job_id AND tt.start_time = t.start_time
+        LEFT JOIN linkis_stream_job_version v ON v.job_id = j.id AND v.version = j.current_version
+        LEFT JOIN (SELECT MAX(id) id, job_id, version FROM linkis_stream_task GROUP BY job_id,version) gt
+        ON gt.job_id = j.id AND gt.version = v.version
+        LEFT JOIN linkis_stream_task t ON t.id = gt.id
         LEFT JOIN linkis_stream_project lsp ON lsp.name = j.project_name
         ) aa
         <where>
@@ -157,17 +157,16 @@
 
     <select id="getJobListsByProjectName" resultMap="StreamJobMap">
         SELECT
-        j.`id`,j.`project_name`,j.`name`,j.`job_type`,j.`label`,j.`description`,j.`submit_user`,j.`submit_user` as create_by,l.version current_version
-        FROM `linkis_stream_job` j LEFT JOIN `linkis_stream_job_version` l ON j.`id`=l.job_id AND j.project_name = #{projectName}
+        j.`id`,j.`project_name`,j.`name`,j.`job_type`,j.`label`,j.`description`,j.`submit_user`,j.`submit_user` as create_by, j.`current_version`
+        FROM `linkis_stream_job` j LEFT JOIN `linkis_stream_job_version` l ON j.`id`= l.job_id AND j.project_name = #{projectName}
     </select>
 
     <select id="getCurrentJob" parameterType="java.lang.String"
             resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
         SELECT
-        j.`id`,j.`project_name`,j.`name`,j.`job_type`,j.`label`,j.`description`,j.`submit_user`,l.version current_version
-        FROM `linkis_stream_job` j JOIN `linkis_stream_job_version` l ON j.`id`=l.job_id AND j.project_name = #{projectName}
+        j.`id`,j.`project_name`,j.`name`,j.`job_type`,j.`label`,j.`description`,j.`submit_user`,j.`current_version`
+        FROM `linkis_stream_job` j JOIN `linkis_stream_job_version` l ON j.`id`=l.job_id AND j.project_name = #{projectName} AND j.`current_version` = l.version
         AND j.name = #{jobName}
-        ORDER BY l.create_time DESC LIMIT 1
     </select>
 
     <select id="queryAndLockJobInCondition" parameterType="java.lang.String"
@@ -183,8 +182,8 @@
 
     <insert id="insertJob" useGeneratedKeys="true" keyProperty="id"
             parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
-        INSERT INTO linkis_stream_job(`project_name`,`name`,`create_by`,`label`,`description`,`job_type`,`submit_user`,`create_time`)
-        VALUES(#{projectName},#{name},#{createBy},#{label},#{description},#{jobType},#{submitUser},#{createTime})
+        INSERT INTO linkis_stream_job(`project_name`,`name`,`create_by`,`label`,`description`,`job_type`,`submit_user`, `current_version`, `create_time`)
+        VALUES(#{projectName},#{name},#{createBy},#{label},#{description},#{jobType},#{submitUser},#{currentVersion, jdbcType=VARCHAR},#{createTime})
     </insert>
 
     <insert id="insertJobVersion" useGeneratedKeys="true" keyProperty="id"
@@ -212,6 +211,9 @@
             </if>
             <if test="description != null">
                 description=#{description},
+            </if>
+            <if test="currentVersion != null">
+                current_version=#{currentVersion}
             </if>
         </trim>
         WHERE id=#{id}
