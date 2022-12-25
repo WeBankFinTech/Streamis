@@ -28,6 +28,8 @@ public interface StreamJobMapper {
     List<QueryJobListVo> getJobLists(@Param("projectName") String projectName, @Param("userName") String userName, @Param("name") String name,
                                      @Param("status") Integer status, @Param("createBy") String createBy);
 
+    List<VersionDetailVo> getJobVersionDetails(@Param("jobId") Long jobId);
+
     StreamJob getJobById(@Param("jobId") Long jobId);
 
     List<StreamJob> getJobByName(@Param("jobName") String jobName);
