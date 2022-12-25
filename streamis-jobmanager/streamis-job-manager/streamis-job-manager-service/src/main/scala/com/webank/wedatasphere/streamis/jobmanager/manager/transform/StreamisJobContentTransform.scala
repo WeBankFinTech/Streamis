@@ -20,18 +20,16 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 import java.util
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisTransformJob, StreamisTransformJobContent}
 
-
-
 trait StreamisJobContentTransform extends Transform {
 
   override def transform(streamisTransformJob: StreamisTransformJob, job: LaunchJob): LaunchJob = {
     val jobContent = transformJobContent(streamisTransformJob.getStreamisTransformJobContent)
     if(jobContent != null) {
-      jobContent.put("runType", streamisTransformJob.getStreamisJobEngineConn.getRunType.toString)
+//      jobContent.put("runType", streamisTransformJob.getStreamisJobEngineConn.getRunType.toString)
+      jobContent.put("runType", streamisTransformJob.getStreamisJobConnect.getRunType.toString)
       LaunchJob.builder().setLaunchJob(job).setJobContent(jobContent).build()
     } else job
   }
-
 
   protected def transformJobContent(transformJob: StreamisTransformJobContent): util.HashMap[String, Any]
 }
