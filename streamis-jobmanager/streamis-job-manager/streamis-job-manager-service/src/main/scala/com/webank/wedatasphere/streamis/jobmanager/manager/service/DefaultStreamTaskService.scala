@@ -539,7 +539,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
    */
   @Transactional(rollbackFor = Array(classOf[Exception]))
   override def createTask(jobId: Long, status: Int, creator: String): StreamTask = {
-     trace(s"Query and lock the StreamJob in [$jobId] before creating StreamTask")
+     logger.trace(s"Query and lock the StreamJob in [$jobId] before creating StreamTask")
      Option(streamJobMapper.queryAndLockJobById(jobId)) match {
        case None => throw new JobTaskErrorException(-1, s"Unable to create StreamTask, the StreamJob [$jobId] is not exists.")
        case Some(job) =>
@@ -547,13 +547,20 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           Option(streamJobMapper.getLatestJobVersion(jobId)) match {
             case None => throw new JobTaskErrorException(-1, s"No versions can be found for job [id: ${job.getId}, name: ${job.getName}]")
             case Some(jobVersion) =>
-              info(s"Fetch the latest version: ${jobVersion.getVersion} for job [id: ${job.getId}, name: ${job.getName}]")
-              // Get the latest task by job version id
-              val latestTask = streamTaskMapper.getLatestByJobVersionId(jobVersion.getId, jobVersion.getVersion)
+              var noticeMessage = s"Fetch the latest version: ${jobVersion.getVersion} for job [id: ${job.getId}, name: ${job.getName}]"
+              if (!jobVersion.getVersion.equals(job.getCurrentVersion)){
+                noticeMessage += s", last version used for task is ${job.getCurrentVersion}"
+                // Update job current version
+                job.setCurrentVersion(jobVersion.getVersion)
+                streamJobMapper.updateJob(job)
+              }
+              logger.info(noticeMessage)
+              // Get the latest task by job id
+              val latestTask = streamTaskMapper.getLatestByJobId(jobId)
               if (null == latestTask || JobConf.isCompleted(latestTask.getStatus)){
                  val streamTask = new StreamTask(jobId, jobVersion.getId, jobVersion.getVersion, creator)
                  streamTask.setStatus(status)
-                 info(s"Produce a new StreamTask [jobId: $jobId, version: ${jobVersion.getVersion}, creator: $creator, status: ${streamTask.getStatus}]")
+                 logger.info(s"Produce a new StreamTask [jobId: $jobId, version: ${jobVersion.getVersion}, creator: $creator, status: ${streamTask.getStatus}]")
                  streamTaskMapper.insertTask(streamTask)
                  streamTask
               } else {
@@ -685,7 +692,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     getStateInfo(this.streamTaskMapper.getTaskById(taskId))
   }
 
-  private def getStateInfo(streamTask: StreamTask): JobState = {
+  override def getStateInfo(streamTask: StreamTask): JobState = {
     Option(streamTask) match {
       case Some(task) =>
         if (StringUtils.isNotBlank(task.getLinkisJobId)) {

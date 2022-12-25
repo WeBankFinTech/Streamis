@@ -162,6 +162,8 @@ class TaskMonitorService extends Logging {
     var users = jobService.getAlertUsers(job)
     if (users == null) {
       users = new util.ArrayList[String]()
+    } else {
+      users = new util.ArrayList[String](users)
     }
     users.addAll(util.Arrays.asList(JobConf.STREAMIS_DEVELOPER.getValue.split(","):_*))
     users
