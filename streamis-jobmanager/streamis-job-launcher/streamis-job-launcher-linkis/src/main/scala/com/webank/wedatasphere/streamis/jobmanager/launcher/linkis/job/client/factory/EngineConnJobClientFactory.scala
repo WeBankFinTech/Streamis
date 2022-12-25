@@ -1,0 +1,50 @@
+package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.factory
+
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.EngineConnJobClient
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo}
+import org.apache.linkis.computation.client.once.simple.SimpleOnceJobBuilder
+import org.apache.linkis.computation.client.once.{LinkisManagerClient, LinkisManagerClientImpl, OnceJob}
+import org.apache.linkis.httpclient.dws.DWSHttpClient
+
+class EngineConnJobClientFactory extends JobClientFactory {
+
+  /**
+   * The linkis client in onceJob
+   */
+  private var linkisClient: DWSHttpClient = _
+
+  /**
+   * Create job client
+   *
+   * @param onceJob once job
+   * @param jobInfo job info
+   * @param jobStateManager
+   * @return
+   */
+   override def createJobClient(job: LaunchJob, onceJob: OnceJob, flinkJobInfo: FlinkJobInfo, jobStateManager: JobStateManager): JobClient[LinkisJobInfo] = {
+     val flinkEngineConnJobClient = new EngineConnJobClient(onceJob, flinkJobInfo, jobStateManager)
+     flinkEngineConnJobClient.setLinkisClient(this.linkisClient).asInstanceOf[JobClient[LinkisJobInfo]]
+   }
+
+  /**
+   * Init the factory
+   */
+  override def init(): Unit = {
+    if (null == this.linkisClient){
+      this.synchronized{
+        if (null == this.linkisClient){
+          this.linkisClient = SimpleOnceJobBuilder.getLinkisManagerClient match {
+            case client: LinkisManagerClient =>
+              val dwsClientField = classOf[LinkisManagerClientImpl].getDeclaredField("dwsHttpClient")
+              dwsClientField.setAccessible(true)
+              dwsClientField.get(client).asInstanceOf[DWSHttpClient]
+              client.
+            case _ => null
+          }
+        }
+      }
+    }
+  }
+}
