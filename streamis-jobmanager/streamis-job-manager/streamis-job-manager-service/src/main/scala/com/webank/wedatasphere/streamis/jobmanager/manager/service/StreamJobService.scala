@@ -29,6 +29,12 @@ trait StreamJobService {
   def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String): PageInfo[QueryJobListVo]
 
   /**
+   * Page list query of version info
+   * @param jobId job id
+   * @return
+   */
+  def getVersionList(jobId: Long): PageInfo[VersionDetailVo]
+  /**
    * Count core norm
    * @param projectName project name
    * @return
@@ -63,7 +69,7 @@ trait StreamJobService {
    * @param updateVersion should update version
    * @return
    */
-  def deployStreamJob(metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean): StreamJobVersion
+  def deployStreamJob(streamJob: StreamJob, metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean): StreamJobVersion
 
   /**
    * Upload job
