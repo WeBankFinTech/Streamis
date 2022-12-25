@@ -154,6 +154,8 @@ trait StreamTaskService {
 
    def getStateInfo(taskId: Long): JobState
 
+   def getStateInfo(streamTask: StreamTask): JobState
+
   def getJobDetailsVO(streamJob: StreamJob, version: String): JobDetailsVo
 
 }
