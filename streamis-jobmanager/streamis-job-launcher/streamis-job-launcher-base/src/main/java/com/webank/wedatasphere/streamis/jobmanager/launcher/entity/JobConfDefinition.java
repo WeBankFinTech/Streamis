@@ -99,6 +99,8 @@ public class JobConfDefinition {
      */
     private boolean required;
 
+    private boolean mark;
+
     public JobConfDefinition(){
 
     }
@@ -237,5 +239,13 @@ public class JobConfDefinition {
 
     public void setRequired(boolean required) {
         this.required = required;
+    }
+
+    public boolean isMark() {
+        return mark;
+    }
+
+    public void setMark(boolean mark) {
+        this.mark = mark;
     }
 }

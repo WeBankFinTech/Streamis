@@ -155,6 +155,12 @@
         WHERE v.job_id = j.id AND j.id = #{jobId} AND v.version=#{version}
     </select>
 
+    <select id="getJobVersionDetails"
+            resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.VersionDetailVo">
+        SELECT j.id,v.version,j.description,DATE_FORMAT(v.create_time,"%Y-%m-%d %H:%i:%s") AS releaseTime,j.create_by AS createBy,j.project_name
+        FROM `linkis_stream_job` j INNER JOIN linkis_stream_job_version v
+        ON j.id = #{jobId} AND v.job_id = j.id AND
+    </select>
     <select id="getJobListsByProjectName" resultMap="StreamJobMap">
         SELECT
         j.`id`,j.`project_name`,j.`name`,j.`job_type`,j.`label`,j.`description`,j.`submit_user`,j.`submit_user` as create_by, j.`current_version`
