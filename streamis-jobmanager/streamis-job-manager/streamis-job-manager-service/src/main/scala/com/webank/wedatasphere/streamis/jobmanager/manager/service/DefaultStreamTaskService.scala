@@ -25,8 +25,9 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunc
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobInfo, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.AbstractJobClient
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{Checkpoint, Savepoint}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobClient, FlinkJobInfo, LinkisJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.SpringContextHolder
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf.FLINK_JOB_STATUS_FAILED
@@ -399,7 +400,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       Utils.tryCatch {
         val jobClient = jobLaunchManager.connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
         jobClient match {
-          case client: FlinkJobClient =>
+          case client: AbstractJobClient =>
             requestPayload.setLogHistory(JobConf.isCompleted(streamTask.getStatus))
             val logIterator = client.fetchLogs(requestPayload)
             returnMap.put("logPath", logIterator.getLogPath)
@@ -441,7 +442,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     if (null != streamTask && StringUtils.isNotBlank(streamTask.getLinkisJobId)){
       val jobClient = this.jobLaunchManager.connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
       return jobClient match {
-        case flinkJobClient: FlinkJobClient =>
+        case flinkJobClient: AbstractJobClient =>
           Option(flinkJobClient.triggerSavepoint()) match {
             case Some(savepoint) =>
               savepoint.getLocation.toString
@@ -591,6 +592,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     if (null == streamJob){
       throw new JobExecuteErrorException(-1, s"Not found the related job info in [${streamTask.getJobId}], has been dropped it ?")
     }
+    //todo 在前置的streamJob创建时设置
     info(s"Start to find the transform builder to process the StreamJob [${streamJob.getName}]")
     val transformJob = streamisTransformJobBuilders.find(_.canBuild(streamJob)).map(_.build(streamJob))
       .getOrElse(throw new TransformFailedErrorException(30408, s"Cannot find a TransformJobBuilder to build StreamJob ${streamJob.getName}."))
