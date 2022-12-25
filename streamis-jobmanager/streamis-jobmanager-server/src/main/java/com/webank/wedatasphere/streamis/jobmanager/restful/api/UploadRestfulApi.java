@@ -44,6 +44,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Objects;
 
 @RequestMapping(path = "/streamis/streamJobManager/job")
 @RestController
@@ -80,9 +81,10 @@ public class UploadRestfulApi {
         }
         InputStream is = null;
         OutputStream os = null;
+        File file = null;
         try{
             String inputPath = IoUtils.generateIOPath(userName, "streamis", fileName);
-            File file = new File(inputPath);
+            file = new File(inputPath);
             if(file.getParentFile().exists()){
                 FileUtils.deleteDirectory(file.getParentFile());
             }
@@ -97,6 +99,12 @@ public class UploadRestfulApi {
         } finally{
             IOUtils.closeQuietly(os);
             IOUtils.closeQuietly(is);
+            //Delete the temporary file
+            if (Objects.nonNull(file) && file.exists()){
+                if (!file.delete()){
+                    LOG.warn("Fail to delete the input job file, please examine the local system environment");
+                }
+            }
         }
     }
 }
