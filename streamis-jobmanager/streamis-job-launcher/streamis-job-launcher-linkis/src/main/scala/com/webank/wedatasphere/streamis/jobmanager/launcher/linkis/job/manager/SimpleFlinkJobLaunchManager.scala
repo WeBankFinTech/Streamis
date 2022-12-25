@@ -19,7 +19,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.SimpleFlinkJobLaunchManager.INSTANCE_NAME
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobClient, FlinkJobInfo, LinkisJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo}
 import org.apache.commons.lang3.StringEscapeUtils
 import org.apache.linkis.common.utils.{RetryHandler, Utils}
 import org.apache.linkis.computation.client.once.simple.{SimpleOnceJob, SubmittableSimpleOnceJob}
@@ -68,6 +68,7 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
       jobInfo.setStatus("failed")
       jobInfo.setCompletedMsg(message)
     }
+
     jobInfo.setResources(nodeInfo.get("nodeResource").asInstanceOf[util.Map[String, Object]])
     // Set job state info into
 //    Option(jobState).foreach(state => {
@@ -95,20 +96,6 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
     }
   }
 
-  /**
-   * Create job client
-   *
-   * @param onceJob once job
-   * @param jobInfo job info
-   * @return
-   */
-  override protected def createJobClient(onceJob: OnceJob, jobInfo: LinkisJobInfo): JobClient[LinkisJobInfo] = {
-    jobInfo match {
-      case flinkJobInfo: FlinkJobInfo =>
-        new FlinkJobClient(onceJob, flinkJobInfo, this.jobStateManager).asInstanceOf[JobClient[LinkisJobInfo]]
-      case _ => null
-    }
-  }
 
   /**
    * Init method

@@ -15,31 +15,34 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration.{VAR_FLINK_APP_NAME, VAR_FLINK_SAVEPOINT_PATH}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.LinkisJobInfo
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkJobLaunchErrorException, StreamisJobLaunchException}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.factory.AbstractJobClientFactory
 import org.apache.linkis.common.utils.{Logging, Utils}
 import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
 import org.apache.linkis.computation.client.utils.LabelKeyUtils
 import org.apache.linkis.protocol.utils.TaskUtils
 
+import scala.concurrent.TimeoutException
+import scala.concurrent.duration.Duration
 
 
 trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
-
-  protected var jobStateManager: JobStateManager = _
 
   protected def buildOnceJob(job: LaunchJob): SubmittableOnceJob
 
   protected def createSubmittedOnceJob(id: String, jobInfo: LinkisJobInfo): OnceJob
 
-
   protected def createJobInfo(onceJob: SubmittableOnceJob, job: LaunchJob, jobState: JobState): LinkisJobInfo
 
   protected def createJobInfo(jobInfo: String): LinkisJobInfo
+
+  protected var jobStateManager: JobStateManager = _
+
 
   /**
    * This method is used to launch a new job.
@@ -66,6 +69,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
       case engineConnType: String =>
         if(!engineConnType.toLowerCase.startsWith(FlinkJobLaunchManager.FLINK_ENGINE_CONN_TYPE))
           throw new FlinkJobLaunchErrorException(30401, s"Only ${FlinkJobLaunchManager.FLINK_ENGINE_CONN_TYPE} job is supported to be launched to Linkis, but $engineConnType is found.", null)
+      //todo add flink and spark
       case _ => throw new FlinkJobLaunchErrorException(30401, s"Not exists ${LabelKeyUtils.ENGINE_TYPE_LABEL_KEY}, StreamisJob cannot be submitted to Linkis successfully.", null)
     }
     Utils.tryCatch {
@@ -79,7 +83,20 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
           Utils.tryAndWarn(onceJob.kill())
           throw new FlinkJobLaunchErrorException(-1, "Fail to obtain launched job info", t)
       }
-      createJobClient(onceJob, jobInfo)
+      val client = AbstractJobClientFactory.getJobManager().createJobClient(job, onceJob, jobInfo, jobStateManager)
+      Utils.tryThrow {
+        Utils.waitUntil(() => {
+          client.getJobInfo.asInstanceOf[FlinkJobInfo].getApplicationId != null
+        }, Duration.Inf, 100, 10000)
+        client
+      } {
+        case t: TimeoutException => {
+          logger.warn("Timeout to launch job, cannot get applicationId after deployment")
+          // Downgraded to yarn call
+          //todo
+          null
+        }
+      }
     }{
       case e: FlinkJobLaunchErrorException => throw e
       case t: Throwable =>
@@ -97,8 +114,9 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
     connect(id, createJobInfo(jobInfo))
   }
 
+  // todo
   override def connect(id: String, jobInfo: LinkisJobInfo): JobClient[LinkisJobInfo] = {
-    createJobClient(createSubmittedOnceJob(id, jobInfo), jobInfo)
+    AbstractJobClientFactory.getJobManager().createJobClient(null, createSubmittedOnceJob(id, jobInfo), jobInfo, jobStateManager)
   }
 
 
@@ -119,13 +137,6 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
     }
   }
 
-  /**
-   * Create job client
-   * @param onceJob once job
-   * @param jobInfo job info
-   * @return
-   */
-  protected def createJobClient(onceJob: OnceJob, jobInfo: LinkisJobInfo): JobClient[LinkisJobInfo]
 }
 object FlinkJobLaunchManager {
   val FLINK_ENGINE_CONN_TYPE = "flink"
