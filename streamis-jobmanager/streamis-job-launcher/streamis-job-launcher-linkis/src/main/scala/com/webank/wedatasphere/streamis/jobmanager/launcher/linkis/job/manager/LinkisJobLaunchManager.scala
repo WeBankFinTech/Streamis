@@ -17,6 +17,7 @@ import scala.collection.JavaConverters._
 import scala.util.matching.Regex
 
 trait LinkisJobLaunchManager extends JobLaunchManager[LinkisJobInfo] with Logging{
+
   /**
    * This method is used to launch a new job.
    *
@@ -40,6 +41,11 @@ trait LinkisJobLaunchManager extends JobLaunchManager[LinkisJobInfo] with Loggin
         linkisVersion = version
       }
     }
+
+    // Set labels to launchJob
+    job.getLabels.put("engineType", "") //todo
+    job.getLabels.put("linkisVersion", linkisVersion)
+
      if (StringUtils.isNotBlank(linkisVersion)){
           val versionSplitter: Array[String] = linkisVersion.split("\\.")
           val major = Integer.valueOf(versionSplitter(0))

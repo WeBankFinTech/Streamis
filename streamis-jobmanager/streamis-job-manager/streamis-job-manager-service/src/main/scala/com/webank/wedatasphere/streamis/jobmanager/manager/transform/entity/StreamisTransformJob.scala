@@ -28,7 +28,10 @@ trait StreamisTransformJob {
 
   def getConfigMap: util.Map[String, Any]
 
+  @deprecated
   def getStreamisJobEngineConn: StreamisJobEngineConn
+
+  def getStreamisJobConnect: StreamisJobConnect
 
   def getStreamisTransformJobContent: StreamisTransformJobContent
 
