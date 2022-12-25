@@ -23,7 +23,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.StreamisTransformJobBuilder
-import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisJobEngineConnImpl, StreamisTransformJob, StreamisTransformJobContent, StreamisTransformJobImpl}
+import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisJobConnect, StreamisJobConnectImpl, StreamisJobEngineConnImpl, StreamisTransformJob, StreamisTransformJobContent, StreamisTransformJobImpl}
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.util
@@ -77,9 +77,30 @@ abstract class AbstractFlinkStreamisTransformJobBuilder extends AbstractStreamis
   override def build(streamJob: StreamJob): StreamisTransformJob = super.build(streamJob) match {
     case transformJob: StreamisTransformJobImpl =>
       val engineConn = new StreamisJobEngineConnImpl
-      engineConn.setEngineConnType("flink-" + flinkVersion)
-      engineConn.setRunType(getRunType(transformJob))
-      transformJob.setStreamisJobEngineConn(engineConn)
+//      engineConn.setEngineConnType("flink-" + flinkVersion)
+//      engineConn.setRunType(getRunType(transformJob))
+//      transformJob.setStreamisJobEngineConn(engineConn)
+      val streamisJobConnect = new StreamisJobConnectImpl
+      streamisJobConnect.setRunType(getRunType(transformJob))
+      streamisJobConnect.setRunEngineVersion(flinkVersion)
+      transformJob
+    case job => job
+  }
+}
+
+abstract class AbstractYarnStreamisTransformJobBuilder extends AbstractStreamisTransformJobBuilder{
+
+  //todo
+  private val yarnVersion = CommonVars("wds.streamis.yarn.submit.version", "").getValue
+
+  protected def getRunType(transformJob: StreamisTransformJob): RunType
+
+  override def build(streamJob: StreamJob): StreamisTransformJob = super.build(streamJob) match {
+    case transformJob: StreamisTransformJobImpl =>
+//      val engineConn = new StreamisJobEngineConnImpl
+//      engineConn.setEngineConnType("yarn-" + yarnVersion)
+//      engineConn.setRunType(getRunType(transformJob))
+//      transformJob.setStreamisJobEngineConn(engineConn)
       transformJob
     case job => job
   }
