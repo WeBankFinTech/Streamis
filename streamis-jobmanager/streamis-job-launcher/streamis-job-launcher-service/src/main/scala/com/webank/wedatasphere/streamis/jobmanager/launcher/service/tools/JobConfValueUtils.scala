@@ -116,6 +116,7 @@ object JobConfValueUtils{
         Option(definitionMap.get(key)) match {
           case Some(definition) => if (definition.getLevel == 0){
             configValues.addAll(deserializeInnerObj(key, value, null, definitionMap))
+            definition.setMark(true)
           }
           case _ =>
         }
@@ -142,6 +143,8 @@ object JobConfValueUtils{
                   result.addAll(childResult)
                 }
               }
+              // Mark it used
+              definition.setMark(true)
             case _ => //ignore
           }
 
@@ -150,6 +153,8 @@ object JobConfValueUtils{
             case Some(definition) =>
               if (StringUtils.isBlank(parentRef) || parentRef.equals(String.valueOf(definition.getParentRef))){
                 result.add(new JobConfValue(key, String.valueOf(other), definition.getId))
+                // Mark it used
+                definition.setMark(true)
               }
             case _ => result.add(new JobConfValue(key, String.valueOf(other), null))
           }

@@ -32,6 +32,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersi
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.*;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobInspectService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamTaskService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent;
@@ -42,6 +43,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.linkis.httpclient.dws.DWSHttpClient;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
+import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +67,9 @@ public class JobRestfulApi {
 
     @Autowired
     private StreamTaskService streamTaskService;
+
+    @Autowired
+    private StreamJobInspectService streamJobInspectService;
 
     @Resource
     private JobLaunchManager<? extends JobInfo> jobLaunchManager;
@@ -115,6 +120,40 @@ public class JobRestfulApi {
         return Message.ok().data("jobId", job.getJobId());
     }
 
+    @RequestMapping(path = "{jobId:\\w+}/versions", method = RequestMethod.GET)
+    public Message versions(HttpServletRequest req, @PathVariable("jobId")Integer jobId,
+                            @RequestParam(value = "pageNow", required = false) Integer pageNow,
+                            @RequestParam(value = "pageSize", required = false) Integer pageSize){
+        String userName = ModuleUserUtils.getOperationUser(req, "Query job version page");
+        if (Objects.isNull(pageNow)) {
+            pageNow = 1;
+        }
+        if (Objects.isNull(pageSize)){
+            pageSize = 20;
+        }
+        StreamJob streamJob = this.streamJobService.getJobById(jobId);
+        if (Objects.isNull(streamJob)){
+            return Message.error("Unknown StreamJob with id: " + jobId + "(无法找到对应的流任务)");
+        }
+        if (!streamJobService.hasPermission(streamJob, userName) &&
+                !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())){
+            return Message.error("Have no permission to view versions of StreamJob [" + jobId + "]");
+        }
+        Message result = Message.ok();
+        PageHelper.startPage(pageNow, pageSize);
+        try{
+            PageInfo<VersionDetailVo> pageInfo = this.streamJobService.getVersionList(jobId);
+            if (Objects.nonNull(pageInfo)){
+                result.data("versions", pageInfo.getList());
+                result.data("totalPage", pageInfo.getTotal());
+            }
+        } catch (Exception e){
+            result = Message.error("Fail to query job version page (查看任务版本列表失败), message: " + e.getMessage());
+        } finally{
+            PageHelper.clearPage();
+        }
+        return result;
+    }
     @RequestMapping(path = "/version", method = RequestMethod.GET)
     public Message version(HttpServletRequest req, @RequestParam(value = "jobId", required = false) Long jobId,
                            @RequestParam(value = "version", required = false) String version) throws JobException {
@@ -134,7 +173,38 @@ public class JobRestfulApi {
         return Message.ok().data("detail", versionDetailVO);
     }
 
-
+    /**
+     * Inspect the execution
+     * @param req request
+     * @return message
+     */
+    @RequestMapping(path = "/execute/inspect")
+    public Message executeInspect(HttpServletRequest req, @RequestParam(value = "jobId")Integer jobId){
+        String userName = ModuleUserUtils.getOperationUser(req, "Inspect of execution");
+        StreamJob streamJob = this.streamJobService.getJobById(jobId);
+        if (Objects.isNull(streamJob)){
+            return Message.error("Unknown StreamJob with id: " + jobId + "(无法找到对应的流任务)");
+        }
+        if (!streamJobService.hasPermission(streamJob, userName) &&
+                !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())){
+            return Message.error("Have no permission to inspect the StreamJob [" + jobId + "]");
+        }
+        Message result = Message.ok();
+        try {
+            List<JobInspectVo> inspectResult = this.streamJobInspectService
+                    .inspect(jobId, new JobInspectVo.Types[]{JobInspectVo.Types.VERSION, JobInspectVo.Types.SNAPSHOT});
+            List<String> inspections = inspectResult.stream().map(JobInspectVo::getInspectName)
+                    .collect(Collectors.toList());
+            result.data("inspections", inspections);
+            Message finalResult = result;
+            inspectResult.forEach(inspect -> {
+                finalResult.data(inspect.getInspectName(), inspect);
+            });
+        } catch (Exception e){
+            result = Message.error("Fail to inspect job of the execution(任务执行前检查失败), message: " + e.getMessage());
+        }
+        return result;
+    }
     @RequestMapping(path = "/execute", method = RequestMethod.POST)
     public Message executeJob(HttpServletRequest req, @RequestBody Map<String, Object> json) throws JobException {
         String userName = SecurityFilter.getLoginUsername(req);
