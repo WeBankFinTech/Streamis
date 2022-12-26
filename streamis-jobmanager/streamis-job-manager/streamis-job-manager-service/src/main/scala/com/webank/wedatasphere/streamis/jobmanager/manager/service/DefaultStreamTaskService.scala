@@ -18,14 +18,13 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 import java.util
 import java.util.concurrent.Future
 import java.util.{Calendar, function}
-
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobInfo, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.AbstractJobClient
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.{AbstractJobClient, EngineConnJobClient}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{Checkpoint, Savepoint}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.SpringContextHolder
@@ -43,6 +42,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.transform.exception.T
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.{StreamisTransformJobBuilder, TaskMetricsParser, Transform}
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.DateUtils
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils
+
 import javax.annotation.Resource
 import org.apache.commons.lang.StringUtils
 import org.apache.linkis.common.utils.{Logging, Utils}
@@ -400,7 +400,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       Utils.tryCatch {
         val jobClient = jobLaunchManager.connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
         jobClient match {
-          case client: AbstractJobClient =>
+          //todo other clients
+          case client: EngineConnJobClient =>
             requestPayload.setLogHistory(JobConf.isCompleted(streamTask.getStatus))
             val logIterator = client.fetchLogs(requestPayload)
             returnMap.put("logPath", logIterator.getLogPath)
