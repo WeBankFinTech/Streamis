@@ -2,7 +2,7 @@
 
 ## 1.组件介绍
 
-Streamis0.2.4 提供了 Streamis-JobManager 流式生产中心，其作用主要有：
+Streamis0.2.5-webank 提供了 Streamis-JobManager 流式生产中心，其作用主要有：
 
 1. 上传/更新流式应用
 2. 配置流式应用参数，如 Flink 的 Slot 数量、checkpoint相关参数等 
@@ -197,10 +197,10 @@ sudo nginx -s reload
 
 ## 5. 接入DSS
 
-如您想正常使用 Streamis0.2.4 前端，还需安装 DSS StreamisAppConn 插件，请参考: [StreamisAppConn 插件安装文档](development/StreamisAppConn安装文档.md)
+如您想正常使用 Streamis0.2.5-webank 前端，还需安装 DSS StreamisAppConn 插件，请参考: [StreamisAppConn 插件安装文档](development/StreamisAppConn安装文档.md)
 
 ## 6.Linkis Flink引擎编译安装
-如您想正常执行 Streamis0.2.4，还需安装 Linkis Flink 引擎，请参考: [Linkis Flink 引擎安装文档](https://linkis.apache.org/zh-CN/docs/1.1.2/engine_usage/flink/)
+如您想正常执行 Streamis0.2.5-webank，还需安装 Linkis Flink 引擎，请参考: [Linkis Flink 引擎安装文档](https://linkis.apache.org/zh-CN/docs/1.1.2/engine_usage/flink/)
 
 ## 7.Streamis组件升级文档/脚本
-如您想从Streamis较低版本升级到 Streamis0.2.4 ，请参考：[Streamis升级文档](development/Streamis升级文档.md)
+如您想从Streamis较低版本升级到 Streamis0.2.5-webank ，请参考：[Streamis升级文档](development/Streamis升级文档.md)
