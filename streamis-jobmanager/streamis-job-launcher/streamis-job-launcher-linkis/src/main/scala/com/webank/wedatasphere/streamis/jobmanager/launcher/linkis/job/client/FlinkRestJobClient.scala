@@ -12,7 +12,7 @@ import org.apache.linkis.computation.client.once.OnceJob
 /**
  * @author jefftlin
  */
-class FlinkRestJobClient (onceJob: OnceJob, override var jobInfo: FlinkJobInfo, stateManager: JobStateManager) extends AbstractRestJobClient(onceJob, jobInfo, stateManager){
+class FlinkRestJobClient (onceJob: OnceJob, jobInfo: FlinkJobInfo, stateManager: JobStateManager) extends AbstractRestJobClient(onceJob, jobInfo, stateManager){
 
 
   def getJobId(): String = null

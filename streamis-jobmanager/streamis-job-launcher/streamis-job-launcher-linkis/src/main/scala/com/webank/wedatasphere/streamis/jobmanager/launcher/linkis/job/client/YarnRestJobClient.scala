@@ -7,7 +7,7 @@ import org.apache.linkis.computation.client.once.OnceJob
 /**
  * @author jefftlin
  */
-abstract class YarnRestJobClient(onceJob: OnceJob, override var jobInfo: FlinkJobInfo, stateManager: JobStateManager) extends AbstractRestJobClient(onceJob, jobInfo, stateManager) {
+abstract class YarnRestJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateManager: JobStateManager) extends AbstractRestJobClient(onceJob, jobInfo, stateManager) {
 
 
 
