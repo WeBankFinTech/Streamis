@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-# Use to upgrade from 0.1.0 to 0.2.4
+# Use to upgrade from 0.1.0 to 0.2.5-webank
 
 if [ -f "~/.bashrc" ];then
   echo "Warning! user bashrc file does not exist."
