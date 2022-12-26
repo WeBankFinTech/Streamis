@@ -8,7 +8,7 @@ import org.apache.linkis.httpclient.dws.DWSHttpClient
 /**
  * @author jefftlin
  */
-abstract class LinkisEngineConnJobClient(onceJob: OnceJob, override var jobInfo: FlinkJobInfo, stateManager: JobStateManager) extends AbstractJobClient(onceJob, jobInfo, stateManager) {
+abstract class LinkisEngineConnJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateManager: JobStateManager) extends AbstractJobClient(onceJob, jobInfo, stateManager) {
 
   /**
    * The linkis client in onceJob
