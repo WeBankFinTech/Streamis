@@ -24,7 +24,7 @@ import java.util
 /**
  * @author jefftlin
  */
-class EngineConnJobClient(onceJob: OnceJob, override var jobInfo: FlinkJobInfo, stateManager: JobStateManager)
+class EngineConnJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateManager: JobStateManager)
   extends LinkisEngineConnJobClient(onceJob, jobInfo, stateManager) {
 
   /**
