@@ -28,7 +28,7 @@ import org.apache.linkis.computation.client.once.OnceJob
 /**
  * @author jefftlin
  */
-abstract class AbstractJobClient(onceJob: OnceJob, var jobInfo: FlinkJobInfo, stateManager: JobStateManager)
+abstract class AbstractJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateManager: JobStateManager)
   extends JobClient[FlinkJobInfo] with Logging{
 
   /**
