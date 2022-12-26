@@ -9,5 +9,5 @@ object ConnectType extends Enumeration {
   val ATTACH = Value("attach")
   val DETACH = Value("detach")
   val DETACH_STANDALONE = Value("detach_standalone")
-
 }
+
