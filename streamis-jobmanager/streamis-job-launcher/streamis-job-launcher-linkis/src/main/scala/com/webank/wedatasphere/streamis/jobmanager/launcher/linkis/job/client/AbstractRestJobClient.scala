@@ -8,7 +8,7 @@ import org.apache.linkis.computation.client.once.OnceJob
 /**
  * @author jefftlin
  */
-abstract class AbstractRestJobClient(onceJob: OnceJob, override var jobInfo: FlinkJobInfo, stateManager: JobStateManager) extends AbstractJobClient(onceJob, jobInfo, stateManager) {
+abstract class AbstractRestJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateManager: JobStateManager) extends AbstractJobClient(onceJob, jobInfo, stateManager) {
 
   /**
    * The http client in onceJob

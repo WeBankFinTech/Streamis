@@ -46,26 +46,28 @@ class AbstractJobClientFactory {
    */
   def getJobClientFactory(connectType: String): JobClientFactory = {
     connectType match {
-      case ConnectType.ATTACH =>
-        if (null == this.engineConnJobClientFactory){
-          this.synchronized{
-            if (null == this.engineConnJobClientFactory){
+      case "attach" => {
+        if (null == this.engineConnJobClientFactory) {
+          this.synchronized {
+            if (null == this.engineConnJobClientFactory) {
               this.engineConnJobClientFactory = new EngineConnJobClientFactory
-              this.engineConnJobClientFactory.init()
+              this.engineConnJobClientFactory.init ()
             }
           }
         }
         this.engineConnJobClientFactory
-      case ConnectType.DETACH || ConnectType.DETACH_STANDALONE =>
-        if (null == this.restJobClientFactory){
-          this.synchronized{
-            if (null == this.restJobClientFactory){
+      }
+      case "detach" => {
+        if (null == this.restJobClientFactory) {
+          this.synchronized {
+            if (null == this.restJobClientFactory) {
               this.restJobClientFactory = new RestJobClientFactory
               this.restJobClientFactory.init()
             }
           }
         }
         this.restJobClientFactory
+      }
       case _ =>
         throw new FlinkJobLaunchErrorException(-1, "ConnectType on flinkJobInfo should be attach、detach or detach_standalone", null)
     }
