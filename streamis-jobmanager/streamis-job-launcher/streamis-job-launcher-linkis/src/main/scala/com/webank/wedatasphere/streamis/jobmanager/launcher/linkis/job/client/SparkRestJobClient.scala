@@ -12,7 +12,7 @@ import org.apache.linkis.computation.client.once.OnceJob
 /**
  * @author jefftlin
  */
-class SparkRestJobClient(onceJob: OnceJob, override var jobInfo: FlinkJobInfo, stateManager: JobStateManager) extends YarnRestJobClient(onceJob, jobInfo, stateManager) {
+class SparkRestJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateManager: JobStateManager) extends YarnRestJobClient(onceJob, jobInfo, stateManager) {
 
   /**
    * Stop the job connected remote

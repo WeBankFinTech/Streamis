@@ -40,7 +40,6 @@ class EngineConnJobClientFactory extends JobClientFactory {
               val dwsClientField = classOf[LinkisManagerClientImpl].getDeclaredField("dwsHttpClient")
               dwsClientField.setAccessible(true)
               dwsClientField.get(client).asInstanceOf[DWSHttpClient]
-              client.
             case _ => null
           }
         }
