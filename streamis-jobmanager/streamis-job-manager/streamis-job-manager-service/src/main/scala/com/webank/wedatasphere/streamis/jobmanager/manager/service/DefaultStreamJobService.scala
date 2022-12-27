@@ -31,6 +31,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentP
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.{ReaderUtils, ZipHelper}
 import org.apache.commons.lang.StringUtils
+import org.apache.commons.lang3.ObjectUtils
 import org.apache.linkis.common.exception.ErrorException
 import org.apache.linkis.common.utils.Logging
 import org.springframework.beans.factory.annotation.Autowired
@@ -146,20 +147,21 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     }
     if(metaJsonInfo.getJobContent == null || metaJsonInfo.getJobContent.isEmpty)
       throw new JobCreateErrorException(30030, s"jobContent is needed.")
-    val streamJob = new StreamJob()
     val jobVersion = new StreamJobVersion()
+    val newStreamJob = new StreamJob()
     if (streamJob == null) {
+      logger.info("StreamJob is null, create a new streamJob")
       jobVersion.setVersion("v00001")
-      streamJob.setCreateBy(userName)
-      streamJob.setSubmitUser(userName)
-      streamJob.setJobType(metaJsonInfo.getJobType)
-      streamJob.setDescription(metaJsonInfo.getDescription)
-      streamJob.setCurrentVersion(jobVersion.getVersion)
-      streamJob.setCreateTime(new Date())
-      streamJob.setLabel(metaJsonInfo.getTags)
-      streamJob.setName(metaJsonInfo.getJobName)
-      streamJob.setProjectName(metaJsonInfo.getProjectName)
-      streamJobMapper.insertJob(streamJob)
+      newStreamJob.setCreateBy(userName)
+      newStreamJob.setSubmitUser(userName)
+      newStreamJob.setJobType(metaJsonInfo.getJobType)
+      newStreamJob.setDescription(metaJsonInfo.getDescription)
+      newStreamJob.setCurrentVersion(jobVersion.getVersion)
+      newStreamJob.setCreateTime(new Date())
+      newStreamJob.setLabel(metaJsonInfo.getTags)
+      newStreamJob.setName(metaJsonInfo.getJobName)
+      newStreamJob.setProjectName(metaJsonInfo.getProjectName)
+      streamJobMapper.insertJob(newStreamJob)
     } else {
       val jobVersions = streamJobMapper.getJobVersions(streamJob.getId)
       if (jobVersions == null || jobVersions.isEmpty) jobVersion.setVersion("v00001")
@@ -175,10 +177,13 @@ class DefaultStreamJobService extends StreamJobService with Logging {
       if (StringUtils.isNotEmpty(metaJsonInfo.getDescription))
         streamJob.setDescription(metaJsonInfo.getDescription)
       streamJobMapper.updateJob(streamJob)
-
     }
-    jobVersion.setJobId(streamJob.getId)
-    jobVersion.setJobContent(metaJsonInfo.getMetaInfo)
+    if (ObjectUtils.isNotEmpty(streamJob)) {
+      jobVersion.setJobId(streamJob.getId)
+    } else {
+      logger.info("newStreamJob is {}", newStreamJob)
+      jobVersion.setJobId(newStreamJob.getId)
+    }
     jobVersion.setCreateBy(userName)
     jobVersion.setCreateTime(new Date)
     jobVersion.setSource("upload by user.")
