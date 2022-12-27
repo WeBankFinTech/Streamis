@@ -122,4 +122,24 @@ public class StreamJob {
     public void setCurrentVersion(String currentVersion) {
         this.currentVersion = currentVersion;
     }
+
+    public StreamJob() {
+    }
+
+    @Override
+    public String toString() {
+        return "StreamJob{" +
+                "id=" + id +
+                ", workspaceName=" + workspaceName +
+                ", name='" + name + '\'' +
+                ", projectName='" + projectName + '\'' +
+                ", jobType='" + jobType + '\'' +
+                ", createBy='" + createBy + '\'' +
+                ", label='" + label + '\'' +
+                ", description='" + description + '\'' +
+                ", submitUser='" + submitUser + '\'' +
+                ", createTime=" + createTime +
+                ", currentVersion='" + currentVersion + '\'' +
+                '}';
+    }
 }
