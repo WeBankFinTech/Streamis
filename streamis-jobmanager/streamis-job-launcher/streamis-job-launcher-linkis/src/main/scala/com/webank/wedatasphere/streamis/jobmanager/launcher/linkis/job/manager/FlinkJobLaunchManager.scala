@@ -27,7 +27,6 @@ import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
 import org.apache.linkis.computation.client.utils.LabelKeyUtils
 import org.apache.linkis.protocol.utils.TaskUtils
 
-import java.util.concurrent.TimeUnit
 import scala.concurrent.TimeoutException
 import scala.concurrent.duration.Duration
 
@@ -84,7 +83,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
           Utils.tryAndWarn(onceJob.kill())
           throw new FlinkJobLaunchErrorException(-1, "Fail to obtain launched job info", t)
       }
-      val client = AbstractJobClientFactory.getJobManager().createJobClient(job, onceJob, jobInfo, getJobStateManager)
+      val client = AbstractJobClientFactory.getJobManager().createJobClient(onceJob, jobInfo, getJobStateManager)
 //      Utils.tryThrow {
 //        Utils.waitUntil(() => {
 //          client.getJobInfo.asInstanceOf[FlinkJobInfo].getApplicationId != null
@@ -118,7 +117,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
 
   // todo
   override def connect(id: String, jobInfo: LinkisJobInfo): JobClient[LinkisJobInfo] = {
-    AbstractJobClientFactory.getJobManager().createJobClient(null, createSubmittedOnceJob(id, jobInfo), jobInfo, getJobStateManager)
+    AbstractJobClientFactory.getJobManager().createJobClient(createSubmittedOnceJob(id, jobInfo), jobInfo, getJobStateManager)
   }
 
 
