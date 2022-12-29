@@ -29,10 +29,10 @@ class AbstractJobClientFactory {
     if (!validateClientInfo(jobInfo)) {
       throw new FlinkJobLaunchErrorException(-1, "Param: [engineType, engineVersion] is necessary in job information", null)
     }
-    val clientType = Option(jobInfo.getClientType).getOrElse(JobClientType.ATTACH)
+    val clientType = Option(jobInfo.getClientType).getOrElse(JobClientType.ATTACH.toString)
     jobInfo match {
       case flinkJobInfo: FlinkJobInfo =>
-        getJobClientFactory(clientType.toString)
+        getJobClientFactory(clientType)
           .createJobClient(job, onceJob, flinkJobInfo, jobStateManager)
           .asInstanceOf[JobClient[LinkisJobInfo]]
       case _ =>
