@@ -548,18 +548,25 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           Option(streamJobMapper.getLatestJobVersion(jobId)) match {
             case None => throw new JobTaskErrorException(-1, s"No versions can be found for job [id: ${job.getId}, name: ${job.getName}]")
             case Some(jobVersion) =>
-              info(s"Fetch the latest version: ${jobVersion.getVersion} for job [id: ${job.getId}, name: ${job.getName}]")
-              // Get the latest task by job version id
-              val latestTask = streamTaskMapper.getLatestByJobVersionId(jobVersion.getId, jobVersion.getVersion)
+              var noticeMessage = s"Fetch the latest version: ${jobVersion.getVersion} for job [id: ${job.getId}, name: ${job.getName}]"
+              if (!jobVersion.getVersion.equals(job.getCurrentVersion)){
+                noticeMessage += s", last version used for task is ${job.getCurrentVersion}"
+                // Update job current version
+                job.setCurrentVersion(jobVersion.getVersion)
+                streamJobMapper.updateJob(job)
+              }
+              logger.info(noticeMessage)
+              // Get the latest task by job id
+              val latestTask = streamTaskMapper.getLatestByJobId(jobId)
               if (null == latestTask || JobConf.isCompleted(latestTask.getStatus)){
-                 val streamTask = new StreamTask(jobId, jobVersion.getId, jobVersion.getVersion, creator)
-                 streamTask.setStatus(status)
-                 info(s"Produce a new StreamTask [jobId: $jobId, version: ${jobVersion.getVersion}, creator: $creator, status: ${streamTask.getStatus}]")
-                 streamTaskMapper.insertTask(streamTask)
-                 streamTask
+                val streamTask = new StreamTask(jobId, jobVersion.getId, jobVersion.getVersion, creator)
+                streamTask.setStatus(status)
+                logger.info(s"Produce a new StreamTask [jobId: $jobId, version: ${jobVersion.getVersion}, creator: $creator, status: ${streamTask.getStatus}]")
+                streamTaskMapper.insertTask(streamTask)
+                streamTask
               } else {
-                  throw new JobTaskErrorException(-1, s"Unable to create new task, StreamTask [${latestTask.getId}] is still " +
-                    s"not completed for job [id: ${job.getId}, name: ${job.getName}]")
+                throw new JobTaskErrorException(-1, s"Unable to create new task, StreamTask [${latestTask.getId}] is still " +
+                  s"not completed for job [id: ${job.getId}, name: ${job.getName}]")
               }
           }
      }
