@@ -686,7 +686,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     getStateInfo(this.streamTaskMapper.getTaskById(taskId))
   }
 
-  private def getStateInfo(streamTask: StreamTask): JobState = {
+  override def getStateInfo(streamTask: StreamTask): JobState = {
     Option(streamTask) match {
       case Some(task) =>
         if (StringUtils.isNotBlank(task.getLinkisJobId)) {
