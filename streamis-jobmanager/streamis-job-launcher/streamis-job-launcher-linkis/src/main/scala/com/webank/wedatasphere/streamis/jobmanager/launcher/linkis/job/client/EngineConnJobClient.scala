@@ -9,7 +9,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{Fl
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.FlinkJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.FlinkJobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.operator.{FlinkClientLogOperator, FlinkTriggerSavepointOperator, FlinkYarnLogOperator}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{Checkpoint, Savepoint}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{FlinkCheckpoint, FlinkSavepoint}
 import org.apache.commons.lang3.StringUtils
 import org.apache.linkis.common.utils.Utils
 import org.apache.linkis.computation.client.once.action.ECResourceInfoAction
@@ -41,7 +41,7 @@ class EngineConnJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateManager:
    * @param savePointDir savepoint directory
    * @param mode mode
    */
-  override def triggerSavepoint(savePointDir: String, mode: String): Savepoint = {
+  override def triggerSavepoint(savePointDir: String, mode: String): FlinkSavepoint = {
     Utils.tryCatch{
       onceJob.getOperator(FlinkTriggerSavepointOperator.OPERATOR_NAME) match{
         case savepointOperator: FlinkTriggerSavepointOperator => {
@@ -49,7 +49,7 @@ class EngineConnJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateManager:
           savepointOperator.setSavepointDir(savePointDir)
           savepointOperator.setMode(mode)
           Option(savepointOperator()) match {
-            case Some(savepoint: Savepoint) =>
+            case Some(savepoint: FlinkSavepoint) =>
               savepoint
             // TODO store into job Info
             case _ => throw new FlinkSavePointException(-1, "The response savepoint info is empty", null)
@@ -122,6 +122,6 @@ class EngineConnJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateManager:
    * Get check points
    * @return
    */
-  def getCheckpoints: Array[Checkpoint] = throw new FlinkJobStateFetchException(30401, "Not support method", null)
+  def getCheckpoints: Array[FlinkCheckpoint] = throw new FlinkJobStateFetchException(30401, "Not support method", null)
 
 }
