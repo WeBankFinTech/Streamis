@@ -25,7 +25,8 @@ class EngineConnJobClientFactory extends JobClientFactory {
    */
    override def createJobClient(job: LaunchJob, onceJob: OnceJob, flinkJobInfo: FlinkJobInfo, jobStateManager: JobStateManager): JobClient[LinkisJobInfo] = {
      val flinkEngineConnJobClient = new EngineConnJobClient(onceJob, flinkJobInfo, jobStateManager)
-     flinkEngineConnJobClient.setLinkisClient(this.linkisClient).asInstanceOf[JobClient[LinkisJobInfo]]
+     flinkEngineConnJobClient.setLinkisClient(this.linkisClient)
+     flinkEngineConnJobClient.asInstanceOf[JobClient[LinkisJobInfo]]
    }
 
   /**
