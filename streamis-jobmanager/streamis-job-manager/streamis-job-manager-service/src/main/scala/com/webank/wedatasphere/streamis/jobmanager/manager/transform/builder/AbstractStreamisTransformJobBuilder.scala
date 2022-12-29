@@ -77,9 +77,9 @@ abstract class AbstractFlinkStreamisTransformJobBuilder extends AbstractStreamis
   override def build(streamJob: StreamJob): StreamisTransformJob = super.build(streamJob) match {
     case transformJob: StreamisTransformJobImpl =>
       val engineConn = new StreamisJobEngineConnImpl
-//      engineConn.setEngineConnType("flink-" + flinkVersion)
+      engineConn.setEngineConnType("flink-" + flinkVersion)
 //      engineConn.setRunType(getRunType(transformJob))
-//      transformJob.setStreamisJobEngineConn(engineConn)
+      transformJob.setStreamisJobEngineConn(engineConn)
       val streamisJobConnect = new StreamisJobConnectImpl
       streamisJobConnect.setRunType(getRunType(transformJob))
       streamisJobConnect.setRunEngineVersion(flinkVersion)
