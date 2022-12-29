@@ -43,8 +43,8 @@ trait LinkisJobLaunchManager extends JobLaunchManager[LinkisJobInfo] with Loggin
     }
 
     // Set labels to launchJob
-    job.getLabels.put("engineType", "") //todo
-    job.getLabels.put("linkisVersion", linkisVersion)
+//    job.getLabels.put("engineType", "") //todo
+//    job.getLabels.put("linkisVersion", linkisVersion)
 
      if (StringUtils.isNotBlank(linkisVersion)){
           val versionSplitter: Array[String] = linkisVersion.split("\\.")
