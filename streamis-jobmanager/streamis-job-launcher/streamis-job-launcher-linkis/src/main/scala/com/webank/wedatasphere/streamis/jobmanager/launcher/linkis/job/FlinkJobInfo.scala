@@ -129,18 +129,28 @@ class FlinkJobInfo extends YarnJobInfo {
    */
   override def getEngineType: String = engineType
 
+  def setEngineType(engineType: String): Unit = {
+    this.engineType = engineType
+  }
   /**
    * Client type
    *
    * @return
    */
-  override def getClientType: JobClientType.Value = clientType
+  override def getClientType: String = clientType.toString
 
+  def setClientType(clientType: String): Unit = {
+    this.clientType = JobClientType.withName(clientType)
+  }
   /**
    * Engine version
    *
    * @return
    */
   override def getEngineVersion: String = "1.12.2"
+
+  def setEngineVersion(version: String): Unit = {
+
+  }
 }
 
