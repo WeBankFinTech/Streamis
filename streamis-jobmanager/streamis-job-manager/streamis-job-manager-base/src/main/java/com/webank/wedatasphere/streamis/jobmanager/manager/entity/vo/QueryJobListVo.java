@@ -29,6 +29,10 @@ public class QueryJobListVo {
     private Date createTime;
     private Integer status;
     private String version;
+    /**
+     * Last version
+     */
+    private String lastVersion;
     private Date lastVersionTime;
     /**
      * Number of version forward
@@ -146,5 +150,13 @@ public class QueryJobListVo {
 
     public void setVersionForwards(Integer versionForwards) {
         this.versionForwards = versionForwards;
+    }
+
+    public String getLastVersion() {
+        return lastVersion;
+    }
+
+    public void setLastVersion(String lastVersion) {
+        this.lastVersion = lastVersion;
     }
 }
