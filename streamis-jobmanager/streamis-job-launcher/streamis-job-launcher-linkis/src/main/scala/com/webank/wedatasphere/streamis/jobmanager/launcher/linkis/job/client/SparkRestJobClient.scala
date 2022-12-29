@@ -5,7 +5,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateIn
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkSavePointException
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.FlinkJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.operator.FlinkTriggerSavepointOperator
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.Savepoint
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.FlinkSavepoint
 import org.apache.linkis.common.utils.Utils
 import org.apache.linkis.computation.client.once.OnceJob
 
@@ -28,7 +28,7 @@ class SparkRestJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateManager: 
    * @param savePointDir savepoint directory
    * @param mode         mode
    */
-  override def triggerSavepoint(savePointDir: String, mode: String): Savepoint = {
+  override def triggerSavepoint(savePointDir: String, mode: String): FlinkSavepoint = {
     Utils.tryCatch{
       onceJob.getOperator(FlinkTriggerSavepointOperator.OPERATOR_NAME) match{
         case savepointOperator: FlinkTriggerSavepointOperator => {
@@ -36,7 +36,7 @@ class SparkRestJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateManager: 
           savepointOperator.setSavepointDir(savePointDir)
           savepointOperator.setMode(mode)
           Option(savepointOperator()) match {
-            case Some(savepoint: Savepoint) =>
+            case Some(savepoint: FlinkSavepoint) =>
               savepoint
             // TODO store into job Info
             case _ => throw new FlinkSavePointException(-1, "The response savepoint info is empty", null)
