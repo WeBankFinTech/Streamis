@@ -23,6 +23,7 @@ public class StreamTask {
     private Long id;
     private Long jobVersionId;
     private Long jobId;
+    private String jobType;
     private String submitUser;
     private Date startTime;
     private Date lastUpdateTime;
@@ -131,5 +132,13 @@ public class StreamTask {
 
     public void setLinkisJobInfo(String linkisJobInfo) {
         this.linkisJobInfo = linkisJobInfo;
+    }
+
+    public String getJobType() {
+        return jobType;
+    }
+
+    public void setJobType(String jobType) {
+        this.jobType = jobType;
     }
 }
