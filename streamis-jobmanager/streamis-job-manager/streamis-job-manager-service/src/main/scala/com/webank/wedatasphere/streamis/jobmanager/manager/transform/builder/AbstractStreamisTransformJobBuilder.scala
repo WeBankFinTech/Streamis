@@ -68,7 +68,7 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
   }
 }
 
-abstract class AbstractFlinkStreamisTransformJobBuilder extends AbstractStreamisTransformJobBuilder{
+abstract class AbstractDefaultStreamisTransformJobBuilder extends AbstractStreamisTransformJobBuilder{
 
   private val flinkVersion = CommonVars("wds.streamis.flink.submit.version", "1.12.2").getValue
 
@@ -84,24 +84,6 @@ abstract class AbstractFlinkStreamisTransformJobBuilder extends AbstractStreamis
       streamisJobConnect.setRunType(getRunType(transformJob))
       streamisJobConnect.setRunEngineVersion(flinkVersion)
       transformJob.setStreamisJobConnect(streamisJobConnect)
-      transformJob
-    case job => job
-  }
-}
-
-abstract class AbstractYarnStreamisTransformJobBuilder extends AbstractStreamisTransformJobBuilder{
-
-  //todo
-  private val yarnVersion = CommonVars("wds.streamis.yarn.submit.version", "").getValue
-
-  protected def getRunType(transformJob: StreamisTransformJob): RunType
-
-  override def build(streamJob: StreamJob): StreamisTransformJob = super.build(streamJob) match {
-    case transformJob: StreamisTransformJobImpl =>
-//      val engineConn = new StreamisJobEngineConnImpl
-//      engineConn.setEngineConnType("yarn-" + yarnVersion)
-//      engineConn.setRunType(getRunType(transformJob))
-//      transformJob.setStreamisJobEngineConn(engineConn)
       transformJob
     case job => job
   }
