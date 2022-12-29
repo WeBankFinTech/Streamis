@@ -3,7 +3,7 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.job.`type`
 /**
  * @author jefftlin
  * */
-object ConnectType extends Enumeration {
+object JobClientType extends Enumeration {
 
   type ConnectType = Value
   val ATTACH = Value("attach")

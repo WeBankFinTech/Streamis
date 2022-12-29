@@ -83,7 +83,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
           Utils.tryAndWarn(onceJob.kill())
           throw new FlinkJobLaunchErrorException(-1, "Fail to obtain launched job info", t)
       }
-      val client = AbstractJobClientFactory.getJobManager().createJobClient(job, onceJob, jobInfo, jobStateManager)
+      val client = AbstractJobClientFactory.getJobManager().createJobClient(job, onceJob, jobInfo, getJobStateManager)
       Utils.tryThrow {
         Utils.waitUntil(() => {
           client.getJobInfo.asInstanceOf[FlinkJobInfo].getApplicationId != null
@@ -116,7 +116,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
 
   // todo
   override def connect(id: String, jobInfo: LinkisJobInfo): JobClient[LinkisJobInfo] = {
-    AbstractJobClientFactory.getJobManager().createJobClient(null, createSubmittedOnceJob(id, jobInfo), jobInfo, jobStateManager)
+    AbstractJobClientFactory.getJobManager().createJobClient(null, createSubmittedOnceJob(id, jobInfo), jobInfo, getJobStateManager)
   }
 
 

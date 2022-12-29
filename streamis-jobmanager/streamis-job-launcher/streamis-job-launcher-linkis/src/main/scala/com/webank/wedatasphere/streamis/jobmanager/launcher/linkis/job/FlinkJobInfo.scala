@@ -15,9 +15,9 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.`type`.JobClientType
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState, JobStateInfo}
 import org.apache.linkis.common.ServiceInstance
-import org.apache.linkis.httpclient.dws.DWSHttpClient
 
 import java.util
 
@@ -38,6 +38,8 @@ class FlinkJobInfo extends YarnJobInfo {
   private var resources: java.util.Map[String, Object] = _
   private var completedMsg: String = _
   private var jobStates: Array[JobStateInfo] = _
+  private var engineType: String = "flink"
+  private var clientType: JobClientType.Value = JobClientType.ATTACH
 
   override def getApplicationId: String = applicationId
 
@@ -119,5 +121,26 @@ class FlinkJobInfo extends YarnJobInfo {
   override def setLogDirSuffix(logDirSuffix: String): Unit = {
     this.logDirSuffix = logDirSuffix
   }
+
+  /**
+   * Engine type
+   *
+   * @return
+   */
+  override def getEngineType: String = engineType
+
+  /**
+   * Client type
+   *
+   * @return
+   */
+  override def getClientType: JobClientType.Value = clientType
+
+  /**
+   * Engine version
+   *
+   * @return
+   */
+  override def getEngineVersion: String = "1.12.2"
 }
 
