@@ -83,20 +83,21 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
           Utils.tryAndWarn(onceJob.kill())
           throw new FlinkJobLaunchErrorException(-1, "Fail to obtain launched job info", t)
       }
-      val client = AbstractJobClientFactory.getJobManager().createJobClient(job, onceJob, jobInfo, getJobStateManager)
-      Utils.tryThrow {
-        Utils.waitUntil(() => {
-          client.getJobInfo.asInstanceOf[FlinkJobInfo].getApplicationId != null
-        }, Duration.Inf, 100, 10000)
-        client
-      } {
-        case t: TimeoutException => {
-          logger.warn("Timeout to launch job, cannot get applicationId after deployment")
-          // Downgraded to yarn call
-          //todo
-          null
-        }
-      }
+      val client = AbstractJobClientFactory.getJobManager().createJobClient(onceJob, jobInfo, getJobStateManager)
+//      Utils.tryThrow {
+//        Utils.waitUntil(() => {
+//          client.getJobInfo.asInstanceOf[FlinkJobInfo].getApplicationId != null
+//        }, Duration(10, TimeUnit.SECONDS), 100, 1000)
+//        client
+//      } {
+//        case t: TimeoutException => {
+//          logger.warn("Timeout to launch job, cannot get applicationId after deployment")
+//          // Downgraded to yarn call
+//          //todo
+//          null
+//        }
+//      }
+      client
     }{
       case e: FlinkJobLaunchErrorException => throw e
       case t: Throwable =>
@@ -116,7 +117,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
 
   // todo
   override def connect(id: String, jobInfo: LinkisJobInfo): JobClient[LinkisJobInfo] = {
-    AbstractJobClientFactory.getJobManager().createJobClient(null, createSubmittedOnceJob(id, jobInfo), jobInfo, getJobStateManager)
+    AbstractJobClientFactory.getJobManager().createJobClient(createSubmittedOnceJob(id, jobInfo), jobInfo, getJobStateManager)
   }
 
 
