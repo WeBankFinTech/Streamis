@@ -15,6 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.job
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.`type`.JobClientType
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState, JobStateInfo}
 
 /**
@@ -63,4 +64,20 @@ trait JobInfo {
    */
   def getJobStates: Array[JobStateInfo]
 
+  /**
+   * Engine type
+   * @return
+   */
+  def getEngineType: String
+
+  /**
+   * Engine version
+   * @return
+   */
+  def getEngineVersion: String
+  /**
+   *  Client type
+   * @return
+   */
+  def getClientType: JobClientType.Value
 }
