@@ -25,7 +25,7 @@ class RestJobClientFactory extends JobClientFactory {
    * @return
    */
   override
-  def createJobClient(job: LaunchJob, onceJob: OnceJob, flinkJobInfo: FlinkJobInfo, jobStateManager: JobStateManager): JobClient[LinkisJobInfo] = {
+  def createJobClient(onceJob: OnceJob, flinkJobInfo: FlinkJobInfo, jobStateManager: JobStateManager): JobClient[LinkisJobInfo] = {
 
     //todo create flink spark yarn client
 
