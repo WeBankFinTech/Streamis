@@ -1,10 +1,11 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.factory
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.`type`.ConnectType
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.`type`.JobClientType
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, JobInfo, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo}
+import org.apache.commons.lang3.StringUtils
 import org.apache.linkis.computation.client.once.OnceJob
 
 class AbstractJobClientFactory {
@@ -13,8 +14,8 @@ class AbstractJobClientFactory {
 
   var restJobClientFactory: RestJobClientFactory = _
 
-  def validateLaunchJob(job: LaunchJob): Boolean = {
-    job.getLabels.containsKey("engineType") && job.getLabels.containsKey("linkisVersion") && job.getLabels.containsKey("connectType")
+  def validateClientInfo(jobInfo: JobInfo): Boolean = {
+    StringUtils.isNotBlank(jobInfo.getEngineType) && StringUtils.isNotBlank(jobInfo.getEngineVersion)
   }
 
   /**
@@ -25,12 +26,13 @@ class AbstractJobClientFactory {
    * @return
    */
   def createJobClient(job: LaunchJob, onceJob: OnceJob, jobInfo: LinkisJobInfo, jobStateManager: JobStateManager): JobClient[LinkisJobInfo] = {
-    if (!validateLaunchJob(job)) {
-      throw new FlinkJobLaunchErrorException(-1, "LaunchJob should have labels with keys engineType, engineVersion and connectType", null)
+    if (!validateClientInfo(jobInfo)) {
+      throw new FlinkJobLaunchErrorException(-1, "Param: [engineType, engineVersion] is necessary in job information", null)
     }
+    val clientType = Option(jobInfo.getClientType).getOrElse(JobClientType.ATTACH)
     jobInfo match {
       case flinkJobInfo: FlinkJobInfo =>
-        getJobClientFactory(job.getLabels.get("connectType").toString)
+        getJobClientFactory(clientType.toString)
           .createJobClient(job, onceJob, flinkJobInfo, jobStateManager)
           .asInstanceOf[JobClient[LinkisJobInfo]]
       case _ =>
@@ -84,4 +86,5 @@ object AbstractJobClientFactory{
   def getJobManager(): AbstractJobClientFactory = {
     flinkJobClientFactory
   }
+
 }

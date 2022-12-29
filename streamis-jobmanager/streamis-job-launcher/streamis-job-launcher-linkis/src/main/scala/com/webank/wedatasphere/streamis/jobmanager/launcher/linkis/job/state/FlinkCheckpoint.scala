@@ -15,12 +15,12 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobGenericState, JobState}
 
 /**
  * Hold the check point information
  */
-class Checkpoint(location: String) extends GenericFlinkJobState(location) with JobState {
+class FlinkCheckpoint(location: String) extends JobGenericState(location) with JobState {
 
   /**
    * Record the sequence of checkpoint

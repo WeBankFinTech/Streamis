@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Locale;
 import java.util.Objects;
 
 @Configuration
@@ -37,7 +38,6 @@ public class JobLauncherAutoConfiguration {
 
     public static final String DEFAULT_JOB_LAUNCH_MANGER = SimpleFlinkJobLaunchManager$.MODULE$.INSTANCE_NAME();
 
-    @Bean(initMethod = "init", destroyMethod = "destroy")
     @ConditionalOnMissingBean(JobLaunchManager.class)
     @SuppressWarnings("unchecked")
     public JobLaunchManager<? extends JobInfo> defaultJobLaunchManager(){
@@ -53,12 +53,18 @@ public class JobLauncherAutoConfiguration {
                     if (Objects.nonNull(constructor)){
                         try {
                             JobLaunchManager<? extends JobInfo> launchManager = (JobLaunchManager<? extends JobInfo>) constructor.newInstance();
-                            JobLaunchManager$.MODULE$.registerJobManager(launchManager.getName(), launchManager);
+                            // Init launch Manager
+                            launchManager.init();
+                            JobLaunchManager$.MODULE$.registerJobManager(launchManager.getName().toLowerCase(Locale.ROOT), launchManager);
                         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
                             LOG.warn("Unable to instance the job launch manager: [{}]", clazz.getCanonicalName(), e);
                         }
                     }
                 });
+        // Add shutdown hook to destroy the launch manager
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            JobLaunchManager$.MODULE$.getJobManagers().forEach(JobLaunchManager::destroy);
+        }));
         // Use the flink job launch manager as default
         JobLaunchManager<? extends JobInfo> defaultManager = JobLaunchManager$.MODULE$.getJobManager(DEFAULT_JOB_LAUNCH_MANGER);
         if (Objects.isNull(defaultManager)){

@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.JobStateConf.CHECKPOINT_PATH_PATTERN;
@@ -31,13 +30,13 @@ import static com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.st
 /**
  * Checkpoint JobState Fetcher
  */
-public class CheckpointJobStateFetcher extends AbstractLinkisJobStateFetcher<Checkpoint> {
+public class FlinkCheckpointJobStateFetcher extends AbstractLinkisJobStateFetcher<FlinkCheckpoint> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CheckpointJobStateFetcher.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FlinkCheckpointJobStateFetcher.class);
 
     private static final Pattern PATH_PATTERN = Pattern.compile(CHECKPOINT_PATH_PATTERN.getValue());
 
-    public CheckpointJobStateFetcher(Class<Checkpoint> stateClass, JobStateManager jobStateManager) {
+    public FlinkCheckpointJobStateFetcher(Class<FlinkCheckpoint> stateClass, JobStateManager jobStateManager) {
         super(stateClass, jobStateManager);
     }
 
@@ -47,7 +46,7 @@ public class CheckpointJobStateFetcher extends AbstractLinkisJobStateFetcher<Che
     }
 
     @Override
-    public Checkpoint getState(JobStateFileInfo fileInfo) {
+    public FlinkCheckpoint getState(JobStateFileInfo fileInfo) {
         // TODO from linkis will lost the authority info
         URI location = URI.create(fileInfo.getPath());
         if (StringUtils.isBlank(location.getAuthority()) &&
@@ -59,7 +58,7 @@ public class CheckpointJobStateFetcher extends AbstractLinkisJobStateFetcher<Che
                 throw new StreamisJobLaunchException.Runtime(-1, "Fail to resolve checkpoint location, message: " + e.getMessage(), e);
             }
         }
-        Checkpoint checkpoint = new Checkpoint(location.toString());
+        FlinkCheckpoint checkpoint = new FlinkCheckpoint(location.toString());
         checkpoint.setMetadataInfo(fileInfo);
         checkpoint.setTimestamp(fileInfo.getModifytime());
         LOG.info("Checkpoint info is [path: {}, timestamp: {}]" ,checkpoint.getLocation(), checkpoint.getTimestamp());
