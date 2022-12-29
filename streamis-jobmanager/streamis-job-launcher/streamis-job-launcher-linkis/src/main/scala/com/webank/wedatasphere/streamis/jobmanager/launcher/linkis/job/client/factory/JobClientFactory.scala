@@ -7,7 +7,7 @@ import org.apache.linkis.computation.client.once.OnceJob
 
 trait JobClientFactory {
 
-  def createJobClient(job: LaunchJob, onceJob: OnceJob, flinkJobInfo: FlinkJobInfo, jobStateManager: JobStateManager): JobClient[LinkisJobInfo]
+  def createJobClient(onceJob: OnceJob, flinkJobInfo: FlinkJobInfo, jobStateManager: JobStateManager): JobClient[LinkisJobInfo]
 
   /**
    * Init the factory
