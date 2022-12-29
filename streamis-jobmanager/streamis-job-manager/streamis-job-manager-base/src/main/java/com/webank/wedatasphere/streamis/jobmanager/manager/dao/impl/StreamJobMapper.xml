@@ -99,8 +99,8 @@
 <!--    </select>-->
 
     <select id="getJobLists" resultMap="StreamJobVOMap">
-        select *, (SELECT COUNT(1) FROM linkis_stream_job_version v WHERE v.job_id = id AND v.id > version_id) AS version_forward,
-            (SELECT `version` FROM linkis_stream_job_version v WHERE v.job_id = id ORDER BY id LIMIT 1) AS last_version from (
+        select *, (SELECT COUNT(1) FROM linkis_stream_job_version v WHERE v.job_id = aa.id AND v.id > aa.version_id) AS version_forward,
+        (SELECT v.version FROM linkis_stream_job_version v WHERE v.job_id = aa.id ORDER BY v.id DESC LIMIT 1) AS last_version from (
         SELECT j.`id`,j.`project_name`, j.`workspace_name`,j.`name`,j.`create_by`, j.`create_time`,j.`label`,j.`description`,
         j.`job_type`, (CASE WHEN t.`status` IS NULL THEN 0 ELSE t.status END)  AS status, j.`current_version` AS version, v.id as version_id,
         v.create_time AS lastVersionTime, t.start_time, lsp.id AS project_id FROM
