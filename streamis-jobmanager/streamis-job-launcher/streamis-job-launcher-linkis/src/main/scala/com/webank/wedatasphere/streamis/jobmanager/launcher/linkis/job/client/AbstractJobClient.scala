@@ -20,7 +20,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.FlinkJobInfo
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.Savepoint
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.FlinkSavepoint
 import org.apache.linkis.common.utils.Logging
 import org.apache.linkis.computation.client.once.simple.SimpleOnceJob
 import org.apache.linkis.computation.client.once.OnceJob
@@ -86,8 +86,8 @@ abstract class AbstractJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateM
    *
    * @return
    */
-  def triggerSavepoint(): Savepoint = {
-    val savepointURI = this.stateManager.getJobStateDir(classOf[Savepoint], jobInfo.getName)
+  def triggerSavepoint(): FlinkSavepoint = {
+    val savepointURI = this.stateManager.getJobStateDir(classOf[FlinkSavepoint], jobInfo.getName)
     triggerSavepoint(savepointURI.toString, JobLauncherConfiguration.FLINK_TRIGGER_SAVEPOINT_MODE.getValue)
   }
 
@@ -97,5 +97,5 @@ abstract class AbstractJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateM
    * @param savePointDir savepoint directory
    * @param mode mode
    */
-  def triggerSavepoint(savePointDir: String, mode: String): Savepoint
+  def triggerSavepoint(savePointDir: String, mode: String): FlinkSavepoint
 }
