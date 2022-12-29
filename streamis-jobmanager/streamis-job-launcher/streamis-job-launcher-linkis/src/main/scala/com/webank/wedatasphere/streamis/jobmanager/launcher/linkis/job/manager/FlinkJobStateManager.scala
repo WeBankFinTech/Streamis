@@ -1,7 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{Checkpoint, CheckpointJobStateFetcher, Savepoint, SavepointJobStateFetcher}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{FlinkCheckpoint, FlinkCheckpointJobStateFetcher, FlinkSavepoint, FlinkSavepointJobStateFetcher}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.url.LinkisURLStreamHandlerFactory
 import org.apache.linkis.common.utils.{Logging, Utils}
 
@@ -17,8 +17,8 @@ class FlinkJobStateManager extends AbstractJobStateManager with Logging{
    * State type => root path
    */
   val stateRootPath: Map[String, String] = Map(
-    classOf[Savepoint].getCanonicalName -> JobLauncherConfiguration.FLINK_SAVEPOINT_PATH.getValue,
-    classOf[Checkpoint].getCanonicalName -> JobLauncherConfiguration.FLINK_CHECKPOINT_PATH.getValue
+    classOf[FlinkSavepoint].getCanonicalName -> JobLauncherConfiguration.FLINK_SAVEPOINT_PATH.getValue,
+    classOf[FlinkCheckpoint].getCanonicalName -> JobLauncherConfiguration.FLINK_CHECKPOINT_PATH.getValue
   )
 
   override def getJobStateRootPath[T <: JobState](clazz: Class[_], schema: String): String = {
@@ -31,8 +31,8 @@ class FlinkJobStateManager extends AbstractJobStateManager with Logging{
   override def init(): Unit = {
     info("Register the loader for JobState fetcher")
     // TODO register the fetcher
-    registerJobStateFetcher(classOf[Checkpoint], () => new CheckpointJobStateFetcher(classOf[Checkpoint], this))
-    registerJobStateFetcher(classOf[Savepoint], () => new SavepointJobStateFetcher(classOf[Savepoint], this))
+    registerJobStateFetcher(classOf[FlinkCheckpoint], () => new FlinkCheckpointJobStateFetcher(classOf[FlinkCheckpoint], this))
+    registerJobStateFetcher(classOf[FlinkSavepoint], () => new FlinkSavepointJobStateFetcher(classOf[FlinkSavepoint], this))
   }
 
   /**

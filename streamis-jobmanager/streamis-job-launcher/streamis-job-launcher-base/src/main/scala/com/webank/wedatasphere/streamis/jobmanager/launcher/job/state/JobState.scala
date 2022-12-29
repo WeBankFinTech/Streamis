@@ -30,4 +30,10 @@ trait JobState {
      * @return
      */
     def getTimestamp: Long
+
+    /**
+     * If need to restore
+     * @return
+     */
+    def isRestore: Boolean
 }

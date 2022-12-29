@@ -116,5 +116,5 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
 }
 object SimpleFlinkJobLaunchManager{
 
-  val INSTANCE_NAME = "simpleFlink";
+  val INSTANCE_NAME = "flink";
 }
