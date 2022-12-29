@@ -184,6 +184,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
       logger.info("newStreamJob is {}", newStreamJob)
       jobVersion.setJobId(newStreamJob.getId)
     }
+    jobVersion.setJobContent(metaJsonInfo.getMetaInfo)
     jobVersion.setCreateBy(userName)
     jobVersion.setCreateTime(new Date)
     jobVersion.setSource("upload by user.")
