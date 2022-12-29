@@ -83,6 +83,7 @@ abstract class AbstractFlinkStreamisTransformJobBuilder extends AbstractStreamis
       val streamisJobConnect = new StreamisJobConnectImpl
       streamisJobConnect.setRunType(getRunType(transformJob))
       streamisJobConnect.setRunEngineVersion(flinkVersion)
+      transformJob.setStreamisJobConnect(streamisJobConnect)
       transformJob
     case job => job
   }
