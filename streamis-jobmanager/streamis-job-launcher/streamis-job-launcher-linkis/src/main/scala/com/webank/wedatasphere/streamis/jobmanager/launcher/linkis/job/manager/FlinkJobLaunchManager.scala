@@ -27,6 +27,7 @@ import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
 import org.apache.linkis.computation.client.utils.LabelKeyUtils
 import org.apache.linkis.protocol.utils.TaskUtils
 
+import java.util.concurrent.TimeUnit
 import scala.concurrent.TimeoutException
 import scala.concurrent.duration.Duration
 
@@ -84,19 +85,20 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
           throw new FlinkJobLaunchErrorException(-1, "Fail to obtain launched job info", t)
       }
       val client = AbstractJobClientFactory.getJobManager().createJobClient(job, onceJob, jobInfo, getJobStateManager)
-      Utils.tryThrow {
-        Utils.waitUntil(() => {
-          client.getJobInfo.asInstanceOf[FlinkJobInfo].getApplicationId != null
-        }, Duration.Inf, 100, 10000)
-        client
-      } {
-        case t: TimeoutException => {
-          logger.warn("Timeout to launch job, cannot get applicationId after deployment")
-          // Downgraded to yarn call
-          //todo
-          null
-        }
-      }
+//      Utils.tryThrow {
+//        Utils.waitUntil(() => {
+//          client.getJobInfo.asInstanceOf[FlinkJobInfo].getApplicationId != null
+//        }, Duration(10, TimeUnit.SECONDS), 100, 1000)
+//        client
+//      } {
+//        case t: TimeoutException => {
+//          logger.warn("Timeout to launch job, cannot get applicationId after deployment")
+//          // Downgraded to yarn call
+//          //todo
+//          null
+//        }
+//      }
+      client
     }{
       case e: FlinkJobLaunchErrorException => throw e
       case t: Throwable =>

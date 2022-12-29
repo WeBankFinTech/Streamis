@@ -31,10 +31,10 @@ class LabelsStreamisCodeTransform extends Transform {
 
   override def transform(streamisTransformJob: StreamisTransformJob, job: LaunchJob): LaunchJob = {
     val labels = new util.HashMap[String, Any]
-//    labels.put(LabelKeyUtils.ENGINE_TYPE_LABEL_KEY, streamisTransformJob.getStreamisJobEngineConn.getEngineConnType)
+    labels.put(LabelKeyUtils.ENGINE_TYPE_LABEL_KEY, streamisTransformJob.getStreamisJobEngineConn.getEngineConnType)
     // set engine type and version, like: flink and 1.12.2
-    labels.put(LabelKeyUtils.ENGINE_TYPE_LABEL_KEY, streamisTransformJob.getStreamisJobConnect.getRunType)
-    labels.put("LabelKeyUtils.ENGINE_TYPE_VERSION_LABEL_KEY", streamisTransformJob.getStreamisJobConnect.getRunEngineVersion)
+//    labels.put(LabelKeyUtils.ENGINE_TYPE_LABEL_KEY, streamisTransformJob.getStreamisJobConnect.getRunType)
+//    labels.put("LabelKeyUtils.ENGINE_TYPE_VERSION_LABEL_KEY", streamisTransformJob.getStreamisJobConnect.getRunEngineVersion)
     labels.put(LabelKeyUtils.USER_CREATOR_LABEL_KEY, streamisTransformJob.getStreamJob.getSubmitUser + "-Streamis")
     // Add the tenant label default
     val defaultTenant: String = JobConf.STREAMIS_DEFAULT_TENANT.getValue
