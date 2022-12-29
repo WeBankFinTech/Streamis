@@ -30,13 +30,13 @@ import static com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.st
 /**
  * Savepoint JobState Fetcher
  */
-public class SavepointJobStateFetcher extends AbstractLinkisJobStateFetcher<Savepoint>{
+public class FlinkSavepointJobStateFetcher extends AbstractLinkisJobStateFetcher<FlinkSavepoint>{
 
-    private static final Logger LOG = LoggerFactory.getLogger(CheckpointJobStateFetcher.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FlinkCheckpointJobStateFetcher.class);
 
     private static final Pattern PATH_PATTERN = Pattern.compile(SAVEPOINT_PATH_PATTERN.getValue());
 
-    public SavepointJobStateFetcher(Class<Savepoint> stateClass, JobStateManager jobStateManager) {
+    public FlinkSavepointJobStateFetcher(Class<FlinkSavepoint> stateClass, JobStateManager jobStateManager) {
         super(stateClass, jobStateManager);
     }
 
@@ -46,7 +46,7 @@ public class SavepointJobStateFetcher extends AbstractLinkisJobStateFetcher<Save
     }
 
     @Override
-    protected Savepoint getState(JobStateFileInfo fileInfo) {
+    protected FlinkSavepoint getState(JobStateFileInfo fileInfo) {
         // TODO from linkis will lost the authority info
         URI location = URI.create(fileInfo.getPath());
         if (StringUtils.isBlank(location.getAuthority()) &&
@@ -58,7 +58,7 @@ public class SavepointJobStateFetcher extends AbstractLinkisJobStateFetcher<Save
                 throw new StreamisJobLaunchException.Runtime(-1, "Fail to resolve checkpoint location, message: " + e.getMessage(), e);
             }
         }
-        Savepoint savepoint = new Savepoint(location.toString());
+        FlinkSavepoint savepoint = new FlinkSavepoint(location.toString());
         savepoint.setMetadataInfo(fileInfo);
         savepoint.setTimestamp(fileInfo.getModifytime());
         LOG.info("Savepoint info is [path: {}, timestamp: {}]", savepoint.getLocation(), savepoint.getTimestamp());
