@@ -178,7 +178,7 @@ public class JobRestfulApi {
      * @param req request
      * @return message
      */
-    @RequestMapping(path = "/execute/inspect")
+    @RequestMapping(path = "/execute/inspect", method = RequestMethod.PUT)
     public Message executeInspect(HttpServletRequest req, @RequestParam(value = "jobId")Integer jobId){
         String userName = ModuleUserUtils.getOperationUser(req, "Inspect of execution");
         StreamJob streamJob = this.streamJobService.getJobById(jobId);
