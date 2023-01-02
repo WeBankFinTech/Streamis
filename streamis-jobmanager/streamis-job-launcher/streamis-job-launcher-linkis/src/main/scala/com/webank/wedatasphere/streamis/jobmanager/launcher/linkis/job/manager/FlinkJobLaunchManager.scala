@@ -84,19 +84,6 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
           throw new FlinkJobLaunchErrorException(-1, "Fail to obtain launched job info", t)
       }
       val client = AbstractJobClientFactory.getJobManager().createJobClient(onceJob, jobInfo, getJobStateManager)
-//      Utils.tryThrow {
-//        Utils.waitUntil(() => {
-//          client.getJobInfo.asInstanceOf[FlinkJobInfo].getApplicationId != null
-//        }, Duration(10, TimeUnit.SECONDS), 100, 1000)
-//        client
-//      } {
-//        case t: TimeoutException => {
-//          logger.warn("Timeout to launch job, cannot get applicationId after deployment")
-//          // Downgraded to yarn call
-//          //todo
-//          null
-//        }
-//      }
       client
     }{
       case e: FlinkJobLaunchErrorException => throw e
