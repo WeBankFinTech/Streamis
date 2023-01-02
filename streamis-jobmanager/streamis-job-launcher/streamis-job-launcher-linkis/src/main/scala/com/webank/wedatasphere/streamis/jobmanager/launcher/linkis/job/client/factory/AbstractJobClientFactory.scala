@@ -6,9 +6,14 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, JobI
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo}
 import org.apache.commons.lang3.StringUtils
+import org.apache.linkis.common.utils.{Logging, Utils}
 import org.apache.linkis.computation.client.once.OnceJob
 
-class AbstractJobClientFactory {
+import java.util.concurrent.TimeUnit
+import scala.concurrent.TimeoutException
+import scala.concurrent.duration.Duration
+
+class AbstractJobClientFactory extends Logging {
 
   var engineConnJobClientFactory: EngineConnJobClientFactory = _
 
@@ -32,9 +37,21 @@ class AbstractJobClientFactory {
     val clientType = Option(jobInfo.getClientType).getOrElse(JobClientType.ATTACH)
     jobInfo match {
       case flinkJobInfo: FlinkJobInfo =>
-        getJobClientFactory(clientType.toString)
+        val client = getJobClientFactory(clientType.toString)
           .createJobClient(onceJob, flinkJobInfo, jobStateManager)
           .asInstanceOf[JobClient[LinkisJobInfo]]
+        Utils.tryThrow {
+          Utils.waitUntil(() => {
+            client.getJobInfo.asInstanceOf[FlinkJobInfo].getApplicationId != null
+          }, Duration(10, TimeUnit.SECONDS), 100, 1000)
+          client
+        } {
+          case t: TimeoutException => {
+            logger.warn("Timeout to launch job, cannot get applicationId after deployment")
+            // Downgraded to yarn call
+            null
+          }
+        }
       case _ =>
         throw new FlinkJobLaunchErrorException(-1, "JobInfo should be a subclass of FlinkJobInfo", null)
     }
