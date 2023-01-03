@@ -267,6 +267,35 @@
         </div>
       </div>
     </Modal>
+    <Modal
+      v-model="startHintVisible"
+      :title="$t('message.streamis.startHint.title')"
+      width="800"
+    >
+      <div class="wrap">
+        <div style="fontWeight: bold;marginBottom: 16px">
+          {{$t('message.streamis.startHint.version')}}
+        </div>
+        <div style="marginBottom: 16px">
+          {{$t('message.streamis.startHint.version1')}} <span style="color: #3399ff">{{startHintData.latestVersion}}</span> {{$t('message.streamis.startHint.version2')}} <span style="fontWeight: bold">{{startHintData.jobName}}</span>？（{{$t('message.streamis.startHint.version1')}}：<span style="color: #FF7F00">{{startHintData.lastVersion}}）</span>
+        </div>
+        <div style="fontWeight: bold;marginBottom: 16px">
+          {{$t('message.streamis.startHint.snapshot')}}
+        </div>
+        <div>
+          {{$t('message.streamis.startHint.snapshot1')}} <span style="fontWeight: bold">{{startHintData.jobName}}</span>：<span style="color: #3399ff">{{startHintData.link}}</span>
+        </div>
+        <div class="batch" style="marginTop: 16px" v-if="isBatchRestart">
+          <Checkbox
+            v-model="startHintData.batchConfirm"
+            class="fn-default-load">{{$t('message.streamis.startHint.batchConfirm')}}</Checkbox>
+        </div>
+      </div>
+      <template slot="footer">
+        <Button type="primary" @click="confirmStarting">{{ $t('message.streamis.formItems.confirmBtn') }}</Button>
+        <Button type="primary" @click="startHintVisible = false">{{ $t('message.streamis.formItems.cancel') }}</Button>
+      </template>
+    </Modal>
   </div>
 </template>
 <script>
@@ -452,7 +481,17 @@ export default {
       modalVisible: false,
       versionDatas: [],
       uploadVisible: false,
-      projectName: this.$route.query.projectName
+      projectName: this.$route.query.projectName,
+      // 作业启动弹框
+      startHintVisible: false,
+      isBatchRestart: false,
+      startHintData: {
+        batchConfirm: true,
+        latestVersion: '',
+        lastVersion: '',
+        jobName: '',
+        link: '',
+      }
     }
   },
   mounted() {
@@ -549,43 +588,111 @@ export default {
           this.getJobList()
         })
     },
-    handleAction(data, index) {
+    handleAction(data, index, snapshot) {
+      if (snapshot === undefined) this.isBatchRestart = false
+      // 存下当前点击的data和index
+      this.tempData = data
+      this.tempIndex = index
+      this.tempSnapshot = snapshot
+
       // 先调用这个接口：PUT /api/rest_j/v1/streamis/streamJobManager/job/execute/inspect?jobId=作业ID
       // 如果接口正常返回，则解析data数据里的inspections检查项目列表，如果检查项不为空，则以列表的值作为键，查找同级的键值对，例如"version":{"now":{..}, "last":{..}"和"snapshot":{"path":"..."}，并显示弹窗
-      console.log(data)
-      const { id } = data
-      const second = { jobId: id }
+      const fake = {
+        inspections: ["version", "snapshot"],
+        version: {
+          now: {
+            createBy: "hduser03",
+            description: "xxx",
+            id: 310,
+            projectId: null,
+            projectName: "RCS_G1",
+            releaseTime: "2022-12-01 11:17:50",
+            version: "v00002"
+          },    
+          last: {
+            createBy: "hduser03",
+            description: "xxx",
+            id: 310,
+            projectId: null,
+            projectName: "RCS_G1",
+            releaseTime: "2022-12-01 11:17:50",
+            version: "v00001"
+          }          
+        },
+        snapshot: {
+          path: 'http://www.baidu.com'
+        }
+      }
 
+      const { id } = this.tempData
       const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
       api.fetch(checkPath, {}, 'put').then(res => {
         console.log('res: ', res);
+        if (Array.isArray(fake.inspections) && fake.inspections.length > 0) {
+          // 说明有数据，打开弹框
+          this.startHintVisible = true
+          this.startHintData.latestVersion = fake.version && fake.version.now && fake.version.now.version ? fake.version.now.version : '--'
+          this.startHintData.lastVersion = fake.version && fake.version.last && fake.version.last.version ? fake.version.last.version : '--'
+          this.startHintData.jobName = fake.version && fake.version.now && fake.version.now.projectName ? fake.version.now.projectName : '--'
+          this.startHintData.link = fake.snapshot && fake.snapshot.path ? fake.snapshot.path : '--'
+        } else {
+          if (!this.isBatchRestart) {
+            // 如果没数据，不打开弹框，直接启动
+            this.confirmStarting()
+          } else {
+            console.log('doRestart', this.tempSnapshot);
+            this.processModalVisable = true;
+            this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
+            this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
+            this.restartTasks(this.tempSnapshot);
+          }
+        }
       }).catch(err => {
         console.log('err: ', err);
+        this.$Message.error('作业启动检查失败 ' + err)
       })
+    },
+    confirmStarting() {
+      this.startHintVisible = false
+      if (!this.isBatchRestart) {
+        const { id } = this.tempData
+        const second = { jobId: id }
 
-      const path = 'streamis/streamJobManager/job/execute'
-      data.buttonLoading = true
-      this.choosedRowId = id
-      this.$set(this.tableDatas, index, data)
-      api
-        .fetch(path, second)
-        .then(res => {
-          console.log(res)
-          data.buttonLoading = false
-          this.choosedRowId = ''
-          if (res) {
-            this.$emit('refreshCoreIndex')
+        const path = 'streamis/streamJobManager/job/execute'
+        this.tempData.buttonLoading = true
+        this.choosedRowId = id
+        this.$set(this.tableDatas, this.tempIndex, this.tempData)
+        api
+          .fetch(path, second)
+          .then(res => {
+            console.log(res)
+            this.tempData.buttonLoading = false
+            this.choosedRowId = ''
+            if (res) {
+              this.$emit('refreshCoreIndex')
+              this.loading = false
+              this.getJobList()
+            }
+          })
+          .catch(e => {
+            console.log(e.message)
             this.loading = false
+            this.tempData.buttonLoading = false
+            this.choosedRowId = ''
             this.getJobList()
-          }
-        })
-        .catch(e => {
-          console.log(e.message)
-          this.loading = false
-          data.buttonLoading = false
-          this.choosedRowId = ''
-          this.getJobList()
-        })
+          })
+      } else {
+        if (this.startHintData.batchConfirm || this.tempIndex === this.selections.length - 1) {
+          // 批量确认，或者确认完最后一个了
+          console.log('doRestart', this.tempSnapshot);
+          this.processModalVisable = true;
+          this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
+          this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
+          this.restartTasks(this.tempSnapshot);
+        } else {
+          this.handleAction(this.selections[this.tempIndex + 1], this.tempIndex + 1, this.tempSnapshot)
+        }
+      }
     },
     handleConfig(data) {
       console.log(data)
@@ -720,11 +827,10 @@ export default {
       this.selections = selections;
     },
     async doRestart(snapshot) {
-      console.log('doRestart', snapshot);
-      this.processModalVisable = true;
-      this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
-      this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
-      this.restartTasks(snapshot);
+      this.isBatchRestart = true
+      this.startHintVisible = true
+
+      this.handleAction(this.selections[0], 0, snapshot)
     },
     async restartTasks(snapshot) {
       console.log('restartTasks');
@@ -846,7 +952,7 @@ export default {
   color: red;
   font-size: 12px;
   position: absolute;
-  right: 8px;
+  right: 12px;
   top: -4px;
 }
 .btn-wrap {
