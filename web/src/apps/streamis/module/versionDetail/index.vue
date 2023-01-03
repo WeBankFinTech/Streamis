@@ -70,6 +70,7 @@ export default {
   methods: {
     showDetail(rowData) {
       console.log(rowData)
+      console.log('rowData: ', rowData);
       this.$router.push({
         name: 'JobDetail',
         params: {
