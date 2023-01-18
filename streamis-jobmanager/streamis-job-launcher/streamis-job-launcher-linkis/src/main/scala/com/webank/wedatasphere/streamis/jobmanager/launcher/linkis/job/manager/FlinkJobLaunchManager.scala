@@ -52,8 +52,8 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
    * @return the job id.
    */
   override def innerLaunch(job: LaunchJob, jobState: JobState): JobClient[LinkisJobInfo] = {
-    // Transform the JobState into the params in LaunchJob
-    Option(jobState).foreach(state => {
+    // Transform the JobState(isRestore = true) into the params in LaunchJob
+    Option(jobState).filter(jobState => jobState.isRestore).foreach(state => {
       val startUpParams = TaskUtils.getStartupMap(job.getParams)
       startUpParams.putIfAbsent(VAR_FLINK_SAVEPOINT_PATH.getValue,
         state.getLocation.toString)
