@@ -178,8 +178,9 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     val inputPath = ZipHelper.unzip(inputZipPath)
     val readerUtils = new ReaderUtils
     val metaJsonInfo = readerUtils.parseJson(inputPath)
-    if (StringUtils.isNotBlank(projectName) && projectName!=metaJsonInfo.getProjectName) {
-      throw new JobCreateErrorException(30030, s"the projectName ${metaJsonInfo.getProjectName} is not matching the project ")
+    if (StringUtils.isNotBlank(projectName) && !projectName.equals(metaJsonInfo.getProjectName)) {
+      logger.warn(s"The projectName [${metaJsonInfo.getProjectName}] is not matching the project, will change it to [${projectName}] automatically")
+      metaJsonInfo.setProjectName(projectName)
     }
     validateUpload(metaJsonInfo.getProjectName, metaJsonInfo.getJobName, userName)
     //  生成StreamJob，根据StreamJob生成StreamJobVersion
