@@ -25,6 +25,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobInfo, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.{AbstractJobClient, EngineConnJobClient}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.SimpleFlinkJobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{FlinkCheckpoint, FlinkSavepoint}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.SpringContextHolder
@@ -189,23 +190,13 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       override def schedule(context: StreamisPhaseInSchedulerEvent.StateContext, jobInfo: queue.JobInfo): util.Map[String, AnyRef] = {
          val newTaskId = context.getVar("newTaskId")
          if (null != newTaskId){
-           var jobState: JobState = null
-           // Means to fetch the job state from task to restore
-           if (restore){
-             val restoreTaskId = taskId
-              // TODO fetch the job stage strategy
-              jobState = if (restoreTaskId <= 0){
-//                val earlierTasks = streamTaskMapper.getEarlierByJobId(finalJobId, 2)
-//                if (earlierTasks.isEmpty){
-//                  throw new JobExecuteErrorException(-1, "Cannot find the candidate task to search state")
-//                } else if (earlierTasks.size() < 2){
-//                  warn("First time to launch the StreamJob, ignore to restore JobState")
-//                  null
-//                } else {
-//                  getStateInfo(earlierTasks.get(1))
-//                }
-                  getStateInfo(streamTaskMapper.getLatestLaunchedById(jobId))
-              } else getStateInfo(restoreTaskId)
+           val restoreTaskId = taskId
+           val jobState: JobState = if (restoreTaskId <= 0){
+             getStateInfo(streamTaskMapper.getLatestLaunchedById(jobId))
+           } else getStateInfo(restoreTaskId)
+           if (null != jobState){
+             // If jobState.setToRestore(true) means that using the job state to restore stream task
+             jobState.setToRestore(restore)
            }
            // Launch entrance
            launch(newTaskId.asInstanceOf[Long], execUser, jobState)
@@ -690,33 +681,39 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     Option(streamTask) match {
       case Some(task) =>
         if (StringUtils.isNotBlank(task.getLinkisJobId)) {
-          info(s"Try to restore the JobState form taskId [${task.getId}], fetch the state information.")
-          // Connect to get the JobInfo
-          val jobLaunchManager = getJobLaunchManager(task)
-          val jobClient = jobLaunchManager.connect(task.getLinkisJobId, task.getLinkisJobInfo)
-          val jobInfo = jobClient.getJobInfo
-          // Get the JobStateManager
-          val jobStateManager = jobLaunchManager.getJobStateManager
           val stateList: util.List[JobState] = new util.ArrayList[JobState]()
-          // First to fetch the latest Savepoint information
-          Option(jobStateManager.getJobState[FlinkSavepoint](classOf[FlinkSavepoint], jobInfo)).foreach(savepoint => stateList.add(savepoint))
-          // Determinate if need the checkpoint information
-          this.streamJobConfMapper.getRawConfValue(task.getJobId, JobConfKeyConstants.CHECKPOINT_SWITCH.getValue) match {
-            case "ON" =>
-              // Then to fetch the latest Checkpoint information
-              Option(jobStateManager.getJobState[FlinkCheckpoint](classOf[FlinkCheckpoint], jobInfo)).foreach(checkpoint => stateList.add(checkpoint))
+          // Connect to get the JobInfo
+          getJobLaunchManager(task) match {
+            case jobLaunchManager: SimpleFlinkJobLaunchManager =>
+              // Only support to fetch state information for Flink stream task
+              logger.info(s"Try to fetch and choose the state information from [${task.getId}].")
+              val jobClient = jobLaunchManager.connect(task.getLinkisJobId, task.getLinkisJobInfo)
+              val jobInfo = jobClient.getJobInfo
+              // Get the JobStateManager
+              val jobStateManager = jobLaunchManager.getJobStateManager
+              // First to fetch the latest Savepoint information
+              Option(jobStateManager.getJobState[FlinkSavepoint](classOf[FlinkSavepoint], jobInfo)).foreach(savepoint => stateList.add(savepoint))
+              // Determinate if need the checkpoint information
+              this.streamJobConfMapper.getRawConfValue(task.getJobId, JobConfKeyConstants.CHECKPOINT_SWITCH.getValue) match {
+                case "ON" =>
+                  // Then to fetch the latest Checkpoint information
+                  Option(jobStateManager.getJobState[FlinkCheckpoint](classOf[FlinkCheckpoint], jobInfo)).foreach(checkpoint => stateList.add(checkpoint))
+                case _ =>
+              }
+            // Fetch the job state info in jobInfo at last
+            //          Option(jobInfo.getJobStates).foreach(states => states.foreach(state => {
+            //            val savepoint = new Savepoint(state.getLocation)
+            //            savepoint.setTimestamp(state.getTimestamp)
+            //            stateList.add(savepoint)
+            //          }))
             case _ =>
           }
-          // Fetch the job state info in jobInfo at last
-//          Option(jobInfo.getJobStates).foreach(states => states.foreach(state => {
-//            val savepoint = new Savepoint(state.getLocation)
-//            savepoint.setTimestamp(state.getTimestamp)
-//            stateList.add(savepoint)
-//          }))
           if (!stateList.isEmpty){
             // Choose the newest job state
             val finalState = stateList.asScala.maxBy(_.getTimestamp)
-            info(s"Final choose the JobState: [${finalState.getLocation}] to restore the StreamJob")
+            // For candidate, set the restore flag as false
+            finalState.setToRestore(false)
+            logger.info(s"Final choose the JobState: [${finalState.getLocation}] as the candidate for restoring the StreamJob")
             return finalState
           }
         } else {
