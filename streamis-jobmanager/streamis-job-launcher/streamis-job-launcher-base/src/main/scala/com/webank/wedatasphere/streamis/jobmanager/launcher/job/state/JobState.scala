@@ -36,4 +36,6 @@ trait JobState {
      * @return
      */
     def isRestore: Boolean
+
+    def setToRestore(restore: Boolean): Unit
 }
