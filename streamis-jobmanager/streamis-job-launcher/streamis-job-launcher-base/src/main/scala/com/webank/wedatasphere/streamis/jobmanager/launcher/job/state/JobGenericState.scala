@@ -54,9 +54,9 @@ class JobGenericState(location: String) extends JobState {
    * If need to restore
    * @return
    */
-  override def isRestore: Boolean = false
+  override def isRestore: Boolean = this.restore
 
-  def setToRestore(restore: Boolean): Unit = {
+  override def setToRestore(restore: Boolean): Unit = {
     this.restore = restore
   }
 }
