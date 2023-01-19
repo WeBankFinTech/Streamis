@@ -21,7 +21,7 @@ import java.util.{Calendar, function}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobGenericState, JobState}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobInfo, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.{AbstractJobClient, EngineConnJobClient}
@@ -700,12 +700,15 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
                   Option(jobStateManager.getJobState[FlinkCheckpoint](classOf[FlinkCheckpoint], jobInfo)).foreach(checkpoint => stateList.add(checkpoint))
                 case _ =>
               }
-            // Fetch the job state info in jobInfo at last
-            //          Option(jobInfo.getJobStates).foreach(states => states.foreach(state => {
-            //            val savepoint = new Savepoint(state.getLocation)
-            //            savepoint.setTimestamp(state.getTimestamp)
-            //            stateList.add(savepoint)
-            //          }))
+              // At last fetch the state information from storage
+              Option(jobInfo.getJobStates).foreach(stateInfoList => {
+                stateInfoList.foreach(stateInfo => {
+                  val jobState = new JobGenericState(stateInfo.getLocation)
+                  jobState.setToRestore(stateInfo.isRestore)
+                  jobState.setTimestamp(stateInfo.getTimestamp)
+                  stateList.add(jobState)
+                })
+              })
             case _ =>
           }
           if (!stateList.isEmpty){
