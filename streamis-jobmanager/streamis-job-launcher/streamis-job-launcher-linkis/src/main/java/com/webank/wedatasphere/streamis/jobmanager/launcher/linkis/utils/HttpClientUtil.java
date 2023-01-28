@@ -133,7 +133,7 @@ public class HttpClientUtil {
      * @param <T>
      * @throws Exception
      */
-    public <T>T executeAndGet(CloseableHttpClient httpClient, HttpRequestBase httpRequestBase, Class<T> type) throws Exception {
+    public static <T>T executeAndGet(CloseableHttpClient httpClient, HttpRequestBase httpRequestBase, Class<T> type) throws Exception {
         return httpClient.execute(httpRequestBase, httpResponse -> {
             if (httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 logger.info("Request path: " + httpRequestBase.getURI() + ", method：" + httpRequestBase.getMethod()
