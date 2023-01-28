@@ -1,16 +1,13 @@
 package com.webank.wedatasphere.streamis.jobmanager.entrypoint.config
 
-class SenderHttpConfig {
+import java.net.URL
 
-  /**
-   * Timeout of http request
-   */
-  private var requestTimeout : scala.concurrent.duration.Duration = _
+class SenderHttpConfig {
 
   /**
    * Request url
    */
-  private var url: String = _
+  private var url: URL = _
 
   /**
    * Request type
@@ -28,7 +25,23 @@ class SenderHttpConfig {
    */
   private var requestBody: String = _
 
+  /**
+   * Timeout of http request
+   */
+  private var requestTimeout : scala.concurrent.duration.Duration = _
 
+  def getUrl: URL = this.url
+  def setUrl(url: URL): Unit = this.url = url
 
+  def getRequestType: String = this.requestType
+  def setRequestType(requestType: String): Unit = this.requestType = requestType
 
+  def getHeaders: Map[String, String] = this.headers
+  def setHeaders(headers: Map[String, String]): Unit = this.headers = headers
+
+  def getRequestBody: String = this.requestBody
+  def setRequestBody(requestBody: String): Unit = this.requestBody = requestBody
+
+  def getRequestTimeout: scala.concurrent.duration.Duration = this.requestTimeout
+  def setRequestTimeout(requestTimeout: scala.concurrent.duration.Duration): Unit = this.requestTimeout = requestTimeout
 }
