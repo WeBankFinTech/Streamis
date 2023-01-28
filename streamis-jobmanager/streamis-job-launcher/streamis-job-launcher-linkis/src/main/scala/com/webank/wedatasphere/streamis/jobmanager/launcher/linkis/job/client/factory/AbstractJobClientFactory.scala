@@ -36,6 +36,7 @@ class AbstractJobClientFactory extends Logging {
     }
     val clientType = Option(jobInfo.getClientType).getOrElse(JobClientType.ATTACH)
     jobInfo match {
+      //todo engineconn jobInfo & flinkJobInfo & sparkJobInfo
       case flinkJobInfo: FlinkJobInfo =>
         val client = getJobClientFactory(clientType.toString)
           .createJobClient(onceJob, flinkJobInfo, jobStateManager)
