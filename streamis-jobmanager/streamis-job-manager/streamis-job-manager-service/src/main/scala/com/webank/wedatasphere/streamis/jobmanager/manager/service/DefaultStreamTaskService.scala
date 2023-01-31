@@ -33,7 +33,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf.FLINK_JOB_STATUS_FAILED
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo._
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobMode, StreamTask}
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.{JobErrorException, JobExecuteErrorException, JobFetchErrorException, JobPauseErrorException, JobTaskErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.FutureScheduler
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events.AbstractStreamisSchedulerEvent.StreamisEventInfo
@@ -730,11 +730,19 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   override def getJobDetailsVO(streamJob: StreamJob, version: String): JobDetailsVo = {
     val flinkJobInfo = getTaskJobInfo(streamJob.getId, version)
     val jobStateInfos = flinkJobInfo.getJobStates
+    val manageMode = Option(streamJobMapper.getJobVersionById(streamJob.getId, version)) match {
+      case Some(jobVersion) =>
+        Option(Utils.tryQuietly(StreamJobMode
+          .valueOf(jobVersion.getManageMode))).getOrElse(StreamJobMode.EngineConn)
+      case _ => StreamJobMode.EngineConn
+    }
+
     val metricsStr = if (JobConf.SUPPORTED_MANAGEMENT_JOB_TYPES.getValue.contains(streamJob.getJobType)) null
       else if(jobStateInfos == null || jobStateInfos.length == 0) null
       else jobStateInfos(0).getLocation
     taskMetricsParser.find(_.canParse(streamJob)).map(_.parse(metricsStr)).filter { jobDetailsVO =>
       jobDetailsVO.setLinkisJobInfo(flinkJobInfo)
+      jobDetailsVO.setManageMode(manageMode)
       true
     }.getOrElse(throw new JobFetchErrorException(30030, s"Cannot find a TaskMetricsParser to parse job details."))
   }

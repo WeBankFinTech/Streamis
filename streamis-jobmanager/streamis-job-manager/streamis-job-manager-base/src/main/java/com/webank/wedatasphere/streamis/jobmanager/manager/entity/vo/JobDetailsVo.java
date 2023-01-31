@@ -16,6 +16,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo;
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.LinkisJobInfo;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobMode;
 
 import java.util.List;
 
@@ -25,6 +26,10 @@ public class JobDetailsVo {
     private List<DataNumberDTO> dataNumber;
     private List<LoadConditionDTO> loadCondition;
     private LinkisJobInfo linkisJobInfo;
+    /**
+     * Manage mode
+     */
+    private StreamJobMode manageMode = StreamJobMode.EngineConn;
 
     public LinkisJobInfo getLinkisJobInfo() {
         return linkisJobInfo;
@@ -56,6 +61,14 @@ public class JobDetailsVo {
 
     public void setLoadCondition(List<LoadConditionDTO> loadCondition) {
         this.loadCondition = loadCondition;
+    }
+
+    public StreamJobMode getManageMode() {
+        return manageMode;
+    }
+
+    public void setManageMode(StreamJobMode manageMode) {
+        this.manageMode = manageMode;
     }
 
     public static class RealTimeTrafficDTO {
@@ -202,4 +215,5 @@ public class JobDetailsVo {
             this.totalMemory = totalMemory;
         }
     }
+
 }
