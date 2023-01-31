@@ -62,7 +62,6 @@ public class StreamJob {
         this.id = id;
     }
 
-
     public String getName() {
         return name;
     }
@@ -110,5 +109,4 @@ public class StreamJob {
     public void setJobType(String jobType) {
         this.jobType = jobType;
     }
-
 }
