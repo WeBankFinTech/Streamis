@@ -52,6 +52,7 @@
         <result column="job_id" property="jobId" jdbcType="BIGINT"/>
         <result column="version" property="version" jdbcType="VARCHAR"/>
         <result column="source" property="source" jdbcType="VARCHAR"/>
+        <result column="manage_mode" property="manageMode" jdbcType="VARCHAR"/>
         <result column="job_content" property="jobContent" jdbcType="LONGVARCHAR"/>
         <result column="comment" property="comment" jdbcType="VARCHAR"/>
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
@@ -76,7 +77,7 @@
     </sql>
 
     <sql id="JobVersion_Column">
-        `id`,`job_id`,`version`,`source`,`job_content`,`comment`,`create_time`,`create_by`
+        `id`,`job_id`,`version`,`source`, `manage_mode`, `job_content`,`comment`,`create_time`,`create_by`
     </sql>
 
     <select id="getJobById" resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
