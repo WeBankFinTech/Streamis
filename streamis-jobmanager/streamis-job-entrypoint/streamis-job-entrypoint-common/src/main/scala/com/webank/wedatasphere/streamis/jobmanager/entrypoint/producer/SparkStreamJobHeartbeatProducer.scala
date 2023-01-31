@@ -1,23 +1,22 @@
 package com.webank.wedatasphere.streamis.jobmanager.entrypoint.producer
 
-import com.webank.wedatasphere.streamis.jobmanager.entrypoint.config.{SparkStreamJobProducerConfig, StreamJobProducerConfig}
+import com.webank.wedatasphere.streamis.jobmanager.entrypoint.config.{SparkStreamJobProducerConfig, StreamJobConfig, StreamJobProducerConfig}
+import com.webank.wedatasphere.streamis.jobmanager.entrypoint.message.JobHeartbeatMessage
 
 import java.util
 
-class SparkStreamJobHeartbeatProducer extends StreamJobHeartbeatProducer{
+class SparkStreamJobHeartbeatProducer extends StreamJobHeartbeatProducer {
 
-  override def produce(configMap: java.util.Map[String, Object]): Unit = {
-    val fileName = configMap.get("fileName")
-    val sparkConfigMap = configMap.get("SparkConfigMap")
-
-    val sparkConfig = getProducerConfig("spark", configMap)
-
-
+  override def produce(streamJobConfig: StreamJobConfig): JobHeartbeatMessage = {
+    var message: JobHeartbeatMessage = new JobHeartbeatMessage
+    message.setStreamJobConfig(streamJobConfig)
+    message.setEngineType("spark")
+    //todo get engineVersion from env
+    message
   }
 
   override def getProducerConfig(engineType: String, configMap: util.Map[String, Object]): StreamJobProducerConfig = {
     var producerConfig = new SparkStreamJobProducerConfig
-
 
     producerConfig.asInstanceOf[StreamJobProducerConfig]
   }

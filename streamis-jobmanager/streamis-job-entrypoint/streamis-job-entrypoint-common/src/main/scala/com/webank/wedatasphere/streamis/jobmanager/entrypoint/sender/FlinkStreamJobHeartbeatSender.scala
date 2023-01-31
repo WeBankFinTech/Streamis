@@ -1,7 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.entrypoint.sender
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.utils.HttpClientUtil
-import org.apache.http.client.methods.HttpGet
+import com.webank.wedatasphere.streamis.jobmanager.entrypoint.message.JobHeartbeatMessage
 
 class FlinkStreamJobHeartbeatSender extends StreamJobHeartbeatSender {
 
@@ -10,17 +9,12 @@ class FlinkStreamJobHeartbeatSender extends StreamJobHeartbeatSender {
    *
    * @return
    */
-  override def send(): String = {
+  override def send(message: JobHeartbeatMessage): String = {
+    print("Current message is: ", message.getStreamJobConfig.toString)
+
     // Heartbeat request
-    val httpGet: HttpGet = HttpClientUtil.getGetRequest
-    httpGet.setURI(this.getSenderHttpConfig.getUrl.toURI)
-    val result = HttpClientUtil.executeAndGet(this.getHttpClient, httpGet, Class[String])
-
+    val result = this.getHttpClientUtil.executeAndGet(this.getHttpClient, this.getPostRequest, classOf[String])
     result
-
-    // Save jobInfo
-
-
 
   }
 
