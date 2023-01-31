@@ -78,18 +78,10 @@ public class HttpClientUtil {
     }
 
     /**
-     * Init
-     *
-     */
-//    private void initApacheHttpClient() {
-//
-//    }
-
-    /**
      * Destroy
      *
      */
-    private void destroyApacheHttpClient(CloseableHttpClient httpClient) {
+    public static void destroyApacheHttpClient(CloseableHttpClient httpClient) {
         try {
             if (httpClient != null) {
                 httpClient.close();
@@ -133,7 +125,7 @@ public class HttpClientUtil {
      * @param <T>
      * @throws Exception
      */
-    public static <T>T executeAndGet(CloseableHttpClient httpClient, HttpRequestBase httpRequestBase, Class<T> type) throws Exception {
+    public <T>T executeAndGet(CloseableHttpClient httpClient, HttpRequestBase httpRequestBase, Class<T> type) throws Exception {
         return httpClient.execute(httpRequestBase, httpResponse -> {
             if (httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 logger.info("Request path: " + httpRequestBase.getURI() + ", method：" + httpRequestBase.getMethod()
