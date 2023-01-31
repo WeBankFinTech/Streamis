@@ -1,17 +1,18 @@
 package com.webank.wedatasphere.streamis.jobmanager.entrypoint.producer
-import com.webank.wedatasphere.streamis.jobmanager.entrypoint.config.{FLinkStreamJobProducerConfig, StreamJobProducerConfig}
+
+import com.webank.wedatasphere.streamis.jobmanager.entrypoint.config.{FLinkStreamJobProducerConfig, StreamJobConfig, StreamJobProducerConfig}
+import com.webank.wedatasphere.streamis.jobmanager.entrypoint.message.JobHeartbeatMessage
 
 import java.util
 
 class FlinkStreamJobHeartbeatProducer extends StreamJobHeartbeatProducer {
 
-  override def produce(configMap: java.util.Map[String, Object]): Unit = {
-    val configuration = configMap.get("configuration")
-    val streamExecutionEnvironment = configMap.get("streamExecutionEnvironment")
-
-    val flinkConfig = getProducerConfig("flink", configMap)
-
-
+  override def produce(streamJobConfig: StreamJobConfig): JobHeartbeatMessage = {
+    var message: JobHeartbeatMessage = new JobHeartbeatMessage
+    message.setStreamJobConfig(streamJobConfig)
+    message.setEngineType("flink")
+    message.setEngineVersion("1.12.2")//todo get from env
+    message
   }
 
   override def getProducerConfig(engineType: String, configMap: util.Map[String, Object]): StreamJobProducerConfig = {
