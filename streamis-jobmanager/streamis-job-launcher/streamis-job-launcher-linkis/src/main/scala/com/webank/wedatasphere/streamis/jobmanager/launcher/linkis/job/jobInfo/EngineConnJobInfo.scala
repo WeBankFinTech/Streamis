@@ -1,45 +1,30 @@
-/*
- * Copyright 2021 WeBank
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job
+package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.`type`.JobClientType
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState, JobStateInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateInfo
 import org.apache.linkis.common.ServiceInstance
 
 import java.util
 
-
-class FlinkJobInfo extends YarnJobInfo {
-
+class EngineConnJobInfo extends YarnJobInfo with LinkisJobInfo {
   private var id: String = _
   private var name: String = _
-  private var ecmInstance: ServiceInstance = _
   private var user: String = _
-  private var savepoint: String = _
-  private var checkpoint: String = _
-  private var applicationId: String = _
-  private var applicationUrl: String = _
   private var status: String = _
   private var logPath: String = _
-  private var logDirSuffix: String = _
   private var resources: java.util.Map[String, Object] = _
   private var completedMsg: String = _
   private var jobStates: Array[JobStateInfo] = _
   private var engineType: String = "flink"
   private var clientType: JobClientType.Value = JobClientType.ATTACH
+
+  private var savepoint: String = _
+  private var checkpoint: String = _
+  private var applicationId: String = _
+  private var applicationUrl: String = _
+
+  private var ecmInstance: ServiceInstance = _
+  private var logDirSuffix: String = _
 
   override def getApplicationId: String = applicationId
 
@@ -153,4 +138,3 @@ class FlinkJobInfo extends YarnJobInfo {
 
   }
 }
-

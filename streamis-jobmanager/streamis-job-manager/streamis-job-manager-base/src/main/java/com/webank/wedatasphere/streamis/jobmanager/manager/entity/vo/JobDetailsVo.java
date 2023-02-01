@@ -15,7 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo;
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.LinkisJobInfo;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.LinkisJobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobMode;
 
 import java.util.List;
