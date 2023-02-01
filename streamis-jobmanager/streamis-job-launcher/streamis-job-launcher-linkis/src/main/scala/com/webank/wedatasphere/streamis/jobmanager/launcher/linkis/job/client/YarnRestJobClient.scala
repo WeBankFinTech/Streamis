@@ -1,13 +1,14 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.FlinkJobInfo
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.FlinkRestJobInfo
 import org.apache.linkis.computation.client.once.OnceJob
 
 /**
  * @author jefftlin
  */
-abstract class YarnRestJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateManager: JobStateManager) extends AbstractRestJobClient(onceJob, jobInfo, stateManager) {
+abstract class YarnRestJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManager: JobStateManager) extends AbstractRestJobClient(onceJob, jobInfo, stateManager) {
 
 
 
