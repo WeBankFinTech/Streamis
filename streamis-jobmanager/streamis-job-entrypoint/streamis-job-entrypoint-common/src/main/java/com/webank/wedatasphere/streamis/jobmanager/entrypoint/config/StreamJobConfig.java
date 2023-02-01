@@ -2,6 +2,8 @@ package com.webank.wedatasphere.streamis.jobmanager.entrypoint.config;
 
 public class StreamJobConfig {
 
+    private String streamisServerUrl;
+
     private String applicationId;
 
     private String resourceManagerAddress;
@@ -11,6 +13,14 @@ public class StreamJobConfig {
     private String jobName;
 
     private String projectName;
+
+    public String getStreamisServerUrl() {
+        return streamisServerUrl;
+    }
+
+    public void setStreamisServerUrl(String streamisServerUrl) {
+        this.streamisServerUrl = streamisServerUrl;
+    }
 
     public String getApplicationId() {
         return applicationId;
@@ -54,13 +64,14 @@ public class StreamJobConfig {
 
     @Override
     public String toString() {
-        return "{" +
-                "applicationId='" + applicationId + '\'' +
+        return "StreamJobConfig{" +
+                "streamisServerUrl='" + streamisServerUrl + '\'' +
+                ", applicationId='" + applicationId + '\'' +
                 ", resourceManagerAddress='" + resourceManagerAddress + '\'' +
                 ", jobStatus='" + jobStatus + '\'' +
                 ", jobName='" + jobName + '\'' +
                 ", projectName='" + projectName + '\'' +
-                "}";
+                '}';
     }
 }
 
