@@ -4,7 +4,6 @@ import com.webank.wedatasphere.streamis.jobmanager.entrypoint.config.FlinkStream
 import com.webank.wedatasphere.streamis.jobmanager.entrypoint.config.StreamJobConfig;
 import com.webank.wedatasphere.streamis.jobmanager.entrypoint.exception.JobHeartbeatException;
 import com.webank.wedatasphere.streamis.jobmanager.entrypoint.message.JobHeartbeatMessage;
-import com.webank.wedatasphere.streamis.jobmanager.entrypoint.producer.FlinkStreamJobHeartbeatProducer;
 import com.webank.wedatasphere.streamis.jobmanager.entrypoint.producer.StreamJobHeartbeatProducer;
 import com.webank.wedatasphere.streamis.jobmanager.entrypoint.sender.FlinkStreamJobHeartbeatSender;
 import com.webank.wedatasphere.streamis.jobmanager.entrypoint.service.StreamJobHeartbeatService;
@@ -26,22 +25,19 @@ public class FlinkStreamJobEntrypoint extends StreamJobEntrypoint {
      * @return
      */
     @Override
-    public void register(StreamJobConfig config) throws JobHeartbeatException {
+    public void register(StreamJobConfig config, StreamJobHeartbeatProducer producer) throws JobHeartbeatException {
         if (!this.checkConfig(config)) {
             throw new JobHeartbeatException(-1, "Incorrect configuration parameters");
         }
 
-        // Create producer
-        StreamJobHeartbeatProducer producer = new FlinkStreamJobHeartbeatProducer();
+        // Produce message
         JobHeartbeatMessage message = producer.produce(config);
 
         // Create sender and init
         FlinkStreamJobHeartbeatSender sender = new FlinkStreamJobHeartbeatSender();
 
-        CloseableHttpClient httpClient = HttpClientUtil.createHttpClientUtil("flink");
+        CloseableHttpClient httpClient = HttpClientUtil.createHttpClientUtil(null);
 
-        //todo uri base on streamis
-        String uri = "http://127.0.0.1:9091/streamis/jobheartbeat/send";
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("message", message);
         StringEntity entity = null;
@@ -52,7 +48,7 @@ public class FlinkStreamJobEntrypoint extends StreamJobEntrypoint {
         }
         entity.setContentEncoding("UTF-8");
         entity.setContentType("application/json");
-        HttpPost postRequest = HttpClientUtil.getPostRequest(uri, entity);
+        HttpPost postRequest = HttpClientUtil.getPostRequest(config.getStreamisServerUrl(), entity);
 
         sender.init(httpClient, postRequest);
 

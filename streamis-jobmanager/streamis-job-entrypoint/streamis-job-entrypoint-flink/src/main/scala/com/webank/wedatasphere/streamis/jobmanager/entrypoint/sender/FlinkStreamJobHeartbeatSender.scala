@@ -10,8 +10,6 @@ class FlinkStreamJobHeartbeatSender extends StreamJobHeartbeatSender {
    * @return
    */
   override def send(message: JobHeartbeatMessage): String = {
-    print("Current message is: ", message.getStreamJobConfig.toString)
-
     // Heartbeat request
     val result = this.getHttpClientUtil.executeAndGet(this.getHttpClient, this.getPostRequest, classOf[String])
     result
