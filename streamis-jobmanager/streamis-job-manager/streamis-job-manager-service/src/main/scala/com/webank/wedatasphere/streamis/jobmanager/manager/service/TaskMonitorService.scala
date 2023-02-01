@@ -25,7 +25,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConst
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.{FlinkRestJobInfo, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.{AlertLevel, Alerter}
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
@@ -119,7 +119,7 @@ class TaskMonitorService extends Logging {
           warn(s"StreamJob-${job.getName} is failed, please be noticed.")
           var extraMessage = ""
           Option(jobInfo) match {
-            case Some(flinkJobInfo: FlinkJobInfo) =>
+            case Some(flinkJobInfo: FlinkRestJobInfo) =>
               extraMessage = s",${flinkJobInfo.getApplicationId}"
             case _ =>
           }
