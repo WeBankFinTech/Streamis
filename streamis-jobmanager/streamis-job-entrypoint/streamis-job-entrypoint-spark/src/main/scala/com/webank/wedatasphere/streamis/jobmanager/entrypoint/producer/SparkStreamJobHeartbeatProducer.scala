@@ -1,9 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.entrypoint.producer
 
-import com.webank.wedatasphere.streamis.jobmanager.entrypoint.config.{SparkStreamJobProducerConfig, StreamJobConfig, StreamJobProducerConfig}
+import com.webank.wedatasphere.streamis.jobmanager.entrypoint.config.StreamJobConfig
 import com.webank.wedatasphere.streamis.jobmanager.entrypoint.message.JobHeartbeatMessage
-
-import java.util
 
 class SparkStreamJobHeartbeatProducer extends StreamJobHeartbeatProducer {
 
@@ -13,11 +11,5 @@ class SparkStreamJobHeartbeatProducer extends StreamJobHeartbeatProducer {
     message.setEngineType("spark")
     //todo get engineVersion from env
     message
-  }
-
-  override def getProducerConfig(engineType: String, configMap: util.Map[String, Object]): StreamJobProducerConfig = {
-    var producerConfig = new SparkStreamJobProducerConfig
-
-    producerConfig.asInstanceOf[StreamJobProducerConfig]
   }
 }
