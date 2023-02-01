@@ -19,16 +19,13 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration.{VAR_FLINK_APP_NAME, VAR_FLINK_SAVEPOINT_PATH}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkJobLaunchErrorException, StreamisJobLaunchException}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.LinkisJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.factory.AbstractJobClientFactory
 import org.apache.linkis.common.utils.{Logging, Utils}
 import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
 import org.apache.linkis.computation.client.utils.LabelKeyUtils
 import org.apache.linkis.protocol.utils.TaskUtils
-
-import scala.concurrent.TimeoutException
-import scala.concurrent.duration.Duration
 
 
 trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
