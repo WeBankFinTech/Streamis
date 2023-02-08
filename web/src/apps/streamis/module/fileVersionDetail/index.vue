@@ -100,24 +100,22 @@ export default {
   },
   methods: {
     handlePageChange(page) {
-      console.log(page)
       this.pageData.pageNow = page
       this.$emit('refreshVersionDatas', this.pageData)
     },
     handlePageSizeChange(pageSize) {
-      console.log(pageSize)
       this.pageData.pageSize = pageSize
       this.pageData.pageNow = 1
       this.$emit('refreshVersionDatas', this.pageData)
     },
-    showVersionInfo(row) {
-      console.log(row)
+    showVersionInfo() {
+      // console.log(row)
     },
-    showDetail(row) {
-      console.log(row)
+    showDetail() {
+      // console.log(row)
     },
-    showLogs(row) {
-      console.log(row)
+    showLogs() {
+      // console.log(row)
     },
     ok() {
       this.$Message.info('Clicked ok')
@@ -132,13 +130,12 @@ export default {
             rowData.id,
           'get'
         )
-        .then(res => {
-          console.log(res)
+        .then(() => {
           this.handlePageSizeChange(this.pageData.pageSize)
           this.$emit('delelteSuccess')
         })
-        .catch(e => {
-          console.log(e)
+        .catch(err => {
+          console.log(err)
         })
     }
   }

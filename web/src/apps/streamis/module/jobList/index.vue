@@ -9,7 +9,7 @@
               <Button
                 type="primary"
                 :disabled="!selections.length"
-                @click="doRestart(true)"
+                @click="clickBatchRestart(true)"
                 style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.snapshotRestart')}}
@@ -19,7 +19,7 @@
               <Button
                 type="primary"
                 :disabled="!selections.length"
-                @click="doRestart(false)"
+                @click="clickBatchRestart(false)"
                 style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.directRestart')}}
@@ -277,7 +277,7 @@
           {{$t('message.streamis.startHint.version')}}
         </div>
         <div style="marginBottom: 16px">
-          {{$t('message.streamis.startHint.version1')}} <span style="color: #3399ff">{{startHintData.latestVersion}}</span> {{$t('message.streamis.startHint.version2')}} <span style="fontWeight: bold">{{startHintData.jobName}}</span>？（{{$t('message.streamis.startHint.version1')}}：<span style="color: #FF7F00">{{startHintData.lastVersion}}）</span>
+          {{$t('message.streamis.startHint.version1')}} <span style="color: #3399ff">{{startHintData.latestVersion}}</span> {{$t('message.streamis.startHint.version2')}} <span style="fontWeight: bold">{{startHintData.jobName}}</span>？（{{$t('message.streamis.startHint.version3')}}：<span style="color: #FF7F00">{{startHintData.lastVersion}}）</span>
         </div>
         <div style="fontWeight: bold;marginBottom: 16px">
           {{$t('message.streamis.startHint.snapshot')}}
@@ -498,6 +498,7 @@ export default {
     this.getJobList()
   },
   methods: {
+    // 获取任务列表
     getJobList() {
       if (this.loading) {
         return
@@ -527,7 +528,6 @@ export default {
       api
         .fetch('streamis/streamJobManager/job/list?' + queries, 'get')
         .then(res => {
-          console.log(res)
           if (res) {
             const datas = res.tasks || []
             datas.forEach(item => {
@@ -545,13 +545,12 @@ export default {
             this.loading = false
           }
         })
-        .catch(e => {
-          console.log(e)
+        .catch((err) => {
+          console.log('getJobList err: ', err);
           this.loading = false
         })
     },
     handleNameQuery() {
-      console.log(this.query.jobName)
     },
     handleQuery() {
       this.pageData.current = 1
@@ -561,7 +560,6 @@ export default {
       this.uploadVisible = true
     },
     handleStop(data, type, index) {
-      console.log(data, type)
       const { id } = data
       const path = 'streamis/streamJobManager/job/stop'
       data.buttonLoading = true
@@ -571,7 +569,6 @@ export default {
       api
         .fetch(path, { jobId: id, snapshot: !!type }, 'get')
         .then(res => {
-          console.log(res)
           data.buttonLoading = false
           this.choosedRowId = ''
           if (res) {
@@ -580,81 +577,94 @@ export default {
             this.getJobList()
           }
         })
-        .catch(e => {
-          console.log(e.message)
+        .catch(() => {
           this.loading = false
           data.buttonLoading = false
           this.choosedRowId = ''
           this.getJobList()
         })
     },
-    handleAction(data, index, snapshot) {
-      if (snapshot === undefined) this.isBatchRestart = false
+
+
+    // 1、快照重启和直接重启只有调用接口时snapshot参数的区别
+    // 2、快照重启、直接重启、启动 都需要调用inspect接口
+    // 3、快照重启、直接重启调用inspect接口前，需要pause接口返回成功
+    // 4、启动 不需要调用pause接口
+    // 5、快照重启、直接重启，勾选了“确认所有批量作业”并确认，或者一直确认到最后一步(中间的某一步，如果inspections返回为[]，则表示这一步不需要确认，直接跳到下一步)，调用bulk/execution接口
+    // 6、启动 如果inspect接口返回的inspections为[]，则直接调用execute接口
+
+    // 快照重启和直接重启
+    async clickBatchRestart(snapshot) {
+      // 3、快照重启、直接重启调用inspect接口前，需要pause接口返回成功
+      const bulk_sbj = this.selections.map(item => +item.id);
+      const pauseRes = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot });
+      console.log('pause pauseRes', pauseRes);
+      if (!pauseRes.result || !pauseRes.result.Success || !pauseRes.result.Failed) throw new Error('停止接口后台返回异常');
+      // this.modalLoading = false;
+      if (snapshot) {
+        this.snapPaths = pauseRes.result.Success.data.map(item => ({
+          taskId: item.jobId,
+          taskName: item.scheduleId,
+          info: item.snapshotPath,
+        }));
+      }
+      this.failTasks = pauseRes.result.Failed.data.map(item => ({
+        taskId: item.jobId,
+        taskName: item.scheduleId,
+        info: item.message,
+      }));
+      this.orderNum = this.selections.length - this.failTasks.length;
+      if (this.failTasks.length) {
+        this.isFinish = true;
+        this.modalTitle = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+        this.modalContent = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+        return;
+      }
+
+      // 1、快照重启和直接重启只有调用接口时snapshot参数的区别
+      this.handleAction(this.selections[0], 0, snapshot)
+    },
+    async handleAction(data, index, snapshot) {
+      console.log('handleAction snapshot: ', snapshot);
+      // snapshot有三种情况
+      // snapshot为true是 批量-快照重启
+      // snapshot为false是 批量-直接重启
+      // snapshot === undefined是 点击任务列表的某一项的“启动”
+      // snapshot不为undefined时，isBatchRestart就为true
+      this.isBatchRestart = snapshot !== undefined
+      console.log('handleAction this.isBatchRestart: ', this.isBatchRestart);
+
       // 存下当前点击的data和index
       this.tempData = data
       this.tempIndex = index
       this.tempSnapshot = snapshot
 
-      // 先调用这个接口：PUT /api/rest_j/v1/streamis/streamJobManager/job/execute/inspect?jobId=作业ID
-      // 如果接口正常返回，则解析data数据里的inspections检查项目列表，如果检查项不为空，则以列表的值作为键，查找同级的键值对，例如"version":{"now":{..}, "last":{..}"和"snapshot":{"path":"..."}，并显示弹窗
-      const fake = {
-        inspections: ["version", "snapshot"],
-        version: {
-          now: {
-            createBy: "hduser03",
-            description: "xxx",
-            id: 310,
-            projectId: null,
-            projectName: "RCS_G1",
-            releaseTime: "2022-12-01 11:17:50",
-            version: "v00002"
-          },    
-          last: {
-            createBy: "hduser03",
-            description: "xxx",
-            id: 310,
-            projectId: null,
-            projectName: "RCS_G1",
-            releaseTime: "2022-12-01 11:17:50",
-            version: "v00001"
-          }          
-        },
-        snapshot: {
-          path: 'http://www.baidu.com'
-        }
-      }
-
-      const { id } = this.tempData
-      const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
-      api.fetch(checkPath, {}, 'put').then(res => {
-        console.log('res: ', res);
-        if (Array.isArray(fake.inspections) && fake.inspections.length > 0) {
+      try {
+        const { id, name } = this.tempData
+        const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
+        // 2、快照重启、直接重启、启动 都需要调用inspect接口
+        const inspectRes = await api.fetch(checkPath, {}, 'put')
+        console.log('inspect inspectRes: ', inspectRes);
+        if (Array.isArray(inspectRes) && inspectRes.length > 0) {
           // 说明有数据，打开弹框
           this.startHintVisible = true
-          this.startHintData.latestVersion = fake.version && fake.version.now && fake.version.now.version ? fake.version.now.version : '--'
-          this.startHintData.lastVersion = fake.version && fake.version.last && fake.version.last.version ? fake.version.last.version : '--'
-          this.startHintData.jobName = fake.version && fake.version.now && fake.version.now.projectName ? fake.version.now.projectName : '--'
-          this.startHintData.link = fake.snapshot && fake.snapshot.path ? fake.snapshot.path : '--'
+          this.startHintData.jobName = name
+          this.startHintData.latestVersion = inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--'
+          this.startHintData.lastVersion = inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--'
+          this.startHintData.link = inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--'
         } else {
-          if (!this.isBatchRestart) {
-            // 如果没数据，不打开弹框，直接启动
-            this.confirmStarting()
-          } else {
-            console.log('doRestart', this.tempSnapshot);
-            this.processModalVisable = true;
-            this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
-            this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
-            this.restartTasks(this.tempSnapshot);
-          }
+          // 如果inspections为空，则代表这个已经确认过了
+          this.confirmStarting()
         }
-      }).catch(err => {
-        console.log('err: ', err);
-        this.$Message.error('作业启动检查失败 ' + err)
-      })
+      } catch (err) {
+        console.log('handleAction err: ', err);
+      }
     },
+    // 检查弹框的确认按钮
     confirmStarting() {
       this.startHintVisible = false
       if (!this.isBatchRestart) {
+        // 如果是单个的启动，那么直接调用execute启动接口
         const { id } = this.tempData
         const second = { jobId: id }
 
@@ -665,7 +675,7 @@ export default {
         api
           .fetch(path, second)
           .then(res => {
-            console.log(res)
+            console.log('execute res: ', res);
             this.tempData.buttonLoading = false
             this.choosedRowId = ''
             if (res) {
@@ -674,31 +684,44 @@ export default {
               this.getJobList()
             }
           })
-          .catch(e => {
-            console.log(e.message)
+          .catch(err => {
+            console.log('execute err: ', err);
             this.loading = false
             this.tempData.buttonLoading = false
             this.choosedRowId = ''
             this.getJobList()
           })
       } else {
+        // 如果是批量的，就要确定每一个都确认完了
+        // 如果this.startHintData.batchConfirm为true，表明用户一次性直接确认完了所有，就要直接启动了
         if (this.startHintData.batchConfirm || this.tempIndex === this.selections.length - 1) {
           // 批量确认，或者确认完最后一个了
-          console.log('doRestart', this.tempSnapshot);
           this.processModalVisable = true;
           this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
           this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
-          this.restartTasks(this.tempSnapshot);
+          this.bulkExecution(this.tempSnapshot);
         } else {
+          // 还没确认完，就继续确认
           this.handleAction(this.selections[this.tempIndex + 1], this.tempIndex + 1, this.tempSnapshot)
         }
       }
     },
-    handleConfig(data) {
-      console.log(data)
+    // 调用重新启动接口
+    async bulkExecution() {
+      console.log('bulkExecution');
+      try {
+        const bulk_sbj = this.selections.map(item => +item.id);
+        const result = await api.fetch('streamis/streamJobManager/job/bulk/execution', { bulk_sbj });
+        console.log('start result', result);
+        this.queryProcess(bulk_sbj);
+      } catch (err) {
+        console.log('bulkExecution err: ', err);
+        this.modalContent = '停止任务失败，失败信息：' + err
+      }
+    },
+    handleConfig() {
     },
     stopSavepoint(data) {
-      console.log(data)
       this.loading = true
       api
         .fetch(
@@ -707,7 +730,7 @@ export default {
           'put'
         )
         .then(res => {
-          console.log(res)
+          console.log('stopSavepoint res: ', res);
           if (res) {
             this.loading = false
             this.snapModalVisable = true;
@@ -716,8 +739,8 @@ export default {
             this.getJobList();
           }
         })
-        .catch(e => {
-          console.log(e)
+        .catch(err => {
+          console.log('stopSavepoint err: ', err);
           this.loading = false
         })
     },
@@ -726,8 +749,6 @@ export default {
         this.stopSavepoint(rowData);
         return;
       }
-      console.log(rowData)
-      console.log(moduleName)
       const moduleMap = {
         paramsConfiguration: 'jobConfig',
         alertConfiguration: 'jobConfig',
@@ -750,18 +771,15 @@ export default {
       })
     },
     handlePageChange(page) {
-      console.log(page)
       this.pageData.current = page
       this.getJobList()
     },
     handlePageSizeChange(pageSize) {
-      console.log(pageSize)
       this.pageData.pageSize = pageSize
       this.pageData.current = 1
       this.getJobList()
     },
     versionDetail(data) {
-      console.log(data)
       this.loading = true
       api
         .fetch(
@@ -772,7 +790,6 @@ export default {
           'get'
         )
         .then(res => {
-          console.log(res)
           if (res) {
             this.loading = false
             this.modalVisible = true
@@ -783,8 +800,8 @@ export default {
             })
           }
         })
-        .catch(e => {
-          console.log(e)
+        .catch(err => {
+          console.log('versionDetail err: ', err);
           this.loading = false
         })
     },
@@ -805,8 +822,7 @@ export default {
         this.$Message.error(res.message)
       }
     },
-    showButtons(val) {
-      console.log('showButtons', val)
+    showButtons() {
       this.columns.unshift({
         type: 'selection',
         width: 60,
@@ -814,8 +830,7 @@ export default {
       });
       this.isBatching = true;
     },
-    hideButtons(val) {
-      console.log('hideButtons', val)
+    hideButtons() {
       this.$refs.list.selectAll(false);
       this.selections = [];
       this.columns = this.columns.filter(col => col.type !== 'selection');
@@ -823,51 +838,7 @@ export default {
     },
     selectionChange(val) {
       const selections = (val || []).filter(item => item.id);
-      console.log('selectionChange', selections);
       this.selections = selections;
-    },
-    async doRestart(snapshot) {
-      this.isBatchRestart = true
-      this.startHintVisible = true
-
-      this.handleAction(this.selections[0], 0, snapshot)
-    },
-    async restartTasks(snapshot) {
-      console.log('restartTasks');
-      try {
-        // this.modalLoading = true;
-        const bulk_sbj = this.selections.map(item => +item.id);
-        const res = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot });
-        console.log('pause result', res);
-        if (!res.result || !res.result.Success || !res.result.Failed) throw new Error('后台返回异常');
-        // this.modalLoading = false;
-        if (snapshot) {
-          this.snapPaths = res.result.Success.data.map(item => ({
-            taskId: item.jobId,
-            taskName: item.scheduleId,
-            info: item.snapshotPath,
-          }));
-        }
-        this.failTasks = res.result.Failed.data.map(item => ({
-          taskId: item.jobId,
-          taskName: item.scheduleId,
-          info: item.message,
-        }));
-        this.orderNum = this.selections.length - this.failTasks.length;
-        if (this.failTasks.length) {
-          this.isFinish = true;
-          this.modalTitle = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
-          this.modalContent = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
-          return;
-        }
-        const result = await api.fetch('streamis/streamJobManager/job/bulk/execution', { bulk_sbj });
-        console.log('start result', result);
-        this.queryProcess(bulk_sbj);
-      } catch (error) {
-        console.warn(error);
-        this.modalContent = '停止任务失败，失败信息：' + error
-        // this.modalLoading = false
-      }
     },
     async queryProcess(id_list) {
       console.log('queryProcess');
@@ -952,7 +923,7 @@ export default {
   color: red;
   font-size: 12px;
   position: absolute;
-  right: 12px;
+  right: 18px;
   top: -4px;
 }
 .btn-wrap {
