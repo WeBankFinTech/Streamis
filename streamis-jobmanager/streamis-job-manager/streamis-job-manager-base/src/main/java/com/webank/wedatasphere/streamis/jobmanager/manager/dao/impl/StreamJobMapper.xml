@@ -137,7 +137,7 @@
 
     <!--Get the latest job version-->
     <select id="getLatestJobVersion" resultMap="StreamJobVersionMap">
-        SELECT * FROM linkis_stream_job_version WHERE job_id=#{jobId} ORDER BY version desc LIMIT 1
+        SELECT * FROM linkis_stream_job_version WHERE job_id=#{jobId} ORDER BY id,version desc LIMIT 1
     </select>
 
     <select id="getJobVersionById" resultMap="StreamJobVersionMap">
