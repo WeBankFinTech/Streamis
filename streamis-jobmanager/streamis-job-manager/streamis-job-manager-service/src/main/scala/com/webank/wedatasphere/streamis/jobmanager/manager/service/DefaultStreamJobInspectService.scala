@@ -2,7 +2,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobInspectVo, JobSnapshotInspectVo, JobVersionInspectVo}
 import org.apache.linkis.common.exception.ErrorException
 import org.apache.linkis.common.utils.Logging
@@ -62,14 +62,15 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
   private def versionInspect(streamJob: StreamJob): JobVersionInspectVo = {
     Option(streamTaskMapper.getLatestByJobId(streamJob.getId)) match {
       case Some(task) =>
-        if (!task.getVersion.equals(streamJob.getCurrentVersion)) {
+        val latestJobVersion = streamJobMapper.getLatestJobVersion(streamJob.getId)
+        if (!task.getVersion.equals(latestJobVersion.getVersion)) {
           val inspectVo = new JobVersionInspectVo
-          val last = streamJobMapper.getJobVersionById(streamJob.getId, task.getVersion)
-          val now = streamJobMapper.getJobVersionById(streamJob.getId, streamJob.getCurrentVersion)
-          inspectVo.setLast(last)
-          inspectVo.setNow(now)
+
+          val lastJobVersion = streamJobMapper.getJobVersionById(streamJob.getId, task.getVersion)
+          inspectVo.setLast(lastJobVersion)
+          inspectVo.setNow(latestJobVersion)
           logger.info(s"Version inspect [ job: ${streamJob.getName}, id: ${streamJob.getId}," +
-            s" last_version: ${task.getVersion}, now_version: ${streamJob.getCurrentVersion}]")
+            s" last_version: ${task.getVersion}, now_version: ${latestJobVersion.getVersion}]")
           inspectVo
         } else null
       case _ => null
