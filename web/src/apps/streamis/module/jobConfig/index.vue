@@ -106,7 +106,6 @@ export default {
       api
         .fetch('streamis/streamJobManager/config/getWorkspaceUsers', 'get')
         .then(res => {
-          console.log(res)
           if (res && res.users) {
             this.users = res.users
           }
@@ -150,7 +149,6 @@ export default {
           'get'
         )
         .then(res => {
-          console.log(res)
           let configs = res.def;
           const valueMap = {};
           const rule = {};
@@ -188,24 +186,20 @@ export default {
         .catch(e => console.warn(e))
     },
     removeParameter(index, key) {
-      console.log('removeParameter', index);
       const keyValue = this.diyMap[key];
       keyValue.splice(index, 1)
       this.diyMap = {...this.diyMap, [key]: keyValue}
     },
     addParameter(key) {
-      console.log('addParameter')
       this.diyMap = {...this.diyMap, [key]: this.diyMap[key].concat({value: '', key: ''})}
     },
     async handleSaveConfig() {
-      console.log('handleSaveConfig')
       this.valueMap = cloneDeep(this.valueMap);
       const flags = await Promise.all(Object.keys(this.$refs).map(async ref => {
         const ele = this.$refs[ref][0];
         if (typeof ele.validate === 'function') return ele.validate();
         else return true;
       }));
-      console.log('flags', flags);
       if (!flags.every(Boolean)) return;
       this.saveLoading = true;
       const configuration = {};
@@ -230,7 +224,6 @@ export default {
           emptyWarning = (!only.key || !only.key.trim()) && (!only.value || !only.value.trim())
         }
       });
-      console.log('configuration', configuration, this.valueMap)
       if (emptyWarning) {
         this.saveLoading = false;
         return this.$Message.error({ content: '请删除多余自定义字段，key值不能为空' });
@@ -246,15 +239,13 @@ export default {
         )
         .then(res => {
           this.saveLoading = false
-          console.log(res)
           if (res.errorMsg) {
             this.$Message.error(res.errorMsg.desc)
           } else {
             this.$Message.success(this.$t('message.streamis.operationSuccess'))
           }
         })
-        .catch(e => {
-          console.log(e)
+        .catch(() => {
           this.saveLoading = false
         })
     }

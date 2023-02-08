@@ -149,7 +149,6 @@ export default {
     }
   },
   mounted() {
-    console.log(this.$route.params)
     this.getDatas()
   },
   methods: {
@@ -162,7 +161,6 @@ export default {
           'get'
         )
         .then(res => {
-          console.log(res)
           if (res && res.details) {
             const conditions = res.details.loadCondition || []
             this.loadCondition = conditions.map(item => {
