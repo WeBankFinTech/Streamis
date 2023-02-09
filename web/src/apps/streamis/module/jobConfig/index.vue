@@ -215,13 +215,13 @@ export default {
       Object.keys(this.diyMap).forEach(key => {
         configuration[key] = {};
         (this.diyMap[key] || []).forEach(mapKey => {
-          emptyWarning = !mapKey.key || !mapKey.key.trim();
+          if (key !== 'wds.linkis.flink.custom') emptyWarning = !mapKey.key || !mapKey.key.trim();
           if (configuration[key][mapKey.key]) warning = true;
           configuration[key][mapKey.key] = mapKey.value || '';
         });
         if ((this.diyMap[key] || []).length <= 1) {
           const only = (this.diyMap[key] || [])[0] || {};
-          emptyWarning = (!only.key || !only.key.trim()) && (!only.value || !only.value.trim())
+          if (key !== 'wds.linkis.flink.custom') emptyWarning = (!only.key || !only.key.trim()) && (!only.value || !only.value.trim())
         }
       });
       if (emptyWarning) {
