@@ -212,18 +212,32 @@ export default {
       });
       let warning = false;
       let emptyWarning = false;
+      console.log('this.diyMap: ', this.diyMap);
+      let moreThanOneEmpty = false
       Object.keys(this.diyMap).forEach(key => {
         configuration[key] = {};
+        console.log('key: ', key);
         (this.diyMap[key] || []).forEach(mapKey => {
-          if (key !== 'wds.linkis.flink.custom') emptyWarning = !mapKey.key || !mapKey.key.trim();
+          console.log('mapKey: ', mapKey);
+          if (key !== 'wds.linkis.flink.custom') {
+            emptyWarning = !mapKey.key || !mapKey.key.trim();
+          } else {
+            console.log('this.diyMap[wds.linkis.flink.custom]: ', this.diyMap['wds.linkis.flink.custom']);
+            if (this.diyMap['wds.linkis.flink.custom'] && this.diyMap['wds.linkis.flink.custom'].length > 1) moreThanOneEmpty = true
+          }
           if (configuration[key][mapKey.key]) warning = true;
           configuration[key][mapKey.key] = mapKey.value || '';
         });
         if ((this.diyMap[key] || []).length <= 1) {
           const only = (this.diyMap[key] || [])[0] || {};
+          console.log('only: ', only);
           if (key !== 'wds.linkis.flink.custom') emptyWarning = (!only.key || !only.key.trim()) && (!only.value || !only.value.trim())
         }
       });
+      if (moreThanOneEmpty) {
+        this.saveLoading = false;
+        return this.$Message.error({ content: '不能有两个及以上空key-value' });
+      }
       if (emptyWarning) {
         this.saveLoading = false;
         return this.$Message.error({ content: '请删除多余自定义字段，key值不能为空' });
