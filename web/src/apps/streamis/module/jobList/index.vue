@@ -204,10 +204,12 @@
       </div>
     </titleCard>
     <versionDetail
+      ref="versionDetail"
       :visible="modalVisible"
       :datas="versionDatas"
       :projectName="projectName"
       @modalCancel="modalCancel"
+      @versionDetailPageChange="versionDetailPageChange"
     />
     <uploadJobJar
       :visible="uploadVisible"
@@ -493,7 +495,9 @@ export default {
         lastVersion: '',
         jobName: '',
         link: '',
-      }
+      },
+      // 当前正在查看的data
+      currentViewData: {}
     }
   },
   mounted() {
@@ -786,50 +790,28 @@ export default {
       this.pageData.current = 1
       this.getJobList()
     },
-    versionDetail(data) {
+    versionDetailPageChange(page) {
+      this.versionDetail(this.currentViewData, page)
+    },
+    versionDetail(data, page) {
       console.log('data: ', data);
       console.log('data.versionForwards: ', data.versionForwards);
+      this.currentViewData = data
       this.loading = true
-      if (data.versionForwards > 0) {
-        api.fetch(`streamis/streamJobManager/job/${data.id}/versions?pageNow=${1}&pageSize=${100}`, 'get').then(res => {
-          console.log('versionDetail versions res: ', res);
-          this.loading = false
-          this.modalVisible = true
-          this.versionDatas = res.versions
-          this.versionDatas.forEach(item => {
-            item.versionStatus = '--'
-            if (item.version === data.version) item.versionStatus = this.$t('message.streamis.versionDetail.using')
-          })
-        }).catch(err => {
-          console.log('versionDetail versions err: ', err);
-          this.loading = false
+      api.fetch(`streamis/streamJobManager/job/${data.id}/versions?pageNow=${page ? page : 1}&pageSize=5`, 'get').then(res => {
+        console.log('versionDetail versions res: ', res);
+        this.loading = false
+        this.modalVisible = true
+        this.$refs.versionDetail.pageData.total = res.totalPage
+        this.versionDatas = res.versions
+        this.versionDatas.forEach(item => {
+          item.versionStatus = '--'
+          if (item.version === data.version) item.versionStatus = this.$t('message.streamis.versionDetail.using')
         })
-      } else {
-        api
-          .fetch(
-            'streamis/streamJobManager/job/version?jobId=' +
-              data.id +
-              '&version=' +
-              data.version,
-            'get'
-          )
-          .then(res => {
-            console.log('versionDetail version res: ', res);
-            if (res) {
-              this.loading = false
-              this.modalVisible = true
-              this.versionDatas = [res.detail]
-              this.versionDatas.forEach(item => {
-                item.versionStatus = '--'
-                if (item.version === data.version) item.versionStatus = this.$t('message.streamis.versionDetail.using')
-              })
-            }
-          })
-          .catch(err => {
-            console.log('versionDetail version err: ', err);
-            this.loading = false
-          })
-      }
+      }).catch(err => {
+        console.log('versionDetail versions err: ', err);
+        this.loading = false
+      })
     },
     modalCancel() {
       this.modalVisible = false
