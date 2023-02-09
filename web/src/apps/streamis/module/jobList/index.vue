@@ -511,11 +511,11 @@ export default {
         pageNow: current,
         pageSize,
         // 本地开发dev环境用的
-        projectName: 'stream_job',
+        // projectName: 'stream_job',
         // 本地开发sit环境用的
         // projectName: 'streamis025_version',
         // 正式环境用的
-        // projectName: this.projectName
+        projectName: this.projectName
       }
       const { jobName, jobStatus } = this.query
       if (jobName) {
