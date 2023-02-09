@@ -130,6 +130,7 @@
                 <div class="version" @click="versionDetail(row)">
                   {{ row.version }}
                 </div>
+                <!-- 一般versionForwards字段大于零的情况，只发生在处于运行时状态的作业上，因为对运行时作业进行发布，作业的当前使用版本不会更新，所以已发布版本才会领先当前使用版本。 -->
                 <div class="versionForwards">{{row.versionForwards > 0 ? '(+' + row.versionForwards + ')' : ''}}</div>
               </div>
             </template>
@@ -438,7 +439,8 @@ export default {
         {
           title: this.$t('message.streamis.jobListTableColumns.version'),
           key: 'version',
-          slot: 'version'
+          slot: 'version',
+          width: '150px'
         },
         {
           title: this.$t('message.streamis.jobListTableColumns.lastRelease'),
@@ -508,9 +510,12 @@ export default {
       const params = {
         pageNow: current,
         pageSize,
-        // 本地开发用的
-        // projectName: 'stream_job'
-        projectName: this.projectName
+        // 本地开发dev环境用的
+        projectName: 'stream_job',
+        // 本地开发sit环境用的
+        // projectName: 'streamis025_version',
+        // 正式环境用的
+        // projectName: this.projectName
       }
       const { jobName, jobStatus } = this.query
       if (jobName) {
@@ -597,6 +602,11 @@ export default {
     async clickBatchRestart(snapshot) {
       // 3、快照重启、直接重启调用inspect接口前，需要pause接口返回成功
       const bulk_sbj = this.selections.map(item => +item.id);
+      // 点击批量重启的按钮后，就应该弹出弹窗，pause结束后改变这个一体弹窗的进度，然后开始请求inspect，如果inspect都为空，一体弹窗直接进入下一步启动，如果不为空，上层遮罩再弹出inspect的弹窗需要确认
+      this.processModalVisable = true;
+      this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
+      this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
+
       const pauseRes = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot });
       console.log('pause pauseRes', pauseRes);
       if (!pauseRes.result || !pauseRes.result.Success || !pauseRes.result.Failed) throw new Error('停止接口后台返回异常');
@@ -696,9 +706,6 @@ export default {
         // 如果this.startHintData.batchConfirm为true，表明用户一次性直接确认完了所有，就要直接启动了
         if (this.startHintData.batchConfirm || this.tempIndex === this.selections.length - 1) {
           // 批量确认，或者确认完最后一个了
-          this.processModalVisable = true;
-          this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
-          this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
           this.bulkExecution(this.tempSnapshot);
         } else {
           // 还没确认完，就继续确认
@@ -780,30 +787,49 @@ export default {
       this.getJobList()
     },
     versionDetail(data) {
+      console.log('data: ', data);
+      console.log('data.versionForwards: ', data.versionForwards);
       this.loading = true
-      api
-        .fetch(
-          'streamis/streamJobManager/job/version?jobId=' +
-            data.id +
-            '&version=' +
-            data.version,
-          'get'
-        )
-        .then(res => {
-          if (res) {
-            this.loading = false
-            this.modalVisible = true
-            this.versionDatas = [res.detail]
-            this.versionDatas.forEach(item => {
-              item.versionStatus = '--'
-              if (item.version === data.version) item.versionStatus = this.$t('message.streamis.versionDetail.using')
-            })
-          }
-        })
-        .catch(err => {
-          console.log('versionDetail err: ', err);
+      if (data.versionForwards > 0) {
+        api.fetch(`streamis/streamJobManager/job/${data.id}/versions?pageNow=${1}&pageSize=${100}`, 'get').then(res => {
+          console.log('versionDetail versions res: ', res);
+          this.loading = false
+          this.modalVisible = true
+          this.versionDatas = res.versions
+          this.versionDatas.forEach(item => {
+            item.versionStatus = '--'
+            if (item.version === data.version) item.versionStatus = this.$t('message.streamis.versionDetail.using')
+          })
+        }).catch(err => {
+          console.log('versionDetail versions err: ', err);
           this.loading = false
         })
+      } else {
+        api
+          .fetch(
+            'streamis/streamJobManager/job/version?jobId=' +
+              data.id +
+              '&version=' +
+              data.version,
+            'get'
+          )
+          .then(res => {
+            console.log('versionDetail version res: ', res);
+            if (res) {
+              this.loading = false
+              this.modalVisible = true
+              this.versionDatas = [res.detail]
+              this.versionDatas.forEach(item => {
+                item.versionStatus = '--'
+                if (item.version === data.version) item.versionStatus = this.$t('message.streamis.versionDetail.using')
+              })
+            }
+          })
+          .catch(err => {
+            console.log('versionDetail version err: ', err);
+            this.loading = false
+          })
+      }
     },
     modalCancel() {
       this.modalVisible = false
@@ -922,9 +948,14 @@ export default {
 .versionForwards {
   color: red;
   font-size: 12px;
-  position: absolute;
-  right: 18px;
-  top: -4px;
+  position: relative;
+  top: -5px;
+  // left: 5px;
+  margin-left: 5px;
+  // // z-index: 9999;
+  // position: absolute;
+  // left: 65px;
+  // top: -4px;
 }
 .btn-wrap {
   display: flex;
