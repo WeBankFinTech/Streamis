@@ -19,7 +19,7 @@
               $t('message.streamis.projectFile.chooseUploadFile')
             }}</Button>
           </Upload>
-          <div v-if="!!file">
+          <div v-if="!!file" class="choosed-file" :title="file.name">
             {{ $t('message.streamis.uploadJar.choosedFile') }}: {{ file.name }}
           </div>
         </FormItem>
@@ -157,4 +157,10 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.choosed-file {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+</style>
