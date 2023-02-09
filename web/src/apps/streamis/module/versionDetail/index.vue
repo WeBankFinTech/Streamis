@@ -5,6 +5,7 @@
       v-model="visible"
       footer-hide
       width="1200"
+      class="version-detail-modal"
       @on-cancel="cancel"
     >
       <Table :columns="columns" :data="datas" border>
@@ -95,3 +96,11 @@ export default {
 }
 </script>
 <style lang="scss" scoped></style>
+<style lang="scss">
+.version-detail-modal {
+  .ivu-modal-body {
+    max-height: 600px;
+    overflow: auto;
+  }
+}
+</style>
