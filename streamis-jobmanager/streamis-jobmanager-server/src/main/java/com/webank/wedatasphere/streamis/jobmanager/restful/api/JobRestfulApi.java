@@ -24,7 +24,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.FlinkJobInfo;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
@@ -326,10 +326,10 @@ public class JobRestfulApi {
         });
     }
 
-    private Message withFlinkJobInfo(String jobName, String flinkJobInfoStr, Function<FlinkJobInfo, Message> flinkJobInfoFunction) {
-        FlinkJobInfo flinkJobInfo;
+    private Message withFlinkJobInfo(String jobName, String flinkJobInfoStr, Function<EngineConnJobInfo, Message> flinkJobInfoFunction) {
+        EngineConnJobInfo flinkJobInfo;
         try {
-            flinkJobInfo = DWSHttpClient.jacksonJson().readValue(flinkJobInfoStr, FlinkJobInfo.class);
+            flinkJobInfo = DWSHttpClient.jacksonJson().readValue(flinkJobInfoStr, EngineConnJobInfo.class);
         } catch (JsonProcessingException e) {
             LOG.error("Job {} deserialize the flinkJobInfo string to object failed!", jobName, e);
             return Message.error("Deserialize the flinkJobInfo string to object failed!");
