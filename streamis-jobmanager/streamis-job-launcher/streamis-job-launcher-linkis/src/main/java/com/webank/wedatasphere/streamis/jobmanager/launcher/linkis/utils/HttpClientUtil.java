@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -49,13 +50,12 @@ public class HttpClientUtil {
     /**
      * Register httpclient by engineType
      *
-     * @param engineType
+     * @param prop
      * @return
      */
-    public static synchronized CloseableHttpClient createHttpClientUtil(String engineType) {
+    public static synchronized CloseableHttpClient createHttpClientUtil(Properties prop) {
         CredentialsProvider provider = new BasicCredentialsProvider();
-        if (StringUtils.equals("spark", engineType)) {
-            Properties prop = HttpClientUtil.getSecurityProperties();
+        if (Objects.nonNull(prop)) {
             provider.setCredentials(AuthScope.ANY,
                     new UsernamePasswordCredentials(prop.getProperty("auth.key"), prop.getProperty("auth.pass")));
         }
@@ -69,27 +69,15 @@ public class HttpClientUtil {
         return httpClient;
     }
 
-//    public HttpClientUtil() {
-//        initApacheHttpClient();
-//    }
-
     public void destroy(CloseableHttpClient httpClient) {
         destroyApacheHttpClient(httpClient);
     }
 
     /**
-     * Init
-     *
-     */
-//    private void initApacheHttpClient() {
-//
-//    }
-
-    /**
      * Destroy
      *
      */
-    private void destroyApacheHttpClient(CloseableHttpClient httpClient) {
+    public static void destroyApacheHttpClient(CloseableHttpClient httpClient) {
         try {
             if (httpClient != null) {
                 httpClient.close();
