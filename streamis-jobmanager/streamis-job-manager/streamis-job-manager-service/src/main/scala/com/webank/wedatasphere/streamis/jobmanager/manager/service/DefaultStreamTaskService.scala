@@ -332,7 +332,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
               throw new JobPauseErrorException(-1, s"Unable to pause the StreamTask [$pauseTaskId}], the linkis job id is null")
             }
             val streamJob = streamJobMapper.getJobById(finalJobId)
-            info(s"Try to stop StreamJob [${streamJob.getName} with task(taskId: ${streamTask.getId}, linkisJobId: ${streamTask.getLinkisJobId}).")
+            logger.info(s"Try to stop StreamJob [${streamJob.getName} with task(taskId: ${streamTask.getId}, linkisJobId: ${streamTask.getLinkisJobId}).")
             val jobClient = jobLaunchManager.connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
             val jobStateInfo = Utils.tryCatch(jobClient.stop(snapshot)){
               case e: Exception =>
