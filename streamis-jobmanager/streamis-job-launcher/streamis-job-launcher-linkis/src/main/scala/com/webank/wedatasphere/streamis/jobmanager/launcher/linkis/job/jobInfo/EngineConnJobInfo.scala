@@ -70,7 +70,7 @@ class EngineConnJobInfo extends YarnJobInfo with LinkisJobInfo {
 
   def setCompletedMsg(completedMsg: String): Unit = this.completedMsg = completedMsg
 
-  override def toString: String = s"FlinkJobInfo(id: $id, status: $status, applicationId: $applicationId, applicationUrl: $applicationUrl, logPath: $logPath)"
+  override def toString: String = s"FlinkJobInfo(id: $id, name: $name, status: $status, applicationId: $applicationId, applicationUrl: $applicationUrl, logPath: $logPath)"
 
   /**
    * Contains the check point and save points
