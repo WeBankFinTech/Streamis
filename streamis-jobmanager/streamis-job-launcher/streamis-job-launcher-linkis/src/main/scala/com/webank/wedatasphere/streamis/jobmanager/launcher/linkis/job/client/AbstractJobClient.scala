@@ -15,28 +15,29 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobClient
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, JobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.FlinkJobInfo
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkSavePointException
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.operator.FlinkTriggerSavepointOperator
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.FlinkSavepoint
-import org.apache.linkis.common.utils.Logging
+import org.apache.linkis.common.utils.{Logging, Utils}
 import org.apache.linkis.computation.client.once.simple.SimpleOnceJob
 import org.apache.linkis.computation.client.once.OnceJob
 
 /**
  * @author jefftlin
  */
-abstract class AbstractJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateManager: JobStateManager)
-  extends JobClient[FlinkJobInfo] with Logging{
+abstract class AbstractJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManager: JobStateManager)
+  extends JobClient[JobInfo] with Logging{
 
   /**
    * Refresh job info and return
    *
    * @return
    */
-  override def getJobInfo: FlinkJobInfo = getJobInfo(false)
+  override def getJobInfo: JobInfo = getJobInfo(false)
 
   /**
    * Refresh job info and return
@@ -44,10 +45,9 @@ abstract class AbstractJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateM
    * @param refresh refresh
    * @return
    */
-  override def getJobInfo(refresh: Boolean): FlinkJobInfo = {
+  override def getJobInfo(refresh: Boolean): JobInfo = {
     onceJob match {
       case simpleOnceJob: SimpleOnceJob =>
-        simpleOnceJob.getStatus
         jobInfo.setStatus(if (refresh) onceJob.getNodeInfo
           .getOrDefault("nodeStatus", simpleOnceJob.getStatus).asInstanceOf[String] else simpleOnceJob.getStatus)
     }
@@ -56,11 +56,14 @@ abstract class AbstractJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateM
 
   /**
    * Stop directly
+   * SparkRestJobClient need to override
    */
   override def stop(): Unit = stop(false)
 
   /**
    * Stop the job connected remote
+   * Used in FlinkRestJobClient & EngineConnJobClient
+   * Not support SparkRestJobClient
    *
    * @param snapshot if do snapshot to save the job state
    */
@@ -83,6 +86,8 @@ abstract class AbstractJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateM
 
   /**
    * Trigger save point operation
+   * Used in FlinkRestJobClient & EngineConnJobClient
+   * Not support SparkRestJobClient
    *
    * @return
    */
@@ -93,9 +98,33 @@ abstract class AbstractJobClient(onceJob: OnceJob, jobInfo: FlinkJobInfo, stateM
 
   /**
    * Trigger save point operation with savePointDir and mode
+   * Used in FlinkRestJobClient & EngineConnJobClient
+   * Not support SparkRestJobClient
    *
    * @param savePointDir savepoint directory
-   * @param mode mode
+   * @param mode         mode
    */
-  def triggerSavepoint(savePointDir: String, mode: String): FlinkSavepoint
+  def triggerSavepoint(savePointDir: String, mode: String): FlinkSavepoint = {
+    Utils.tryCatch{
+      onceJob.getOperator(FlinkTriggerSavepointOperator.OPERATOR_NAME) match{
+        case savepointOperator: FlinkTriggerSavepointOperator => {
+          // TODO Get scheme information from job info
+          savepointOperator.setSavepointDir(savePointDir)
+          savepointOperator.setMode(mode)
+          Option(savepointOperator()) match {
+            case Some(savepoint: FlinkSavepoint) =>
+              savepoint
+            // TODO store into job Info
+            case _ => throw new FlinkSavePointException(-1, "The response savepoint info is empty", null)
+          }
+        }
+      }
+    }{
+      case se: FlinkSavePointException =>
+        throw se
+      case e: Exception =>
+        throw new FlinkSavePointException(30501, "Fail to trigger savepoint operator", e)
+    }
+  }
+
 }

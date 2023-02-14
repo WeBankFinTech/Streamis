@@ -19,16 +19,13 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration.{VAR_FLINK_APP_NAME, VAR_FLINK_SAVEPOINT_PATH}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkJobLaunchErrorException, StreamisJobLaunchException}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.LinkisJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.factory.AbstractJobClientFactory
 import org.apache.linkis.common.utils.{Logging, Utils}
 import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
 import org.apache.linkis.computation.client.utils.LabelKeyUtils
 import org.apache.linkis.protocol.utils.TaskUtils
-
-import scala.concurrent.TimeoutException
-import scala.concurrent.duration.Duration
 
 
 trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
@@ -52,8 +49,8 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
    * @return the job id.
    */
   override def innerLaunch(job: LaunchJob, jobState: JobState): JobClient[LinkisJobInfo] = {
-    // Transform the JobState into the params in LaunchJob
-    Option(jobState).foreach(state => {
+    // Transform the JobState(isRestore = true) into the params in LaunchJob
+    Option(jobState).filter(jobState => jobState.isRestore).foreach(state => {
       val startUpParams = TaskUtils.getStartupMap(job.getParams)
       startUpParams.putIfAbsent(VAR_FLINK_SAVEPOINT_PATH.getValue,
         state.getLocation.toString)
@@ -84,19 +81,6 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
           throw new FlinkJobLaunchErrorException(-1, "Fail to obtain launched job info", t)
       }
       val client = AbstractJobClientFactory.getJobManager().createJobClient(onceJob, jobInfo, getJobStateManager)
-//      Utils.tryThrow {
-//        Utils.waitUntil(() => {
-//          client.getJobInfo.asInstanceOf[FlinkJobInfo].getApplicationId != null
-//        }, Duration(10, TimeUnit.SECONDS), 100, 1000)
-//        client
-//      } {
-//        case t: TimeoutException => {
-//          logger.warn("Timeout to launch job, cannot get applicationId after deployment")
-//          // Downgraded to yarn call
-//          //todo
-//          null
-//        }
-//      }
       client
     }{
       case e: FlinkJobLaunchErrorException => throw e
