@@ -2,9 +2,9 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.f
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.`type`.JobClientType
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, JobInfo, LaunchJob}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, JobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.{FlinkRestJobInfo, LinkisJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.{EngineConnJobInfo, LinkisJobInfo}
 import org.apache.commons.lang3.StringUtils
 import org.apache.linkis.common.utils.{Logging, Utils}
 import org.apache.linkis.computation.client.once.OnceJob
@@ -34,13 +34,13 @@ class AbstractJobClientFactory extends Logging {
     if (!validateClientInfo(jobInfo)) {
       throw new FlinkJobLaunchErrorException(-1, "Param: [engineType, engineVersion] is necessary in job information", null)
     }
-    val clientType = Option(jobInfo.getClientType).getOrElse(JobClientType.ATTACH.toString)
+    val clientType = Option(jobInfo.getClientType).getOrElse(JobClientType.ATTACH)
     val client = getJobClientFactory(clientType)
       .createJobClient(onceJob, jobInfo, jobStateManager)
       .asInstanceOf[JobClient[LinkisJobInfo]]
     Utils.tryThrow {
       Utils.waitUntil(() => {
-        client.getJobInfo.asInstanceOf[FlinkRestJobInfo].getApplicationId != null
+        client.getJobInfo.asInstanceOf[EngineConnJobInfo].getApplicationId != null
       }, Duration(10, TimeUnit.SECONDS), 100, 1000)
       client
     } {
@@ -58,9 +58,9 @@ class AbstractJobClientFactory extends Logging {
    * @param connectType
    * @return
    */
-  def getJobClientFactory(connectType: String): JobClientFactory = {
+  def getJobClientFactory(connectType: JobClientType.Value): JobClientFactory = {
     connectType match {
-      case JobClientType.ATTACH.toString => {
+      case JobClientType.ATTACH => {
         if (null == this.engineConnJobClientFactory) {
           this.synchronized {
             if (null == this.engineConnJobClientFactory) {
@@ -71,7 +71,7 @@ class AbstractJobClientFactory extends Logging {
         }
         this.engineConnJobClientFactory
       }
-      case JobClientType.DETACH.toString => {
+      case JobClientType.DETACH => {
         if (null == this.restJobClientFactory) {
           this.synchronized {
             if (null == this.restJobClientFactory) {
