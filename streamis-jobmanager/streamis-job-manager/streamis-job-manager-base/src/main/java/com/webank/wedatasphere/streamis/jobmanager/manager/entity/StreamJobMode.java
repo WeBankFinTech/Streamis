@@ -21,13 +21,13 @@ public enum StreamJobMode {
     /**
      * According to client type
      */
-    private final Enumeration.Value clientType;
+    private final JobClientType$.Value clientType;
 
     StreamJobMode(JobClientType$.Value clientType){
         this.clientType = clientType;
     }
 
-    public Enumeration.Value getClientType(){
+    public JobClientType$.Value getClientType(){
         return this.clientType;
     }
 }

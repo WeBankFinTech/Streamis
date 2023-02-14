@@ -27,7 +27,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogReq
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.{AbstractJobClient, EngineConnJobClient}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.SimpleFlinkJobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{FlinkCheckpoint, FlinkSavepoint}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.SpringContextHolder
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf.FLINK_JOB_STATUS_FAILED
@@ -400,7 +400,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
             returnMap.put("endLine", logIterator.getEndLine)
             logIterator.close()
             jobClient.getJobInfo match {
-              case linkisInfo: LinkisJobInfo =>
+              case linkisInfo: EngineConnJobInfo =>
                 if (StringUtils.isBlank(linkisInfo.getLogDirSuffix) && StringUtils.isNotBlank(logIterator.getLogDirSuffix)){
                   Utils.tryAndWarn {
                     // Update the linkis job info and store into database
@@ -478,12 +478,12 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       }).asJava
   }
 
-  def getTaskJobInfo(jobId:Long, version: String): FlinkJobInfo ={
+  def getTaskJobInfo(jobId:Long, version: String): EngineConnJobInfo ={
     val str = streamTaskMapper.getTask(jobId, version)
     if (StringUtils.isBlank(str)) {
-      return new FlinkJobInfo
+      return new EngineConnJobInfo
     }
-    DWSHttpClient.jacksonJson.readValue(str,classOf[FlinkJobInfo])
+    DWSHttpClient.jacksonJson.readValue(str,classOf[EngineConnJobInfo])
   }
 
 
