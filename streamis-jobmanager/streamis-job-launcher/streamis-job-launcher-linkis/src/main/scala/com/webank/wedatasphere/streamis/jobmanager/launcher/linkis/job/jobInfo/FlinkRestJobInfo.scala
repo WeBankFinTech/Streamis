@@ -123,10 +123,10 @@ class FlinkRestJobInfo extends YarnJobInfo with RestJobInfo {
    *
    * @return
    */
-  override def getClientType: String = clientType.toString
+  override def getClientType: JobClientType.Value = clientType
 
-  def setClientType(clientType: String): Unit = {
-    this.clientType = JobClientType.withName(clientType)
+  def setClientType(clientType: JobClientType.Value): Unit = {
+    this.clientType = clientType
   }
   /**
    * Engine version
