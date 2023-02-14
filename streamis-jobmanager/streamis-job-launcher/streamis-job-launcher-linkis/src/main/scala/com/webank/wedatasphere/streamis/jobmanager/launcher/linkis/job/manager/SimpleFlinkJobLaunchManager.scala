@@ -19,7 +19,8 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState,
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.SimpleFlinkJobLaunchManager.INSTANCE_NAME
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.LinkisJobInfo
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo
 import org.apache.commons.lang3.StringEscapeUtils
 import org.apache.linkis.common.utils.{RetryHandler, Utils}
 import org.apache.linkis.computation.client.once.simple.{SimpleOnceJob, SubmittableSimpleOnceJob}
@@ -51,7 +52,7 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
 
   override protected def createJobInfo(onceJob: SubmittableOnceJob, job: LaunchJob, jobState: JobState): LinkisJobInfo = {
     val nodeInfo = onceJob.getNodeInfo
-    val jobInfo = new FlinkJobInfo
+    val jobInfo = new EngineConnJobInfo
     // Escape the job name
     jobInfo.setName(StringEscapeUtils.escapeJava(job.getJobName))
     jobInfo.setId(onceJob.getId)
@@ -78,9 +79,9 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
     jobInfo
   }
 
-  override protected def createJobInfo(jobInfo: String): LinkisJobInfo = DWSHttpClient.jacksonJson.readValue(jobInfo, classOf[FlinkJobInfo])
+  override protected def createJobInfo(jobInfo: String): LinkisJobInfo = DWSHttpClient.jacksonJson.readValue(jobInfo, classOf[EngineConnJobInfo])
 
-  protected def fetchApplicationInfo(onceJob: OnceJob, jobInfo: FlinkJobInfo): Unit = {
+  protected def fetchApplicationInfo(onceJob: OnceJob, jobInfo: EngineConnJobInfo): Unit = {
     onceJob.getOperator(EngineConnApplicationInfoOperator.OPERATOR_NAME) match {
       case applicationInfoOperator: EngineConnApplicationInfoOperator =>
         val retryHandler = new RetryHandler {}

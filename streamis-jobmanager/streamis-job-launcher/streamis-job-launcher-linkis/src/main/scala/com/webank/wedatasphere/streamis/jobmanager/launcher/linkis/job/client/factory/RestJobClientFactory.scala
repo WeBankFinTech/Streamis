@@ -2,7 +2,8 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.f
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, JobInfo, LaunchJob}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.{FlinkRestJobInfo, LinkisJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.LinkisJobInfo
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.utils.HttpClientUtil
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.linkis.common.conf.CommonVars
 import org.apache.linkis.computation.client.once.OnceJob
@@ -40,7 +41,7 @@ class RestJobClientFactory extends JobClientFactory {
   override def init(): Unit = {
     // Create all kinds of client
     jobClientTypeList.getValue.split(",").toList.foreach((engineType: String) => {
-      val httpClient = HttpClientUtil.createHttpClientUtil(engineType)
+      val httpClient = HttpClientUtil.createHttpClientUtil(null)
       jobClientMap.put(engineType, httpClient)
     })
   }

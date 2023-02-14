@@ -5,7 +5,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, JobI
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.EngineConnJobClient
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.LinkisJobInfo
 import org.apache.linkis.computation.client.once.simple.SimpleOnceJobBuilder
-import org.apache.linkis.computation.client.once.{LinkisManagerClient, OnceJob}
+import org.apache.linkis.computation.client.once.{LinkisManagerClient, LinkisManagerClientImpl, OnceJob}
 import org.apache.linkis.httpclient.dws.DWSHttpClient
 
 class EngineConnJobClientFactory extends JobClientFactory {
