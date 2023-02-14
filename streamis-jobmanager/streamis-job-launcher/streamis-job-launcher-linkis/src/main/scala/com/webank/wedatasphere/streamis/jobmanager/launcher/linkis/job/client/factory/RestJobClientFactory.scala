@@ -1,9 +1,8 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.factory
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.utils.HttpClientUtil
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, JobInfo, LaunchJob}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.{FlinkRestJobInfo, LinkisJobInfo}
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.linkis.common.conf.CommonVars
 import org.apache.linkis.computation.client.once.OnceJob
@@ -25,9 +24,9 @@ class RestJobClientFactory extends JobClientFactory {
    * @return
    */
   override
-  def createJobClient(onceJob: OnceJob, flinkJobInfo: FlinkJobInfo, jobStateManager: JobStateManager): JobClient[LinkisJobInfo] = {
+  def createJobClient(onceJob: OnceJob, jobInfo: JobInfo, jobStateManager: JobStateManager): JobClient[LinkisJobInfo] = {
 
-    //todo create flink spark yarn client
+    //todo create flink spark client
 
 
 
