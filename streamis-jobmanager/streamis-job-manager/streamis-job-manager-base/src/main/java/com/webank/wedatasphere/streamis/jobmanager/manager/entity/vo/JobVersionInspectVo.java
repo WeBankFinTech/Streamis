@@ -21,7 +21,7 @@ public class JobVersionInspectVo implements JobInspectVo{
 
     @Override
     public String getInspectName() {
-        return Types.SNAPSHOT.name().toLowerCase(Locale.ROOT);
+        return Types.VERSION.name().toLowerCase(Locale.ROOT);
     }
 
 
