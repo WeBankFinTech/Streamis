@@ -4,8 +4,8 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.core.{FlinkLogIterator, SimpleFlinkJobLogIterator}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkJobStateFetchException}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.FlinkRestJobInfo
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobStateFetchException
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.{EngineConnJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.FlinkJobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.operator.{FlinkClientLogOperator, FlinkYarnLogOperator}
 import org.apache.commons.lang3.StringUtils
@@ -45,7 +45,7 @@ class EngineConnJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManager: JobS
             val logIterator = new SimpleFlinkJobLogIterator(requestPayload, engineConnLogOperator)
             engineConnLogOperator match {
               case clientLogOperator: FlinkClientLogOperator =>
-                var logDirSuffix = this.jobInfo.getLogDirSuffix
+                var logDirSuffix = this.jobInfo.asInstanceOf[EngineConnJobInfo].getLogDirSuffix
                 if (StringUtils.isBlank(logDirSuffix) && requestPayload.isLogHistory){
                   // If want to fetch the history log, must get the log directory suffix first
                   getLinkisClient match {
@@ -69,14 +69,14 @@ class EngineConnJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManager: JobS
               case _ =>
             }
             engineConnLogOperator match {
-              case yarnLogOperator: FlinkYarnLogOperator => yarnLogOperator.setApplicationId(jobInfo.getApplicationId)
+              case yarnLogOperator: FlinkYarnLogOperator => yarnLogOperator.setApplicationId(jobInfo.asInstanceOf[EngineConnJobInfo].getApplicationId)
               case _ =>
             }
-            engineConnLogOperator.setECMServiceInstance(jobInfo.getECMInstance)
+            engineConnLogOperator.setECMServiceInstance(jobInfo.asInstanceOf[EngineConnJobInfo].getECMInstance)
             engineConnLogOperator.setEngineConnType(FlinkJobLaunchManager.FLINK_ENGINE_CONN_TYPE)
             logIterator.init()
             jobInfo match {
-              case jobInfo: FlinkRestJobInfo => jobInfo.setLogPath(logIterator.getLogPath)
+              case jobInfo: EngineConnJobInfo => jobInfo.setLogPath(logIterator.getLogPath)
               case _ =>
             }
             logIterator

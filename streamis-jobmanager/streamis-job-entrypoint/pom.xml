@@ -26,9 +26,9 @@
     <packaging>pom</packaging>
     <artifactId>streamis-job-entrypoint</artifactId>
 
-    <modules>
-        <module>streamis-job-entrypoint-common</module>
-        <module>streamis-job-entrypoint-flink</module>
-        <module>streamis-job-entrypoint-spark</module>
-    </modules>
+<!--    <modules>-->
+<!--        <module>streamis-job-entrypoint-common</module>-->
+<!--        <module>streamis-job-entrypoint-flink</module>-->
+<!--        <module>streamis-job-entrypoint-spark</module>-->
+<!--    </modules>-->
 </project>
