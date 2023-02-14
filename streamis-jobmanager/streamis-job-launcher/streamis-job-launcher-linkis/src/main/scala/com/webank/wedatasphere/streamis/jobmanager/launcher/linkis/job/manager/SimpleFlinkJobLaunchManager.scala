@@ -15,7 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState, JobStateInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.SimpleFlinkJobLaunchManager.INSTANCE_NAME
@@ -71,12 +71,10 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
 
     jobInfo.setResources(nodeInfo.get("nodeResource").asInstanceOf[util.Map[String, Object]])
     // Set job state info into
-//    Option(jobState).foreach(state => {
-//      val stateInfo = new JobStateInfo
-//      stateInfo.setTimestamp(state.getTimestamp)
-//      stateInfo.setLocation(state.getLocation.toString)
-//      jobInfo.setJobStates(Array(stateInfo))
-//    })
+    Option(jobState).foreach(state => {
+      val stateInfo = new JobStateInfo(state.getLocation.toString, state.getTimestamp, state.isRestore)
+      jobInfo.setJobStates(Array(stateInfo))
+    })
     jobInfo
   }
 
