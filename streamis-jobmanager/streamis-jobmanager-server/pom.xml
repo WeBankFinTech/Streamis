@@ -71,17 +71,16 @@
             <artifactId>linkis-rpc</artifactId>
             <version>${linkis.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.webank.wedatasphere.streamis</groupId>
             <artifactId>streamis-jobmanager-common</artifactId>
             <version>${streamis.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.webank.wedatasphere.streamis</groupId>
-            <artifactId>streamis-job-entrypoint-common</artifactId>
-            <version>${streamis.version}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.webank.wedatasphere.streamis</groupId>-->
+<!--            <artifactId>streamis-job-entrypoint-common</artifactId>-->
+<!--            <version>${streamis.version}</version>-->
+<!--        </dependency>-->
 
     </dependencies>
 
