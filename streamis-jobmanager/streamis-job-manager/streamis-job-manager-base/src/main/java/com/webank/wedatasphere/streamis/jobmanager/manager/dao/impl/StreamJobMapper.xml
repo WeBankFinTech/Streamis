@@ -161,7 +161,7 @@
             resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.VersionDetailVo">
         SELECT j.id,v.version,j.description,DATE_FORMAT(v.create_time,"%Y-%m-%d %H:%i:%s") AS releaseTime,j.create_by AS createBy,j.project_name
         FROM `linkis_stream_job` j INNER JOIN linkis_stream_job_version v
-        ON j.id = #{jobId} AND v.job_id = j.id
+        ON j.id = #{jobId} AND v.job_id = j.id order by v.version desc
     </select>
     <select id="getJobListsByProjectName" resultMap="StreamJobMap">
         SELECT
