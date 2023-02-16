@@ -275,6 +275,8 @@
       v-model="startHintVisible"
       :title="$t('message.streamis.startHint.title')"
       width="800"
+      @on-cancel="cancelStartHint"
+      :mask-closable="false"
     >
       <div class="wrap">
         <div style="fontWeight: bold;marginBottom: 16px">
@@ -517,7 +519,7 @@ export default {
         pageSize,
         // 本地开发dev环境用的
         // projectName: 'stream_job',
-        // projectName: 'streamis025_checkpoint',
+        // projectName: 'streamis025_inspection',
         // 本地开发sit环境用的
         // projectName: 'streamis025_version',
         // 正式环境用的
