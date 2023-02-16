@@ -213,18 +213,22 @@ export default {
       let warning = false;
       let emptyWarning = false;
       console.log('this.diyMap: ', this.diyMap);
-      let moreThanOneEmpty = false
+      let moreThanOneEmpty = 0
       Object.keys(this.diyMap).forEach(key => {
         configuration[key] = {};
         console.log('key: ', key);
+        if (Object.keys(this.diyMap).length === 1 && key === 'wds.linkis.flink.custom') {
+          this.diyMap['wds.linkis.flink.custom'].forEach(item => {
+            console.log('item: ', item);
+            console.log('item.key: ', item.key);
+            console.log('item.value: ', item.value);
+            if (item.key === '' && item.value === '') moreThanOneEmpty++
+          })
+          console.log('moreThanOneEmpty: ', moreThanOneEmpty);
+        }
         (this.diyMap[key] || []).forEach(mapKey => {
           console.log('mapKey: ', mapKey);
-          if (key !== 'wds.linkis.flink.custom') {
-            emptyWarning = !mapKey.key || !mapKey.key.trim();
-          } else {
-            console.log('this.diyMap[wds.linkis.flink.custom]: ', this.diyMap['wds.linkis.flink.custom']);
-            if (this.diyMap['wds.linkis.flink.custom'] && this.diyMap['wds.linkis.flink.custom'].length > 1) moreThanOneEmpty = true
-          }
+          if (key !== 'wds.linkis.flink.custom') emptyWarning = !mapKey.key || !mapKey.key.trim();
           if (configuration[key][mapKey.key]) warning = true;
           configuration[key][mapKey.key] = mapKey.value || '';
         });
@@ -234,7 +238,7 @@ export default {
           if (key !== 'wds.linkis.flink.custom') emptyWarning = (!only.key || !only.key.trim()) && (!only.value || !only.value.trim())
         }
       });
-      if (moreThanOneEmpty) {
+      if (moreThanOneEmpty > 1) {
         this.saveLoading = false;
         return this.$Message.error({ content: '不能有两个及以上空key-value' });
       }
