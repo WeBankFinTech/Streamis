@@ -191,6 +191,7 @@
             </template>
           </Table>
           <Page
+            :current="pageData.current"
             :total="pageData.total"
             class="page"
             :page-size="pageData.pageSize"
@@ -803,6 +804,7 @@ export default {
       })
     },
     handlePageChange(page) {
+      console.log('handlePageChange page: ', page);
       this.pageData.current = page
       this.getJobList()
     },
