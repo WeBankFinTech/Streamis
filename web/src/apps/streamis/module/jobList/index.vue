@@ -297,7 +297,7 @@
       </div>
       <template slot="footer">
         <Button type="primary" @click="confirmStarting">{{ $t('message.streamis.formItems.confirmBtn') }}</Button>
-        <Button type="primary" @click="startHintVisible = false">{{ $t('message.streamis.formItems.cancel') }}</Button>
+        <Button type="primary" @click="cancelStartHint">{{ $t('message.streamis.formItems.cancel') }}</Button>
       </template>
     </Modal>
   </div>
@@ -694,7 +694,12 @@ export default {
         }
       } catch (err) {
         console.log('handleAction err: ', err);
+        this.processModalVisable = false
       }
+    },
+    cancelStartHint() {
+      this.startHintVisible = false
+      this.processModalVisable = false
     },
     // 检查弹框的确认按钮
     confirmStarting() {
