@@ -280,7 +280,7 @@
           {{$t('message.streamis.startHint.version')}}
         </div>
         <div style="marginBottom: 16px">
-          {{$t('message.streamis.startHint.version1')}} <span style="color: #3399ff">{{startHintData.latestVersion}}</span> {{$t('message.streamis.startHint.version2')}} <span style="fontWeight: bold">{{startHintData.jobName}}</span>？（{{$t('message.streamis.startHint.version3')}}：<span style="color: #FF7F00">{{startHintData.lastVersion}}）</span>
+          {{$t('message.streamis.startHint.version1')}} <span style="color: #3399ff">{{startHintData.latestVersion}}</span> {{$t('message.streamis.startHint.version2')}} <span style="fontWeight: bold">{{startHintData.jobName}}</span>？（{{$t('message.streamis.startHint.version3')}}：<span style="color: #FF7F00">{{startHintData.lastVersion}}</span>）
         </div>
         <div style="fontWeight: bold;marginBottom: 16px">
           {{$t('message.streamis.startHint.snapshot')}}
@@ -516,6 +516,7 @@ export default {
         pageSize,
         // 本地开发dev环境用的
         // projectName: 'stream_job',
+        // projectName: 'streamis025_checkpoint',
         // 本地开发sit环境用的
         // projectName: 'streamis025_version',
         // 正式环境用的
@@ -658,14 +659,34 @@ export default {
         const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
         // 2、快照重启、直接重启、启动 都需要调用inspect接口
         const inspectRes = await api.fetch(checkPath, {}, 'put')
+        // const inspectRes = {
+        //   inspections: ['version'],
+        //   version: {
+        //     now: {
+        //       version: 'v00002'
+        //     },
+        //     last: {
+        //       version: 'v00001'
+        //     }
+        //   },
+        //   snapshot: {
+        //     path: 'bhjkbjkjkbhkhj'
+        //   }
+        // }
         console.log('inspect inspectRes: ', inspectRes);
-        if (Array.isArray(inspectRes) && inspectRes.length > 0) {
+        console.log('inspect inspectRes.inspections: ', inspectRes.inspections);
+        console.log('Array.isArray(inspectRes.inspections): ', Array.isArray(inspectRes.inspections));
+        if (Array.isArray(inspectRes.inspections)) console.log('inspectRes.inspections.length: ', inspectRes.inspections.length);
+        console.log('打开弹框前的判断');
+        if (Array.isArray(inspectRes.inspections) && inspectRes.inspections.length > 0) {
+          console.log('打开弹框');
           // 说明有数据，打开弹框
           this.startHintVisible = true
           this.startHintData.jobName = name
           this.startHintData.latestVersion = inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--'
           this.startHintData.lastVersion = inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--'
           this.startHintData.link = inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--'
+          console.log('this.startHintData: ', this.startHintData);
         } else {
           // 如果inspections为空，则代表这个已经确认过了
           this.confirmStarting()
