@@ -79,5 +79,5 @@ trait JobInfo {
    *  Client type
    * @return
    */
-  def getClientType: JobClientType.Value
+  def getClientType: String
 }
