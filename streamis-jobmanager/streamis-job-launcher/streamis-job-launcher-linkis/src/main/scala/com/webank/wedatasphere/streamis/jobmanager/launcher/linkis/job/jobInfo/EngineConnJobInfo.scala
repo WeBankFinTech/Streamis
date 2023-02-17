@@ -16,7 +16,7 @@ class EngineConnJobInfo extends YarnJobInfo with LinkisJobInfo {
   private var completedMsg: String = _
   private var jobStates: Array[JobStateInfo] = _
   private var engineType: String = "flink"
-  private var clientType: JobClientType.Value = JobClientType.ATTACH
+  private var clientType: String = JobClientType.ATTACH.toString
 
   private var savepoint: String = _
   private var checkpoint: String = _
@@ -122,9 +122,9 @@ class EngineConnJobInfo extends YarnJobInfo with LinkisJobInfo {
    *
    * @return
    */
-  override def getClientType: JobClientType.Value = clientType
+  override def getClientType: String = clientType
 
-  def setClientType(clientType: JobClientType.Value): Unit = {
+  def setClientType(clientType: String): Unit = {
     this.clientType = clientType
   }
   /**
