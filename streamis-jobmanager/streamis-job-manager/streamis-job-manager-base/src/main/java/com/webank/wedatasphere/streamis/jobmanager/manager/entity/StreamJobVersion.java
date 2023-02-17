@@ -103,4 +103,19 @@ public class StreamJobVersion {
     public void setManageMode(String manageMode) {
         this.manageMode = manageMode;
     }
+
+    @Override
+    public String toString() {
+        return "StreamJobVersion{" +
+                "id=" + id +
+                ", jobId=" + jobId +
+                ", version='" + version + '\'' +
+                ", source='" + source + '\'' +
+                ", manageMode='" + manageMode + '\'' +
+                ", jobContent='" + jobContent + '\'' +
+                ", comment='" + comment + '\'' +
+                ", createTime=" + createTime +
+                ", createBy='" + createBy + '\'' +
+                '}';
+    }
 }
