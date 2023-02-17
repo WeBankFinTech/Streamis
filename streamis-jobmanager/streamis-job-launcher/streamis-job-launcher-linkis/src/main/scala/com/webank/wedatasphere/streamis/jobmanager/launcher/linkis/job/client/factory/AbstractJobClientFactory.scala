@@ -34,7 +34,7 @@ class AbstractJobClientFactory extends Logging {
     if (!validateClientInfo(jobInfo)) {
       throw new FlinkJobLaunchErrorException(-1, "Param: [engineType, engineVersion] is necessary in job information", null)
     }
-    val clientType = Option(jobInfo.getClientType).getOrElse(JobClientType.ATTACH)
+    val clientType = Option(jobInfo.getClientType).getOrElse(JobClientType.ATTACH.toString)
     val client = getJobClientFactory(clientType)
       .createJobClient(onceJob, jobInfo, jobStateManager)
       .asInstanceOf[JobClient[LinkisJobInfo]]
@@ -58,9 +58,9 @@ class AbstractJobClientFactory extends Logging {
    * @param connectType
    * @return
    */
-  def getJobClientFactory(connectType: JobClientType.Value): JobClientFactory = {
+  def getJobClientFactory(connectType: String): JobClientFactory = {
     connectType match {
-      case JobClientType.ATTACH => {
+      case "attach" => {
         if (null == this.engineConnJobClientFactory) {
           this.synchronized {
             if (null == this.engineConnJobClientFactory) {
@@ -71,7 +71,7 @@ class AbstractJobClientFactory extends Logging {
         }
         this.engineConnJobClientFactory
       }
-      case JobClientType.DETACH => {
+      case "detach" => {
         if (null == this.restJobClientFactory) {
           this.synchronized {
             if (null == this.restJobClientFactory) {

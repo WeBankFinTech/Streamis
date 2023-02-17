@@ -141,4 +141,22 @@ public class StreamTask {
     public void setJobType(String jobType) {
         this.jobType = jobType;
     }
+
+    @Override
+    public String toString() {
+        return "StreamTask{" +
+                "id=" + id +
+                ", jobVersionId=" + jobVersionId +
+                ", jobId=" + jobId +
+                ", jobType='" + jobType + '\'' +
+                ", submitUser='" + submitUser + '\'' +
+                ", startTime=" + startTime +
+                ", lastUpdateTime=" + lastUpdateTime +
+                ", linkisJobId='" + linkisJobId + '\'' +
+                ", linkisJobInfo='" + linkisJobInfo + '\'' +
+                ", errDesc='" + errDesc + '\'' +
+                ", version='" + version + '\'' +
+                ", status=" + status +
+                '}';
+    }
 }
