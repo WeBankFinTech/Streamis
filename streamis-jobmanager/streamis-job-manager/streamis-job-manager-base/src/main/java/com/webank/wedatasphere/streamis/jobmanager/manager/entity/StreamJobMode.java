@@ -11,23 +11,23 @@ public enum StreamJobMode {
     /**
      * Engine Conn mode
      */
-    EngineConn(JobClientType.ATTACH()),
+    EngineConn(JobClientType.ATTACH().toString()),
 
     /**
      * Client mode
      */
-    Client(JobClientType.DETACH());
+    Client(JobClientType.DETACH().toString());
 
     /**
      * According to client type
      */
-    private final JobClientType$.Value clientType;
+    private final String clientType;
 
-    StreamJobMode(JobClientType$.Value clientType){
+    StreamJobMode(String clientType){
         this.clientType = clientType;
     }
 
-    public JobClientType$.Value getClientType(){
+    public String getClientType(){
         return this.clientType;
     }
 }
