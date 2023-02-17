@@ -20,7 +20,7 @@
     <parent>
         <artifactId>streamis-job-entrypoint</artifactId>
         <groupId>com.webank.wedatasphere.streamis</groupId>
-        <version>0.2.4</version>
+        <version>0.2.5-webank</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -33,35 +33,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.webank.wedatasphere.streamis</groupId>
-            <artifactId>streamis-job-launcher-linkis</artifactId>
-            <version>0.2.4</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.linkis</groupId>
             <artifactId>linkis-module</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.webank.wedatasphere.streamis</groupId>
-            <artifactId>streamis-job-launcher-service</artifactId>
-            <version>0.2.4</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.linkis</groupId>
-                    <artifactId>linkis-module</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.webank.wedatasphere.streamis</groupId>
-            <artifactId>streamis-job-manager-service</artifactId>
-            <version>0.2.4</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.linkis</groupId>
-                    <artifactId>linkis-module</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -77,7 +50,7 @@
         <dependency>
             <groupId>com.webank.wedatasphere.streamis</groupId>
             <artifactId>streamis-jobmanager-common</artifactId>
-            <version>0.2.4</version>
+            <version>0.2.5-webank</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
