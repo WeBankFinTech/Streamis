@@ -326,16 +326,18 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
             val streamJob = streamJobMapper.getJobById(finalJobId)
             info(s"Try to stop StreamJob [${streamJob.getName} with task(taskId: ${streamTask.getId}, linkisJobId: ${streamTask.getLinkisJobId}).")
             val jobClient = getJobLaunchManager(streamTask).connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
-            val jobStateInfo = Utils.tryCatch(jobClient.stop(snapshot)){
-              case e: Exception =>
-                val pauseError =  new JobPauseErrorException(-1, s"Fail to stop the StreamJob [${streamJob.getName}] " +
-                  s"with task(taskId: ${streamTask.getId}, linkisJobId: ${streamTask.getLinkisJobId}), reason: ${e.getMessage}.")
-                pauseError.initCause(e)
-                throw pauseError
-              case pauseE: JobPauseErrorException =>
-                throw pauseE
+            if ("Running".equals(jobClient.getJobInfo.getStatus)) {
+              val jobStateInfo = Utils.tryCatch(jobClient.stop(snapshot)){
+                case e: Exception =>
+                  val pauseError =  new JobPauseErrorException(-1, s"Fail to stop the StreamJob [${streamJob.getName}] " +
+                    s"with task(taskId: ${streamTask.getId}, linkisJobId: ${streamTask.getLinkisJobId}), reason: ${e.getMessage}.")
+                  pauseError.initCause(e)
+                  throw pauseError
+                case pauseE: JobPauseErrorException =>
+                  throw pauseE
+              }
+              Option(jobStateInfo).foreach(stateInfo => resultSet.put("snapshotPath", stateInfo.getLocation))
             }
-            Option(jobStateInfo).foreach(stateInfo => resultSet.put("snapshotPath", stateInfo.getLocation))
             streamTask.setLastUpdateTime(Calendar.getInstance.getTime)
             streamTask.setStatus(JobConf.FLINK_JOB_STATUS_STOPPED.getValue)
             streamTaskMapper.updateTask(streamTask)
