@@ -40,7 +40,7 @@ class AbstractJobClientFactory extends Logging {
       .asInstanceOf[JobClient[LinkisJobInfo]]
     Utils.tryThrow {
       Utils.waitUntil(() => {
-        client.getJobInfo.asInstanceOf[EngineConnJobInfo].getApplicationId != null
+        client.getJobInfo(true).asInstanceOf[EngineConnJobInfo].getApplicationId != null
       }, Duration(10, TimeUnit.SECONDS), 100, 1000)
       client
     } {
