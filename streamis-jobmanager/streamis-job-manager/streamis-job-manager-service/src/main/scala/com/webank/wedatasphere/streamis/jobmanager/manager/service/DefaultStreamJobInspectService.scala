@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
+import java.net.URI
 import java.util
 
 @Service
@@ -83,8 +84,13 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
    * @return
    */
   private def snapshotInspect(streamJob: StreamJob): JobSnapshotInspectVo = {
-    this.streamJobConfMapper.getRawConfValue(streamJob.getId, JobConfKeyConstants.START_AUTO_RESTORE_SWITCH.getValue) match {
-      case "ON" =>
+    Option(this.streamJobConfMapper.getRawConfValue(streamJob.getId, JobConfKeyConstants.SAVEPOINT.getValue + "path")) match {
+      case Some(path) =>
+        val inspectVo = new JobSnapshotInspectVo
+        inspectVo.setPath(new URI(path).toString)
+        inspectVo
+      case _ => this.streamJobConfMapper.getRawConfValue(streamJob.getId, JobConfKeyConstants.START_AUTO_RESTORE_SWITCH.getValue) match {
+        case "ON" =>
           Option(this.streamTaskService.getStateInfo(streamTaskMapper
             .getLatestLaunchedById(streamJob.getId))) match {
             case Some(jobState) =>
@@ -93,7 +99,10 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
               inspectVo
             case _ => null
           }
-      case _ => null
+        case _ => null
+      }
     }
+
   }
+
 }
