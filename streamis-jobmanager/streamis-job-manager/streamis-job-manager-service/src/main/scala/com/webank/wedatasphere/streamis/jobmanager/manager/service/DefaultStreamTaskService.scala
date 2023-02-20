@@ -326,7 +326,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
             val streamJob = streamJobMapper.getJobById(finalJobId)
             logger.info(s"Try to stop StreamJob [${streamJob.getName} with task(taskId: ${streamTask.getId}, linkisJobId: ${streamTask.getLinkisJobId}).")
             val jobClient = getJobLaunchManager(streamTask).connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
-            if ("Running".equals(jobClient.getJobInfo.getStatus)) {
+            val status = JobConf.linkisStatusToStreamisStatus(jobClient.getJobInfo(true).getStatus)
+            if (!JobConf.isCompleted(status)) {
               val jobStateInfo = Utils.tryCatch(jobClient.stop(snapshot)){
                 case e: Exception =>
                   val pauseError =  new JobPauseErrorException(-1, s"Fail to stop the StreamJob [${streamJob.getName}] " +
