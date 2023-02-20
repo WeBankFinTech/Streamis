@@ -1,6 +1,8 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration.VAR_FLINK_SAVEPOINT_PATH
+import com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl.FlinkSavepointConfigTransform.SAVE_POINT_PREFIX
 
 import java.util
 import scala.collection.JavaConverters._
@@ -19,10 +21,20 @@ class FlinkSavepointConfigTransform extends FlinkConfigTransform {
   override protected def configGroup(): String = JobConfKeyConstants.GROUP_PRODUCE.getValue
 
   override protected def transform(valueSet: util.Map[String, Any], job: LaunchJob): LaunchJob = {
-    transformConfig(valueSet.asScala.filter(_._1.startsWith(JobConfKeyConstants.SAVEPOINT.getValue))
+    val config: util.Map[String, Any] = valueSet.asScala.filter(_._1.startsWith(JobConfKeyConstants.SAVEPOINT.getValue))
       .map{
         case (key, value) =>
-          (FlinkConfigTransform.FLINK_CONFIG_PREFIX + key.replace(JobConfKeyConstants.SAVEPOINT.getValue, "execution.savepoint."), value)
-      }.asJava, job)
+          (FlinkConfigTransform.FLINK_CONFIG_PREFIX + key.replace(JobConfKeyConstants.SAVEPOINT.getValue, SAVE_POINT_PREFIX), value)
+      }.asJava
+    Option(config.get(SAVE_POINT_PREFIX + "path")) match {
+      case Some(path) =>
+        config.put(VAR_FLINK_SAVEPOINT_PATH.getValue, path)
+      case _ =>
+    }
+    transformConfig(config, job)
   }
+}
+
+object FlinkSavepointConfigTransform{
+  val SAVE_POINT_PREFIX: String = "execution.savepoint."
 }
