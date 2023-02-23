@@ -26,7 +26,7 @@ class FlinkSavepointConfigTransform extends FlinkConfigTransform {
         case (key, value) =>
           (FlinkConfigTransform.FLINK_CONFIG_PREFIX + key.replace(JobConfKeyConstants.SAVEPOINT.getValue, SAVE_POINT_PREFIX), value)
       }.asJava
-    Option(config.get(SAVE_POINT_PREFIX + "path")) match {
+    Option(config.get(FlinkConfigTransform.FLINK_CONFIG_PREFIX + SAVE_POINT_PREFIX + "path")) match {
       case Some(path) =>
         config.put(VAR_FLINK_SAVEPOINT_PATH.getValue, path)
       case _ =>
