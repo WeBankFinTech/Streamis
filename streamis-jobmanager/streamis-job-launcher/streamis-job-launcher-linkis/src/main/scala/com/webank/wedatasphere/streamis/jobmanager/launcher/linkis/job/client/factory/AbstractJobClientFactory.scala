@@ -38,18 +38,7 @@ class AbstractJobClientFactory extends Logging {
     val client = getJobClientFactory(clientType)
       .createJobClient(onceJob, jobInfo, jobStateManager)
       .asInstanceOf[JobClient[LinkisJobInfo]]
-    Utils.tryThrow {
-      Utils.waitUntil(() => {
-        client.getJobInfo(true).asInstanceOf[EngineConnJobInfo].getApplicationId != null
-      }, Duration(10, TimeUnit.SECONDS), 100, 1000)
-      client
-    } {
-      case t: TimeoutException => {
-        logger.warn("Timeout to launch job, cannot get applicationId after deployment")
-        // Downgraded to yarn call
-        null
-      }
-    }
+    client
   }
 
   /**
