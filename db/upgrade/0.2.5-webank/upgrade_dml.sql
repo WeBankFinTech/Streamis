@@ -1,0 +1,1 @@
+update linkis_stream_job j set current_version = (select version from linkis_stream_job_version v where v.job_id = j.id order by id desc limit 1);
