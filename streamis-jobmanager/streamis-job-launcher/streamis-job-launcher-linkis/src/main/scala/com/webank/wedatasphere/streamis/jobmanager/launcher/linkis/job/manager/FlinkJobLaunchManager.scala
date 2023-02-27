@@ -22,10 +22,13 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLaunc
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.LinkisJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.factory.AbstractJobClientFactory
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.FlinkJobLaunchManager.EXCEPTION_PATTERN
 import org.apache.linkis.common.utils.{Logging, Utils}
 import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
 import org.apache.linkis.computation.client.utils.LabelKeyUtils
 import org.apache.linkis.protocol.utils.TaskUtils
+
+import scala.util.matching.Regex
 
 
 trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
@@ -65,9 +68,9 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
     job.getLabels.get(LabelKeyUtils.ENGINE_TYPE_LABEL_KEY) match {
       case engineConnType: String =>
         if(!engineConnType.toLowerCase.startsWith(FlinkJobLaunchManager.FLINK_ENGINE_CONN_TYPE))
-          throw new FlinkJobLaunchErrorException(30401, s"Only ${FlinkJobLaunchManager.FLINK_ENGINE_CONN_TYPE} job is supported to be launched to Linkis, but $engineConnType is found.", null)
+          throw new FlinkJobLaunchErrorException(30401, s"Only ${FlinkJobLaunchManager.FLINK_ENGINE_CONN_TYPE} job is supported to be launched to Linkis, but $engineConnType is found.(不识别的引擎类型)", null)
       //todo add flink and spark
-      case _ => throw new FlinkJobLaunchErrorException(30401, s"Not exists ${LabelKeyUtils.ENGINE_TYPE_LABEL_KEY}, StreamisJob cannot be submitted to Linkis successfully.", null)
+      case _ => throw new FlinkJobLaunchErrorException(30401, s"Not exists ${LabelKeyUtils.ENGINE_TYPE_LABEL_KEY}(缺少引擎标签), StreamisJob cannot be submitted to Linkis successfully.", null)
     }
     Utils.tryCatch {
       val onceJob = buildOnceJob(job)
@@ -77,8 +80,8 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
           throw e
         case t: Throwable =>
           error(s"${job.getSubmitUser} create jobInfo failed, now stop this EngineConn ${onceJob.getId}.")
-          Utils.tryAndWarn(onceJob.kill())
-          throw new FlinkJobLaunchErrorException(-1, "Fail to obtain launched job info", t)
+          Utils.tryQuietly(onceJob.kill())
+          throw new FlinkJobLaunchErrorException(-1, exceptionAnalyze("Fail to obtain launched job info(获取任务信息失败,引擎服务可能启动失败)", t), t)
       }
       val client = AbstractJobClientFactory.getJobManager().createJobClient(onceJob, jobInfo, getJobStateManager)
       client
@@ -86,7 +89,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
       case e: FlinkJobLaunchErrorException => throw e
       case t: Throwable =>
         error(s"Server Exception in submitting Flink job [${job.getJobName}] to Linkis remote server", t)
-        throw new FlinkJobLaunchErrorException(-1, s"Exception in submitting Flink job to Linkis remote server (提交至Linkis服务失败，请检查服务及网络)", t)
+        throw new FlinkJobLaunchErrorException(-1, exceptionAnalyze(s"Exception in submitting Flink job to Linkis remote server (提交至Linkis服务失败，请检查服务及网络)", t), t)
     }
   }
 
@@ -122,7 +125,24 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
     }
   }
 
+  /**
+   * Exception analyzer
+   * @param errorMsg error message
+   * @param t throwable
+   * @return
+   */
+  def exceptionAnalyze(errorMsg: String, t: Throwable): String = {
+    EXCEPTION_PATTERN.findFirstMatchIn(t.getMessage) match {
+      case Some(m) =>
+        errorMsg + s", 原因分析[${m.group(1)}]"
+      case _ => errorMsg
+    }
+  }
 }
+
 object FlinkJobLaunchManager {
   val FLINK_ENGINE_CONN_TYPE = "flink"
+
+  val EXCEPTION_PATTERN: Regex = "[\\s\\S]+,desc:([\\s\\S]+?),(ip|port|serviceKind)[\\s\\S]+$".r
+
 }
