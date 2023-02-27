@@ -89,4 +89,9 @@ object JobConfKeyConstants {
    * Alert level
    */
   val ALERT_LEVEL: CommonVars[String] = CommonVars("wds.streamis.job.config.key.alert.level", "wds.linkis.flink.alert.level")
+
+  /**
+   * Material model
+   */
+  val MATERIAL_MODEL: CommonVars[String] = CommonVars("wds.streamis.job.config.key.material.model", "wds.streamis.job.material.model")
 }
