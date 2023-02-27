@@ -111,7 +111,7 @@ class TaskMonitorService extends Logging {
             // 连续三次还是出现异常，说明Linkis的Manager已经不能正常提供服务，告警并不再尝试获取状态，等待下次尝试
             val users = getAlertUsers(job)
             users.add(job.getCreateBy)
-            alert(jobService.getAlertLevel(job), s"请求LinkisManager失败，Linkis集群出现异常，请关注！影响任务[${job.getName}]", users, streamTask)
+            alert(jobService.getAlertLevel(job), s"请求LinkisManager失败，Linkis集群出现异常，请关注！影响任务：[${job.getName}]，请联系用户[${job.getSubmitUser}]进行处理！", users, streamTask)
           }
         }
         streamTaskMapper.updateTask(streamTask)
