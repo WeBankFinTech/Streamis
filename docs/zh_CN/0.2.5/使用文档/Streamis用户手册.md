@@ -7,7 +7,7 @@
 
 ## 2. Streamis整合至DSS
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了方便用户使用，**Streamis系统以DSS组件的形式嵌入DSS系统中**
+为了方便用户使用，**Streamis系统以DSS组件的形式嵌入DSS系统中**
 
 ##### 		2.1 **如何接入？**
 
@@ -33,12 +33,11 @@
 ![核心指标](../../../images/home_page.png)
 
 <center>图 3.1 首页核心指标</center>
-
-# 4. 任务示例
+## 4. 任务示例
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;主要演示案例从Script FlinkSQL开发，调试到Streamis发布的整个流程。
 
-## 4.1. Script开发SQL
+### 4.1. Script开发SQL
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;顶部Scriptis菜单创建一个脚本文件，脚本类型选择Flink,如下图所示：
 
@@ -52,9 +51,9 @@
 
 点击运行后，即可调试该脚本
 
-## 4.2. 发布至Streamis
+### 4.2. 发布至Streamis
 
-### 		4.2.1 打包Streamis Job任务
+#### 		4.2.1 打包Streamis Job任务
 
 ​				流式应用物料包是指的按照Streamis打包规范，将元数据信息(流式应用描述信息),流式应用代码，流式应用使用到的物料等内容打包成zip包。zip具体格式如下：
 
@@ -75,41 +74,63 @@
 	"description": ""    # 作业描述,
 	"jobContent": {
 		# 不同的jobType，其内容各不相同，具体请往下看
-	}
+	},
+	"jobConfig": {
+        "wds.linkis.flink.resource": {
+    		"wds.linkis.flink.app.parallelism":"",  # Parallelism并行度
+    		"wds.linkis.flink.jobmanager.memory":"",  # JobManager Memory(M)
+    		"wds.linkis.flink.taskmanager.memory":"", # TaskManager Memory(M)
+    		"wds.linkis.flink.taskmanager.numberOfTaskSlots":"",  # TaskManager Slot数量
+    		"wds.linkis.flink.taskmanager.cpus":"",  # TaskManager CPUs
+    		"wds.linkis.rm.yarnqueue":""  # Yarn队列
+    		"flink.client.memory":""  # 客户端内存
+    	},
+    	"wds.linkis.flink.custom": {
+            # Flink作业相关参数
+    	},
+    	"wds.linkis.flink.produce": {
+    	    "wds.linkis.flink.checkpoint.switch":"OFF",  # Checkpoint开关
+    		"wds.linkis.flink.app.fail-restart.switch":"OFF",  # 作业失败自动拉起开关
+    		"wds.linkis.flink.app.start-auto-restore.switch":"OFF"  # 作业启动状态自恢复
+    	}
+    }
 }
 ```
 
-！！！！！**特别需要注意的是：**
+其中，jobConfig的配置项可以不填，有默认的配置项，具体如下：
 
-​	**此处的projectName需要和您dss工程中创建的工程名一致，不然在streamis页面导入ZIP包时，刷新列表后会不会显示，因为两者的projectName不一致**
-
-如果jobType为"flink.sql"，则jobContent为：
-
+```yaml
+"jobConfig": {
+        "wds.linkis.flink.resource": {
+    		"wds.linkis.flink.app.parallelism":"4",
+    		"wds.linkis.flink.jobmanager.memory":"2048",
+    		"wds.linkis.flink.taskmanager.memory":"4096",
+    		"wds.linkis.flink.taskmanager.numberOfTaskSlots":"2",
+    		"wds.linkis.flink.taskmanager.cpus":"2"
+    	},
+    	"wds.linkis.flink.custom": {
+            "stream.log.filter.keywords":"ERROR,WARN,INFO",
+            "security.kerberos.krb5-conf.path":"/appcom/Install/streamis/krb5.conf",
+            "demo.log.tps.rate":"20000",
+             "classloader.resolve-order":"parent-first",
+             "stream.log.debug":"true",
+             "security.kerberos.login.contexts":"KafkaClient,Client",
+             "security.kerberos.login.keytab":"/appcom/Install/streamis/hadoop.keytab",
+             "security.kerberos.login.principal":"hadoop/inddev010004@WEBANK.COM"
+    	},
+    	"wds.linkis.flink.produce": {
+    	    "wds.linkis.flink.checkpoint.switch":"OFF",
+    		"wds.linkis.flink.app.fail-restart.switch":"OFF",
+    		"wds.linkis.flink.app.start-auto-restore.switch":"OFF"
+    	}
+    }
 ```
-{
-	"type": ""  # file, bml or sql
-	"sql": "select 1",
-	"file": "test.sql",
-	"resourceId": "",
-	"version": ""
-}
-其中，如果type为"file"，则只识别file字段；如果type为"sql"，则只识别sql字段；如果type为"bml"，则只识别resourceId和version字段。
-```
 
-如果jobType为"flink.jar"，则jobContent为：
+ ![default_config1](../../../images/default_config1.png) 
 
-```
-{
-	"main.class.jar": "",   # string。main class的jar，如：test.jar
-	"main.class": "",		# main class，如 com.webank.Test
-	"args": "",				# main class 的入参，即main函数的args，请以空格为分隔符
-	"hdfs.jars"； [],   	# 依赖的HDFS jars，如：hdfs:///user/hadoop/test1.jar
-	"dependency.jars": [],	# 依赖的jars，如：test2.jar
-	"resources": []			# 依赖的资源文件，如：test.properties
-}
-```
+ ![default_config2](../../../images/default_config2.png) 
 
-### 4.2.2 示例
+#### 4.2.2 示例
 
 ​	streamisjobtest为flinksql文件，meta.json是该任务的元数据信息。
 
@@ -138,18 +159,26 @@
 
 ![jobbulk_operate](../../../images/jobbulk_operate.png)
 
-#### 
+## 5. 工程资源文件
 
+Streamis首页-核心指标右上角-工程资源文件。
+工程资源文件提供了上传和管理项目所需资源文件的功能，如下图所示：
 
-# 5、Streamis任务介绍
+![project_source_file_list](../../../images/project_source_file_list.png)
+
+上传项目文件
+
+![project_source_file_import](../../../images/project_source_file_import.png)
+
+## 6. Streamis任务介绍
 
 点击”作业名称“,可查看任务的详情，包括，运行情况、执行历史、配置、任务详情、告警等。
 
-## 5.1 运行情况
+### 5.1 运行情况
 
 ![stream_job_detail](../../../images/stream_job_detail.png)
 
-## 5.2 执行历史
+### 5.2 执行历史
 
 打开执行历史可以查看该任务的历史运行情况，
 
@@ -159,7 +188,7 @@
 
 ![stream_job_history](../../../images/stream_job_history.png)
 
-## 5.3 配置
+### 5.3 配置
 
 给Streamis任务配置一些flink资源参数以及checkpoint的参数
 
@@ -168,7 +197,7 @@
 
 
 
-## 5.4任务详情
+### 5.4任务详情
 
 <br/>
 
@@ -192,18 +221,10 @@
 
 <br/>
 
-## 5.5 进入Yarn页面
+### 5.5 进入Yarn页面
 
 正在运行的Streamis任务可以通过该按钮进入到yarn管理界面上的查看flink任务运行情况。
 
 ![image-20211231102020703](../../../images/image-20211231102020703.png)
 
-## 6 工程资源文件
-Streamis首页-核心指标右上角-工程资源文件。
-工程资源文件提供了上传和管理项目所需资源文件的功能，如下图所示：
-
-![project_source_file_list](../../../images/project_source_file_list.png)
-
-上传项目文件
-
-![project_source_file_import](../../../images/project_source_file_import.png)
+## 7. Streamis任务生命周期管理

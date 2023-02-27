@@ -12,8 +12,6 @@ StreamisAppConn是Streamis用来与DSS集成的一个AppConn，功能包括
 | 三级规范-CRUDService | 支持流式编排创建、获取、更新、删除等操作 | DSS-Framework-Orchestrator-Server |
 | 三级规范-ExportService和ImportService   | 支持流式编排的导入导出        | DSS-Framework-Orchestrator-Server                                  |
 
-
-
 ### 1.2部署
 
 1. 编译
@@ -57,9 +55,8 @@ delete from `dss_onestop_menu_application` WHERE title_en = 'Streamis';
 
 
 
-### 1.3使用
-
 ## 2.Streamis DataSource AppConn
+
 ----------
 ### 2.1介绍
 |实现的规范和Service              | 功能                                      | 作用微服务                                                |
@@ -71,9 +68,8 @@ delete from `dss_onestop_menu_application` WHERE title_en = 'Streamis';
 1. 实现三级规范的CRUDService，支持数据源节点的创建、获取、更新、删除等操作
 2. 实现三级规范的ExportService和ImportService，支持数据源的导入导出
 3. 实现三级规范的ExecutionService,支持数据源的执行
-### 2.2部署
 
-### 2.3使用
+
 
 
 ## 3.Streamis JobManager AppConn
@@ -86,5 +82,5 @@ StreamisJobManager AppConn与SchedulisAppConn的功能是类似的，主要是�
 | 工作流转换规范 | 支持将流式工作流转换成Linkis Flink引擎可以执行的流式应用           | DSS-Framework-Orchestrator-Server                |
 | 工作流发布规范 | 支持将转换之后的流式应用发布到Streamis-JobManager | DSS-Framework-Orchestrator-Server |
 
-### 3.2部署
+### 
 
