@@ -27,7 +27,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.linkis.server.Message;
-import org.apache.linkis.server.security.SecurityFilter;
+import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +65,7 @@ public class UploadRestfulApi {
                              @RequestParam(name = "projectName", required = false) String projectName,
                               @RequestParam(name = "file") List<MultipartFile> files) throws IOException, JobException {
 
-        String userName = SecurityFilter.getLoginUsername(request);
+        String userName = ModuleUserUtils.getOperationUser(request, "upload job zip file");
         if (files == null || files.size() <= 0) {
             throw JobExceptionManager.createException(30300, "uploaded files");
         }
