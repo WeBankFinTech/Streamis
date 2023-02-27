@@ -1,8 +1,6 @@
-### for DSS-Server and Eventchecker APPCONN
+### for Streamis-Server
 MYSQL_HOST=
 MYSQL_PORT=
 MYSQL_DB=
 MYSQL_USER=
 MYSQL_PASSWORD=
-
-
