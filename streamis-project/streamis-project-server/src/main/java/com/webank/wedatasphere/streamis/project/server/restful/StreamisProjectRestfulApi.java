@@ -12,6 +12,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.math3.util.Pair;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
+import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,7 @@ public class StreamisProjectRestfulApi {
     @RequestMapping(path = "/createProject", method = RequestMethod.POST)
     public Message createProject( HttpServletRequest request,@Validated @RequestBody CreateProjectRequest createProjectRequest){
         LOGGER.info("enter createProject, requestBody is {}",createProjectRequest.toString());
-        String username = SecurityFilter.getLoginUsername(request);
+        String username = ModuleUserUtils.getOperationUser(request, "create project");
         try{
             StreamisProject streamisProject = new StreamisProject(createProjectRequest.getProjectName(), createProjectRequest.getWorkspaceId());
             streamisProject.setCreateBy(username);
@@ -62,7 +63,7 @@ public class StreamisProjectRestfulApi {
     @RequestMapping(path = "/updateProject", method = RequestMethod.PUT)
     public Message updateProject( HttpServletRequest request, @Validated @RequestBody UpdateProjectRequest updateProjectRequest){
         LOGGER.info("enter updateProject, requestBody is {}",updateProjectRequest.toString());
-        String username = SecurityFilter.getLoginUsername(request);
+        String username = ModuleUserUtils.getOperationUser(request, "update project");
         try{
             StreamisProject streamisProject = new StreamisProject(updateProjectRequest.getProjectName(), updateProjectRequest.getWorkspaceId());
             streamisProject.setId(updateProjectRequest.getProjectId());
@@ -83,7 +84,7 @@ public class StreamisProjectRestfulApi {
     @RequestMapping(path = "/deleteProject", method = RequestMethod.DELETE)
     public Message deleteProject( HttpServletRequest request, @RequestParam(value = "projectId", required = false) Long projectId){
         LOGGER.info("enter deleteProject, requestParam projectId is {}",projectId);
-        String username = SecurityFilter.getLoginUsername(request);
+        String username = ModuleUserUtils.getOperationUser(request, "delete project");
         try{
             projectService.deleteProjectById(projectId);
             return StreamisProjectRestfulUtils.dealOk("delete project success");
@@ -96,7 +97,7 @@ public class StreamisProjectRestfulApi {
     @RequestMapping(path = "/searchProject", method = RequestMethod.GET)
     public Message searchProject( HttpServletRequest request,@RequestParam(value = "projectName", required = false) String projectName){
         LOGGER.info("enter searchProject, requestParam projectName is {}",projectName);
-        String username = SecurityFilter.getLoginUsername(request);
+        String username = ModuleUserUtils.getOperationUser(request, "search project");
         try{
             List<Long> projectIds = projectService.queryProjectIds(projectName);
             return StreamisProjectRestfulUtils.dealOk("search project success",
