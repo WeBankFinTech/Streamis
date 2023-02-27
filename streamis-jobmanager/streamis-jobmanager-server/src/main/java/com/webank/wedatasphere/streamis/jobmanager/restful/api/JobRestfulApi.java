@@ -42,7 +42,6 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.linkis.httpclient.dws.DWSHttpClient;
 import org.apache.linkis.server.Message;
-import org.apache.linkis.server.security.SecurityFilter;
 import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +84,7 @@ public class JobRestfulApi {
                               @RequestParam(value = "jobName", required = false) String jobName,
                               @RequestParam(value = "jobStatus", required = false) Integer jobStatus,
                               @RequestParam(value = "jobCreator", required = false) String jobCreator) {
-        String username = SecurityFilter.getLoginUsername(req);
+        String username = ModuleUserUtils.getOperationUser(req, "list jobs");
         if(StringUtils.isBlank(projectName)){
             return Message.error("Project name cannot be empty(项目名不能为空，请指定)");
         }
@@ -108,7 +107,7 @@ public class JobRestfulApi {
 
     @RequestMapping(path = "/createOrUpdate", method = RequestMethod.POST)
     public Message createOrUpdate(HttpServletRequest req, @Validated @RequestBody MetaJsonInfo metaJsonInfo) {
-        String username = SecurityFilter.getLoginUsername(req);
+        String username = ModuleUserUtils.getOperationUser(req, "create or update job");
         String projectName = metaJsonInfo.getProjectName();
         if (StringUtils.isBlank(projectName)){
             return Message.error("Project name cannot be empty(项目名不能为空，请指定)");
@@ -163,7 +162,7 @@ public class JobRestfulApi {
         if (StringUtils.isEmpty(version)) {
             throw JobExceptionManager.createException(30301, "version");
         }
-        String username = SecurityFilter.getLoginUsername(req);
+        String username = ModuleUserUtils.getOperationUser(req, "view the job version");
         StreamJob streamJob = this.streamJobService.getJobById(jobId);
         if (!streamJobService.hasPermission(streamJob, username) &&
             !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
@@ -207,7 +206,7 @@ public class JobRestfulApi {
     }
     @RequestMapping(path = "/execute", method = RequestMethod.POST)
     public Message executeJob(HttpServletRequest req, @RequestBody Map<String, Object> json) throws JobException {
-        String userName = SecurityFilter.getLoginUsername(req);
+        String userName = ModuleUserUtils.getOperationUser(req, "execute job");
         if (!json.containsKey("jobId") || json.get("jobId") == null) {
             throw JobExceptionManager.createException(30301, "jobId");
         }
@@ -236,7 +235,7 @@ public class JobRestfulApi {
     public Message killJob(HttpServletRequest req,
                            @RequestParam(value = "jobId", required = false) Long jobId,
                            @RequestParam(value = "snapshot", required = false) Boolean snapshot) throws JobException {
-        String userName = SecurityFilter.getLoginUsername(req);
+        String userName = ModuleUserUtils.getOperationUser(req, "stop the job");
         snapshot = !Objects.isNull(snapshot) && snapshot;
         if (jobId == null) {
             throw JobExceptionManager.createException(30301, "jobId");
@@ -270,7 +269,7 @@ public class JobRestfulApi {
         if (jobId == null) {
             JobExceptionManager.createException(30301, "jobId");
         }
-        String username = SecurityFilter.getLoginUsername(req);
+        String username = ModuleUserUtils.getOperationUser(req, "view the job details");
         StreamJob streamJob = streamJobService.getJobById(jobId);
         if (!streamJobService.hasPermission(streamJob, username) &&
                 !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
@@ -286,7 +285,7 @@ public class JobRestfulApi {
     public Message executeHistoryJob(HttpServletRequest req,
                                      @RequestParam(value = "jobId", required = false) Long jobId,
                                      @RequestParam(value = "version", required = false) String version) throws JobException {
-        String username = SecurityFilter.getLoginUsername(req);
+        String username = ModuleUserUtils.getOperationUser(req, "view the job history");
         if (jobId == null) {
             throw JobExceptionManager.createException(30301, "jobId");
         }
@@ -332,7 +331,7 @@ public class JobRestfulApi {
                            @RequestParam(value = "jobName") String jobName,
                            @RequestParam(value = "appId") String appId,
                            @RequestParam(value = "appUrl") String appUrl) {
-        String username = SecurityFilter.getLoginUsername(req);
+        String username = ModuleUserUtils.getOperationUser(req, "add task");
         LOG.info("User {} try to add a new task for Streamis job {}.{} with appId: {}, appUrl: {}.", username, projectName, jobName, appId, appUrl);
         if(StringUtils.isBlank(appId)) {
             return Message.error("appId cannot be empty!");
@@ -413,7 +412,7 @@ public class JobRestfulApi {
                               @RequestParam(value = "jobName") String jobName,
                               @RequestParam(value = "appId") String appId,
                               @RequestParam(value = "metrics") String metrics) {
-        String username = SecurityFilter.getLoginUsername(req);
+        String username = ModuleUserUtils.getOperationUser(req, "update task");
         LOG.info("User {} try to update task for Streamis job {}.{} with appId: {}, metrics: {}.", username, projectName, jobName, appId, metrics);
         return withStreamJob(req, projectName, jobName, username, streamJob -> {
             StreamTask streamTask = streamTaskService.getLatestTaskByJobId(streamJob.getId());
@@ -458,7 +457,7 @@ public class JobRestfulApi {
                            @RequestParam(value = "jobName") String jobName,
                             @RequestParam(value = "appId") String appId,
                             @RequestParam(value = "appUrl") String appUrl) {
-        String username = SecurityFilter.getLoginUsername(req);
+        String username = ModuleUserUtils.getOperationUser(req, "stop task");
         LOG.info("User {} try to stop task for Streamis job {}.{} with appId: {}, appUrl: {}.", username, projectName, jobName, appId, appUrl);
         return withStreamJob(req, projectName, jobName, username,
                 streamJob -> tryStopTask(streamJob, appId));
@@ -490,7 +489,7 @@ public class JobRestfulApi {
     @RequestMapping(path = "/progress", method = RequestMethod.GET)
     public Message progressJob(HttpServletRequest req, @RequestParam(value = "jobId", required = false) Long jobId,
                                @RequestParam(value = "version", required = false) String version) throws JobException {
-        String username = SecurityFilter.getLoginUsername(req);
+        String username = ModuleUserUtils.getOperationUser(req, "view the job's progress");
         if (jobId == null) {
             throw JobExceptionManager.createException(30301, "jobId");
         }
@@ -511,7 +510,7 @@ public class JobRestfulApi {
     @RequestMapping(path = "/jobContent", method = RequestMethod.GET)
     public Message uploadDetailsJob(HttpServletRequest req, @RequestParam(value = "jobId", required = false) Long jobId,
                                     @RequestParam(value = "version", required = false) String version) {
-        String username = SecurityFilter.getLoginUsername(req);
+        String username = ModuleUserUtils.getOperationUser(req, "view job content");
         StreamJob streamJob = this.streamJobService.getJobById(jobId);
         if (!streamJobService.hasPermission(streamJob, username) &&
                 !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
@@ -524,7 +523,7 @@ public class JobRestfulApi {
     @RequestMapping(path = "/alert", method = RequestMethod.GET)
     public Message getAlert(HttpServletRequest req, @RequestParam(value = "jobId", required = false) Long jobId,
                                             @RequestParam(value = "version", required = false) String version) {
-        String username = SecurityFilter.getLoginUsername(req);
+        String username = ModuleUserUtils.getOperationUser(req, "get alert message list");
         return Message.ok().data("list", streamJobService.getAlert(username, jobId, version));
     }
 
@@ -542,7 +541,7 @@ public class JobRestfulApi {
             throw JobExceptionManager.createException(30301, "jobId");
         }
         logType = StringUtils.isBlank(logType) ? "client" : logType;
-        String username = SecurityFilter.getLoginUsername(req);
+        String username = ModuleUserUtils.getOperationUser(req, "view job logs");
         StreamJob streamJob = this.streamJobService.getJobById(jobId);
         if(streamJob == null) {
             return Message.error("not exists job " + jobId);
@@ -593,7 +592,7 @@ public class JobRestfulApi {
     public Message snapshot(@PathVariable("jobId")Long jobId, HttpServletRequest request){
         Message result = Message.ok();
         try{
-            String username = SecurityFilter.getLoginUsername(request);
+            String username = ModuleUserUtils.getOperationUser(request, "do snapshot of job");
             StreamJob streamJob = this.streamJobService.getJobById(jobId);
             if(streamJob == null) {
                 return Message.error("not exists job " + jobId);
