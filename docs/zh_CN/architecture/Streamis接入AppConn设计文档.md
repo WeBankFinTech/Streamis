@@ -1,7 +1,7 @@
 # Streamis接入AppConn
 
 ## 总体流程图
-![Streamis接入DSS](../../../images/zh_CN/streamis_appconn.png)
+![Streamis接入DSS](../../images/zh_CN/streamis_appconn.png)
 
 ## DSS项目appconn插件streamis-appconn
 
