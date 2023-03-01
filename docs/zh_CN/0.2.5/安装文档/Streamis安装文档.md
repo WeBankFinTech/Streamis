@@ -1,17 +1,7 @@
 # Streamis安装部署文档
 
-## 1.组件介绍
+## 1.代码编译
 
-Streamis0.2.5-webank 提供了 Streamis-JobManager 流式生产中心，其作用主要有：
-
-1. 上传/更新流式应用
-2. 配置流式应用参数，如 Flink 的 Slot 数量、checkpoint相关参数等 
-3. 管理流式应用，如启停、savepoint等 
-4. 流式应用监控告警
-
-
-## 2.代码编译
- 
 **Streamis 无需手动编译，可以直接下载安装包进行部署，请 [点我下载安装包](https://github.com/WeBankFinTech/Streamis/releases)。**
 
 如果您想自己编译 Streamis，可参考如下步骤进行。
@@ -36,16 +26,16 @@ npm run build
 ```
 编译成功后，在 `${STREAMIS_CODE_HOME}/web` 目录下生成 `streamis-${streamis-version}-dist.zip`
 
-## 3.安装准备
+## 2.安装准备
 
-#### 3.1 基础环境安装
+#### 2.1 基础环境安装
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;下面的软件必须安装：
 
 - MySQL (5.5+)，[如何安装MySQL](https://www.runoob.com/mysql/mysql-install.html)
 - JDK (1.8.0_141以上)，[如何安装JDK](https://www.runoob.com/java/java-environment-setup.html)
 
-### 3.2 Linkis 和 DSS 环境
+#### 2.2 Linkis 和 DSS 环境
 
 - Linkis (>=1.1.1)，Streamis 的执行依赖于 Linkis 的 Flink 引擎，并且依赖 **Linkis-1.1.1** 及以上版本，部分功能需要Linkis-1.1.2支持。
 - DataSphere Studio (>=1.1.0)，Streamis 流式作业的开发和调试，依赖于 DSS-Scriptis，Streamis 流式生产中心则需嵌入到 DSS 工程框架体系之中，所以依赖于 **DSS-1.1.0** 及以上版本。
@@ -55,7 +45,7 @@ npm run build
 如何验证 DSS 和 Linkis 已基本可用？您可以在 DSS-Scriptis 上新建一个 flinksql 脚本并执行，如果 flinksql 能正确执行并返回结果集，表示 DSS 和 linkis 环境是可用的。
 
 
-## 4.安装和启动
+## 3.安装和启动
 
 ### 后台安装
 
@@ -70,16 +60,23 @@ tar -xvf wedatasphere-streamis-${streamis-version}-dist.tar.gz
 
 2.修改数据库配置
 
-```shell script
+```yaml
 vi conf/db.sh
-#配置基础的数据库信息
+```
 
+```shell script
+#配置基础的数据库信息
+MYSQL_HOST=${MYSQL_HOST}
+MYSQL_PORT=${MYSQL_PORT}
+MYSQL_DB=${MYSQL_DB}
+MYSQL_USER=${MYSQL_USER}
+MYSQL_PASSWORD=${MYSQL_PASSWORD}
 ```
 
 3.修改基础配置文件
 
 ```shell script
-    vi conf/config.sh
+vi conf/config.sh
 ```
 
 ```shell script
@@ -88,6 +85,9 @@ deployUser=hadoop
 
 ### ssh port
 SSH_PORT=22
+
+##The Max Heap size for the JVM
+SERVER_HEAP_SIZE="512M"
 
 ##The Port of Streamis
 STREAMIS_PORT=9400
@@ -103,6 +103,21 @@ EUREKA_PORT=20303
 GATEWAY_INSTALL_IP=127.0.0.1
 GATEWAY_PORT=9001
 
+################### The install Configuration of all Micro-Services #####################
+#
+#    NOTICE:
+#       1. If you just wanna try, the following micro-service configuration can be set without any settings.
+#            These services will be installed by default on this machine.
+#       2. In order to get the most complete enterprise-level features, we strongly recommend that you install
+#          the following microservice parameters
+#
+
+STREAMIS_SERVER_INSTALL_IP=127.0.0.1
+STREAMIS_SERVER_INSTALL_PORT=9400
+
+STREAMIS_VERSION=0.2.5
+
+STREAMIS_FILE_NAME="STREAMIS-$STREAMIS_VERSION"
 ```
 
 4.执行安装脚本
@@ -134,7 +149,7 @@ sh bin/start.sh
 ### 前端部署
 
 1.安装nginx
- 
+
 ```bash
 sudo yum install -y nginx
 ```
@@ -195,12 +210,12 @@ server {
 sudo nginx -s reload
 ```
 
-## 5. 接入DSS
+## 4. 接入DSS
 
-如您想正常使用 Streamis0.2.5-webank 前端，还需安装 DSS StreamisAppConn 插件，请参考: [StreamisAppConn 插件安装文档](development/StreamisAppConn安装文档.md)
+如您想正常使用 Streamis0.2.5 前端，还需安装 DSS StreamisAppConn 插件，请参考: [StreamisAppConn 插件安装文档](development/StreamisAppConn安装文档.md)
 
-## 6.Linkis Flink引擎编译安装
-如您想正常执行 Streamis0.2.5-webank，还需安装 Linkis Flink 引擎，请参考: [Linkis Flink 引擎安装文档](https://linkis.apache.org/zh-CN/docs/1.1.2/engine_usage/flink/)
+## 5.Linkis Flink引擎编译安装
+如您想正常执行 Streamis0.2.5，还需安装 Linkis Flink 引擎，请参考: [Linkis Flink 引擎安装文档](https://linkis.apache.org/zh-CN/docs/1.1.2/engine_usage/flink/)
 
-## 7.Streamis组件升级文档/脚本
-如您想从Streamis较低版本升级到 Streamis0.2.5-webank ，请参考：[Streamis升级文档](development/Streamis升级文档.md)
+## 6.Streamis组件升级文档/脚本
+如您想从Streamis较低版本升级到 Streamis0.2.5 ，请参考：[Streamis升级文档](development/Streamis升级文档.md)
