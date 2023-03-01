@@ -82,5 +82,4 @@ StreamisJobManager AppConn与SchedulisAppConn的功能是类似的，主要是�
 | 工作流转换规范 | 支持将流式工作流转换成Linkis Flink引擎可以执行的流式应用           | DSS-Framework-Orchestrator-Server                |
 | 工作流发布规范 | 支持将转换之后的流式应用发布到Streamis-JobManager | DSS-Framework-Orchestrator-Server |
 
-### 
 

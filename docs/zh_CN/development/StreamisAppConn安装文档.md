@@ -40,7 +40,7 @@ cd {DSS_INSTALL_HOME}/dss/bin
 sh ./appconn-install.sh
 # 脚本是交互式的安装方案，您需要输入字符串streamis以及streamis服务的ip和端口，即可以完成安装
 # 这里的streamis端口是指前端端口，在nginx进行配置。而不是后端的服务端口
-```
+ ```
 
 ## 4.完成streamis-appconn的安装后，需要重启dss服务，才能最终完成插件的更新
 ### 4.1）使部署好的APPCONN生效
@@ -53,7 +53,7 @@ sh ./dss-start-all.sh
 在安装部署完成streamis-appconn之后，可通过以下步骤初步验证streamis-appconn是否安装成功。
 
 在DSS工作空间创建一个新的项目
-![DSS工作空间Streamis项目](../../../images/zh_CN/dss_streamis_project.png)
+![DSS工作空间Streamis项目](../../images/zh_CN/dss_streamis_project.png)
 
 在streamis数据库查看是否同步创建项目，查询有记录说明appconn安装成功
 ```roomsql
