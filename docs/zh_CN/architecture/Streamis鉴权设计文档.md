@@ -2,7 +2,7 @@
 
 ## 鉴权流程图
 streamis存在需要鉴权的模块没有依赖streamis-project-server模块的情况，使用rest接口调用来处理鉴权。
-![Streamis项目鉴权操作](../../../images/zh_CN/streamis_project_privilege.png)
+![Streamis项目鉴权操作](../../images/zh_CN/streamis_project_privilege.png)
 
 ## 具体实现说明
 根据当前用户名和项目ID/名称获取到所有权限的集合，如果权限集合中包含RELEASE权限，则拥有发布/编辑/查看的权限，如果权限集合中包含EDIT权限，则拥有编辑/查看的权限，如果权限集合中包含ACCESS权限，则拥有查看的权限；  
