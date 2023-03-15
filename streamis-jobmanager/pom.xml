@@ -33,6 +33,7 @@
         <module>streamis-jobmanager-server</module>
         <module>streamis-projectmanager-server</module>
         <module>streamis-job-log</module>
+        <module>streamis-job-entrypoint</module>
     </modules>
 
 

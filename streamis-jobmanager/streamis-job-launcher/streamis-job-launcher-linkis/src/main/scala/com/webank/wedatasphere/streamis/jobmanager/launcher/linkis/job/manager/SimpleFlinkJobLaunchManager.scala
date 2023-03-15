@@ -15,11 +15,12 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState, JobStateInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.SimpleFlinkJobLaunchManager.INSTANCE_NAME
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobClient, FlinkJobInfo, LinkisJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.LinkisJobInfo
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo
 import org.apache.commons.lang3.StringEscapeUtils
 import org.apache.linkis.common.utils.{RetryHandler, Utils}
 import org.apache.linkis.computation.client.once.simple.{SimpleOnceJob, SubmittableSimpleOnceJob}
@@ -51,7 +52,7 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
 
   override protected def createJobInfo(onceJob: SubmittableOnceJob, job: LaunchJob, jobState: JobState): LinkisJobInfo = {
     val nodeInfo = onceJob.getNodeInfo
-    val jobInfo = new FlinkJobInfo
+    val jobInfo = new EngineConnJobInfo
     // Escape the job name
     jobInfo.setName(StringEscapeUtils.escapeJava(job.getJobName))
     jobInfo.setId(onceJob.getId)
@@ -68,20 +69,19 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
       jobInfo.setStatus("failed")
       jobInfo.setCompletedMsg(message)
     }
+
     jobInfo.setResources(nodeInfo.get("nodeResource").asInstanceOf[util.Map[String, Object]])
     // Set job state info into
-//    Option(jobState).foreach(state => {
-//      val stateInfo = new JobStateInfo
-//      stateInfo.setTimestamp(state.getTimestamp)
-//      stateInfo.setLocation(state.getLocation.toString)
-//      jobInfo.setJobStates(Array(stateInfo))
-//    })
+    Option(jobState).foreach(state => {
+      val stateInfo = new JobStateInfo(state.getLocation.toString, state.getTimestamp, state.isRestore)
+      jobInfo.setJobStates(Array(stateInfo))
+    })
     jobInfo
   }
 
-  override protected def createJobInfo(jobInfo: String): LinkisJobInfo = DWSHttpClient.jacksonJson.readValue(jobInfo, classOf[FlinkJobInfo])
+  override protected def createJobInfo(jobInfo: String): LinkisJobInfo = DWSHttpClient.jacksonJson.readValue(jobInfo, classOf[EngineConnJobInfo])
 
-  protected def fetchApplicationInfo(onceJob: OnceJob, jobInfo: FlinkJobInfo): Unit = {
+  protected def fetchApplicationInfo(onceJob: OnceJob, jobInfo: EngineConnJobInfo): Unit = {
     onceJob.getOperator(EngineConnApplicationInfoOperator.OPERATOR_NAME) match {
       case applicationInfoOperator: EngineConnApplicationInfoOperator =>
         val retryHandler = new RetryHandler {}
@@ -95,20 +95,6 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
     }
   }
 
-  /**
-   * Create job client
-   *
-   * @param onceJob once job
-   * @param jobInfo job info
-   * @return
-   */
-  override protected def createJobClient(onceJob: OnceJob, jobInfo: LinkisJobInfo): JobClient[LinkisJobInfo] = {
-    jobInfo match {
-      case flinkJobInfo: FlinkJobInfo =>
-        new FlinkJobClient(onceJob, flinkJobInfo, this.jobStateManager).asInstanceOf[JobClient[LinkisJobInfo]]
-      case _ => null
-    }
-  }
 
   /**
    * Init method
@@ -129,5 +115,5 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
 }
 object SimpleFlinkJobLaunchManager{
 
-  val INSTANCE_NAME = "simpleFlink";
+  val INSTANCE_NAME = "flink";
 }

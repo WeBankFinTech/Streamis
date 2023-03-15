@@ -8,6 +8,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.math3.util.Pair;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
+import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,7 @@ public class StreamisProjectPrivilegeRestfulApi {
     @RequestMapping(path = "/getProjectPrivilege", method = RequestMethod.GET)
     public Message getProjectPrivilege(HttpServletRequest request, @RequestParam(value = "projectId", required = false) Long projectId,
                                        @RequestParam(value = "projectName", required = false) String projectName) {
-        String username = SecurityFilter.getLoginUsername(request);
+        String username = ModuleUserUtils.getOperationUser(request);
         LOGGER.info("user {} obtain project[id:{} name:{}] privilege",username,projectId,projectName);
         try {
             if(projectId==null || projectId == 0) {
@@ -55,7 +56,7 @@ public class StreamisProjectPrivilegeRestfulApi {
     @RequestMapping(path = "/hasReleasePrivilege", method = RequestMethod.GET)
     public Message hasReleaseProjectPrivilege(HttpServletRequest request, @RequestParam(value = "projectId", required = false) Long projectId,
                                               @RequestParam(value = "projectName", required = false) String projectName) {
-        String username = SecurityFilter.getLoginUsername(request);
+        String username = ModuleUserUtils.getOperationUser(request);
         LOGGER.info("user {} obtain project[id:{} name:{}] release privilege",username,projectId,projectName);
         try {
             if(projectId==null || projectId == 0) {
@@ -74,7 +75,7 @@ public class StreamisProjectPrivilegeRestfulApi {
     @RequestMapping(path = "/hasEditPrivilege", method = RequestMethod.GET)
     public Message hasEditProjectPrivilege(HttpServletRequest request, @RequestParam(value = "projectId", required = false) Long projectId,
                                            @RequestParam(value = "projectName", required = false) String projectName) {
-        String username = SecurityFilter.getLoginUsername(request);
+        String username = ModuleUserUtils.getOperationUser(request);
         LOGGER.info("user {} obtain project[id:{} name:{}] edit privilege",username,projectId,projectName);
         try {
             if(projectId==null || projectId == 0) {
@@ -93,7 +94,7 @@ public class StreamisProjectPrivilegeRestfulApi {
     @RequestMapping(path = "/hasAccessPrivilege", method = RequestMethod.GET)
     public Message hasAccessProjectPrivilege(HttpServletRequest request, @RequestParam(value = "projectId", required = false) Long projectId,
                                              @RequestParam(value = "projectName", required = false) String projectName) {
-        String username = SecurityFilter.getLoginUsername(request);
+        String username = ModuleUserUtils.getOperationUser(request);
         LOGGER.info("user {} obtain project[id:{} name:{}] access privilege",username,projectId,projectName);
         try {
             if(projectId==null || projectId == 0) {
@@ -112,7 +113,7 @@ public class StreamisProjectPrivilegeRestfulApi {
     @RequestMapping(path = "/bulk/hasReleasePrivilege", method = RequestMethod.GET)
     public Message hasReleaseProjectPrivilege(HttpServletRequest request, @RequestParam(value = "projectIds", required = false) List<Long> projectIds,
                                               @RequestParam(value = "projectNames", required = false) List<String> projectNames) {
-        String username = SecurityFilter.getLoginUsername(request);
+        String username = ModuleUserUtils.getOperationUser(request);
         LOGGER.info("user {} obtain bulk project[id:{} name:{}] release privilege",username,projectIds,projectNames);
         try {
             projectIds = Optional.ofNullable(projectIds).orElse(new ArrayList<>());
@@ -133,7 +134,7 @@ public class StreamisProjectPrivilegeRestfulApi {
     @RequestMapping(path = "/bulk/hasEditPrivilege", method = RequestMethod.GET)
     public Message hasEditProjectPrivilege(HttpServletRequest request, @RequestParam(value = "projectIds", required = false) List<Long> projectIds,
                                            @RequestParam(value = "projectNames", required = false) List<String> projectNames) {
-        String username = SecurityFilter.getLoginUsername(request);
+        String username = ModuleUserUtils.getOperationUser(request);
         LOGGER.info("user {} obtain bulk project[id:{} name:{}] edit privilege",username,projectIds,projectNames);
         try {
             projectIds = Optional.ofNullable(projectIds).orElse(new ArrayList<>());
@@ -154,7 +155,7 @@ public class StreamisProjectPrivilegeRestfulApi {
     @RequestMapping(path = "/bulk/hasAccessPrivilege", method = RequestMethod.GET)
     public Message hasAccessProjectPrivilege(HttpServletRequest request, @RequestParam(value = "projectIds", required = false) List<Long> projectIds,
                                              @RequestParam(value = "projectNames", required = false) List<String> projectNames) {
-        String username = SecurityFilter.getLoginUsername(request);
+        String username = ModuleUserUtils.getOperationUser(request);
         LOGGER.info("user {} obtain bulk project[id:{} name:{}] access privilege",username,projectIds,projectNames);
         try {
             projectIds = Optional.ofNullable(projectIds).orElse(new ArrayList<>());

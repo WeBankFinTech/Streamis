@@ -15,7 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.operator
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.Savepoint
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.FlinkSavepoint
 import org.apache.linkis.computation.client.once.action.EngineConnOperateAction
 import org.apache.linkis.computation.client.once.result.EngineConnOperateResult
 import org.apache.linkis.computation.client.operator.OnceJobOperator
@@ -23,7 +23,7 @@ import org.apache.linkis.computation.client.operator.OnceJobOperator
 /**
  * Flink trigger savepoint operator
  */
-class FlinkTriggerSavepointOperator extends OnceJobOperator[Savepoint]{
+class FlinkTriggerSavepointOperator extends OnceJobOperator[FlinkSavepoint]{
 
   /**
    * Save point directory
@@ -48,10 +48,10 @@ class FlinkTriggerSavepointOperator extends OnceJobOperator[Savepoint]{
     builder.addParameter("mode", mode)
   }
 
-  override protected def resultToObject(result: EngineConnOperateResult): Savepoint = {
+  override protected def resultToObject(result: EngineConnOperateResult): FlinkSavepoint = {
       val savepointPath:String = result.getAs("writtenSavepoint")
       info(s"Get the savepoint store path: [$savepointPath] form ${FlinkTriggerSavepointOperator.OPERATOR_NAME} operation")
-      new Savepoint(savepointPath)
+      new FlinkSavepoint(savepointPath)
   }
 
   override def getName: String = FlinkTriggerSavepointOperator.OPERATOR_NAME

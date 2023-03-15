@@ -23,7 +23,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.StreamisTransformJobBuilder
-import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisJobEngineConnImpl, StreamisTransformJob, StreamisTransformJobContent, StreamisTransformJobImpl}
+import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisJobConnect, StreamisJobConnectImpl, StreamisJobEngineConnImpl, StreamisTransformJob, StreamisTransformJobContent, StreamisTransformJobImpl}
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.util
@@ -68,7 +68,7 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
   }
 }
 
-abstract class AbstractFlinkStreamisTransformJobBuilder extends AbstractStreamisTransformJobBuilder{
+abstract class AbstractDefaultStreamisTransformJobBuilder extends AbstractStreamisTransformJobBuilder{
 
   private val flinkVersion = CommonVars("wds.streamis.flink.submit.version", "1.12.2").getValue
 
@@ -78,8 +78,12 @@ abstract class AbstractFlinkStreamisTransformJobBuilder extends AbstractStreamis
     case transformJob: StreamisTransformJobImpl =>
       val engineConn = new StreamisJobEngineConnImpl
       engineConn.setEngineConnType("flink-" + flinkVersion)
-      engineConn.setRunType(getRunType(transformJob))
+//      engineConn.setRunType(getRunType(transformJob))
       transformJob.setStreamisJobEngineConn(engineConn)
+      val streamisJobConnect = new StreamisJobConnectImpl
+      streamisJobConnect.setRunType(getRunType(transformJob))
+      streamisJobConnect.setRunEngineVersion(flinkVersion)
+      transformJob.setStreamisJobConnect(streamisJobConnect)
       transformJob
     case job => job
   }

@@ -25,7 +25,9 @@ class StreamisTransformJobImpl extends StreamisTransformJob {
   private var streamJob: StreamJob = _
   private var streamJobVersion: StreamJobVersion = _
   private var configMap: util.Map[String, Any] = _
+  @deprecated
   private var streamisJobEngineConn: StreamisJobEngineConn = _
+  private var streamisJobConnect: StreamisJobConnect = _
   private var streamisTransformJobContent: StreamisTransformJobContent = _
 
   override def getStreamJob: StreamJob = streamJob
@@ -34,8 +36,12 @@ class StreamisTransformJobImpl extends StreamisTransformJob {
   override def getStreamJobVersion: StreamJobVersion = streamJobVersion
   def setStreamJobVersion(streamJobVersion: StreamJobVersion): Unit = this.streamJobVersion = streamJobVersion
 
+  @deprecated
   override def getStreamisJobEngineConn: StreamisJobEngineConn = streamisJobEngineConn
   def setStreamisJobEngineConn(streamisJobEngineConn: StreamisJobEngineConn): Unit = this.streamisJobEngineConn = streamisJobEngineConn
+
+  override def getStreamisJobConnect: StreamisJobConnect = streamisJobConnect
+  def setStreamisJobConnect(streamisJobConnect: StreamisJobConnect): Unit = this.streamisJobConnect = streamisJobConnect
 
   override def getStreamisTransformJobContent: StreamisTransformJobContent = streamisTransformJobContent
   def setStreamisTransformJobContent(streamisTransformJobContent: StreamisTransformJobContent): Unit =

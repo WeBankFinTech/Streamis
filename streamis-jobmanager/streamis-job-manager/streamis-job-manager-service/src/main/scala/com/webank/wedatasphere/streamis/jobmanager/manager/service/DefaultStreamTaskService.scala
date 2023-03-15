@@ -18,22 +18,23 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 import java.util
 import java.util.concurrent.Future
 import java.util.{Calendar, function}
-
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobGenericState, JobState}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobInfo, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{Checkpoint, Savepoint}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobClient, FlinkJobInfo, LinkisJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.{AbstractJobClient, EngineConnJobClient}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.SimpleFlinkJobLaunchManager
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{FlinkCheckpoint, FlinkSavepoint}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.SpringContextHolder
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf.FLINK_JOB_STATUS_FAILED
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo._
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
-import com.webank.wedatasphere.streamis.jobmanager.manager.exception.{JobExecuteErrorException, JobFetchErrorException, JobPauseErrorException, JobTaskErrorException}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobMode, StreamTask}
+import com.webank.wedatasphere.streamis.jobmanager.manager.exception.{JobErrorException, JobExecuteErrorException, JobFetchErrorException, JobPauseErrorException, JobTaskErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.FutureScheduler
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events.AbstractStreamisSchedulerEvent.StreamisEventInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events.StreamisPhaseInSchedulerEvent
@@ -42,6 +43,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.transform.exception.T
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.{StreamisTransformJobBuilder, TaskMetricsParser, Transform}
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.DateUtils
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils
+
 import javax.annotation.Resource
 import org.apache.commons.lang.StringUtils
 import org.apache.linkis.common.utils.{Logging, Utils}
@@ -188,23 +190,13 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       override def schedule(context: StreamisPhaseInSchedulerEvent.StateContext, jobInfo: queue.JobInfo): util.Map[String, AnyRef] = {
          val newTaskId = context.getVar("newTaskId")
          if (null != newTaskId){
-           var jobState: JobState = null
-           // Means to fetch the job state from task to restore
-           if (restore){
-             val restoreTaskId = taskId
-              // TODO fetch the job stage strategy
-              jobState = if (restoreTaskId <= 0){
-//                val earlierTasks = streamTaskMapper.getEarlierByJobId(finalJobId, 2)
-//                if (earlierTasks.isEmpty){
-//                  throw new JobExecuteErrorException(-1, "Cannot find the candidate task to search state")
-//                } else if (earlierTasks.size() < 2){
-//                  warn("First time to launch the StreamJob, ignore to restore JobState")
-//                  null
-//                } else {
-//                  getStateInfo(earlierTasks.get(1))
-//                }
-                  getStateInfo(streamTaskMapper.getLatestLaunchedById(jobId))
-              } else getStateInfo(restoreTaskId)
+           val restoreTaskId = taskId
+           val jobState: JobState = if (restoreTaskId <= 0){
+             getStateInfo(streamTaskMapper.getLatestLaunchedById(jobId))
+           } else getStateInfo(restoreTaskId)
+           if (null != jobState){
+             // If jobState.setToRestore(true) means that using the job state to restore stream task
+             jobState.setToRestore(restore)
            }
            // Launch entrance
            launch(newTaskId.asInstanceOf[Long], execUser, jobState)
@@ -333,17 +325,20 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
             }
             val streamJob = streamJobMapper.getJobById(finalJobId)
             info(s"Try to stop StreamJob [${streamJob.getName} with task(taskId: ${streamTask.getId}, linkisJobId: ${streamTask.getLinkisJobId}).")
-            val jobClient = jobLaunchManager.connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
-            val jobStateInfo = Utils.tryCatch(jobClient.stop(snapshot)){
-              case e: Exception =>
-                val pauseError =  new JobPauseErrorException(-1, s"Fail to stop the StreamJob [${streamJob.getName}] " +
-                  s"with task(taskId: ${streamTask.getId}, linkisJobId: ${streamTask.getLinkisJobId}), reason: ${e.getMessage}.")
-                pauseError.initCause(e)
-                throw pauseError
-              case pauseE: JobPauseErrorException =>
-                throw pauseE
+            val jobClient = getJobLaunchManager(streamTask).connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
+            val status = JobConf.linkisStatusToStreamisStatus(jobClient.getJobInfo(true).getStatus)
+            if (!JobConf.isCompleted(status)) {
+              val jobStateInfo = Utils.tryCatch(jobClient.stop(snapshot)){
+                case e: Exception =>
+                  val pauseError =  new JobPauseErrorException(-1, s"Fail to stop the StreamJob [${streamJob.getName}] " +
+                    s"with task(taskId: ${streamTask.getId}, linkisJobId: ${streamTask.getLinkisJobId}), reason: ${e.getMessage}.")
+                  pauseError.initCause(e)
+                  throw pauseError
+                case pauseE: JobPauseErrorException =>
+                  throw pauseE
+              }
+              Option(jobStateInfo).foreach(stateInfo => resultSet.put("snapshotPath", stateInfo.getLocation))
             }
-            Option(jobStateInfo).foreach(stateInfo => resultSet.put("snapshotPath", stateInfo.getLocation))
             streamTask.setLastUpdateTime(Calendar.getInstance.getTime)
             streamTask.setStatus(JobConf.FLINK_JOB_STATUS_STOPPED.getValue)
             streamTaskMapper.updateTask(streamTask)
@@ -397,9 +392,10 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       else streamTaskMapper.getLatestByJobId(jobId)
     if (null != streamTask && StringUtils.isNotBlank(streamTask.getLinkisJobId)) {
       Utils.tryCatch {
-        val jobClient = jobLaunchManager.connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
+        val jobClient = getJobLaunchManager(streamTask).connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
         jobClient match {
-          case client: FlinkJobClient =>
+          //todo other clients
+          case client: EngineConnJobClient =>
             requestPayload.setLogHistory(JobConf.isCompleted(streamTask.getStatus))
             val logIterator = client.fetchLogs(requestPayload)
             returnMap.put("logPath", logIterator.getLogPath)
@@ -407,7 +403,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
             returnMap.put("endLine", logIterator.getEndLine)
             logIterator.close()
             jobClient.getJobInfo match {
-              case linkisInfo: LinkisJobInfo =>
+              case linkisInfo: EngineConnJobInfo =>
                 if (StringUtils.isBlank(linkisInfo.getLogDirSuffix) && StringUtils.isNotBlank(logIterator.getLogDirSuffix)){
                   Utils.tryAndWarn {
                     // Update the linkis job info and store into database
@@ -439,9 +435,9 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     val streamTask = if (taskId > 0) streamTaskMapper.getTaskById(taskId)
       else streamTaskMapper.getLatestByJobId(jobId)
     if (null != streamTask && StringUtils.isNotBlank(streamTask.getLinkisJobId)){
-      val jobClient = this.jobLaunchManager.connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
+      val jobClient = getJobLaunchManager(streamTask).connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
       return jobClient match {
-        case flinkJobClient: FlinkJobClient =>
+        case flinkJobClient: AbstractJobClient =>
           Option(flinkJobClient.triggerSavepoint()) match {
             case Some(savepoint) =>
               savepoint.getLocation.toString
@@ -485,12 +481,12 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       }).asJava
   }
 
-  def getTaskJobInfo(jobId:Long, version: String): FlinkJobInfo ={
+  def getTaskJobInfo(jobId:Long, version: String): EngineConnJobInfo ={
     val str = streamTaskMapper.getTask(jobId, version)
     if (StringUtils.isBlank(str)) {
-      return new FlinkJobInfo
+      return new EngineConnJobInfo
     }
-    DWSHttpClient.jacksonJson.readValue(str,classOf[FlinkJobInfo])
+    DWSHttpClient.jacksonJson.readValue(str,classOf[EngineConnJobInfo])
   }
 
 
@@ -538,7 +534,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
    */
   @Transactional(rollbackFor = Array(classOf[Exception]))
   override def createTask(jobId: Long, status: Int, creator: String): StreamTask = {
-     trace(s"Query and lock the StreamJob in [$jobId] before creating StreamTask")
+    logger.trace(s"Query and lock the StreamJob in [$jobId] before creating StreamTask")
      Option(streamJobMapper.queryAndLockJobById(jobId)) match {
        case None => throw new JobTaskErrorException(-1, s"Unable to create StreamTask, the StreamJob [$jobId] is not exists.")
        case Some(job) =>
@@ -591,6 +587,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     if (null == streamJob){
       throw new JobExecuteErrorException(-1, s"Not found the related job info in [${streamTask.getJobId}], has been dropped it ?")
     }
+    //todo 在前置的streamJob创建时设置
     info(s"Start to find the transform builder to process the StreamJob [${streamJob.getName}]")
     val transformJob = streamisTransformJobBuilders.find(_.canBuild(streamJob)).map(_.build(streamJob))
       .getOrElse(throw new TransformFailedErrorException(30408, s"Cannot find a TransformJobBuilder to build StreamJob ${streamJob.getName}."))
@@ -600,7 +597,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     launchJob = Transform.getTransforms.foldLeft(launchJob)((job, transform) => transform.transform(transformJob, job))
     info(s"StreamJob [${streamJob.getName}] has transformed with launchJob $launchJob, now to launch it.")
     //TODO getLinkisJobManager should use jobManagerType to instance in future, since not only `simpleFlink` mode is supported in future.
-    val jobClient = jobLaunchManager.launch(launchJob, state)
+    val jobClient = getJobLaunchManager(streamTask).launch(launchJob, state)
     // Refresh and store the information from JobClient
     Utils.tryCatch {
       // Refresh the job info(If the job shutdown immediately)
@@ -687,32 +684,42 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     Option(streamTask) match {
       case Some(task) =>
         if (StringUtils.isNotBlank(task.getLinkisJobId)) {
-          info(s"Try to restore the JobState form taskId [${task.getId}], fetch the state information.")
-          // Connect to get the JobInfo
-          val jobClient = this.jobLaunchManager.connect(task.getLinkisJobId, task.getLinkisJobInfo)
-          val jobInfo = jobClient.getJobInfo
-          // Get the JobStateManager
-          val jobStateManager = this.jobLaunchManager.getJobStateManager
           val stateList: util.List[JobState] = new util.ArrayList[JobState]()
-          // First to fetch the latest Savepoint information
-          Option(jobStateManager.getJobState[Savepoint](classOf[Savepoint], jobInfo)).foreach(savepoint => stateList.add(savepoint))
-          // Determinate if need the checkpoint information
-          this.streamJobConfMapper.getRawConfValue(task.getJobId, JobConfKeyConstants.CHECKPOINT_SWITCH.getValue) match {
-            case "ON" =>
-              // Then to fetch the latest Checkpoint information
-              Option(jobStateManager.getJobState[Checkpoint](classOf[Checkpoint], jobInfo)).foreach(checkpoint => stateList.add(checkpoint))
+          // Connect to get the JobInfo
+          getJobLaunchManager(task) match {
+            case jobLaunchManager: SimpleFlinkJobLaunchManager =>
+              // Only support to fetch state information for Flink stream task
+              logger.info(s"Try to fetch and choose the state information from [${task.getId}].")
+              val jobClient = jobLaunchManager.connect(task.getLinkisJobId, task.getLinkisJobInfo)
+              val jobInfo = jobClient.getJobInfo
+              // Get the JobStateManager
+              val jobStateManager = jobLaunchManager.getJobStateManager
+              // First to fetch the latest Savepoint information
+              Option(jobStateManager.getJobState[FlinkSavepoint](classOf[FlinkSavepoint], jobInfo)).foreach(savepoint => stateList.add(savepoint))
+              // Determinate if need the checkpoint information
+              this.streamJobConfMapper.getRawConfValue(task.getJobId, JobConfKeyConstants.CHECKPOINT_SWITCH.getValue) match {
+                case "ON" =>
+                  // Then to fetch the latest Checkpoint information
+                  Option(jobStateManager.getJobState[FlinkCheckpoint](classOf[FlinkCheckpoint], jobInfo)).foreach(checkpoint => stateList.add(checkpoint))
+                case _ =>
+              }
+              // At last fetch the state information from storage
+              Option(jobInfo.getJobStates).foreach(stateInfoList => {
+                stateInfoList.foreach(stateInfo => {
+                  val jobState = new JobGenericState(stateInfo.getLocation)
+                  jobState.setToRestore(stateInfo.isRestore)
+                  jobState.setTimestamp(stateInfo.getTimestamp)
+                  stateList.add(jobState)
+                })
+              })
             case _ =>
           }
-          // Fetch the job state info in jobInfo at last
-//          Option(jobInfo.getJobStates).foreach(states => states.foreach(state => {
-//            val savepoint = new Savepoint(state.getLocation)
-//            savepoint.setTimestamp(state.getTimestamp)
-//            stateList.add(savepoint)
-//          }))
           if (!stateList.isEmpty){
             // Choose the newest job state
             val finalState = stateList.asScala.maxBy(_.getTimestamp)
-            info(s"Final choose the JobState: [${finalState.getLocation}] to restore the StreamJob")
+            // For candidate, set the restore flag as false
+            finalState.setToRestore(false)
+            logger.info(s"Final choose the JobState: [${finalState.getLocation}] as the candidate for restoring the StreamJob")
             return finalState
           }
         } else {
@@ -726,12 +733,41 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   override def getJobDetailsVO(streamJob: StreamJob, version: String): JobDetailsVo = {
     val flinkJobInfo = getTaskJobInfo(streamJob.getId, version)
     val jobStateInfos = flinkJobInfo.getJobStates
+    val manageMode = Option(streamJobMapper.getJobVersionById(streamJob.getId, version)) match {
+      case Some(jobVersion) =>
+        Option(Utils.tryQuietly(StreamJobMode
+          .valueOf(jobVersion.getManageMode))).getOrElse(StreamJobMode.EngineConn)
+      case _ => StreamJobMode.EngineConn
+    }
+
     val metricsStr = if (JobConf.SUPPORTED_MANAGEMENT_JOB_TYPES.getValue.contains(streamJob.getJobType)) null
       else if(jobStateInfos == null || jobStateInfos.length == 0) null
       else jobStateInfos(0).getLocation
     taskMetricsParser.find(_.canParse(streamJob)).map(_.parse(metricsStr)).filter { jobDetailsVO =>
       jobDetailsVO.setLinkisJobInfo(flinkJobInfo)
+      jobDetailsVO.setManageMode(manageMode)
       true
     }.getOrElse(throw new JobFetchErrorException(30030, s"Cannot find a TaskMetricsParser to parse job details."))
+  }
+
+  /**
+   * Fetch the suitable job launch manager
+   * @param streamTask stream task
+   * @return
+   */
+  private def getJobLaunchManager(streamTask: StreamTask): JobLaunchManager[_ <: JobInfo] = {
+    Option(streamTask.getJobType) match {
+      case Some(jobType) =>
+        var launchType = jobType
+        if (launchType.indexOf(".") > 0){
+          launchType = launchType.substring(0, launchType.indexOf("."))
+        }
+        val manager = JobLaunchManager.getJobManager(launchType.toLowerCase)
+        if (null == manager){
+          throw new JobErrorException(-1, s"Cannot find the suitable job launch manager for jobType: [${jobType}]")
+        }
+        manager
+      case _ => this.jobLaunchManager
+    }
   }
 }
