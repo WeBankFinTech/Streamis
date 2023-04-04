@@ -53,9 +53,21 @@
         "notEmpty": "Not empty",
         "wrongFormat": "Wrong format"
       },
+      "startHint": {
+        "title": "Job Starting Confirm",
+        "version": "Version Confirm",
+        "version1": "Confirm starting job with latest job",
+        "version2": "starting job",
+        "version3": "Last Started Version",
+        "snapshot": "Snapshot Confirm",
+        "snapshot1": "Confirm resuming job with snapshot",
+        "batchConfirm": "Confirm all the jobs"
+      },
       "jobListTableColumns":{
         "jobName": "Job name",
         "jobType": "Job type",
+        "launchMode": "Launch Mode",
+        "manageMode": "Manage Mode",
         "taskStatus": "Task status",
         "lastReleaseTime": "Last release time",
         "label": "Label",
@@ -78,6 +90,8 @@
         "modalTitle":"Version detail",
         "jobId":"Job id",
         "version":"Version",
+        "using":"Using",
+        "versionStatus":"VersionStatus",
         "description":"Description",
         "createTime":"Create time",
         "creator":"Creator",
@@ -179,7 +193,8 @@
         "selectJar": "Please choose Jar",
         "upload": "Upload",
         "choosedJar" : "Choosed Jar",
-        "jarError": "File must be Jar"
+        "jarError": "File must be Jar",
+        "choosedFile": "Choosed File"
       },
       "projectFile": {
         "file": "File",
@@ -187,6 +202,7 @@
         "overrideImport": "Override import",
         "chooseUploadFile": "Please choose the import resource file",
         "versionPlaceholder": "Only number and ., such as 0.1.0",
+        "commentLength": "The length of comment text is too long",
         "versionEmpty": "Version Cannot be empty",
         "fileEmpty": "File cannot be empty",
         "delete": "Delete",

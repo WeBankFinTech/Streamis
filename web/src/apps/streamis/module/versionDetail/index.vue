@@ -5,6 +5,7 @@
       v-model="visible"
       footer-hide
       width="1200"
+      class="version-detail-modal"
       @on-cancel="cancel"
     >
       <Table :columns="columns" :data="datas" border>
@@ -19,6 +20,14 @@
           </div>
         </template>
       </Table>
+      <Page
+        :total="pageData.total"
+        class="page"
+        :page-size="5"
+        show-total
+        show-elevator
+        @on-change="handlePageChange"
+      />
     </Modal>
   </div>
 </template>
@@ -34,6 +43,10 @@ export default {
   },
   data() {
     return {
+      pageData: {
+        total: 0,
+        current: 1
+      },
       columns: [
         {
           title: this.$t('message.streamis.versionDetail.jobId'),
@@ -42,6 +55,10 @@ export default {
         {
           title: this.$t('message.streamis.versionDetail.version'),
           key: 'version'
+        },
+        {
+          title: this.$t('message.streamis.versionDetail.versionStatus'),
+          key: 'versionStatus'
         },
         {
           title: this.$t('message.streamis.versionDetail.description'),
@@ -66,6 +83,7 @@ export default {
   methods: {
     showDetail(rowData) {
       console.log(rowData)
+      console.log('rowData: ', rowData);
       this.$router.push({
         name: 'JobDetail',
         params: {
@@ -85,8 +103,25 @@ export default {
     },
     cancel() {
       this.$emit('modalCancel')
-    }
+    },
+    handlePageChange(page) {
+      this.pageData.current = page
+      this.$emit('versionDetailPageChange', page)
+    },
   }
 }
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.page {
+  margin-top: 16px;
+  text-align: right;
+}
+</style>
+<style lang="scss">
+.version-detail-modal {
+  .ivu-modal-body {
+    max-height: 600px;
+    overflow: auto;
+  }
+}
+</style>
