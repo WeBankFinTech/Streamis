@@ -28,7 +28,6 @@ export default {
     }
   },
   mounted() {
-    console.log(this.$route.params)
     this.getDetail()
   },
   methods: {
@@ -38,7 +37,6 @@ export default {
       api
         .fetch(`streamis/streamJobManager/job/jobContent?${query}`, 'get')
         .then(res => {
-          console.log(res)
           if (res && res.jobContent) {
             this.detailName = 'jarDetail'
             this.data = res.jobContent
@@ -82,14 +80,14 @@ export default {
         })
         .catch(e => console.log(e))
     },
-    showVersionInfo(row) {
-      console.log(row)
+    showVersionInfo() {
+      // console.log(row)
     },
-    showDetail(row) {
-      console.log(row)
+    showDetail() {
+      // console.log(row)
     },
-    showLogs(row) {
-      console.log(row)
+    showLogs() {
+      // console.log(row)
     }
   }
 }

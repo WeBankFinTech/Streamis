@@ -52,9 +52,21 @@
         "notEmpty": "不能为空",
         "wrongFormat": "格式错误"
       },
+      "startHint": {
+        "title": "作业启动确认",
+        "version": "版本确认",
+        "version1": "确定以最新版本",
+        "version2": "启动作业",
+        "version3": "上次启动版本",
+        "snapshot": "快照确认",
+        "snapshot1": "确定使用如下快照恢复作业",
+        "batchConfirm": "确认所有批量作业"
+      },
       "jobListTableColumns":{
         "jobName": "作业名称",
         "jobType": "作业类型",
+        "launchMode": "运行模式",
+        "manageMode": "管理模式",
         "taskStatus": "运行状态",
         "lastReleaseTime": "最近发布时间",
         "label": "标签",
@@ -77,6 +89,8 @@
         "modalTitle":"版本详情",
         "jobId":"作业id",
         "version":"版本",
+        "using":"使用中",
+        "versionStatus":"版本状态",
         "description":"描述",
         "createTime":"创建时间",
         "creator":"创建者",
@@ -180,7 +194,8 @@
         "choosedJar" : "选中的Jar包",
         "jarError": "文件必须是Jar包",
         "jarEmpty": "必须选择Jar包",
-        "jobNameEmpty": "作业名称不能为空"
+        "jobNameEmpty": "作业名称不能为空",
+        "choosedFile": "选中的文件"
       },
       "projectFile": {
         "file": "文件",
@@ -188,6 +203,7 @@
         "overrideImport": "覆盖式导入",
         "chooseUploadFile": "请选择您要导入的资源文件",
         "versionPlaceholder": "只支持数字和.，例如0.1.0",
+        "commentLength": "文本长度过长,不能超过50个字符",
         "versionEmpty": "版本不能为空",
         "fileEmpty": "文件不能为空",
         "delete": "删除",

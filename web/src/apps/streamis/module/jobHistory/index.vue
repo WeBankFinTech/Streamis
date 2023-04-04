@@ -110,7 +110,6 @@ export default {
   },
   mounted() {
     this.getDatas()
-    console.log(this.$route.params)
   },
   methods: {
     getDatas() {
@@ -126,7 +125,6 @@ export default {
         .catch(e => console.log(e))
     },
     showVersionInfo(data) {
-      console.log(data)
       this.loading = true
       api
         .fetch(
@@ -137,23 +135,20 @@ export default {
           'get'
         )
         .then(res => {
-          console.log(res)
           if (res) {
             this.loading = false
             this.modalVisible = true
             this.versionDatas = [res.detail]
           }
         })
-        .catch(e => {
-          console.log(e)
+        .catch(() => {
           this.loading = false
         })
     },
-    showDetail(row) {
-      console.log(row)
+    showDetail() {
+      // console.log(row)
     },
     showLogs(row) {
-      console.log(row)
       this.$refs['logDetail'].getDatas(row.taskId)
       this.logVisible = true;
       this.taskId = +row.taskId;
