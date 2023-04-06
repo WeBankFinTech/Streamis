@@ -274,32 +274,19 @@
     <Modal
       v-model="startHintVisible"
       :title="$t('message.streamis.startHint.title')"
-      width="800"
+      width="1000"
       @on-cancel="cancelStartHint"
       :mask-closable="false"
     >
       <div class="wrap">
-        <div style="fontWeight: bold;marginBottom: 16px">
-          {{$t('message.streamis.startHint.version')}}
-        </div>
-        <div style="marginBottom: 16px">
-          {{$t('message.streamis.startHint.version1')}} <span style="color: #3399ff">{{startHintData.latestVersion}}</span> {{$t('message.streamis.startHint.version2')}} <span style="fontWeight: bold">{{startHintData.jobName}}</span>？（{{$t('message.streamis.startHint.version3')}}：<span style="color: #FF7F00">{{startHintData.lastVersion}}</span>）
-        </div>
-        <div style="fontWeight: bold;marginBottom: 16px">
-          {{$t('message.streamis.startHint.snapshot')}}
-        </div>
-        <div>
-          {{$t('message.streamis.startHint.snapshot1')}} <span style="fontWeight: bold">{{startHintData.jobName}}</span>：<span style="color: #3399ff">{{startHintData.link}}</span>
-        </div>
-        <div class="batch" style="marginTop: 16px" v-if="isBatchRestart">
-          <Checkbox
-            v-model="startHintData.batchConfirm"
-            class="fn-default-load">{{$t('message.streamis.startHint.batchConfirm')}}</Checkbox>
-        </div>
+        <Table border :columns="checkColumns" :data="checkData"></Table>
       </div>
       <template slot="footer">
-        <Button type="primary" @click="confirmStarting">{{ $t('message.streamis.formItems.confirmBtn') }}</Button>
-        <Button type="primary" @click="cancelStartHint">{{ $t('message.streamis.formItems.cancel') }}</Button>
+        <div style="display: flex; width: 100%">
+          <div style="textAlign: left; width: 836px; position: relative; top: 3px">当前一共需要确认的作业数量：{{checkData.length}}个</div>
+          <Button type="primary" @click="confirmStarting">{{ $t('message.streamis.formItems.confirmBtn') }}</Button>
+          <Button type="primary" @click="cancelStartHint">{{ $t('message.streamis.formItems.cancel') }}</Button>
+        </div>
       </template>
     </Modal>
   </div>
@@ -492,13 +479,33 @@ export default {
       // 作业启动弹框
       startHintVisible: false,
       isBatchRestart: false,
-      startHintData: {
-        batchConfirm: true,
-        latestVersion: '',
-        lastVersion: '',
-        jobName: '',
-        link: '',
-      },
+      // 启动弹框的列和数据
+      checkColumns: [
+        {
+          title: '作业名',
+          key: 'jobName',
+          align: 'center',
+          width: 200,
+        },
+        {
+          title: '最新启动版本',
+          key: 'latestVersion',
+          width: 130,
+          align: 'center'
+        },
+        {
+          title: '上次启动版本',
+          key: 'lastVersion',
+          width: 130,
+          align: 'center'
+        },
+        {
+          title: '快照',
+          key: 'link',
+          align: 'center'
+        },
+      ],
+      checkData: [],
       // 当前正在查看的data
       currentViewData: {}
     }
@@ -519,7 +526,7 @@ export default {
         pageSize,
         // 本地开发dev环境用的
         // projectName: 'stream_job',
-        // projectName: 'streamis025_inspection',
+        // projectName: 'streamis025_checkpoint',
         // 本地开发sit环境用的
         // projectName: 'streamis025_version',
         // 正式环境用的
@@ -601,11 +608,11 @@ export default {
 
     // 1、快照重启和直接重启只有调用接口时snapshot参数的区别
     // 2、快照重启、直接重启、启动 都需要调用inspect接口
-    // 3、快照重启、直接重启调用inspect接口前，需要pause接口返回成功
-    // 4、启动 不需要调用pause接口
-    // 5、快照重启、直接重启，勾选了“确认所有批量作业”并确认，或者一直确认到最后一步(中间的某一步，如果inspections返回为[]，则表示这一步不需要确认，直接跳到下一步)，调用bulk/execution接口
-    // 6、启动 如果inspect接口返回的inspections为[]，则直接调用execute接口
-
+    // 3、快照重启、直接重启调用inspect接口前，需要pause接口返回成功；启动 不需要调用pause接口
+    // 4、快照重启、直接重启、启动，不管inspections的数据如何，全都放到表格里供用户确认（除了作业名，有三个信息，最新启动版本、上次启动版本和快照，最新启动版本一定是有的，后面两个如果没有就显示为--）；对于没有需要确认信息的作业也显示在表格
+    // 5、在“作业启动确认”弹框里，用户点击确认，就启动所有弹框表格里的作业；用户点击取消，就全都不启动；对于没有inspectinos的作业也是一样处理而不是单独启动（上次版本是单独启动）
+    // 6、启动是调用/job/execute接口，批量快照重启、批量直接重启是调用/job/bulk/execution接口
+    
     // 快照重启和直接重启
     async clickBatchRestart(snapshot) {
       // 3、快照重启、直接重启调用inspect接口前，需要pause接口返回成功
@@ -640,7 +647,7 @@ export default {
       }
 
       // 1、快照重启和直接重启只有调用接口时snapshot参数的区别
-      this.handleAction(this.selections[0], 0, snapshot)
+      this.handleAction(this.selections, 0, snapshot)
     },
     async handleAction(data, index, snapshot) {
       console.log('handleAction snapshot: ', snapshot);
@@ -656,55 +663,51 @@ export default {
       this.tempData = data
       this.tempIndex = index
       this.tempSnapshot = snapshot
+      this.checkData = []
 
-      try {
+      if (this.isBatchRestart) {
+        // 是批量重启，tempData是数组
+        this.tempData.forEach(async (item) => {
+          const { id, name } = item
+          const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
+          const inspectRes = await api.fetch(checkPath, {}, 'put')
+          console.log('inspectRes: ', inspectRes);
+          const tempData = {
+            id,
+            jobName: name,
+            link: inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--',
+            latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
+            lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
+          }
+          this.checkData.push(tempData)
+        })
+        // 上面虽然是调用多个接口，但因为是await，所以这里的打开弹框的顺序可以按照同步的方式写
+        this.startHintVisible = true
+        console.log('打开弹框 this.startHintData: ', this.startHintData);
+      } else {
+        // 是单个重启，tempData是对象
         const { id, name } = this.tempData
         const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
-        // 2、快照重启、直接重启、启动 都需要调用inspect接口
         const inspectRes = await api.fetch(checkPath, {}, 'put')
-        // const inspectRes = {
-        //   inspections: ['version'],
-        //   version: {
-        //     now: {
-        //       version: 'v00002'
-        //     },
-        //     last: {
-        //       version: 'v00001'
-        //     }
-        //   },
-        //   snapshot: {
-        //     path: 'bhjkbjkjkbhkhj'
-        //   }
-        // }
-        console.log('inspect inspectRes: ', inspectRes);
-        console.log('inspect inspectRes.inspections: ', inspectRes.inspections);
-        console.log('Array.isArray(inspectRes.inspections): ', Array.isArray(inspectRes.inspections));
-        if (Array.isArray(inspectRes.inspections)) console.log('inspectRes.inspections.length: ', inspectRes.inspections.length);
-        console.log('打开弹框前的判断');
-        if (Array.isArray(inspectRes.inspections) && inspectRes.inspections.length > 0) {
-          console.log('打开弹框');
-          // 说明有数据，打开弹框
-          this.startHintVisible = true
-          this.startHintData.jobName = name
-          this.startHintData.latestVersion = inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--'
-          this.startHintData.lastVersion = inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--'
-          this.startHintData.link = inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--'
-          console.log('this.startHintData: ', this.startHintData);
-        } else {
-          // 如果inspections为空，则代表这个已经确认过了
-          this.confirmStarting()
+        const tempData = {
+          id,
+          jobName: name,
+          link: inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--',
+          latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
+          lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
         }
-      } catch (err) {
-        console.log('handleAction err: ', err);
-        this.processModalVisable = false
+        this.checkData.push(tempData)
+        this.startHintVisible = true
+        console.log('打开弹框 this.startHintData: ', this.startHintData);
       }
     },
     cancelStartHint() {
       this.startHintVisible = false
       this.processModalVisable = false
+      this.checkData = []
     },
     // 检查弹框的确认按钮
-    confirmStarting() {
+    async confirmStarting() {
       this.startHintVisible = false
       if (!this.isBatchRestart) {
         // 如果是单个的启动，那么直接调用execute启动接口
@@ -735,28 +738,17 @@ export default {
             this.getJobList()
           })
       } else {
-        // 如果是批量的，就要确定每一个都确认完了
-        // 如果this.startHintData.batchConfirm为true，表明用户一次性直接确认完了所有，就要直接启动了
-        if (this.startHintData.batchConfirm || this.tempIndex === this.selections.length - 1) {
-          // 批量确认，或者确认完最后一个了
-          this.bulkExecution(this.tempSnapshot);
-        } else {
-          // 还没确认完，就继续确认
-          this.handleAction(this.selections[this.tempIndex + 1], this.tempIndex + 1, this.tempSnapshot)
+        // 批量启动
+        console.log('bulkExecution');
+        try {
+          const bulk_sbj = this.selections.map(item => +item.id);
+          const result = await api.fetch('streamis/streamJobManager/job/bulk/execution', { bulk_sbj });
+          console.log('start result', result);
+          this.queryProcess(bulk_sbj);
+        } catch (err) {
+          console.log('bulkExecution err: ', err);
+          this.modalContent = '停止任务失败，失败信息：' + err
         }
-      }
-    },
-    // 调用重新启动接口
-    async bulkExecution() {
-      console.log('bulkExecution');
-      try {
-        const bulk_sbj = this.selections.map(item => +item.id);
-        const result = await api.fetch('streamis/streamJobManager/job/bulk/execution', { bulk_sbj });
-        console.log('start result', result);
-        this.queryProcess(bulk_sbj);
-      } catch (err) {
-        console.log('bulkExecution err: ', err);
-        this.modalContent = '停止任务失败，失败信息：' + err
       }
     },
     handleConfig() {
