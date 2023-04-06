@@ -408,7 +408,11 @@ export default {
           key: 'jobType',
           renderHeader: renderSpecialHeader
         },
-
+        {
+          title: this.$t('message.streamis.jobListTableColumns.manageType'),
+          key: 'manageTypeChinese',
+          renderHeader: renderSpecialHeader
+        },
         {
           title: this.$t('message.streamis.jobListTableColumns.label'),
           key: 'label',
@@ -559,8 +563,13 @@ export default {
               }
             })
             datas.unshift({})
-            this.tableDatas = datas.map(r => ({...r, poptipVisible: false}))
+            this.tableDatas = datas.map(r => ({...r, poptipVisible: false, manageType: r.manageType === 'DETACH' ? 'DETACH' : 'ATTACH', manageTypeChinese: r.manageType === 'DETACH' ? '分离式' : '非分离式'}))
+            if (this.tableDatas[0]) {
+              delete this.tableDatas[0].manageType
+              delete this.tableDatas[0].manageTypeChinese
+            }
             // console.log(JSON.stringify(datas))
+            console.log('this.tableDatas: ', this.tableDatas);
             this.pageData.total = parseInt(res.totalPage)
             this.loading = false
           }
@@ -798,6 +807,7 @@ export default {
           version: rowData.version,
           status: rowData.status,
           jobType: rowData.jobType,
+          manageType: rowData.manageType,
           projectName: rowData.projectName || this.projectName
         }
       })
