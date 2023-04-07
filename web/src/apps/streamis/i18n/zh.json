@@ -65,7 +65,6 @@
       "jobListTableColumns":{
         "jobName": "作业名称",
         "jobType": "作业类型",
-        "manageType": "管理类型",
         "launchMode": "运行模式",
         "manageMode": "管理模式",
         "taskStatus": "运行状态",
