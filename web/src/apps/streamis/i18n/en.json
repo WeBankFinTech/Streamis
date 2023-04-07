@@ -66,7 +66,6 @@
       "jobListTableColumns":{
         "jobName": "Job name",
         "jobType": "Job type",
-        "manageType": "Manage Type",
         "launchMode": "Launch Mode",
         "manageMode": "Manage Mode",
         "taskStatus": "Task status",
