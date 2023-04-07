@@ -409,8 +409,8 @@ export default {
           renderHeader: renderSpecialHeader
         },
         {
-          title: this.$t('message.streamis.jobListTableColumns.manageType'),
-          key: 'manageTypeChinese',
+          title: this.$t('message.streamis.jobListTableColumns.manageMode'),
+          key: 'manageModeChinese',
           renderHeader: renderSpecialHeader
         },
         {
@@ -563,10 +563,10 @@ export default {
               }
             })
             datas.unshift({})
-            this.tableDatas = datas.map(r => ({...r, poptipVisible: false, manageType: r.manageType === 'DETACH' ? 'DETACH' : 'ATTACH', manageTypeChinese: r.manageType === 'DETACH' ? '分离式' : '非分离式'}))
+            this.tableDatas = datas.map(r => ({...r, poptipVisible: false, manageMode: r.manageMode === 'DETACH' ? 'DETACH' : 'ATTACH', manageModeChinese: r.manageMode === 'DETACH' ? '分离式' : '非分离式'}))
             if (this.tableDatas[0]) {
-              delete this.tableDatas[0].manageType
-              delete this.tableDatas[0].manageTypeChinese
+              delete this.tableDatas[0].manageMode
+              delete this.tableDatas[0].manageModeChinese
             }
             // console.log(JSON.stringify(datas))
             console.log('this.tableDatas: ', this.tableDatas);
@@ -807,7 +807,7 @@ export default {
           version: rowData.version,
           status: rowData.status,
           jobType: rowData.jobType,
-          manageType: rowData.manageType,
+          manageMode: rowData.manageMode,
           projectName: rowData.projectName || this.projectName
         }
       })
