@@ -1,8 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.entity;
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.type.JobClientType;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.type.JobClientType$;
-import scala.Enumeration;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.enums.JobClientType;
+
 
 /**
  * Stream job mode
@@ -11,12 +10,12 @@ public enum StreamJobMode {
     /**
      * Engine Conn mode
      */
-    EngineConn(JobClientType.ATTACH().toString()),
+    EngineConn(JobClientType.ATTACH.toString()),
 
     /**
      * Client mode
      */
-    Client(JobClientType.DETACH().toString());
+    Client(JobClientType.DETACH.toString());
 
     /**
      * According to client type

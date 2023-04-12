@@ -41,7 +41,7 @@ class DefaultStreamJobConfService extends StreamJobConfService with Logging{
    * @param valueMap value map
    */
   @Transactional(rollbackFor = Array(classOf[Exception]))
-  override def saveJobConfig(jobId: Long, valueMap: util.Map[String, Any]): Unit = {
+  override def saveJobConfig(jobId: Long, valueMap: util.Map[String, AnyRef]): Unit = {
     val definitions = Option(this.streamJobConfMapper.loadAllDefinitions())
       .getOrElse(new util.ArrayList[JobConfDefinition]())
     // Can deserialize the value map at first
@@ -56,7 +56,7 @@ class DefaultStreamJobConfService extends StreamJobConfService with Logging{
    * @param jobId job id
    * @return
    */
-  override def getJobConfig(jobId: Long): util.Map[String, Any] = {
+  override def getJobConfig(jobId: Long): util.Map[String, AnyRef] = {
     getJobConfig(jobId, this.streamJobConfMapper.loadAllDefinitions())
   }
 
@@ -80,7 +80,7 @@ class DefaultStreamJobConfService extends StreamJobConfService with Logging{
   override def getJobConfValueSet(jobId: Long): JobConfValueSet = {
     val valueSet = new JobConfValueSet
     val definitions: util.List[JobConfDefinition] = this.streamJobConfMapper.loadAllDefinitions()
-    val jobConfig: util.Map[String, Any] = getJobConfig(jobId, definitions)
+    val jobConfig: util.Map[String, AnyRef] = getJobConfig(jobId, definitions)
     val definitionMap: util.Map[String, JobConfDefinition] = definitions.asScala.map(definition => (definition.getKey, definition)).toMap.asJava
     valueSet.setResourceConfig(resolveConfigValueVo(JobConfKeyConstants.GROUP_RESOURCE.getValue, jobConfig, definitionMap))
     valueSet.setParameterConfig(resolveConfigValueVo(JobConfKeyConstants.GROUP_FLINK_EXTRA.getValue, jobConfig, definitionMap))
@@ -135,9 +135,9 @@ class DefaultStreamJobConfService extends StreamJobConfService with Logging{
    * @param definitions definitions
    * @return
    */
-  private def getJobConfig(jobId: Long, definitions: util.List[JobConfDefinition]): util.Map[String, Any] = {
+  private def getJobConfig(jobId: Long, definitions: util.List[JobConfDefinition]): util.Map[String, AnyRef] = {
     Option(this.streamJobConfMapper.getConfValuesByJobId(jobId)) match {
-      case None => new util.HashMap[String, Any]()
+      case None => new util.HashMap[String, AnyRef]()
       case Some(list: util.List[JobConfValue]) =>
         JobConfValueUtils.serialize(list,
           Option(definitions)
@@ -187,10 +187,10 @@ class DefaultStreamJobConfService extends StreamJobConfService with Logging{
    * @param jobConfig job config
    * @param definitionMap (key => definition)
    */
-  private def resolveConfigValueVo(group: String, jobConfig: util.Map[String, Any],
+  private def resolveConfigValueVo(group: String, jobConfig: util.Map[String, AnyRef],
                                  definitionMap: util.Map[String, JobConfDefinition]): util.List[JobConfValueVo] = {
      Option(jobConfig.get(group)) match {
-       case Some(configMap: util.Map[String, Any]) =>
+       case Some(configMap: util.Map[String, AnyRef]) =>
          configMap.asScala.map{
            case (key, value) =>
              val configValue = new JobConfValueVo(key, String.valueOf(value))
