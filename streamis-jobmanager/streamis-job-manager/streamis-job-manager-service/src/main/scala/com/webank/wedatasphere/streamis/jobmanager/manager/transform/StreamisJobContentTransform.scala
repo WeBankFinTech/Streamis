@@ -31,5 +31,5 @@ trait StreamisJobContentTransform extends Transform {
     } else job
   }
 
-  protected def transformJobContent(transformJob: StreamisTransformJobContent): util.HashMap[String, Any]
+  protected def transformJobContent(transformJob: StreamisTransformJobContent): util.HashMap[String, AnyRef]
 }
