@@ -1,9 +1,10 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.factory
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.`type`.JobClientType
+import com.webank.wedatasphere.streamis.jobmanager.launcher.enums.JobClientType
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, JobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.LinkisFlinkManagerClient
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.{EngineConnJobInfo, LinkisJobInfo}
 import org.apache.commons.lang3.StringUtils
 import org.apache.linkis.common.utils.{Logging, Utils}
@@ -17,7 +18,7 @@ class AbstractJobClientFactory extends Logging {
 
   var engineConnJobClientFactory: EngineConnJobClientFactory = _
 
-  var restJobClientFactory: RestJobClientFactory = _
+  var linkisFlinkManagerClientFactory: LinkisFlinkManagerClientFactory = _
 
   def validateClientInfo(jobInfo: JobInfo): Boolean = {
     StringUtils.isNotBlank(jobInfo.getEngineType) && StringUtils.isNotBlank(jobInfo.getEngineVersion)
@@ -54,22 +55,22 @@ class AbstractJobClientFactory extends Logging {
           this.synchronized {
             if (null == this.engineConnJobClientFactory) {
               this.engineConnJobClientFactory = new EngineConnJobClientFactory
-              this.engineConnJobClientFactory.init ()
+              this.engineConnJobClientFactory.init()
             }
           }
         }
         this.engineConnJobClientFactory
       }
       case "detach" => {
-        if (null == this.restJobClientFactory) {
+        if (null == this.linkisFlinkManagerClientFactory) {
           this.synchronized {
-            if (null == this.restJobClientFactory) {
-              this.restJobClientFactory = new RestJobClientFactory
-              this.restJobClientFactory.init()
+            if (null == this.linkisFlinkManagerClientFactory) {
+              this.linkisFlinkManagerClientFactory = new LinkisFlinkManagerClientFactory
+              this.linkisFlinkManagerClientFactory.init()
             }
           }
         }
-        this.restJobClientFactory
+        this.linkisFlinkManagerClientFactory
       }
       case _ =>
         throw new FlinkJobLaunchErrorException(-1, "ConnectType on flinkJobInfo should be attach、detach or detach_standalone", null)
