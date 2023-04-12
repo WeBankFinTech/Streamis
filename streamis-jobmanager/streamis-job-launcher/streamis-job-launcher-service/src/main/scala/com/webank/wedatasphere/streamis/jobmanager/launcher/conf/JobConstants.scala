@@ -13,27 +13,14 @@
  * limitations under the License.
  */
 
-package com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity
+package com.webank.wedatasphere.streamis.jobmanager.launcher.conf
 
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion}
-import java.util
-/**
- * Transform job
- */
-trait StreamisTransformJob {
+object JobConstants {
 
-  def getStreamJob: StreamJob
+  val MANAGER_MODE_DETACH = "DETACH"
 
-  def getStreamJobVersion: StreamJobVersion
+  val MANAGER_MODE_ATTACH = "ATTACH"
 
-  def getConfigMap: util.Map[String, AnyRef]
-
-  @deprecated
-  def getStreamisJobEngineConn: StreamisJobEngineConn
-
-  def getStreamisJobConnect: StreamisJobConnect
-
-  def getStreamisTransformJobContent: StreamisTransformJobContent
-
+  val MANAGER_MODE_MANAGER = "MANAGER"
 
 }

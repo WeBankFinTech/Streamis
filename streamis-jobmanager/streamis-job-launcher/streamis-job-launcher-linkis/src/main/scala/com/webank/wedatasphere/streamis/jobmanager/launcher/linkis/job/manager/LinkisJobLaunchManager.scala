@@ -68,13 +68,13 @@ trait LinkisJobLaunchManager extends JobLaunchManager[LinkisJobInfo] with Loggin
      innerLaunch(job, jobState)
   }
 
-  private def changeUnitOfMemoryToG(params: util.Map[String, Any], name: String): Unit = {
+  private def changeUnitOfMemoryToG(params: util.Map[String, AnyRef], name: String): Unit = {
       params.get(name) match {
         case memory: String =>
           var actualMem = Integer.valueOf(memory) / 1024
           actualMem = if (actualMem <= 0) 1 else actualMem
           info(s"Change the unit of startup param: [${name}], value [${memory}] => [${actualMem}]")
-          params.put(name, actualMem)
+          params.put(name, actualMem.toString)
         case _ => // Ignores
       }
   }
@@ -84,7 +84,7 @@ trait LinkisJobLaunchManager extends JobLaunchManager[LinkisJobInfo] with Loggin
    * @param params params
    * @param prefix prefix
    */
-  private def avoidParamsPrefix(params: util.Map[String, Any], prefix: String): util.Map[String, Any] = {
+  private def avoidParamsPrefix(params: util.Map[String, AnyRef], prefix: String): util.Map[String, AnyRef] = {
       params.asScala.map{
         case (key, value) =>
           if (key.startsWith(prefix)){

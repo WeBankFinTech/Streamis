@@ -94,4 +94,6 @@ object JobConfKeyConstants {
    * Material model
    */
   val MATERIAL_MODEL: CommonVars[String] = CommonVars("wds.streamis.job.config.key.material.model", "wds.streamis.job.material.model")
+
+  val MANAGER_MODE: CommonVars[String] = CommonVars("wds.streamis.job.manager.mode.key", "wds.linkis.flink.app.manager.mode")
 }
