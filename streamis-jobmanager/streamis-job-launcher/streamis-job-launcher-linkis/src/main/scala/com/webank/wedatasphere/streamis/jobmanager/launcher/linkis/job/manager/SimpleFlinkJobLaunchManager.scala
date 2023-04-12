@@ -42,7 +42,7 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
     if(job.getLaunchConfigs != null) {
       job.getLaunchConfigs.asScala.get(LaunchJob.LAUNCH_CONFIG_CREATE_SERVICE).foreach{ case createService: String => builder.setCreateService(createService)}
       job.getLaunchConfigs.asScala.get(LaunchJob.LAUNCH_CONFIG_DESCRIPTION).foreach{ case desc: String => builder.setDescription(desc)}
-      job.getLaunchConfigs.asScala.get(LaunchJob.LAUNCH_CONFIG_MAX_SUBMIT_TIME).foreach{ case maxSubmitTime: Long => builder.setMaxSubmitTime(maxSubmitTime)}
+      job.getLaunchConfigs.asScala.get(LaunchJob.LAUNCH_CONFIG_MAX_SUBMIT_TIME).foreach{ case maxSubmitTime: String => builder.setMaxSubmitTime(maxSubmitTime.toLong)}
     }
     builder.build()
   }
@@ -69,7 +69,7 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
       jobInfo.setStatus("failed")
       jobInfo.setCompletedMsg(message)
     }
-
+    jobInfo.setJobParams(job.getParams.asInstanceOf[util.Map[String, Object]])
     jobInfo.setResources(nodeInfo.get("nodeResource").asInstanceOf[util.Map[String, Object]])
     // Set job state info into
     Option(jobState).foreach(state => {

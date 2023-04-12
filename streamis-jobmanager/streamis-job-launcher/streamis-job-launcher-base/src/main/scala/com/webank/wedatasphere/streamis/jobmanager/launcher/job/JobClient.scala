@@ -29,5 +29,5 @@ trait JobClient[T <: JobInfo] {
    */
   def stop(): Unit
 
-
+  def init(): Unit = {}
 }
