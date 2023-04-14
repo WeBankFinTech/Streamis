@@ -36,12 +36,12 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
         val startupParams = TaskUtils.getStartupMap(engineConnJobInfo.getJobParams())
         val stringParams = new util.HashMap[String, String]
         startupParams.asScala.foreach{case (k, v) => stringParams.put(k, v.toString)}
-        JobConfKeyConstants.MANAGER_MODE.getValue(stringParams) match {
-          case JobConstants.MANAGER_MODE_DETACH =>
+        JobConfKeyConstants.MANAGE_MODE.getValue(stringParams) match {
+          case JobConstants.MANAGE_MODE_DETACH =>
             true
-          case JobConstants.MANAGER_MODE_ATTACH =>
+          case JobConstants.MANAGE_MODE_ATTACH =>
             false
-          case JobConstants.MANAGER_MODE_MANAGER =>
+          case JobConstants.MANAGE_MODE_MANAGER =>
             throw new FlinkJobParamErrorException("Job with manager mode : MANAGER cannot be submited.", null)
         }
       case _ =>
