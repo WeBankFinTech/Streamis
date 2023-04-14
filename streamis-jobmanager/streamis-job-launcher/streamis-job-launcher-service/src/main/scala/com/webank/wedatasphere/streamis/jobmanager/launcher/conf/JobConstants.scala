@@ -17,10 +17,10 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.conf
 
 object JobConstants {
 
-  val MANAGER_MODE_DETACH = "DETACH"
+  val MANAGE_MODE_DETACH = "DETACH"
 
-  val MANAGER_MODE_ATTACH = "ATTACH"
+  val MANAGE_MODE_ATTACH = "ATTACH"
 
-  val MANAGER_MODE_MANAGER = "MANAGER"
+  val MANAGE_MODE_MANAGER = "MANAGER"
 
 }
