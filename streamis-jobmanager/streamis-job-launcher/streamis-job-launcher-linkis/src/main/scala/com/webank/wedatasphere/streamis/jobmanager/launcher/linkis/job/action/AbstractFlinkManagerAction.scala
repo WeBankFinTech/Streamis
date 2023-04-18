@@ -18,14 +18,18 @@ abstract class AbstractFlinkManagerAction extends FlinkManagerAction {
         new EngineConnOperateAction()
     }
 
+    val operateNameKey = EngineConnOperateAction.OPERATOR_NAME_KEY
+
+    // inner params to ec
     val params = getParams()
-    params.asScala.foreach(kv => operateAction.setFormParam(kv._1, kv._2))
-    operateAction.setFormParam(JobConstants.APPLICATION_ID_KEY, getApplicationId)
-    operateAction.setFormParam(JobConstants.MSG_KEY, getMsg)
-    operateAction.setFormParam(JobConstants.FLINK_MANAGER_OPERATION_TYPE_KEY, getActionType.toString)
-    operateAction.setFormParam(JobConstants.FLINK_OPERATION_BOUNDARY_KEY, getOperationBoundry.toString)
+    params.put(JobConstants.MSG_KEY, getMsg)
+    params.put(operateNameKey, getActionType.getName)
+    params.put(JobConstants.FLINK_OPERATION_BOUNDARY_KEY, getOperationBoundry.toString)
+    params.put(JobConstants.APPLICATION_ID_KEY, getApplicationId)
+    // outer params to manager
+    operateAction.addRequestPayload("parameters", params)
+    getPlayloads().asScala.foreach{kv => operateAction.addRequestPayload(kv._1, kv._2)}
     operateAction.setUser(getExecuteUser)
-    operateAction.setFormParam(JobConstants.MSG_KEY, getMsg)
     operateAction
   }
 }
@@ -41,7 +45,7 @@ class FlinkStatusAction(applicationId: String, msg: String) extends AbstractFlin
   override def getOperationBoundry: OnceJobOperationBoundary = FlinkManagerActionType.getOperationBoundary(getActionType)
 }
 
-class FlinkKillAction(applicationId: String, msg: String, snapshot: Boolean = false) extends AbstractFlinkManagerAction {
+class FlinkKillAction(applicationId: String, msg: String) extends AbstractFlinkManagerAction {
   override def getApplicationId: String = applicationId
 
   override def getMsg: String = msg
@@ -59,5 +63,9 @@ class FlinkSaveAction(applicationId: String, msg: String) extends AbstractFlinkM
   override def getActionType: FlinkManagerActionType = FlinkManagerActionType.SAVE
 
   override def getOperationBoundry: OnceJobOperationBoundary = FlinkManagerActionType.getOperationBoundary(getActionType)
+
+  def setSavepointPath(path: String): Unit = getParams().put(JobConstants.SAVAPOINT_PATH_KEY, path)
+
+  def setMode(mode: String): Unit = getParams().put(JobConstants.MODE_KEY, mode)
 }
 
