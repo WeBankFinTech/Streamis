@@ -730,6 +730,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
             return finalState
           }
         } else {
+          // get jobInfo from linkis
+          // TODO
 
         }
         null
