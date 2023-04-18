@@ -6,19 +6,25 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.errorcode.JobLau
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{FlinkManagerClient, JobClient, JobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateInfo
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkJobParamErrorException, FlinkJobStateFetchException}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.action.{FlinkKillAction, FlinkStatusAction}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkJobKillECErrorException, FlinkJobParamErrorException, FlinkJobStateFetchException, FlinkSavePointException}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.action.{FlinkKillAction, FlinkSaveAction, FlinkStatusAction}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.{EngineConnJobInfo, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.FlinkSavepoint
-import org.apache.linkis.common.utils.JsonUtils
+import org.apache.commons.lang3.StringUtils
+import org.apache.linkis.common.exception.LinkisRetryException
+import org.apache.linkis.common.utils.{JsonUtils, RetryHandler, Utils}
 import org.apache.linkis.computation.client.once.OnceJob
 import org.apache.linkis.computation.client.once.result.EngineConnOperateResult
 import org.apache.linkis.computation.client.once.simple.SimpleOnceJob
 import org.apache.linkis.governance.common.constant.ec.ECConstants
 import org.apache.linkis.protocol.utils.TaskUtils
+import org.apache.linkis.ujes.client.exception.UJESJobException
 
 import java.util
+import java.util.concurrent.TimeUnit
 import scala.collection.JavaConverters.mapAsScalaMapConverter
+import scala.tools.scalap.scalax.util.StringUtil
 
 class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManager: JobStateManager) extends EngineConnJobClient(onceJob, jobInfo, stateManager) {
 
@@ -27,6 +33,8 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
   override def init(): Unit = {
     super.init()
     // 初始化linkisclient，调用managerexecutor进行操作的client
+
+    logger.info("LinkisFlinkManagerJobClient inited.")
   }
 
 
@@ -47,7 +55,7 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
       case _ =>
         false
     }*/
-    JobClientType.valueOf(jobInfo.getClientType) match {
+    JobClientType.OTHER.toJobClientType(jobInfo.getClientType.toLowerCase()) match {
       case JobClientType.ATTACH =>
         false
       case JobClientType.DETACH =>
@@ -67,15 +75,13 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
         if (refresh && isDetachJob(jobInfo)) {
           jobInfo match {
             case engineConnJobInfo: EngineConnJobInfo =>
-              jobInfo.setStatus(getJobStatus(engineConnJobInfo.getApplicationId))
+              jobInfo.setStatus(getJobStatusWithRetry(engineConnJobInfo.getApplicationId))
             case _ =>
               throw new FlinkJobParamErrorException(s"Invalid jobInfo : ${jobInfo} , cannot get status.", null)
           }
         } else {
           return super.getJobInfo(refresh)
         }
-        jobInfo.setStatus(if (refresh) onceJob.getNodeInfo
-          .getOrDefault("nodeStatus", simpleOnceJob.getStatus).asInstanceOf[String] else simpleOnceJob.getStatus)
     }
     jobInfo
   }
@@ -94,7 +100,16 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
     }
   }
 
-  def getJobStatus(appId: String): String = {
+  def getJobStatusWithRetry(appId: String): String = {
+    val retryHandler = new RetryHandler {}
+    retryHandler.setRetryNum(3)
+    retryHandler.setRetryMaxPeriod(5000)
+    retryHandler.setRetryPeriod(1000)
+    retryHandler.addRetryException(classOf[UJESJobException])
+    retryHandler.addRetryException(classOf[LinkisRetryException])
+    retryHandler.addRetryException(classOf[FlinkJobStateFetchException])
+    retryHandler.retry(
+      {
     val statusAction = new FlinkStatusAction(appId, null)
     val rs = linkisFlinkManagerClient.executeAction(statusAction)
     rs match {
@@ -104,6 +119,7 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
         }
         val rsMap = engineConnOperateResult.getResult
         val status = rsMap.getOrDefault(ECConstants.NODE_STATUS_KEY, null)
+            logger.info(s"AppId : ${appId} got status : ${status}")
         if (null != status) {
           return status.toString
         } else {
@@ -114,13 +130,66 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
         val json = JsonUtils.jackson.writeValueAsString(rs)
         throw new FlinkJobStateFetchException(errorMsg = s"Get invalid result. Response json : ${json}", t = null)
     }
+      },
+      "Retry-Get-Status")
   }
 
   def stopApp(appId: String, snapshot: Boolean): JobStateInfo = {
-    val stopAction = new FlinkKillAction(appId, null, snapshot)
+    val jobStateInfo = new JobStateInfo()
+    if (snapshot) {
+      val savepointURI = this.stateManager.getJobStateDir(classOf[FlinkSavepoint], jobInfo.getName)
+      val flinkSavepoint = doSavePoint(appId, null, savepointURI.toString, JobLauncherConfiguration.FLINK_TRIGGER_SAVEPOINT_MODE.getValue)
+      jobStateInfo.setLocation(flinkSavepoint.getLocation.toString)
+      jobStateInfo.setTimestamp(flinkSavepoint.getTimestamp)
+    }
+    val stopAction = new FlinkKillAction(appId, null)
     val rs = linkisFlinkManagerClient.executeAction(stopAction)
-    // TODO
+    rs match {
+      case engineConnOperateResult: EngineConnOperateResult =>
+        if (engineConnOperateResult.getIsError()) {
+          throw new FlinkJobStateFetchException(errorMsg = s"Get status error. Because : ${engineConnOperateResult.getErrorMsg()}", t = null)
+        }
+      case _ =>
+        val json = JsonUtils.jackson.writeValueAsString(rs)
+        throw new FlinkJobStateFetchException(errorMsg = s"Get invalid result. Response json : ${json}", t = null)
+    }
     new JobStateInfo("Job stop success.", 1, snapshot)
   }
 
+  override def triggerSavepoint(savePointDir: String, mode: String): FlinkSavepoint = {
+    if (isDetachJob(jobInfo)) {
+      var appId: String = null
+      jobInfo match {
+        case engineConnJobInfo: EngineConnJobInfo =>
+          appId = engineConnJobInfo.getApplicationId
+      }
+      doSavePoint(appId, null, savePointDir, mode)
+    } else {
+      super.triggerSavepoint(savePointDir, mode)
+    }
+  }
+
+  def doSavePoint(appId: String, msg: String, savePointDir: String, mode: String): FlinkSavepoint = {
+
+    val savepointAction = new FlinkSaveAction(appId, msg)
+    savepointAction.setSavepointPath(savePointDir)
+    savepointAction.setMode(mode)
+    val rs = linkisFlinkManagerClient.executeAction(savepointAction)
+    rs match {
+      case engineConnOperateResult: EngineConnOperateResult =>
+        if (engineConnOperateResult.getIsError()) {
+          throw new FlinkJobKillECErrorException(s"Do savepoint error. Because : ${engineConnOperateResult.getErrorMsg()}", null)
+        }
+        val writePath = engineConnOperateResult.getAs[String](JobConstants.RESULT_SAVEPOINT_PATH_KEY)
+        if (StringUtils.isBlank(writePath)) {
+          val msg = s"Do savepoint error got null write path. Errormsg : ${engineConnOperateResult.getErrorMsg()} "
+          throw new FlinkSavePointException(errorMsg = msg, t = null)
+        }
+        new FlinkSavepoint(writePath)
+      case _ =>
+        val rsMsg = JsonUtils.jackson.writeValueAsString(rs)
+        val msg = s"Get status error. Result : ${rsMsg}"
+        throw new FlinkSavePointException(errorMsg = msg, t = null)
+    }
+  }
 }

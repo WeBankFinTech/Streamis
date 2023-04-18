@@ -12,4 +12,10 @@ object JobLaunchErrorCode {
 
   val JOB_EC_STATUS_FETCH_ERROR = 30507
 
+  val JOB_EC_SAVEPOINT_ERROR = 30508
+
+  val JOB_EC_KILL_ERROR = 30509
+
+  val JOB_EC_METRICS_ERROR = 30510
+
 }
