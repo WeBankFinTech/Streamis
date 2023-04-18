@@ -20,6 +20,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkSavePointException
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.operator.FlinkTriggerSavepointOperator
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.FlinkSavepoint
 import org.apache.linkis.common.utils.{Logging, Utils}
@@ -109,6 +110,10 @@ abstract class AbstractJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManage
       onceJob.getOperator(FlinkTriggerSavepointOperator.OPERATOR_NAME) match{
         case savepointOperator: FlinkTriggerSavepointOperator => {
           // TODO Get scheme information from job info
+          jobInfo match {
+            case engineConnJobInfo: EngineConnJobInfo =>
+              savepointOperator.setApplicationId(engineConnJobInfo.getApplicationId)
+          }
           savepointOperator.setSavepointDir(savePointDir)
           savepointOperator.setMode(mode)
           Option(savepointOperator()) match {
