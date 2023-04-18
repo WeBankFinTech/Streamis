@@ -16,6 +16,7 @@ class EngineConnJobInfo extends YarnJobInfo with LinkisJobInfo {
   private var completedMsg: String = _
   private var jobStates: Array[JobStateInfo] = _
   private var engineType: String = "flink"
+  private var engineVersion: String = "1.12.2"
   // TODO check
   private var clientType: String = JobClientType.ATTACH.toString
 
@@ -135,10 +136,10 @@ class EngineConnJobInfo extends YarnJobInfo with LinkisJobInfo {
    *
    * @return
    */
-  override def getEngineVersion: String = "1.12.2"
+  override def getEngineVersion: String = engineVersion
 
   def setEngineVersion(version: String): Unit = {
-
+    this.engineVersion = version
   }
 
   def getJobParams(): util.Map[String, Object] = jobParams

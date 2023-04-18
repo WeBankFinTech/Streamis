@@ -30,7 +30,7 @@ class FlinkJobLaunchErrorException(errorCode: Int, errorMsg: String, t: Throwabl
 /**
  * Exception in triggering savepoint
  */
-class FlinkSavePointException(errorCode: Int, errorMsg: String, t: Throwable)
+class FlinkSavePointException(errorCode: Int = JobLaunchErrorCode.JOB_EC_SAVEPOINT_ERROR, errorMsg: String, t: Throwable)
   extends FlinkJobLaunchErrorException(errorCode, errorMsg, t)
 
 /**
@@ -48,3 +48,5 @@ extends FlinkJobLaunchErrorException(JobLaunchErrorCode.JOB_PARAM_ERROR_CODE, er
 class FlinkJobFlinkECErrorException(errorMsg: String, t: Throwable = null)
 extends FlinkJobLaunchErrorException(JobLaunchErrorCode.JOB_EC_ERROR_CODE, errorMsg, t)
 
+class FlinkJobKillECErrorException(errorMsg: String, t: Throwable = null)
+extends FlinkJobLaunchErrorException(JobLaunchErrorCode.JOB_EC_KILL_ERROR, errorMsg, t)

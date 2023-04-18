@@ -18,12 +18,15 @@ trait FlinkManagerClient {
   def getFlinkManagerECMInstance(): ServiceInstance
 
   def executeAction(action: FlinkManagerAction): Any
+
+  def refreshManagerEC(): Unit
 }
 
 trait FlinkManagerAction {
 
   private var params: util.Map[String, AnyRef] = new util.HashMap[String, AnyRef]()
   private var executeUser: String = _
+  private var playloads: util.Map[String, AnyRef] = new util.HashMap[String, AnyRef]()
 
   def getApplicationId: String
 
@@ -48,9 +51,17 @@ trait FlinkManagerAction {
   }
 
   def setECInstance(ecInstance: ServiceInstance): FlinkManagerAction = {
-    params.put(JobConstants.EC_INSTANCE_KEY, ecInstance)
+    getPlayloads().put(JobConstants.APP_NAME_KEY, ecInstance.getApplicationName)
+    getPlayloads().put(JobConstants.INSTANCE_KEY, ecInstance.getInstance)
     this
   }
+
+  def setPlayloads(playloads: util.Map[String, AnyRef]): FlinkManagerAction = {
+    this.playloads = playloads
+    this
+  }
+
+  def getPlayloads(): util.Map[String, AnyRef] = playloads
 
   def build(): Any /* ={
     val params = getParams()
