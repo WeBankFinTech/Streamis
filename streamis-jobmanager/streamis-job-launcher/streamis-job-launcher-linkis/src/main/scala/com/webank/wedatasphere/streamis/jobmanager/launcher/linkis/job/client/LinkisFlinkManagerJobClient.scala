@@ -7,7 +7,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{FlinkManagerCli
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkJobKillECErrorException, FlinkJobParamErrorException, FlinkJobStateFetchException, FlinkSavePointException}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkECHandshakeErrorException, FlinkJobKillECErrorException, FlinkJobParamErrorException, FlinkJobStateFetchException, FlinkSavePointException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.action.{FlinkKillAction, FlinkSaveAction, FlinkStatusAction}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.{EngineConnJobInfo, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.FlinkSavepoint
@@ -39,22 +39,6 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
 
 
   private def isDetachJob(info: JobInfo): Boolean = {
-    /*jobInfo match {
-      case engineConnJobInfo: EngineConnJobInfo =>
-        val startupParams = TaskUtils.getStartupMap(engineConnJobInfo.getJobParams())
-        val stringParams = new util.HashMap[String, String]
-        startupParams.asScala.foreach{case (k, v) => stringParams.put(k, v.toString)}
-        JobConfKeyConstants.MANAGE_MODE.getValue(stringParams) match {
-          case JobConstants.MANAGE_MODE_DETACH =>
-            true
-          case JobConstants.MANAGE_MODE_ATTACH =>
-            false
-          case JobConstants.MANAGE_MODE_MANAGER =>
-            throw new FlinkJobParamErrorException("Job with manager mode : MANAGER cannot be submited.", null)
-        }
-      case _ =>
-        false
-    }*/
     JobClientType.OTHER.toJobClientType(jobInfo.getClientType.toLowerCase()) match {
       case JobClientType.ATTACH =>
         false
@@ -190,6 +174,27 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
         val rsMsg = JsonUtils.jackson.writeValueAsString(rs)
         val msg = s"Get status error. Result : ${rsMsg}"
         throw new FlinkSavePointException(errorMsg = msg, t = null)
+    }
+  }
+
+  override def handshake(): Unit = {
+    val engineConnJobInfo = jobInfo.asInstanceOf[EngineConnJobInfo]
+    val handshakeAction = new FlinkStatusAction(engineConnJobInfo.getApplicationId, "handshake")
+    handshakeAction.setECInstance(engineConnJobInfo.getEcInstance())
+    handshakeAction.setExeuteUser(engineConnJobInfo.getUser)
+    val rs = linkisFlinkManagerClient.doExecution(handshakeAction.build())
+    rs match {
+      case engineConnOperateResult: EngineConnOperateResult =>
+        if (engineConnOperateResult.getIsError()) {
+          throw new FlinkECHandshakeErrorException(s"Do hankshake error. Because : ${engineConnOperateResult.getErrorMsg()}", null)
+        } else {
+          val status = engineConnOperateResult.getResult.getOrDefault(ECConstants.NODE_STATUS_KEY, null)
+          logger.info(s"Handshake success. Status : ${status}")
+        }
+      case _ =>
+        val rsMsg = JsonUtils.jackson.writeValueAsString(rs)
+        val msg = s"Get status error. Result : ${rsMsg}"
+        throw new FlinkECHandshakeErrorException(errorMsg = msg, t = null)
     }
   }
 }

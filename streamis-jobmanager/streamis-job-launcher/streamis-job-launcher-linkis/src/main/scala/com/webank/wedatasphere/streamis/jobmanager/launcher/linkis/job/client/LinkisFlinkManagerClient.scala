@@ -99,7 +99,7 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
           if (!lastAsyncId.equals(asyncId)) {
             logger.error(s"lastAsyncId from : ${lastAsyncId} changed to ${asyncId}.")
           }
-          if (!lastManagerInstance.equals(ecmInstance)) {
+          if (null != lastManagerInstance && !lastManagerInstance.equals(ecmInstance)) {
             logger.error("Manager instance changed! Please use fixed manager.")
           }
           // TODO linkisclient需要支持指定发送请求到serviceinstance上。目前只能manager加标签或者只起一个manger
