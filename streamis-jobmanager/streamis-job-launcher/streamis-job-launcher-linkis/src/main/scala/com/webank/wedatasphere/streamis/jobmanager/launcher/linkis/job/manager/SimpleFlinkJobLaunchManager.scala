@@ -65,6 +65,10 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
     jobInfo.setName(StringEscapeUtils.escapeJava(job.getJobName))
     jobInfo.setId(onceJob.getId)
     jobInfo.setUser(job.getSubmitUser)
+    onceJob match {
+      case submittableSimpleOnceJob: SubmittableSimpleOnceJob =>
+        jobInfo.setEcInstance(submittableSimpleOnceJob.getEcServiceInstance)
+    }
     val startupMap = TaskUtils.getStartupMap(job.getParams)
     val managerMode = startupMap.getOrDefault(JobLauncherConfiguration.MANAGER_MODE_KEY.getValue, JobClientType.ATTACH.getName).toString.toLowerCase()
     jobInfo.setClientType(managerMode)
