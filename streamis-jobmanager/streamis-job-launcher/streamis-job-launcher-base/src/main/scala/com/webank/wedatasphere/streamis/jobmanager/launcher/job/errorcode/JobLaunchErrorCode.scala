@@ -18,4 +18,5 @@ object JobLaunchErrorCode {
 
   val JOB_EC_METRICS_ERROR = 30510
 
+  val JOB_EC_HANDSHAKE_ERROR = 30511
 }
