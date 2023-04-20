@@ -50,3 +50,6 @@ extends FlinkJobLaunchErrorException(JobLaunchErrorCode.JOB_EC_ERROR_CODE, error
 
 class FlinkJobKillECErrorException(errorMsg: String, t: Throwable = null)
 extends FlinkJobLaunchErrorException(JobLaunchErrorCode.JOB_EC_KILL_ERROR, errorMsg, t)
+
+class FlinkECHandshakeErrorException(errorMsg: String, t: Throwable = null)
+extends FlinkJobLaunchErrorException(JobLaunchErrorCode.JOB_EC_HANDSHAKE_ERROR, errorMsg, t)
