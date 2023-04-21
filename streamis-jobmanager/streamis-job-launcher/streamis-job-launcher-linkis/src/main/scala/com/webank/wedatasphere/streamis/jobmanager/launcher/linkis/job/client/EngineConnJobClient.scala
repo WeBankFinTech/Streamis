@@ -58,7 +58,7 @@ class EngineConnJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManager: JobS
                           warn("Fail to query the engine conn resource info from linkis",  e)
                           null
                       }) match {
-                        case Some(result) => logDirSuffix = Utils.tryAndWarn{result.getData.getOrDefault("ecResourceInfoRecord", new util.HashMap[String, AnyRef]).asInstanceOf[util.Map[String, AnyRef]]
+                        case Some(result) => logDirSuffix = Utils.tryQuietly{Option(result.getData).getOrElse(new util.HashMap[String, AnyRef]()).getOrDefault("ecResourceInfoRecord", new util.HashMap[String, AnyRef]).asInstanceOf[util.Map[String, AnyRef]]
                           .getOrDefault("logDirSuffix", "").asInstanceOf[String]}
                         case _ =>
                       }

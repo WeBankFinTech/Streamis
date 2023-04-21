@@ -49,7 +49,7 @@ abstract class AbstractJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManage
   override def getJobInfo(refresh: Boolean): JobInfo = {
     onceJob match {
       case simpleOnceJob: SimpleOnceJob =>
-        jobInfo.setStatus(if (refresh) onceJob.getNodeInfo
+        jobInfo.setStatus(if (refresh && null != onceJob.getNodeInfo) onceJob.getNodeInfo
           .getOrDefault("nodeStatus", simpleOnceJob.getStatus).asInstanceOf[String] else simpleOnceJob.getStatus)
     }
     jobInfo
