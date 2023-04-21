@@ -63,8 +63,12 @@ public class JobDetailsVo {
         this.loadCondition = loadCondition;
     }
 
-    public StreamJobMode getManageMode() {
-        return manageMode;
+    public String getManageMode() {
+        if (null != manageMode) {
+            return manageMode.name();
+        } else {
+            return null;
+        }
     }
 
     public void setManageMode(StreamJobMode manageMode) {
