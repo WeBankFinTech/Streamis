@@ -414,6 +414,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
                 }
               case _ =>
             }
+          case o =>
+            logger.error(s"Invalid client: ${o}")
         }
       }{ case e: Exception =>
         // Just warn the exception
