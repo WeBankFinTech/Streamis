@@ -35,7 +35,7 @@
               </Button>
             </FormItem>
           </Form>
-          <Form ref="queryForm" inline v-else>
+          <Form ref="queryForm" inline v-else @submit.native.prevent>
             <FormItem>
               <Input
                 search
