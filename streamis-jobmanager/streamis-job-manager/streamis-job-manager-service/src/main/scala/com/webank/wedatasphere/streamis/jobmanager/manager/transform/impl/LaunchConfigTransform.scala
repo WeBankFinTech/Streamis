@@ -32,10 +32,10 @@ import org.apache.linkis.DataWorkCloudApplication
 class LaunchConfigTransform extends Transform {
 
   override def transform(streamisTransformJob: StreamisTransformJob, job: LaunchJob): LaunchJob = {
-    val launchConfigs = if(job.getLaunchConfigs != null) job.getLaunchConfigs else new util.HashMap[String, Any]
+    val launchConfigs = if(job.getLaunchConfigs != null) job.getLaunchConfigs else new util.HashMap[String, AnyRef]
     launchConfigs.putIfAbsent(LaunchJob.LAUNCH_CONFIG_CREATE_SERVICE, DataWorkCloudApplication.getServiceInstance.toString)
     launchConfigs.putIfAbsent(LaunchJob.LAUNCH_CONFIG_DESCRIPTION, streamisTransformJob.getStreamJob.getDescription)
-    launchConfigs.putIfAbsent(LaunchJob.LAUNCH_CONFIG_MAX_SUBMIT_TIME, JobConf.TASK_SUBMIT_TIME_MAX.getValue.toLong)
+    launchConfigs.putIfAbsent(LaunchJob.LAUNCH_CONFIG_MAX_SUBMIT_TIME, JobConf.TASK_SUBMIT_TIME_MAX.getValue.toLong.toString)
     LaunchJob.builder().setLaunchJob(job).setLaunchConfigs(launchConfigs).build()
   }
 
