@@ -38,6 +38,12 @@
             <groupId>org.apache.linkis</groupId>
             <artifactId>linkis-common</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.linkis</groupId>
+            <artifactId>linkis-computation-governance-common</artifactId>
+            <version>${linkis.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
