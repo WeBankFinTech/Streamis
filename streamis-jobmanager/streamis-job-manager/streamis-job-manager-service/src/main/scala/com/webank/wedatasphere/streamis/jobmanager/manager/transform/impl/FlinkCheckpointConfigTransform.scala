@@ -41,10 +41,10 @@ class FlinkCheckpointConfigTransform extends FlinkConfigTransform with Logging{
    */
   override protected def configGroup(): String = JobConfKeyConstants.GROUP_PRODUCE.getValue
 
-  override protected def transform(produceConfig: util.Map[String, Any], job: LaunchJob): LaunchJob = {
+  override protected def transform(produceConfig: util.Map[String, AnyRef], job: LaunchJob): LaunchJob = {
     produceConfig.get(JobConfKeyConstants.CHECKPOINT_SWITCH.getValue) match {
       case "ON" =>
-        val checkpointConfig: util.Map[String, Any] =  new util.HashMap[String, Any]()
+        val checkpointConfig: util.Map[String, AnyRef] =  new util.HashMap[String, AnyRef]()
         val jobLaunchManager = JobLaunchManager.getJobManager(JobLauncherAutoConfiguration.DEFAULT_JOB_LAUNCH_MANGER)
         val checkpointPath = jobLaunchManager.getJobStateManager.getJobStateDir(classOf[FlinkCheckpoint], job.getJobName)
         checkpointConfig.put(FlinkConfigTransform.FLINK_CONFIG_PREFIX + CHECKPOINT_PATH_CONFIG_NAME, checkpointPath)

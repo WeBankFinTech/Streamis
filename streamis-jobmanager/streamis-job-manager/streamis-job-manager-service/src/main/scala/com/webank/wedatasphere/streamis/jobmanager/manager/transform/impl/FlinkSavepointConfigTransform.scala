@@ -20,8 +20,8 @@ class FlinkSavepointConfigTransform extends FlinkConfigTransform {
    */
   override protected def configGroup(): String = JobConfKeyConstants.GROUP_PRODUCE.getValue
 
-  override protected def transform(valueSet: util.Map[String, Any], job: LaunchJob): LaunchJob = {
-    val config: util.Map[String, Any] = valueSet.asScala.filter(_._1.startsWith(JobConfKeyConstants.SAVEPOINT.getValue))
+  override protected def transform(valueSet: util.Map[String, AnyRef], job: LaunchJob): LaunchJob = {
+    val config: util.Map[String, AnyRef] = valueSet.asScala.filter(_._1.startsWith(JobConfKeyConstants.SAVEPOINT.getValue))
       .map{
         case (key, value) =>
           (FlinkConfigTransform.FLINK_CONFIG_PREFIX + key.replace(JobConfKeyConstants.SAVEPOINT.getValue, SAVE_POINT_PREFIX), value)

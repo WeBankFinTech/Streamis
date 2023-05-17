@@ -15,14 +15,17 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.enums.JobClientType
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration.{VAR_FLINK_APP_NAME, VAR_FLINK_SAVEPOINT_PATH}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.LinkisJobInfo
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.{EngineConnJobInfo, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.factory.AbstractJobClientFactory
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.FlinkJobLaunchManager.EXCEPTION_PATTERN
+import org.apache.commons.lang3.StringEscapeUtils
 import org.apache.linkis.common.utils.{Logging, Utils}
 import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
 import org.apache.linkis.computation.client.utils.LabelKeyUtils
@@ -75,12 +78,22 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
     Utils.tryCatch {
       val onceJob = buildOnceJob(job)
       onceJob.submit()
-      val jobInfo = Utils.tryCatch(createJobInfo(onceJob, job, jobState)) {
+      val jobInfo: LinkisJobInfo = Utils.tryCatch(createJobInfo(onceJob, job, jobState)) {
         case e: FlinkJobLaunchErrorException =>
           throw e
         case t: Throwable =>
           error(s"${job.getSubmitUser} create jobInfo failed, now stop this EngineConn ${onceJob.getId}.")
           Utils.tryQuietly(onceJob.kill())
+          Utils.tryQuietly {
+            val tmpJobInfo = new EngineConnJobInfo
+            tmpJobInfo.setName(StringEscapeUtils.escapeJava(job.getJobName))
+            tmpJobInfo.setId(onceJob.getId)
+            tmpJobInfo.setUser(job.getSubmitUser)
+            val startupMap = TaskUtils.getStartupMap(job.getParams)
+            val managerMode = startupMap.getOrDefault(JobLauncherConfiguration.MANAGER_MODE_KEY.getValue, JobClientType.ATTACH.getName).toString.toLowerCase()
+            tmpJobInfo.setClientType(managerMode)
+            AbstractJobClientFactory.getJobManager().createJobClient(onceJob, tmpJobInfo, getJobStateManager).stop()
+          }
           throw new FlinkJobLaunchErrorException(-1, exceptionAnalyze("Fail to obtain launched job info(获取任务信息失败,引擎服务可能启动失败)", t), t)
       }
       val client = AbstractJobClientFactory.getJobManager().createJobClient(onceJob, jobInfo, getJobStateManager)

@@ -211,7 +211,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     val version = deployStreamJob(validateResult.streamJob, metaJsonInfo, userName, validateResult.updateVersion)
     // Save the job configuration, lock the job again if exists
     if (null != metaJsonInfo.getJobConfig){
-      this.streamJobConfService.saveJobConfig(version.getJobId, metaJsonInfo.getJobConfig.asInstanceOf[util.Map[String, Any]])
+      this.streamJobConfService.saveJobConfig(version.getJobId, metaJsonInfo.getJobConfig.asInstanceOf[util.Map[String, AnyRef]])
     }
     //  上传所有非meta.json的文件
     uploadFiles(metaJsonInfo, version, inputZipPath)
@@ -227,7 +227,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     val version = deployStreamJob(validateResult.streamJob, metaJsonInfo, userName, validateResult.updateVersion)
     // Save the job configuration, lock the job again if exists
     if (null != metaJsonInfo.getJobConfig){
-      this.streamJobConfService.saveJobConfig(version.getJobId, metaJsonInfo.getJobConfig.asInstanceOf[util.Map[String, Any]])
+      this.streamJobConfService.saveJobConfig(version.getJobId, metaJsonInfo.getJobConfig.asInstanceOf[util.Map[String, AnyRef]])
     }
     version
   }
