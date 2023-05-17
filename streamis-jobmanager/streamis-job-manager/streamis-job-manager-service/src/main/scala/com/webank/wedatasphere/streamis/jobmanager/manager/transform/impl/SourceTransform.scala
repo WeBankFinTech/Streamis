@@ -24,7 +24,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.Stre
 
 class SourceTransform extends Transform {
   override def transform(streamisTransformJob: StreamisTransformJob, job: LaunchJob): LaunchJob = {
-    val source = new util.HashMap[String, Any]
+    val source = new util.HashMap[String, AnyRef]
     source.put("project", streamisTransformJob.getStreamJob.getProjectName)
     source.put("workspace", streamisTransformJob.getStreamJob.getWorkspaceName)
     source.put("job", streamisTransformJob.getStreamJob.getName)

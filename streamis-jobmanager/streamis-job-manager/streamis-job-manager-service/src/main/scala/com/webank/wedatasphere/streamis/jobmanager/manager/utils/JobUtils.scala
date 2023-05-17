@@ -10,7 +10,7 @@ object JobUtils {
    * Filter the illegal characters parameter specific
    * @param params parameters
    */
-  def filterParameterSpec(params: util.Map[String, Any]): util.Map[String, Any] ={
+  def filterParameterSpec(params: util.Map[String, AnyRef]): util.Map[String, AnyRef] ={
     for (paramEntry <- params.entrySet().asScala){
       val value = paramEntry.getValue
       value match {
