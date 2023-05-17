@@ -16,6 +16,8 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.service.tools
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.{JobConfDefinition, JobConfValue}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.exception.ConfigurationException
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.utils.JobUtils
 import org.apache.commons.lang.StringUtils
 
 import scala.collection.JavaConverters._
@@ -32,20 +34,24 @@ object JobConfValueUtils{
    * Serialize the job conf values
    * @return
    */
-  def serialize(configValues: util.List[JobConfValue], definitions: util.List[JobConfDefinition]): util.Map[String, Any] = {
+  def serialize(configValues: util.List[JobConfValue], definitions: util.List[JobConfDefinition]): util.Map[String, AnyRef] = {
      // First to build a definition map
      val definitionMap: util.Map[String, JobConfDefinition] = definitions.asScala.map(definition => {
        (definition.getId.toString, definition)
      }).toMap.asJava
      // Init a value map to store relation of config values
-     val relationMap: util.Map[String, Any] = new util.HashMap[String, Any]()
+     val relationMap: util.Map[String, AnyRef] = new util.HashMap[String, AnyRef]()
      configValues.asScala.foreach(keyValue => {
        val refDefId = keyValue.getReferDefId
        if (null != refDefId) {
            Option(relationMap.get(refDefId.toString)) match {
-             case Some(value: util.Map[String, Any]) => {
+             case Some(value: util.Map[String, AnyRef]) => {
                // Put the value into relation
-               value.put(keyValue.getKey, keyValue.getValue)
+               if (JobUtils.isAnyVal(keyValue.getValue)) {
+                 value.put(keyValue.getKey, keyValue.getValue.toString)
+               } else {
+                 value.put(keyValue.getKey, keyValue.getValue)
+               }
              }
              case Some(value: String) => {
                 // Overwrite it's value
@@ -56,32 +62,44 @@ object JobConfValueUtils{
                var definition = definitionMap.get(refDefId.toString)
                var value: Any = if (null != definition && (StringUtils.isBlank(definition.getType) ||
                       definition.getType.equalsIgnoreCase("NONE"))) {
-                  val relation = new util.HashMap[String, Any]()
-                  relation.put(keyValue.getKey, keyValue.getValue)
-                  relation
+                  val relation = new util.HashMap[String, AnyRef]()
+                 if (JobUtils.isAnyVal(keyValue.getValue)) {
+                   relation.put(keyValue.getKey, keyValue.getValue.toString)
+                 } else {
+                   relation.put(keyValue.getKey, keyValue.getValue)
+                 }
+                 relation
                } else {
                  keyValue.getValue
                }
                while (null != definition){
                    value = Option(relationMap.get(definition.getId.toString)) match {
-                     case Some(existV: util.Map[String, Any]) => {
+                     case Some(existV: util.Map[String, AnyRef]) => {
                         value match {
-                          case map: util.Map[String, Any] =>
+                          case map: util.Map[String, AnyRef] =>
                             existV.putAll(map)
                             existV
-                          case _ =>
-                            relationMap.put(definition.getId.toString, value)
+                          case _ : AnyRef =>
+                            relationMap.put(definition.getId.toString, value.asInstanceOf[AnyRef])
                             value
+                          case _ =>
+                            throw new ConfigurationException(s"Value : ${value} is not supported, not AnyRef")
                         }
                      }
-                     case _ =>
-                       relationMap.put(definition.getId.toString, value)
+                     case _: AnyRef =>
+                       relationMap.put(definition.getId.toString, value.asInstanceOf[AnyRef])
                        value
-                  }
-                  Option(definition.getParentRef) match {
+                     case _ =>
+                       throw new ConfigurationException(s"Value : ${value} is not supported, not AnyRef")
+                   }
+                 Option(definition.getParentRef) match {
                     case Some(parentRef) =>
-                      val newValue: util.Map[String, Any] = new util.HashMap[String, Any]()
-                      newValue.put(definition.getKey, value)
+                      val newValue: util.Map[String, AnyRef] = new util.HashMap[String, AnyRef]()
+                      if (JobUtils.isAnyVal(value)) {
+                        newValue.put(definition.getKey, value.toString)
+                      } else {
+                        newValue.put(definition.getKey, value.asInstanceOf[AnyRef])
+                      }
                       definition = definitionMap.get(parentRef.toString)
                       value = newValue
                     case _ => definition = null
@@ -104,7 +122,7 @@ object JobConfValueUtils{
    * @param definitions definitions
    * @return
    */
-  def deserialize(valueMap: util.Map[String, Any], definitions: util.List[JobConfDefinition]):util.List[JobConfValue] = {
+  def deserialize(valueMap: util.Map[String, AnyRef], definitions: util.List[JobConfDefinition]):util.List[JobConfValue] = {
     // First to build a definition map
     val definitionMap: util.Map[String, JobConfDefinition] = definitions.asScala.map(definition => {
       (definition.getKey, definition)
@@ -125,12 +143,12 @@ object JobConfValueUtils{
     configValues
   }
 
-  private def deserializeInnerObj(key: String, value: Any, parentRef: String,
+  private def deserializeInnerObj(key: String, value: AnyRef, parentRef: String,
                                   definitionMap: util.Map[String, JobConfDefinition]): util.List[JobConfValue] = {
     val result: util.List[JobConfValue] = new util.ArrayList[JobConfValue]()
     if (null != value) {
       value match {
-        case innerMap: util.Map[String, Any] =>
+        case innerMap: util.Map[String, AnyRef] =>
           Option(definitionMap.get(key)) match {
             case Some(definition) =>
               innerMap.asScala.foreach{

@@ -15,6 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.{JobConfKeyConstants, JobConstants}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 
 import java.util
@@ -27,15 +28,14 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.utils.JobUtils
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 
 /**
   * Created by enjoyyin on 2021/9/23.
   */
 class FlinkJarStreamisJobContentTransform extends StreamisJobContentTransform {
-  override protected def transformJobContent(transformJob: StreamisTransformJobContent): util.HashMap[String, Any] = transformJob match {
+  override protected def transformJobContent(transformJob: StreamisTransformJobContent): util.HashMap[String, AnyRef] = transformJob match {
     case transformJobContent: StreamisJarTransformJobContent =>
-      val jobContent = new util.HashMap[String, Any]
+      val jobContent = new util.HashMap[String, AnyRef]
       jobContent.put("flink.app.args", transformJobContent.getArgs.asScala.mkString(" "))
       jobContent.put("flink.app.main.class", transformJobContent.getMainClass)
       jobContent
@@ -47,7 +47,7 @@ class FlinkJarStreamisStartupParamsTransform extends Transform {
 
   override def transform(streamisTransformJob: StreamisTransformJob, job: LaunchJob): LaunchJob = streamisTransformJob.getStreamisTransformJobContent match {
     case transformJobContent: StreamisJarTransformJobContent =>
-      val startupMap = new util.HashMap[String, Any]
+      val startupMap = new util.HashMap[String, AnyRef]
       startupMap.put("flink.app.main.class.jar", transformJobContent.getMainClassJar.getFileName)
       startupMap.put("flink.app.main.class.jar.bml.json",
         JsonUtils.jackson.writeValueAsString(getStreamisFileContent(transformJobContent.getMainClassJar)))
@@ -69,10 +69,17 @@ class FlinkJarStreamisStartupParamsTransform extends Transform {
       if(classPathFiles.nonEmpty)
         startupMap.put("flink.app.user.class.path.bml.json",
           JsonUtils.jackson.writeValueAsString(classPathFiles.map(getStreamisFileContent).asJava))
-      if(transformJobContent.getHdfsJars != null)
+      if(transformJobContent.getHdfsJars != null) {
         startupMap.put("flink.user.lib.path", transformJobContent.getHdfsJars.asScala.mkString(","))
-      val params = if(job.getParams == null) new util.HashMap[String, Any] else job.getParams
-      if(!startupMap.isEmpty) TaskUtils.addStartupMap(params, JobUtils.filterParameterSpec(startupMap))
+      }
+      // clientTpe
+      val prodConfig = streamisTransformJob.getConfigMap.get(JobConfKeyConstants.GROUP_PRODUCE.getValue).asInstanceOf[util.HashMap[String, AnyRef]]
+      startupMap.put(JobConfKeyConstants.MANAGE_MODE.getValue, prodConfig.getOrDefault(JobConfKeyConstants.MANAGE_MODE.getValue, JobConstants.MANAGE_MODE_ATTACH))
+
+      val params = if(job.getParams == null) new util.HashMap[String, AnyRef] else job.getParams
+      if (!startupMap.isEmpty) {
+        TaskUtils.addStartupMap(params, JobUtils.filterParameterSpec(startupMap))
+      }
       LaunchJob.builder().setLaunchJob(job).setParams(params).build()
     case _ => job
   }
