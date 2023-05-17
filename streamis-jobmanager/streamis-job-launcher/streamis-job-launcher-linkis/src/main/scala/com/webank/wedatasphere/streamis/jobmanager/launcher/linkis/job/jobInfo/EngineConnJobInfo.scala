@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.webank.wedatasphere.streamis.jobmanager.launcher.enums.JobClientType
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateInfo
 import org.apache.linkis.common.ServiceInstance
@@ -27,6 +28,7 @@ class EngineConnJobInfo extends YarnJobInfo with LinkisJobInfo {
 
   private var ecmInstance: ServiceInstance = _
   private var logDirSuffix: String = _
+  @JsonIgnore
   private var jobParams: java.util.Map[String, Object] = _
   private var ecInstance: ServiceInstance = _
 
