@@ -21,3 +21,10 @@ streamis-appconn/target
 /logs/linkis.log
 /test/target
 /test/src
+/streamis-jobmanager/streamis-job-log/job-log-collector/flink-streamis-log-collector/target/
+/streamis-jobmanager/streamis-job-log/job-log-collector/streamis-job-log-collector/target/
+/streamis-jobmanager/streamis-job-log/job-log-collector/streamis-job-log-collector1x/target/
+/streamis-jobmanager/streamis-job-log/job-log-collector/streamis-job-log-collector-core/target/
+/streamis-jobmanager/streamis-job-log/job-log-collector/xspark-streamis-log-collector/target/
+/streamis-jobmanager/streamis-job-log/streamis-job-log-common/target/
+/streamis-jobmanager/streamis-job-log/streamis-job-log-server/target/
