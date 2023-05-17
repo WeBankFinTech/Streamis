@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.webank.wedatasphere.streamis.jobmanager.manager.exception
+package com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception
 
 import org.apache.linkis.common.exception.ErrorException
 
