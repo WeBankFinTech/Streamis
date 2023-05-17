@@ -35,7 +35,7 @@
               </Button>
             </FormItem>
           </Form>
-          <Form ref="queryForm" inline v-else>
+          <Form ref="queryForm" inline v-else @submit.native.prevent>
             <FormItem>
               <Input
                 search
@@ -563,7 +563,7 @@ export default {
               }
             })
             datas.unshift({})
-            this.tableDatas = datas.map(r => ({...r, poptipVisible: false, manageMode: r.manageMode === 'DETACH' ? 'DETACH' : 'ATTACH', manageModeChinese: r.manageMode === 'DETACH' ? '分离式' : '非分离式'}))
+            this.tableDatas = datas.map(r => ({...r, poptipVisible: false, manageMode: r.manageMode && r.manageMode.toUpperCase() === 'DETACH' ? 'DETACH' : 'ATTACH', manageModeChinese: r.manageMode && r.manageMode.toUpperCase() === 'DETACH' ? '分离式' : '非分离式'}))
             if (this.tableDatas[0]) {
               delete this.tableDatas[0].manageMode
               delete this.tableDatas[0].manageModeChinese
