@@ -29,7 +29,7 @@
 
     <modules>
         <module>streamis-job-launcher-base</module>
-        <module>streamis-job-launcher-service</module>
         <module>streamis-job-launcher-linkis</module>
+        <module>streamis-job-launcher-service</module>
     </modules>
 </project>

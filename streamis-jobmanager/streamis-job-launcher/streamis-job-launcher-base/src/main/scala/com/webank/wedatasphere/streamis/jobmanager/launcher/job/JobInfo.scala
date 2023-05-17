@@ -15,7 +15,6 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.job
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.`type`.JobClientType
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateInfo
 
 /**

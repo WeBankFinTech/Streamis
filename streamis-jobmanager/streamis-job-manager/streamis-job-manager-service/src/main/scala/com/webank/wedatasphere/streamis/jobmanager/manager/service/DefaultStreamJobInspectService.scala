@@ -61,21 +61,16 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
    * @return
    */
   private def versionInspect(streamJob: StreamJob): JobVersionInspectVo = {
+    val inspectVo = new JobVersionInspectVo
+    val latestJobVersion = streamJobMapper.getLatestJobVersion(streamJob.getId)
+    inspectVo.setNow(latestJobVersion)
     Option(streamTaskMapper.getLatestByJobId(streamJob.getId)) match {
       case Some(task) =>
-        val latestJobVersion = streamJobMapper.getLatestJobVersion(streamJob.getId)
-        if (!task.getVersion.equals(latestJobVersion.getVersion)) {
-          val inspectVo = new JobVersionInspectVo
-
-          val lastJobVersion = streamJobMapper.getJobVersionById(streamJob.getId, task.getVersion)
-          inspectVo.setLast(lastJobVersion)
-          inspectVo.setNow(latestJobVersion)
-          logger.info(s"Version inspect [ job: ${streamJob.getName}, id: ${streamJob.getId}," +
-            s" last_version: ${task.getVersion}, now_version: ${latestJobVersion.getVersion}]")
-          inspectVo
-        } else null
-      case _ => null
+        val lastJobVersion = streamJobMapper.getJobVersionById(streamJob.getId, task.getVersion)
+        inspectVo.setLast(lastJobVersion)
+      case _ =>
     }
+    inspectVo
   }
 
   /**
