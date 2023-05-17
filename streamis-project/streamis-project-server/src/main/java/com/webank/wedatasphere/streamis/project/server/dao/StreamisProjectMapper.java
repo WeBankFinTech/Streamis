@@ -2,6 +2,7 @@ package com.webank.wedatasphere.streamis.project.server.dao;
 
 import com.webank.wedatasphere.streamis.project.server.entity.StreamisProject;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -23,5 +24,5 @@ public interface StreamisProjectMapper {
 
     void updateProject(StreamisProject streamisProject);
 
-    List<Long> findProjectIdsByNames(List<String> names);
+    List<Long> findProjectIdsByNames(@Param("names") List<String> names);
 }

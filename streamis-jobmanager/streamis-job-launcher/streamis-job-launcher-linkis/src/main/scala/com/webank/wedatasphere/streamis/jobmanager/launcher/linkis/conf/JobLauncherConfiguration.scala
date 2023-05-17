@@ -58,4 +58,6 @@ object JobLauncherConfiguration {
   val FLINK_MANAGER_EC_REFRESH_INTERVAL: CommonVars[Long] = CommonVars("wds.streamis.launch.manager.ec.refresh.interval.mills", 10 * 60 * 1000)
 
   val MANAGER_MODE_KEY: CommonVars[String] = CommonVars("wds.streamis.job.manager.mode.key", "wds.linkis.flink.app.manage.mode")
+
+  val ENABLE_FLINK_MANAGER_EC_REFRESH_TASK: CommonVars[Boolean] = CommonVars("wds.streamis.flink.manager.ec.refresh.enable", true)
 }
