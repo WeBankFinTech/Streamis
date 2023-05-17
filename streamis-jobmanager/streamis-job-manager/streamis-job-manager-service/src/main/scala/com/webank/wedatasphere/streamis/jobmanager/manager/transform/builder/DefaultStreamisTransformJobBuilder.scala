@@ -15,9 +15,9 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.builder
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobExecuteErrorException
 import org.apache.linkis.manager.label.entity.engine.RunType.RunType
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob
-import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteErrorException
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisTransformJob, StreamisTransformJobContent}
 import org.springframework.beans.factory.annotation.Autowired

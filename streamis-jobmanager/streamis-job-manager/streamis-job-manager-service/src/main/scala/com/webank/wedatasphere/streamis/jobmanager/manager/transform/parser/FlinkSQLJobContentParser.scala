@@ -15,13 +15,13 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.parser
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobExecuteErrorException
 import java.util
 
 import org.apache.linkis.common.utils.JsonUtils
 import org.apache.linkis.manager.label.entity.engine.RunType
 import org.apache.linkis.manager.label.entity.engine.RunType.RunType
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion}
-import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteErrorException
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisSqlTransformJobContent, StreamisTransformJobContent}
 import org.springframework.stereotype.Component
 
