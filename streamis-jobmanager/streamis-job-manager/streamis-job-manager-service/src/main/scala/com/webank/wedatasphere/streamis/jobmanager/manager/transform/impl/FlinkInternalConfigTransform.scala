@@ -20,7 +20,7 @@ class FlinkInternalConfigTransform extends FlinkConfigTransform {
    */
   override protected def configGroup(): String = JobConfKeyConstants.GROUP_INTERNAL.getValue
 
-  override protected def transform(internalConfig: util.Map[String, Any], job: LaunchJob): LaunchJob = {
+  override protected def transform(internalConfig: util.Map[String, AnyRef], job: LaunchJob): LaunchJob = {
     transformConfig(internalConfig.asScala.map{
       case (key, value) =>
         (FlinkConfigTransform.FLINK_CONFIG_PREFIX + (INTERNAL_CONFIG_MAP.get(key) match {

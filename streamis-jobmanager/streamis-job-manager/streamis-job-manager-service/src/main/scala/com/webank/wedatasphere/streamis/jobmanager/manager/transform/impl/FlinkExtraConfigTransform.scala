@@ -34,7 +34,7 @@ class FlinkExtraConfigTransform extends FlinkConfigTransform {
    */
   override protected def configGroup(): String = JobConfKeyConstants.GROUP_FLINK_EXTRA.getValue
 
-  override protected def transform(flinkExtra: util.Map[String, Any], job: LaunchJob): LaunchJob = {
+  override protected def transform(flinkExtra: util.Map[String, AnyRef], job: LaunchJob): LaunchJob = {
     transformConfig(flinkExtra.asScala.map(entry =>{
       (FlinkConfigTransform.FLINK_CONFIG_PREFIX + entry._1, entry._2)
     }).asJava, job)

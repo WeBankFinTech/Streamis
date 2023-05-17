@@ -24,6 +24,7 @@ public class QueryJobListVo {
     private String projectId;
     private String projectName;
     private String jobType;
+    private String manageMode;
     private String label;
     private String createBy;
     private Date createTime;
@@ -86,6 +87,14 @@ public class QueryJobListVo {
 
     public void setJobType(String jobType) {
         this.jobType = jobType;
+    }
+
+    public String getManageMode() {
+        return manageMode;
+    }
+
+    public void setManageMode(String manageMode) {
+        this.manageMode = manageMode;
     }
 
     public String getLabel() {

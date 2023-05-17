@@ -15,6 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.errorcode.JobLaunchErrorCode
 import org.apache.linkis.common.exception.ErrorException
 
 /**
@@ -29,15 +30,26 @@ class FlinkJobLaunchErrorException(errorCode: Int, errorMsg: String, t: Throwabl
 /**
  * Exception in triggering savepoint
  */
-class FlinkSavePointException(errorCode: Int, errorMsg: String, t: Throwable)
+class FlinkSavePointException(errorCode: Int = JobLaunchErrorCode.JOB_EC_SAVEPOINT_ERROR, errorMsg: String, t: Throwable)
   extends FlinkJobLaunchErrorException(errorCode, errorMsg, t)
 
 /**
  * Exception in fetching job state
  */
-class FlinkJobStateFetchException(errorCode: Int, errorMsg: String, t: Throwable)
+class FlinkJobStateFetchException(errorCode: Int = JobLaunchErrorCode.JOB_EC_STATUS_FETCH_ERROR, errorMsg: String, t: Throwable)
   extends FlinkJobLaunchErrorException(errorCode, errorMsg, t)
 
 class FlinkJobLogFetchException(errorCode: Int,  errorMsg: String, t: Throwable)
   extends FlinkJobLaunchErrorException(errorCode, errorMsg, t)
 
+class FlinkJobParamErrorException(errorMsg: String, t: Throwable = null)
+extends FlinkJobLaunchErrorException(JobLaunchErrorCode.JOB_PARAM_ERROR_CODE, errorMsg, t)
+
+class FlinkJobFlinkECErrorException(errorMsg: String, t: Throwable = null)
+extends FlinkJobLaunchErrorException(JobLaunchErrorCode.JOB_EC_ERROR_CODE, errorMsg, t)
+
+class FlinkJobKillECErrorException(errorMsg: String, t: Throwable = null)
+extends FlinkJobLaunchErrorException(JobLaunchErrorCode.JOB_EC_KILL_ERROR, errorMsg, t)
+
+class FlinkECHandshakeErrorException(errorMsg: String, t: Throwable = null)
+extends FlinkJobLaunchErrorException(JobLaunchErrorCode.JOB_EC_HANDSHAKE_ERROR, errorMsg, t)

@@ -28,15 +28,15 @@ trait LaunchJob {
 
   def getSubmitUser: String
 
-  def getLabels: util.Map[String, Any]
+  def getLabels: util.Map[String, AnyRef]
 
-  def getJobContent: util.Map[String, Any]
+  def getJobContent: util.Map[String, AnyRef]
 
-  def getParams: util.Map[String, Any]
+  def getParams: util.Map[String, AnyRef]
 
-  def getSource: util.Map[String, Any]
+  def getSource: util.Map[String, AnyRef]
 
-  def getLaunchConfigs: util.Map[String, Any]
+  def getLaunchConfigs: util.Map[String, AnyRef]
 
 }
 
@@ -51,11 +51,11 @@ object LaunchJob {
   class Builder {
     private var submitUser: String = _
     private var jobName: String =  _
-    private var labels: util.Map[String, Any] = _
-    private var jobContent: util.Map[String, Any] = _
-    private var params: util.Map[String, Any] = _
-    private var source: util.Map[String, Any] = _
-    private var launchConfigs: util.Map[String, Any] = _
+    private var labels: util.Map[String, AnyRef] = _
+    private var jobContent: util.Map[String, AnyRef] = _
+    private var params: util.Map[String, AnyRef] = _
+    private var source: util.Map[String, AnyRef] = _
+    private var launchConfigs: util.Map[String, AnyRef] = _
 
     def setJobName(jobName: String): this.type = {
       this.jobName = jobName
@@ -67,27 +67,27 @@ object LaunchJob {
       this
     }
 
-    def setLabels(labels: util.Map[String, Any]): this.type = {
+    def setLabels(labels: util.Map[String, AnyRef]): this.type = {
       this.labels = labels
       this
     }
 
-    def setJobContent(jobContent: util.Map[String, Any]): this.type = {
+    def setJobContent(jobContent: util.Map[String, AnyRef]): this.type = {
       this.jobContent = jobContent
       this
     }
 
-    def setParams(param: util.Map[String, Any]): this.type = {
+    def setParams(param: util.Map[String, AnyRef]): this.type = {
       this.params = param
       this
     }
 
-    def setSource(source: util.Map[String, Any]): this.type = {
+    def setSource(source: util.Map[String, AnyRef]): this.type = {
       this.source = source
       this
     }
 
-    def setLaunchConfigs(launchConfigs: util.Map[String, Any]): this.type = {
+    def setLaunchConfigs(launchConfigs: util.Map[String, AnyRef]): this.type = {
       this.launchConfigs = launchConfigs
       this
     }
@@ -101,15 +101,15 @@ object LaunchJob {
     def build(): LaunchJob = new LaunchJob {
       override def getSubmitUser: String = submitUser
 
-      override def getLabels: util.Map[String, Any] = labels
+      override def getLabels: util.Map[String, AnyRef] = labels
 
-      override def getJobContent: util.Map[String, Any] = jobContent
+      override def getJobContent: util.Map[String, AnyRef] = jobContent
 
-      override def getParams: util.Map[String, Any] = params
+      override def getParams: util.Map[String, AnyRef] = params
 
-      override def getSource: util.Map[String, Any] = source
+      override def getSource: util.Map[String, AnyRef] = source
 
-      override def getLaunchConfigs: util.Map[String, Any] = launchConfigs
+      override def getLaunchConfigs: util.Map[String, AnyRef] = launchConfigs
 
       override def toString: String = s"LaunchJob(submitUser: $submitUser, labels: $labels, jobContent: $jobContent, params: $params, source: $source)"
 
