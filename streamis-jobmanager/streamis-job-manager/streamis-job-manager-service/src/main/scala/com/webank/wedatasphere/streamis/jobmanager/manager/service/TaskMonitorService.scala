@@ -18,19 +18,20 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 import java.util
 import java.util.Date
 import java.util.concurrent.{Future, TimeUnit}
-
 import com.google.common.collect.Sets
 import com.webank.wedatasphere.streamis.jobmanager.launcher.JobLauncherAutoConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.{EngineConnJobInfo, LinkisJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.manager
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.{AlertLevel, Alerter}
-import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils
+
 import javax.annotation.{PostConstruct, PreDestroy, Resource}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.linkis.common.exception.ErrorException
