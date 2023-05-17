@@ -26,7 +26,7 @@ trait StreamisTransformJob {
 
   def getStreamJobVersion: StreamJobVersion
 
-  def getConfigMap: util.Map[String, Any]
+  def getConfigMap: util.Map[String, AnyRef]
 
   @deprecated
   def getStreamisJobEngineConn: StreamisJobEngineConn

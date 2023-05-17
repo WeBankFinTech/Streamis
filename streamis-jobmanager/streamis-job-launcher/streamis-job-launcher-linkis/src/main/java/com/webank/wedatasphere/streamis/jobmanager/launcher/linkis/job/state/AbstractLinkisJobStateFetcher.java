@@ -19,9 +19,9 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateFetcher;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobStateFetchException;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.StreamisJobLaunchException;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.LinkisFlinkManagerJobClient;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.client.StateFileTree;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.client.LinkisJobStateGetAction;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.client.LinkisJobStateResult;
@@ -36,9 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -71,6 +69,8 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
      * Http Client
      */
     Client client;
+
+    private LinkisFlinkManagerJobClient linkisFlinkManagerClient;
 
     private final Class<T> stateClass;
 

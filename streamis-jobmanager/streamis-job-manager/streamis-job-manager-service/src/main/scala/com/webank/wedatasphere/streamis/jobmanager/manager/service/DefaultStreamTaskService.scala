@@ -414,6 +414,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
                 }
               case _ =>
             }
+          case o =>
+            logger.error(s"Invalid client: ${o}")
         }
       }{ case e: Exception =>
         // Just warn the exception
@@ -607,6 +609,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     val jobClient = getJobLaunchManager(streamTask).launch(launchJob, state)
     // Refresh and store the information from JobClient
     Utils.tryCatch {
+      // handshake with ec
+      jobClient.handshake()
       // Refresh the job info(If the job shutdown immediately)
       val jobInfo = jobClient.getJobInfo(true)
       info(s"StreamJob [${streamJob.getName}] has launched with linkis_id ${jobInfo.getId}. now to examine its status")
@@ -730,6 +734,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
             return finalState
           }
         } else {
+          // get jobInfo from linkis
+          // TODO
 
         }
         null

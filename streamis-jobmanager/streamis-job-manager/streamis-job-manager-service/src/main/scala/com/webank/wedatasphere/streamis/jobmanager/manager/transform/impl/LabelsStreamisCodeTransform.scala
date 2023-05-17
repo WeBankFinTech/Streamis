@@ -30,7 +30,7 @@ import org.apache.linkis.manager.label.constant.LabelKeyConstant
 class LabelsStreamisCodeTransform extends Transform {
 
   override def transform(streamisTransformJob: StreamisTransformJob, job: LaunchJob): LaunchJob = {
-    val labels = new util.HashMap[String, Any]
+    val labels = new util.HashMap[String, AnyRef]
     labels.put(LabelKeyUtils.ENGINE_TYPE_LABEL_KEY, streamisTransformJob.getStreamisJobEngineConn.getEngineConnType)
     // set engine type and version, like: flink and 1.12.2
 //    labels.put(LabelKeyUtils.ENGINE_TYPE_LABEL_KEY, streamisTransformJob.getStreamisJobConnect.getRunType)

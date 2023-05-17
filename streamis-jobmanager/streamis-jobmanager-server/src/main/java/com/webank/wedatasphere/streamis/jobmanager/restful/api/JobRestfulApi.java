@@ -178,29 +178,39 @@ public class JobRestfulApi {
      * @return message
      */
     @RequestMapping(path = "/execute/inspect", method = RequestMethod.PUT)
-    public Message executeInspect(HttpServletRequest req, @RequestParam(value = "jobId")Integer jobId){
-        String userName = ModuleUserUtils.getOperationUser(req, "Inspect of execution");
-        StreamJob streamJob = this.streamJobService.getJobById(jobId);
-        if (Objects.isNull(streamJob)){
-            return Message.error("Unknown StreamJob with id: " + jobId + "(无法找到对应的流任务)");
-        }
-        if (!streamJobService.hasPermission(streamJob, userName) &&
-                !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())){
-            return Message.error("Have no permission to inspect the StreamJob [" + jobId + "]");
-        }
+    public Message executeInspect(HttpServletRequest req, @RequestParam(value = "jobId")List<Integer> jobIdList){
         Message result = Message.ok();
-        try {
-            List<JobInspectVo> inspectResult = this.streamJobInspectService
-                    .inspect(jobId, new JobInspectVo.Types[]{JobInspectVo.Types.VERSION, JobInspectVo.Types.SNAPSHOT});
-            List<String> inspections = inspectResult.stream().map(JobInspectVo::getInspectName)
-                    .collect(Collectors.toList());
-            result.data("inspections", inspections);
-            Message finalResult = result;
+        String userName = ModuleUserUtils.getOperationUser(req, "Inspect of execution");
+
+        for (Integer jobId : jobIdList) {
+            StreamJob streamJob = this.streamJobService.getJobById(jobId);
+            if (Objects.isNull(streamJob)){
+                return Message.error("Unknown StreamJob with id: " + jobId + "(无法找到对应的流任务)");
+            }
+            if (!streamJobService.hasPermission(streamJob, userName) &&
+                    !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())){
+                return Message.error("Have no permission to inspect the StreamJob [" + jobId + "]");
+            }
+
+            // Get inspect result of the job
+            List<JobInspectVo> inspectResult = new ArrayList<>();
+            List<String> inspections = new ArrayList<>();
+            try {
+                inspectResult = this.streamJobInspectService
+                        .inspect(jobId, new JobInspectVo.Types[]{JobInspectVo.Types.VERSION, JobInspectVo.Types.SNAPSHOT});
+                inspections = inspectResult.stream().map(JobInspectVo::getInspectName)
+                        .collect(Collectors.toList());
+            } catch (Exception e){
+                return Message.error("Fail to inspect job " + jobId + " of the execution(任务执行前检查失败), message: " + e.getMessage());
+            }
+
+            Map<String, Object> inspectResultMap = new HashMap<>();
+            inspectResultMap.put("inspections", inspections);
             inspectResult.forEach(inspect -> {
-                finalResult.data(inspect.getInspectName(), inspect);
+                inspectResultMap.put(inspect.getInspectName(), inspect);
             });
-        } catch (Exception e){
-            result = Message.error("Fail to inspect job of the execution(任务执行前检查失败), message: " + e.getMessage());
+
+            result.data(String.valueOf(jobId), inspectResultMap);
         }
         return result;
     }
