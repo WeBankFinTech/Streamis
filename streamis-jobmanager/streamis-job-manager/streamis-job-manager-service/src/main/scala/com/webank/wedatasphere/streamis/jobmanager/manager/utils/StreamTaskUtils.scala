@@ -17,7 +17,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.utils
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo
-import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask
 import org.apache.commons.lang.StringUtils
 import org.apache.linkis.httpclient.dws.DWSHttpClient

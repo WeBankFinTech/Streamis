@@ -3,7 +3,7 @@ package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.ExecResultVo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.PauseResultVo;
-import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteErrorException;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobExecuteErrorException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamTaskService;

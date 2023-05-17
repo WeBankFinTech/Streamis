@@ -1,6 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.enums.JobClientType
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.errorcode.JobLaunchErrorCode
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{FlinkManagerClient, JobClient, JobInfo}
@@ -55,7 +56,10 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
   override def getJobInfo(refresh: Boolean): JobInfo = {
     onceJob match {
       case simpleOnceJob: SimpleOnceJob =>
-        // TODO check
+        if (JobConf.isCompleted(JobConf.linkisStatusToStreamisStatus(simpleOnceJob.getStatus))) {
+          jobInfo.setStatus(simpleOnceJob.getStatus)
+          logger.info(s"Job : ${simpleOnceJob.getId} is completed, no need to get status from linkis.")
+        }
         if (refresh && isDetachJob(jobInfo)) {
           jobInfo match {
             case engineConnJobInfo: EngineConnJobInfo =>
@@ -137,7 +141,10 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
         val json = JsonUtils.jackson.writeValueAsString(rs)
         throw new FlinkJobStateFetchException(errorMsg = s"Get invalid result. Response json : ${json}", t = null)
     }
-    new JobStateInfo("Job stop success.", 1, snapshot)
+    if (StringUtils.isBlank(jobStateInfo.getLocation)) {
+      jobStateInfo.setLocation("No location")
+    }
+    jobStateInfo
   }
 
   override def triggerSavepoint(savePointDir: String, mode: String): FlinkSavepoint = {
