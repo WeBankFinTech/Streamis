@@ -49,4 +49,13 @@ object JobLauncherConfiguration {
    */
   val VAR_FLINK_APP_NAME: CommonVars[String] = CommonVars("wds.streamis.launch.variable.flink.app.name", "flink.app.name")
 
+  val FLINK_MANAGER_EC_SUBMIT_USER: CommonVars[String] = CommonVars("wds.streamis.launch.manager.ec.submit.user", "hadoop")
+
+  val FLINK_MANAGER_EC_SUBMIT_CREATOR : CommonVars[String] = CommonVars("wds.streamis.launch.manager.ec.submit.creator", "hadoop")
+
+  val FLINK_ONCE_JOB_MAX_SUBMIT_TIME_MILLS: CommonVars[Long] = CommonVars("wds.streamis.launch.oncejob.max_submit_time.mills", 300000)
+
+  val FLINK_MANAGER_EC_REFRESH_INTERVAL: CommonVars[Long] = CommonVars("wds.streamis.launch.manager.ec.refresh.interval.mills", 10 * 60 * 1000)
+
+  val MANAGER_MODE_KEY: CommonVars[String] = CommonVars("wds.streamis.job.manager.mode.key", "wds.linkis.flink.app.manage.mode")
 }

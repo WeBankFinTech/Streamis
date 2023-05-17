@@ -41,6 +41,7 @@
         <result column="label" property="label" jdbcType="VARCHAR"/>
         <result column="description" property="description" jdbcType="VARCHAR"/>
         <result column="job_type" property="jobType" jdbcType="VARCHAR"/>
+        <result column="manage_mode" property="manageMode" jdbcType="VARCHAR"/>
         <result column="status" property="status" jdbcType="VARCHAR"/>
         <result column="version" property="version" jdbcType="INTEGER"/>
         <result column="last_version" property="lastVersion" jdbcType="VARCHAR"/>
@@ -100,7 +101,8 @@
 <!--    </select>-->
 
     <select id="getJobLists" resultMap="StreamJobVOMap">
-        select *, (SELECT COUNT(1) FROM linkis_stream_job_version v WHERE v.job_id = aa.id AND v.id > aa.version_id) AS version_forward,
+        select *, (SELECT jc.value FROM linkis_stream_job_config jc WHERE jc.job_id = aa.id and jc.key = 'wds.linkis.flink.app.manage.mode' limit 1) AS manage_mode,
+        (SELECT COUNT(1) FROM linkis_stream_job_version v WHERE v.job_id = aa.id AND v.id > aa.version_id) AS version_forward,
         (SELECT v.version FROM linkis_stream_job_version v WHERE v.job_id = aa.id ORDER BY v.id DESC LIMIT 1) AS last_version from (
         SELECT j.`id`,j.`project_name`, j.`workspace_name`,j.`name`,j.`create_by`, j.`create_time`,j.`label`,j.`description`,
         j.`job_type`, (CASE WHEN t.`status` IS NULL THEN 0 ELSE t.status END)  AS status, j.`current_version` AS version, v.id as version_id,

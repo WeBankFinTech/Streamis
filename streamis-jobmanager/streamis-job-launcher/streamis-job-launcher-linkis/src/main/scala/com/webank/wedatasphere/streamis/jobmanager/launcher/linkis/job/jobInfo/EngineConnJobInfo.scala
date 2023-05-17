@@ -1,6 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.`type`.JobClientType
+import com.webank.wedatasphere.streamis.jobmanager.launcher.enums.JobClientType
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateInfo
 import org.apache.linkis.common.ServiceInstance
 
@@ -16,6 +16,8 @@ class EngineConnJobInfo extends YarnJobInfo with LinkisJobInfo {
   private var completedMsg: String = _
   private var jobStates: Array[JobStateInfo] = _
   private var engineType: String = "flink"
+  private var engineVersion: String = "1.12.2"
+  // TODO check
   private var clientType: String = JobClientType.ATTACH.toString
 
   private var savepoint: String = _
@@ -25,6 +27,8 @@ class EngineConnJobInfo extends YarnJobInfo with LinkisJobInfo {
 
   private var ecmInstance: ServiceInstance = _
   private var logDirSuffix: String = _
+  private var jobParams: java.util.Map[String, Object] = _
+  private var ecInstance: ServiceInstance = _
 
   override def getApplicationId: String = applicationId
 
@@ -132,9 +136,23 @@ class EngineConnJobInfo extends YarnJobInfo with LinkisJobInfo {
    *
    * @return
    */
-  override def getEngineVersion: String = "1.12.2"
+  override def getEngineVersion: String = engineVersion
 
   def setEngineVersion(version: String): Unit = {
+    this.engineVersion = version
+  }
 
+  def getJobParams(): util.Map[String, Object] = jobParams
+
+  def setJobParams(params: util.Map[String, Object]): EngineConnJobInfo = {
+    this.jobParams = params
+    this
+  }
+
+  def getEcInstance(): ServiceInstance = ecInstance
+
+  def setEcInstance(instance: ServiceInstance): EngineConnJobInfo = {
+    this.ecInstance = instance
+    this
   }
 }
