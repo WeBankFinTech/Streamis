@@ -16,6 +16,7 @@
 package com.webank.wedatasphere.streamis.projectmanager.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.webank.wedatasphere.streamis.projectmanager.utils.MD5Utils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.linkis.common.utils.JsonUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
@@ -31,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.*;
 
@@ -49,6 +51,7 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void upload(String username, String fileName, String version, String projectName, String filePath,String comment) throws JsonProcessingException {
+        String fileMd5 = MD5Utils.getMD5(new File(filePath));
         Map<String, Object> result = bmlService.upload(username, filePath);
         ProjectFiles projectFiles = new ProjectFiles();
         projectFiles.setFileName(fileName);
@@ -58,12 +61,13 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
         projectFiles.setProjectName(projectName);
         ReaderUtils readerUtils = new ReaderUtils();
         projectFiles.setStorePath(readerUtils.readAsJson(result.get("version").toString(),result.get("resourceId").toString()));
+        projectFiles.setMD5(fileMd5);
         ProjectFiles file = selectFile(fileName, version, projectName);
         if (file == null) {
             projectManagerMapper.insertProjectFilesInfo(projectFiles);
         }else {
             projectFiles.setId(file.getId());
-            projectFiles.setVersion(version);
+            projectFiles.setUpdateTime(new Date());
             projectManagerMapper.updateFileById(projectFiles);
         }
     }

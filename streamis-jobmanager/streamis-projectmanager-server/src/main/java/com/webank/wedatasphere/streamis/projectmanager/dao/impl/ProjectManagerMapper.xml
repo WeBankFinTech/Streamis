@@ -23,12 +23,12 @@
     <insert id="insertProjectFilesInfo"
             parameterType="com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles">
         INSERT INTO linkis_stream_project_files
-        (`file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_by`,`comment`)
-        VALUES (#{fileName},#{version},#{storePath},#{storeType},#{projectName},#{createBy},#{comment})
+        (`file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_by`,`comment`,`md5`)
+        VALUES (#{fileName},#{version},#{storePath},#{storeType},#{projectName},#{createBy},#{comment},#{MD5})
     </insert>
 
     <update id="updateFileById" parameterType="com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles">
-        update linkis_stream_project_files set store_path = #{storePath}
+        update linkis_stream_project_files set store_path = #{storePath},update_time = #{updateTime}
         <if test="version != null and version !=''">
             ,version = #{version}
         </if>
@@ -51,7 +51,7 @@
     </delete>
 
     <select id="listFiles" resultType="com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles">
-        SELECT f.id,f.file_name,v.version,`store_path`,`store_type`,f.project_name,`create_time`,`create_by`,f.comment FROM
+        SELECT f.id,f.file_name,v.version,`store_path`,`store_type`,f.project_name,`create_time`,`create_by`,f.comment,f.update_time,f.md5 FROM
         linkis_stream_project_files f
         JOIN (SELECT MAX(VERSION) VERSION,file_name,project_name FROM linkis_stream_project_files GROUP BY file_name,project_name) v
         ON f.version= v.version AND f.file_name = v.file_name AND f.project_name = v.project_name
@@ -65,19 +65,19 @@
     </select>
 
     <select id="listFileVersions" resultType="com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles">
-        select `id`,`file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_time`,`create_by`,`comment` from
+        select `id`,`file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_time`,`create_by`,`comment`,`update_time`,`md5` from
         linkis_stream_project_files
         where project_name = #{projectName} and file_name = #{fileName} ORDER BY version desc
     </select>
 
     <select id="selectFile" resultType="com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles">
-        select `id`, `file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_time`,`create_by` from
+        select `id`, `file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_time`,`create_by`,`update_time`,`md5`  from
         linkis_stream_project_files where project_name = #{projectName} and version = #{version} and file_name =
         #{fileName}
     </select>
 
     <select id="getById" resultType="com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles">
-        select `id`,`file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_time`,`create_by` from
+        select `id`,`file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_time`,`create_by`,`update_time`,`md5`  from
         linkis_stream_project_files where id = #{id}
     </select>
 
@@ -93,11 +93,11 @@
 
     <select id="getProjectFile"
             resultType="com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles">
-        select `id`,`file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_time`,`create_by` from
+        select `id`,`file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_time`,`create_by`,`update_time`,`md5` from
         linkis_stream_project_files where id = #{id}
     </select>
 
-    <select id="selectProjectNamesByIds" resultType="Long">
+    <select id="selectProjectNamesByIds" resultType="String">
         select distinct project_name from linkis_stream_project_files where id in
         <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}
