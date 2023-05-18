@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.Objects;
 
@@ -82,28 +84,54 @@ public class UploadRestfulApi {
         InputStream is = null;
         OutputStream os = null;
         File file = null;
-        try{
-            String inputPath = IoUtils.generateIOPath(userName, "streamis", fileName);
+        String inputPath = null;
+        try {
+            inputPath = IoUtils.generateIOPath(userName, "streamis", fileName);
             file = new File(inputPath);
-            if(file.getParentFile().exists()){
+            if (file.getParentFile().exists()) {
                 FileUtils.deleteDirectory(file.getParentFile());
             }
             is = p.getInputStream();
             os = IoUtils.generateExportOutputStream(inputPath);
             IOUtils.copy(is, os);
             StreamJobVersion job = streamJobService.uploadJob(projectName, userName, inputPath);
-            return Message.ok().data("jobId",job.getJobId());
-        } catch (Exception e){
+            return Message.ok().data("jobId", job.getJobId());
+        } catch (Exception e) {
             LOG.error("Failed to upload zip {} to project {} for user {}.", fileName, projectName, userName, e);
             return Message.error(ExceptionUtils.getRootCauseMessage(e));
-        } finally{
+        } finally {
             IOUtils.closeQuietly(os);
             IOUtils.closeQuietly(is);
             //Delete the temporary file
-            if (Objects.nonNull(file) && file.exists()){
-                if (!file.delete()){
-                    LOG.warn("Fail to delete the input job file, please examine the local system environment");
-                }
+            if (Objects.nonNull(file) && file.exists()) {
+                Path path = Paths.get(inputPath.replace("/" + fileName, ""));
+                Files.walkFileTree(path,
+                        new SimpleFileVisitor<Path>() {
+                            // 先去遍历删除文件
+                            @Override
+                            public FileVisitResult visitFile(Path file,
+                                                             BasicFileAttributes attrs) throws IOException {
+                                try {
+                                    Files.delete(file);
+                                } catch (IOException e) {
+                                    LOG.warn("Fail to delete the input job file, please examine the local system environment");
+                                }
+                                return FileVisitResult.CONTINUE;
+                            }
+
+                            // 再去遍历删除目录
+                            @Override
+                            public FileVisitResult postVisitDirectory(Path dir,
+                                                                      IOException exc) throws IOException {
+                                try {
+                                    Files.delete(dir);
+                                } catch (IOException e) {
+                                    LOG.warn("Fail to delete the input job file, please examine the local system environment");
+                                }
+                                return FileVisitResult.CONTINUE;
+                            }
+                        }
+                );
             }
         }
     }
