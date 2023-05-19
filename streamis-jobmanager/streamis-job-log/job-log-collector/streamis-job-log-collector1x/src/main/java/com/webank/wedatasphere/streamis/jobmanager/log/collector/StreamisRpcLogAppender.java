@@ -66,6 +66,7 @@ public class StreamisRpcLogAppender extends AppenderSkeleton {
                 } catch (InterruptedException e) {
                     LogLog.error("StreamisRpcLogAppender: " + this.getName() +
                             " interrupted when cache the log into the RPC sender, message: " + e.getMessage());
+                    Thread.currentThread().interrupt();
                 }
             }
         }

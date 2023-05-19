@@ -50,7 +50,6 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
     initLabels.put(codeTypeLabel.getLabelKey, codeTypeLabel.getStringValue)
     initLabels.put(userCreatorLabel.getLabelKey, userCreatorLabel.getStringValue)
     val initProperties = new util.HashMap[String, String]()
-    // TODO  CHECK
     initProperties.put("flink.app.savePointPath", "./tmp")
     initProperties.put("flink.app.name", "FlinkManagerEC")
     initProperties.put("linkis.flink.manager.mode.on", true.toString)
@@ -102,7 +101,7 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
           if (null != lastManagerInstance && !lastManagerInstance.equals(ecmInstance)) {
             logger.error("Manager instance changed! Please use fixed manager.")
           }
-          // TODO linkisclient需要支持指定发送请求到serviceinstance上。目前只能manager加标签或者只起一个manger
+          // linkisclient需要支持指定发送请求到serviceinstance上。目前只能manager加标签或者只起一个manger
         case AMConstant.EC_ASYNC_START_RESULT_FAIL =>
           if (retryCount < MAX_RETRY_COUNT) {
             end = false
