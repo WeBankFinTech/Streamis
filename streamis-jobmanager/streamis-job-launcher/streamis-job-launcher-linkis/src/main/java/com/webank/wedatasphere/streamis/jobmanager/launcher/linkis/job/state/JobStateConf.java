@@ -21,6 +21,8 @@ import org.apache.linkis.common.conf.CommonVars;
  */
 public class JobStateConf {
 
+    private JobStateConf() {}
+
     public static final CommonVars<String> CHECKPOINT_PATH_PATTERN = CommonVars.apply("wds.streamis.job.state.checkpoint.path-pattern", "^[\\s\\S]+?/\\w+?/chk-\\d+/_metadata$");
 
     public static final CommonVars<String> SAVEPOINT_PATH_PATTERN = CommonVars.apply("wds.streamis.job.state.savepoint.path-pattern", "^[\\s\\S]+?/savepoint-[\\w-]+/_metadata$");
