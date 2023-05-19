@@ -74,6 +74,7 @@ public class ZipHelper {
                 throw new Exception(errMsg.toString());
             }
         }catch(final Exception e){
+            Thread.currentThread().interrupt();
             logger.error("Fail to unzip file(解压缩 zip 文件失败), reason: ", e);
             Exception exception = new Exception(dirPath + " to zip file failed");
             exception.initCause(e);
