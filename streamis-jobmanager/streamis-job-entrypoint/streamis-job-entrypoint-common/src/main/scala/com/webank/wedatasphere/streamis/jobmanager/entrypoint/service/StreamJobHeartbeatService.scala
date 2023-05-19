@@ -43,10 +43,7 @@ class StreamJobHeartbeatService extends Logging {
       }("Send job heartbeat failed!")
     }, JOB_HEARTBEAT_INTERVAL.getValue.toLong, JOB_HEARTBEAT_INTERVAL.getValue.toLong, TimeUnit.MILLISECONDS)
 
-//    while (true) {
-//      Thread.sleep(1000)
-//    }
-    // Add shutdown hook to destroy the heartbeat
+
     Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
       override def run(): Unit = {
         logger.info("Cancel sending heartbeat information, current message is: ",

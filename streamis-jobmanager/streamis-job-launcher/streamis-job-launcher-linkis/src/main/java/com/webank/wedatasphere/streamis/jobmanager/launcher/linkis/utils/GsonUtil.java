@@ -24,6 +24,9 @@ import com.google.gson.reflect.TypeToken;
 import java.util.List;
 
 public class GsonUtil {
+
+    private GsonUtil() {}
+
     private static Gson gson;
     static{
         GsonBuilder builder = new GsonBuilder();

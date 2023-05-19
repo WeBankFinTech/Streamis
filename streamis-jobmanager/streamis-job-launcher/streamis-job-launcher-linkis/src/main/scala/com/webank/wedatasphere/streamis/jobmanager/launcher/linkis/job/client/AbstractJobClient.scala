@@ -109,7 +109,6 @@ abstract class AbstractJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManage
     Utils.tryCatch{
       onceJob.getOperator(FlinkTriggerSavepointOperator.OPERATOR_NAME) match{
         case savepointOperator: FlinkTriggerSavepointOperator => {
-          // TODO Get scheme information from job info
           jobInfo match {
             case engineConnJobInfo: EngineConnJobInfo =>
               savepointOperator.setApplicationId(engineConnJobInfo.getApplicationId)
@@ -119,7 +118,6 @@ abstract class AbstractJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManage
           Option(savepointOperator()) match {
             case Some(savepoint: FlinkSavepoint) =>
               savepoint
-            // TODO store into job Info
             case _ => throw new FlinkSavePointException(-1, "The response savepoint info is empty", null)
           }
         }

@@ -76,6 +76,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
         try {
             getOrCreateLogCache().cacheLog(log);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             // Invoke exception listener
             Optional.ofNullable(exceptionListener).ifPresent(listener ->
                     listener.onException(this, e, null));
@@ -298,7 +299,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
         long clock = System.currentTimeMillis();
 
         // interval to control
-        long controlInterval = 1 * 1000;
+        long controlInterval = 1 * 1000L;
 
         // Reentrant lock
         final ReentrantLock lock;
