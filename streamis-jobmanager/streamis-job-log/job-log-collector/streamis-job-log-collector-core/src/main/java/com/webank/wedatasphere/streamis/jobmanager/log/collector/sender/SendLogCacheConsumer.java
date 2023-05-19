@@ -97,6 +97,7 @@ public abstract class SendLogCacheConsumer<T extends LogElement> implements Runn
                     Thread.sleep(500);
                 } catch (InterruptedException ex) {
                     // Ignore
+                    Thread.currentThread().interrupt();
                 }
             }
         }

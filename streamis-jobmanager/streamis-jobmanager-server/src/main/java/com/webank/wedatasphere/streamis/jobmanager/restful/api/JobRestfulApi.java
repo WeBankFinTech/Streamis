@@ -261,7 +261,7 @@ public class JobRestfulApi {
         }
         if(JobConf.SUPPORTED_MANAGEMENT_JOB_TYPES().getValue().contains(streamJob.getJobType())) {
             try {
-                PauseResultVo resultVo = streamTaskService.pause(jobId, 0L, userName, Objects.nonNull(snapshot)? snapshot : false);
+                PauseResultVo resultVo = streamTaskService.pause(jobId, 0L, userName, snapshot);
                 return snapshot? Message.ok().data("path", resultVo.getSnapshotPath()) : Message.ok();
             } catch (Exception e) {
                 LOG.error("{} kill job {} failed!", userName, jobId, e);
