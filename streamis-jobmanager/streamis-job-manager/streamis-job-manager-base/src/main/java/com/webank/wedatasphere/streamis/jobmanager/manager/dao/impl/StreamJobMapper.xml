@@ -127,6 +127,9 @@
             <if test="createBy != null and createBy != ''">
                 AND aa.`create_by` = #{createBy}
             </if>
+            <if test="label != null and label!=''">
+                AND aa.`label` like concat('%', #{label}, '%')
+            </if>
             AND EXISTS (SELECT 1 FROM linkis_stream_project_privilege lspp WHERE lspp.project_id =aa.project_id
                  AND lspp.privilege in (1,2,3) AND lspp.user_name = #{userName})
         </where>
