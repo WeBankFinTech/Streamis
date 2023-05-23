@@ -28,6 +28,16 @@
             <FormItem>
               <Button
                 type="primary"
+                :disabled="!selections.length"
+                @click="showEditTags = true"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+              >
+                {{$t('message.streamis.formItems.editTags')}}
+              </Button>
+            </FormItem>
+            <FormItem>
+              <Button
+                type="primary"
                 @click="hideButtons"
                 style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
               >
@@ -38,11 +48,8 @@
           <Form ref="queryForm" inline v-else @submit.native.prevent>
             <FormItem>
               <Input
-                search
                 v-model="query.jobName"
                 :placeholder="$t('message.streamis.formItems.jobName')"
-                @on-click="handleNameQuery"
-                @on-enter="handleNameQuery"
               >
               </Input>
             </FormItem>
@@ -60,7 +67,13 @@
                 </Option>
               </Select>
             </FormItem>
-
+            <FormItem>
+              <Input
+                v-model="query.label"
+                :placeholder="$t('message.streamis.formItems.tagPlaceHolder')"
+              >
+              </Input>
+            </FormItem>
             <FormItem>
               <Button
                 type="primary"
@@ -289,6 +302,18 @@
         </div>
       </template>
     </Modal>
+    <Modal
+      v-model="showEditTags"
+      :title="$t('message.streamis.formItems.editTags')"
+      @on-ok="confirmEditTags"
+      @on-cancel="showEditTags = false">
+      <Input
+        v-model="newTag"
+        :placeholder="$t('message.streamis.formItems.editTagsPlaceHolder')"
+      >
+      </Input>
+      <div style="marginTop: 10px">{{ $t('message.streamis.formItems.editTagsHint') }}</div>
+    </Modal>
   </div>
 </template>
 <script>
@@ -323,9 +348,14 @@ export default {
     return {
       query: {
         jobName: '',
-        jobStatus: 'all'
+        jobStatus: 'all',
+        label: '',
       },
       jobStatus: ['all'].concat(allJobStatuses.map(item => item.name)),
+
+      // 批量修改标签
+      showEditTags: false,
+      newTag: '',
 
       tableDatas: [
         {},
@@ -536,9 +566,12 @@ export default {
         // 正式环境用的
         projectName: this.projectName
       }
-      const { jobName, jobStatus } = this.query
+      const { jobName, jobStatus, label } = this.query
       if (jobName) {
         params.jobName = jobName
+      }
+      if (label) {
+        params.label = label
       }
       if (jobStatus !== 'all') {
         const hitStatus = allJobStatuses.find(item => item.name === jobStatus)
@@ -579,8 +612,6 @@ export default {
           this.loading = false
         })
     },
-    handleNameQuery() {
-    },
     handleQuery() {
       this.pageData.current = 1
       this.getJobList()
@@ -612,6 +643,20 @@ export default {
           this.choosedRowId = ''
           this.getJobList()
         })
+    },
+    // 批量修改标签
+    async confirmEditTags() {
+      console.log('this.newTag: ', this.newTag);
+      console.log('this.selections: ', this.selections);
+      const tasks = []
+      this.selections.forEach(item => {
+        tasks.push({
+          id: item.id,
+          tag: this.newTag
+        })
+      })
+      // 修改标签接口
+      await api.fetch('/streamis/streamJobManager/job/updateLabel', { tasks }, 'post');
     },
 
 
