@@ -6,8 +6,9 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobGeneri
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{FlinkManagerAction, FlinkManagerClient, JobClient, JobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkJobFlinkECErrorException, FlinkJobLaunchErrorException, FlinkJobParamErrorException}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.LinkisFlinkManagerClient.initScheduledTask
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo
-import org.apache.commons.lang3.SerializationUtils
+import org.apache.commons.lang3.{SerializationUtils, StringUtils}
 import org.apache.linkis.common.ServiceInstance
 import org.apache.linkis.common.utils.{JsonUtils, Logging, Utils}
 import org.apache.linkis.computation.client.once.OnceJob
@@ -20,19 +21,22 @@ import org.apache.linkis.governance.common.enums.OnceJobOperationBoundary
 import org.apache.linkis.httpclient.dws.DWSHttpClient
 import org.apache.linkis.manager.common.constant.AMConstant
 import org.apache.linkis.manager.label.conf.LabelCommonConfig
+import org.apache.linkis.manager.label.entity.TenantLabel
 import org.apache.linkis.manager.label.entity.engine.{CodeLanguageLabel, EngineType, EngineTypeLabel, RunType, UserCreatorLabel}
 
 import java.util
 import java.util.concurrent.TimeUnit
 import scala.collection.JavaConverters.mapAsScalaMapConverter
+import scala.tools.scalap.scalax.util.StringUtil
 
 class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
 
   private var ecInstance: ServiceInstance = _
   private var ecmInstance: ServiceInstance = _
 
-  def init(): Unit =
-    getOrCreateLinkisManagerECAndECM()
+  def init(): Unit = {
+    refreshManagerEC()
+  }
 
   private def getOrCreateLinkisManagerECAndECM(): (ServiceInstance, ServiceInstance)  = {
     val initLabels = new util.HashMap[String, String]
@@ -46,21 +50,27 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
     val userCreatorLabel = new UserCreatorLabel
     userCreatorLabel.setUser(submitUser)
     userCreatorLabel.setCreator(submitCreator)
+    if (StringUtils.isNotBlank(JobLauncherConfiguration.FLINK_MANAGER_EC_TENANT.getValue)) {
+      val tenantLabel = new TenantLabel
+      tenantLabel.setTenant(JobLauncherConfiguration.FLINK_MANAGER_EC_TENANT.getValue)
+      initLabels.put(tenantLabel.getLabelKey, tenantLabel.getStringValue)
+    }
     initLabels.put(engineTypeLabel.getLabelKey, engineTypeLabel.getStringValue)
     initLabels.put(codeTypeLabel.getLabelKey, codeTypeLabel.getStringValue)
     initLabels.put(userCreatorLabel.getLabelKey, userCreatorLabel.getStringValue)
     val initProperties = new util.HashMap[String, String]()
-    // TODO  CHECK
+
     initProperties.put("flink.app.savePointPath", "./tmp")
     initProperties.put("flink.app.name", "FlinkManagerEC")
-    initProperties.put("linkis.flink.manager.mode.on", true.toString)
+    initProperties.put(JobLauncherConfiguration.FLINK_MANAGER_MODE_KEY.getValue, true.toString)
+    initProperties.put(AMConstant.EC_SYNC_START_KEY, true.toString)
 
     var askEngineConnAction = AskEngineConnAction
       .newBuilder()
       .setCreateService(getClass.getSimpleName)
       .setLabels(initLabels)
       .setProperties(initProperties)
-      .setUser("hadoop")
+      .setUser(submitUser)
       .setMaxSubmitTime(30000)
       .setDescription("Ask a flink manager ec.")
       .build()
@@ -86,6 +96,9 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
           ecmInstance = getECMInstance(nodeInfo)
         case AMConstant.EC_ASYNC_START_RESULT_STARTING =>
           end = false
+          if (initProperties.getOrDefault(AMConstant.EC_SYNC_START_KEY, "false").toBoolean) {
+            logger.error("EC is starting but syncStart is true, there are errors in the linkismanager.")
+          }
           val asyncId = nodeInfo.get(AMConstant.EC_ASYNC_START_ID_KEY).toString
           val ecmInstance = getECMInstance(nodeInfo)
           val managerInstance = getManagerInstance(nodeInfo)
@@ -102,12 +115,11 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
           if (null != lastManagerInstance && !lastManagerInstance.equals(ecmInstance)) {
             logger.error("Manager instance changed! Please use fixed manager.")
           }
-          // TODO linkisclient需要支持指定发送请求到serviceinstance上。目前只能manager加标签或者只起一个manger
         case AMConstant.EC_ASYNC_START_RESULT_FAIL =>
           if (retryCount < MAX_RETRY_COUNT) {
             end = false
           } else {
-          end = true
+            end = true
           }
           val failMsg = nodeInfo.getOrDefault(AMConstant.EC_ASYNC_START_FAIL_MSG_KEY, "no reason")
           logger.error(s"start flink manager ec failed because: ${failMsg}")
@@ -116,7 +128,7 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
               tmpProps.remove(AMConstant.EC_ASYNC_START_ID_KEY)
             }
           if (nodeInfo.get(AMConstant.EC_ASYNC_START_FAIL_RETRY_KEY).toString.toBoolean) {
-            logger.info("start manager ec failed but can retry.")
+            logger.warn("start manager ec failed but can retry.")
           } else {
             throw new FlinkJobFlinkECErrorException(s"Start manager ec failed. Because : ${failMsg}")
           }
@@ -181,13 +193,13 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
         action.setECInstance(getFlinkManagerEngineConnInstance())
         val builtAction = action.build()
         action.getOperationBoundry match {
-          case OnceJobOperationBoundary.COMMON =>
+          case OnceJobOperationBoundary.ECM =>
             if (builtAction.isInstanceOf[ECMOperateAction]) {
               return doExecution(builtAction.asInstanceOf[ECMOperateAction])
             } else {
               throw new FlinkJobParamErrorException("FlinkManagerAction build invalid ECMOperation with operationBounday : common")
             }
-          case OnceJobOperationBoundary.PRIVATE =>
+          case OnceJobOperationBoundary.EC =>
             if (builtAction.isInstanceOf[EngineConnOperateAction]) {
               return doExecution(builtAction.asInstanceOf[EngineConnOperateAction])
             } else {
@@ -200,7 +212,19 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
   }
 
   def doExecution(operationAction: EngineConnOperateAction): EngineConnOperateResult = {
-    SimpleOnceJobBuilder.getLinkisManagerClient.executeEngineConnOperation(operationAction)
+    Utils.tryCatch {
+      SimpleOnceJobBuilder.getLinkisManagerClient.executeEngineConnOperation(operationAction)
+    } {
+      case e: Exception =>
+        logger.error(s"executeEngineConnOperation failed with action : ${operationAction}")
+        Utils.defaultScheduler.submit(new Runnable {
+          override def run(): Unit = {
+            logger.info("Will refresh manager ec in single thread.")
+            Utils.tryAndError(refreshManagerEC())
+          }
+        })
+        throw e
+    }
   }
 
   private def getServiceInstance(nodeInfo: util.Map[String, Any]): ServiceInstance =
