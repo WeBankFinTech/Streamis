@@ -734,8 +734,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           }
         } else {
           // get jobInfo from linkis
-          // TODO
-
+          throw new JobFetchErrorException(30030, s"task ${task.getId} got null linkisjobId.")
         }
         null
       case _ => null

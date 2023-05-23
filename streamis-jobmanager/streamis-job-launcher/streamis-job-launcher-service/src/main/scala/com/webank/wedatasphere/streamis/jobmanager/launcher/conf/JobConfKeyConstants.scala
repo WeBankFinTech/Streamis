@@ -16,6 +16,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.conf
 
 import org.apache.linkis.common.conf.CommonVars
+import org.apache.linkis.governance.common.conf.GovernanceCommonConf
 
 
 /**
@@ -95,5 +96,5 @@ object JobConfKeyConstants {
    */
   val MATERIAL_MODEL: CommonVars[String] = CommonVars("wds.streamis.job.config.key.material.model", "wds.streamis.job.material.model")
 
-  val MANAGE_MODE: CommonVars[String] = CommonVars("wds.streamis.job.manage.mode.key", "wds.linkis.flink.app.manage.mode")
+  val MANAGE_MODE_KEY: CommonVars[String] = CommonVars("wds.streamis.job.manage.mode.key", GovernanceCommonConf.EC_APP_MANAGE_MODE.key)
 }
