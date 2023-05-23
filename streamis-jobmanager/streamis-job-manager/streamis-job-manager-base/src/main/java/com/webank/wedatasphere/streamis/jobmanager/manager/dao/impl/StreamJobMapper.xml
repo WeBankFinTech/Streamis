@@ -128,7 +128,10 @@
                 AND aa.`create_by` = #{createBy}
             </if>
             AND EXISTS (SELECT 1 FROM linkis_stream_project_privilege lspp WHERE lspp.project_id =aa.project_id
-                 AND lspp.privilege in (1,2,3) AND lspp.user_name = #{userName})
+            <if test="userName != null and userName != ''">
+                AND lspp.user_name = #{userName}
+            </if>
+                 AND lspp.privilege in (1,2,3))
         </where>
         order by aa.start_time desc
     </select>
