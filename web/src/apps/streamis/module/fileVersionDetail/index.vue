@@ -84,6 +84,14 @@ export default {
           key: 'createTime'
         },
         {
+          title: this.$t('message.streamis.jobListTableColumns.updateTime'),
+          key: 'updateTime'
+        },
+        {
+          title: this.$t('message.streamis.jobListTableColumns.md5'),
+          key: 'md5'
+        },
+        {
           title: this.$t('message.streamis.jobListTableColumns.operation'),
           key: 'operation',
           slot: 'operation'

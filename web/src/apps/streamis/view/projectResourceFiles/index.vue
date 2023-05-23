@@ -16,11 +16,8 @@
           <Form ref="queryForm" inline>
             <FormItem>
               <Input
-                search
                 v-model="query.filename"
                 :placeholder="$t('message.streamis.projectFile.fileName')"
-                @on-click="handleNameQuery"
-                @on-enter="handleNameQuery"
               >
               </Input>
             </FormItem>
@@ -198,6 +195,18 @@ export default {
             'message.streamis.jobListTableColumns.lastReleaseTime'
           ),
           key: 'createTime'
+        },
+        {
+          title: this.$t(
+            'message.streamis.jobListTableColumns.updateTime'
+          ),
+          key: 'updateTime'
+        },
+        {
+          title: this.$t(
+            'message.streamis.jobListTableColumns.md5'
+          ),
+          key: 'md5'
         },
         {
           title: this.$t('message.streamis.jobListTableColumns.description'),
