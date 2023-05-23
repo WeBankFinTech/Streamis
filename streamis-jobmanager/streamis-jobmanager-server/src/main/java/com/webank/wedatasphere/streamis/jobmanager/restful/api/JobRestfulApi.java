@@ -37,6 +37,8 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobServ
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamTaskService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent;
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils;
+import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabel;
+import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabelResponse;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -117,6 +119,26 @@ public class JobRestfulApi {
         }
         StreamJobVersion job = streamJobService.createOrUpdate(username, metaJsonInfo);
         return Message.ok().data("jobId", job.getJobId());
+    }
+
+    @RequestMapping(path = "/updateLabel", method = RequestMethod.POST)
+    public Message updateLabel(HttpServletRequest req, @RequestBody BulkUpdateLabelResponse tasks) {
+        String username = ModuleUserUtils.getOperationUser(req, "create or update job");
+        if(!this.privilegeService.hasEditPrivilege(req, username)){
+            return Message.error("Have no permission to create or update StreamJob in project [" + username + "]");
+        }
+        List<BulkUpdateLabel> tasksData = tasks.getData();
+        for (BulkUpdateLabel bulkUpdateLabel:tasksData){
+            Long tasksId = bulkUpdateLabel.getId();
+            StreamTask task = streamTaskService.getTaskById(tasksId);
+            Long jobId = task.getJobId();
+            String label = bulkUpdateLabel.getLabel();
+            StreamJob streamJob =new StreamJob();
+            streamJob.setLabel(label);
+            streamJob.setId(jobId);
+            streamJobService.updateLabel(streamJob);
+        };
+        return Message.ok();
     }
 
     @RequestMapping(path = "{jobId:\\w+}/versions", method = RequestMethod.GET)
