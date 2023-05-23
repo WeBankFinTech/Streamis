@@ -76,6 +76,15 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   @Resource
   private var scheduler: FutureScheduler = _
 
+  /**
+   *
+   * @param Id
+   * @return
+   */
+  override def getTaskById(Id: Long): StreamTask = {
+    this.streamTaskMapper.getTaskById(Id)
+  }
+
 
   /**
    * Sync to execute job(task)
