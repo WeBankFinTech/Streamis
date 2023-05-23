@@ -25,6 +25,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunc
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
@@ -63,6 +64,9 @@ public class JobRestfulApi {
 
     @Autowired
     private StreamJobService streamJobService;
+
+    @Autowired
+    private StreamJobConfService streamJobConfService;
 
     @Autowired
     private StreamTaskService streamTaskService;
@@ -165,7 +169,7 @@ public class JobRestfulApi {
         String username = ModuleUserUtils.getOperationUser(req, "view the job version");
         StreamJob streamJob = this.streamJobService.getJobById(jobId);
         if (!streamJobService.hasPermission(streamJob, username) &&
-            !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
+                !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
             return Message.error("Have no permission to view versions of StreamJob [" + jobId + "]");
         }
         VersionDetailVo versionDetailVO = streamJobService.versionDetail(jobId, version);
@@ -190,6 +194,35 @@ public class JobRestfulApi {
             if (!streamJobService.hasPermission(streamJob, userName) &&
                     !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())){
                 return Message.error("Have no permission to inspect the StreamJob [" + jobId + "]");
+            }
+
+            try {
+                HashMap<String, Object> jobConfig = new HashMap<>(this.streamJobConfService.getJobConfig(jobId));
+                HashMap<String, Object> flinkProduce = (HashMap<String, Object>) jobConfig.get("wds.linkis.flink.produce");
+                if (!flinkProduce.containsKey("wds.linkis.flink.alert.failure.user")){
+                    return Message.error("The StreamJob alarm recipient is not configured (未配置告警接收人)  [" + jobId + "]");
+                } else {
+                    String users = String.valueOf(flinkProduce.get("wds.linkis.flink.alert.failure.user"));
+                    if (users.isEmpty()){
+                        return Message.error("The StreamJob alarm recipient is not configured (未配置告警接收人)  [" + jobId + "]");
+                    }else {
+                        List<String> userList=Arrays.asList(users.split(","));
+                        int i =0;
+                        for (String user :userList){
+                            if (user.contentEquals("hduser")){
+                                i++;
+                            }
+                        }
+                        //防止配置多个hduser用户跳过验证。
+                        if (userList.size()==i){
+                            return Message.error("Please configure an alarm recipient other than hduser  [" + jobId + "]");
+                        }
+                    }
+                }
+            }catch(Exception e){
+                String message = "Fail to view StreamJob configuration(查看任务配置失败), message: " + e.getMessage();
+                LOG.warn(message, e);
+                result = Message.error(message);
             }
 
             // Get inspect result of the job
@@ -464,7 +497,7 @@ public class JobRestfulApi {
     @RequestMapping(path = "/stopTask", method = RequestMethod.GET)
     public Message stopTask(HttpServletRequest req,
                             @RequestParam(value = "projectName") String projectName,
-                           @RequestParam(value = "jobName") String jobName,
+                            @RequestParam(value = "jobName") String jobName,
                             @RequestParam(value = "appId") String appId,
                             @RequestParam(value = "appUrl") String appUrl) {
         String username = ModuleUserUtils.getOperationUser(req, "stop task");
@@ -532,7 +565,7 @@ public class JobRestfulApi {
 
     @RequestMapping(path = "/alert", method = RequestMethod.GET)
     public Message getAlert(HttpServletRequest req, @RequestParam(value = "jobId", required = false) Long jobId,
-                                            @RequestParam(value = "version", required = false) String version) {
+                            @RequestParam(value = "version", required = false) String version) {
         String username = ModuleUserUtils.getOperationUser(req, "get alert message list");
         return Message.ok().data("list", streamJobService.getAlert(username, jobId, version));
     }
@@ -556,7 +589,7 @@ public class JobRestfulApi {
         if(streamJob == null) {
             return Message.error("not exists job " + jobId);
         } else if(!JobConf.SUPPORTED_MANAGEMENT_JOB_TYPES().getValue().contains(streamJob.getJobType()) &&
-            "client".equals(logType)) {
+                "client".equals(logType)) {
             return Message.error("Job " + streamJob.getName() + " is not supported to get client logs.");
         }
         if (!streamJobService.hasPermission(streamJob, username) &&
