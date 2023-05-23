@@ -83,7 +83,8 @@ public class JobRestfulApi {
                               @RequestParam(value = "projectName", required = false) String projectName,
                               @RequestParam(value = "jobName", required = false) String jobName,
                               @RequestParam(value = "jobStatus", required = false) Integer jobStatus,
-                              @RequestParam(value = "jobCreator", required = false) String jobCreator) {
+                              @RequestParam(value = "jobCreator", required = false) String jobCreator,
+                              @RequestParam(value = "label", required = false) String label) {
         String username = ModuleUserUtils.getOperationUser(req, "list jobs");
         if(StringUtils.isBlank(projectName)){
             return Message.error("Project name cannot be empty(项目名不能为空，请指定)");
@@ -97,7 +98,7 @@ public class JobRestfulApi {
         PageInfo<QueryJobListVo> pageInfo;
         PageHelper.startPage(pageNow, pageSize);
         try {
-            pageInfo = streamJobService.getByProList(projectName, username, jobName, jobStatus, jobCreator);
+            pageInfo = streamJobService.getByProList(projectName, username, jobName, jobStatus, jobCreator,label);
         } finally {
             PageHelper.clearPage();
         }
@@ -319,7 +320,7 @@ public class JobRestfulApi {
         } else if(StringUtils.isBlank(jobName)) {
             return Message.error("jobName cannot be empty!");
         }
-        List<QueryJobListVo> streamJobs = streamJobService.getByProList(projectName, username, jobName, null, null).getList();
+        List<QueryJobListVo> streamJobs = streamJobService.getByProList(projectName, username, jobName, null, null,null).getList();
         if(CollectionUtils.isEmpty(streamJobs)) {
             return Message.error("Not exits Streamis job " + jobName);
         } else if(streamJobs.size() > 1) {
@@ -358,7 +359,7 @@ public class JobRestfulApi {
             if(streamTask == null || StringUtils.isBlank(streamTask.getLinkisJobInfo())) {
                 // 这里取个巧，从该工程该用户有权限的Job中找到一个Flink的历史作业，作为这个Spark Streaming作业的jobId和jobInfo
                 // 替换掉JobInfo中的 yarn 信息，这样我们前端就可以在不修改任何逻辑的情况下正常展示Spark Streaming作业了
-                PageInfo<QueryJobListVo> jobList = streamJobService.getByProList(streamJob.getProjectName(), username, null, null, null);
+                PageInfo<QueryJobListVo> jobList = streamJobService.getByProList(streamJob.getProjectName(), username, null, null, null,null);
                 List<QueryJobListVo> copyJobs = jobList.getList().stream().filter(job -> !job.getJobType().startsWith("spark."))
                         .collect(Collectors.toList());
                 if(copyJobs.isEmpty()) {
