@@ -64,7 +64,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
   override def getJobByName(jobName: String): util.List[StreamJob] = streamJobMapper.getJobByName(jobName)
 
   override def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String): PageInfo[QueryJobListVo] = {
-    val streamJobList = streamJobMapper.getJobLists(projectName, userName, jobName, jobStatus, jobCreator)
+    val streamJobList = streamJobMapper.getJobLists(projectName, userName, jobName, jobStatus, jobCreator, JobConfKeyConstants.MANAGE_MODE_KEY.getValue)
     if (streamJobList != null && !streamJobList.isEmpty) {
       val pageInfo = new PageInfo[QueryJobListVo](streamJobList)
       return pageInfo
@@ -89,7 +89,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
    * COre indicator(核心指标)
    */
   override def countByCores(projectName: String, userName: String): TaskCoreNumVo = {
-    val jobs = streamJobMapper.getJobLists(projectName, userName, null, null, null)
+    val jobs = streamJobMapper.getJobLists(projectName, userName, null, null, null, JobConfKeyConstants.MANAGE_MODE_KEY.getValue)
     val taskNum = new TaskCoreNumVo()
     taskNum.setProjectName(projectName)
     if (jobs != null && !jobs.isEmpty) {

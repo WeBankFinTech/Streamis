@@ -21,9 +21,9 @@ public enum FlinkManagerActionType {
 
     public static OnceJobOperationBoundary getOperationBoundary(FlinkManagerActionType actionType) {
         if (StreamJobLauncherConf.isPrivateAction(actionType)) {
-            return OnceJobOperationBoundary.PRIVATE;
+            return OnceJobOperationBoundary.EC;
         } else {
-            return OnceJobOperationBoundary.COMMON;
+            return OnceJobOperationBoundary.ECM;
         }
     }
 }

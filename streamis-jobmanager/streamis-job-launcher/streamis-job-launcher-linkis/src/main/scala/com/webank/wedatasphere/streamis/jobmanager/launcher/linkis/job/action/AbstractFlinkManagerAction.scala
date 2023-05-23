@@ -12,9 +12,9 @@ abstract class AbstractFlinkManagerAction extends FlinkManagerAction {
 
   override def build(): EngineConnOperateAction = {
     val operateAction: EngineConnOperateAction = getOperationBoundry match {
-      case OnceJobOperationBoundary.COMMON =>
+      case OnceJobOperationBoundary.ECM =>
         new ECMOperateAction()
-      case OnceJobOperationBoundary.PRIVATE =>
+      case OnceJobOperationBoundary.EC =>
         new EngineConnOperateAction()
     }
 

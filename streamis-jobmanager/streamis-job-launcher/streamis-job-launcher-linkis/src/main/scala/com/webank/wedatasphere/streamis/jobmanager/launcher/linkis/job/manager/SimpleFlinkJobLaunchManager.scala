@@ -68,17 +68,16 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
     onceJob match {
       case submittableSimpleOnceJob: SubmittableSimpleOnceJob =>
         jobInfo.setEcInstance(submittableSimpleOnceJob.getEcServiceInstance)
+        jobInfo.setECMInstance(submittableSimpleOnceJob.getECMServiceInstance)
+      case _ =>
+        val typeStr = if (null == onceJob) "null" else onceJob.getClass.getName
+        logger.error(s"Invalid job type : ${typeStr}, only SubmittableSimpleOnceJob is supported")
     }
     val startupMap = TaskUtils.getStartupMap(job.getParams)
     val managerMode = startupMap.getOrDefault(JobLauncherConfiguration.MANAGER_MODE_KEY.getValue, JobClientType.ATTACH.getName).toString.toLowerCase()
     jobInfo.setClientType(managerMode)
     logger.info(s"Job manager mode : ${managerMode}")
-    onceJob match {
-      case simpleOnceJob: SubmittableSimpleOnceJob =>
-        jobInfo.setECMInstance(simpleOnceJob.getECMServiceInstance)
-      case _ =>
-    }
-    Utils.tryCatch(fetchApplicationInfo(onceJob, jobInfo, JobClientType.DETACH.toString.equalsIgnoreCase(managerMode))) { t =>
+    Utils.tryCatch(fetchApplicationInfo(onceJob, jobInfo)) { t =>
       val message = s"Unable to fetch the application info of launched job [${job.getJobName}], maybe the engine has been shutdown"
       error(message, t)
       // Mark failed
@@ -97,7 +96,8 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
 
   override protected def createJobInfo(jobInfo: String): LinkisJobInfo = DWSHttpClient.jacksonJson.readValue(jobInfo, classOf[EngineConnJobInfo])
 
-  protected def fetchApplicationInfo(onceJob: OnceJob, jobInfo: EngineConnJobInfo, isDetach: Boolean): Unit = {
+  protected def fetchApplicationInfo(onceJob: OnceJob, jobInfo: EngineConnJobInfo): Unit = {
+    val isDetach = JobClientType.DETACH.toString.equalsIgnoreCase(jobInfo.getClientType)
     if (isDetach) {
       val retryHandler = new RetryHandler {}
       retryHandler.setRetryNum(JobLauncherConfiguration.FLINK_FETCH_APPLICATION_INFO_MAX_TIMES.getValue)
@@ -147,13 +147,13 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
     val metricsMap = if (null != metricsStr) {
       JsonUtils.jackson.readValue(metricsStr.toString, classOf[util.Map[String, AnyRef]])
     } else {
-      logger.info("metrics: \n" + JsonUtils.jackson.writeValueAsString(rs))
+      logger.warn("metrics: \n" + JsonUtils.jackson.writeValueAsString(rs))
       throw new LinkisRetryException(JobLaunchErrorCode.JOB_EC_METRICS_ERROR, "Got null metrics.")
     }
     val applicationId = if (metricsMap.containsKey(ECConstants.YARN_APPID_NAME_KEY)) {
       metricsMap.get(ECConstants.YARN_APPID_NAME_KEY)
     } else {
-      logger.info("metrics: \n" + JsonUtils.jackson.writeValueAsString(rs))
+      logger.warn("metrics: \n" + JsonUtils.jackson.writeValueAsString(rs))
       throw new LinkisRetryException(JobLaunchErrorCode.JOB_EC_METRICS_ERROR, "Got no appId.")
     }
     jobInfo.setApplicationId(applicationId.toString)
