@@ -89,9 +89,8 @@ public class JobRestfulApi {
                               @RequestParam(value = "projectName", required = false) String projectName,
                               @RequestParam(value = "jobName", required = false) String jobName,
                               @RequestParam(value = "jobStatus", required = false) Integer jobStatus,
-                              @RequestParam(value = "jobCreator", required = false) String jobCreator)throws IOException {
                               @RequestParam(value = "jobCreator", required = false) String jobCreator,
-                              @RequestParam(value = "label", required = false) String label) {
+                              @RequestParam(value = "label", required = false) String label)throws IOException {
         String username = ModuleUserUtils.getOperationUser(req, "list jobs");
         String linkisTicketId = HttpClientUtil.getLinkisTicketId(req);
         if (HttpClientUtil.checkSystemAdmin(linkisTicketId)) username =null;
@@ -367,7 +366,7 @@ public class JobRestfulApi {
         } else if(StringUtils.isBlank(jobName)) {
             return Message.error("jobName cannot be empty!");
         }
-        List<QueryJobListVo> streamJobs = streamJobService.getByProList(projectName, username, jobName, null, null).getList();
+        List<QueryJobListVo> streamJobs = streamJobService.getByProList(projectName, username, jobName, null, null,null).getList();
         if(CollectionUtils.isEmpty(streamJobs)) {
             return Message.error("Not exits Streamis job " + jobName);
         } else if(streamJobs.size() > 1) {
