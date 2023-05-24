@@ -97,7 +97,7 @@
         linkis_stream_project_files where id = #{id}
     </select>
 
-    <select id="selectProjectNamesByIds" resultType="Long">
+    <select id="selectProjectNamesByIds" resultType="String">
         select distinct project_name from linkis_stream_project_files where id in
         <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}

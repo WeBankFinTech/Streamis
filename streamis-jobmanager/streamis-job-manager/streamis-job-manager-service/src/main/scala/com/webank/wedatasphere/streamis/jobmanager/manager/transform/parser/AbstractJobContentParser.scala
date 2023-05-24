@@ -15,6 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.parser
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobExecuteErrorException
 import java.io.InputStream
 import java.util
 
@@ -22,7 +23,6 @@ import org.apache.linkis.common.conf.Configuration
 import org.apache.linkis.common.utils.{JsonUtils, Logging}
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion, StreamisFile}
-import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobExecuteErrorException
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.{BMLService, StreamiFileService}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import org.apache.commons.io.IOUtils
