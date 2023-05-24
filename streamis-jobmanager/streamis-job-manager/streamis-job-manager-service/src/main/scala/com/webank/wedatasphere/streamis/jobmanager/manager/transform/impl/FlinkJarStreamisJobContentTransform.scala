@@ -74,7 +74,7 @@ class FlinkJarStreamisStartupParamsTransform extends Transform {
       }
       // clientTpe
       val prodConfig = streamisTransformJob.getConfigMap.get(JobConfKeyConstants.GROUP_PRODUCE.getValue).asInstanceOf[util.HashMap[String, AnyRef]]
-      startupMap.put(JobConfKeyConstants.MANAGE_MODE.getValue, prodConfig.getOrDefault(JobConfKeyConstants.MANAGE_MODE.getValue, JobConstants.MANAGE_MODE_ATTACH))
+      startupMap.put(JobConfKeyConstants.MANAGE_MODE_KEY.getValue, prodConfig.getOrDefault(JobConfKeyConstants.MANAGE_MODE_KEY.getValue, JobConstants.MANAGE_MODE_ATTACH))
 
       val params = if(job.getParams == null) new util.HashMap[String, AnyRef] else job.getParams
       if (!startupMap.isEmpty) {

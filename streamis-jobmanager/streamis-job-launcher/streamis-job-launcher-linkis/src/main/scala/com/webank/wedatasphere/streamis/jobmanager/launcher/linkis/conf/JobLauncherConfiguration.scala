@@ -1,6 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf
 
 import org.apache.linkis.common.conf.CommonVars
+import org.apache.linkis.governance.common.conf.GovernanceCommonConf
 
 /**
  * Job Launcher configuration
@@ -51,11 +52,17 @@ object JobLauncherConfiguration {
 
   val FLINK_MANAGER_EC_SUBMIT_USER: CommonVars[String] = CommonVars("wds.streamis.launch.manager.ec.submit.user", "hadoop")
 
-  val FLINK_MANAGER_EC_SUBMIT_CREATOR : CommonVars[String] = CommonVars("wds.streamis.launch.manager.ec.submit.creator", "hadoop")
+  val FLINK_MANAGER_EC_SUBMIT_CREATOR : CommonVars[String] = CommonVars("wds.streamis.launch.manager.ec.submit.creator", "Streamis")
+
+  val FLINK_MANAGER_EC_TENANT: CommonVars[String] = CommonVars("wds.streamis.launch.manager.ec.tenant", null)
 
   val FLINK_ONCE_JOB_MAX_SUBMIT_TIME_MILLS: CommonVars[Long] = CommonVars("wds.streamis.launch.oncejob.max_submit_time.mills", 300000)
 
   val FLINK_MANAGER_EC_REFRESH_INTERVAL: CommonVars[Long] = CommonVars("wds.streamis.launch.manager.ec.refresh.interval.mills", 10 * 60 * 1000)
 
-  val MANAGER_MODE_KEY: CommonVars[String] = CommonVars("wds.streamis.job.manager.mode.key", "wds.linkis.flink.app.manage.mode")
+  val MANAGER_MODE_KEY: CommonVars[String] = CommonVars("wds.streamis.job.manager.mode.key", GovernanceCommonConf.EC_APP_MANAGE_MODE.key)
+
+  val FLINK_MANAGER_MODE_KEY: CommonVars[String] = CommonVars("linkis.flink.manager.mode.key", "linkis.flink.manager.mode.on")
+
+  val ENABLE_FLINK_MANAGER_EC_REFRESH_TASK: CommonVars[Boolean] = CommonVars("wds.streamis.flink.manager.ec.refresh.enable", true)
 }

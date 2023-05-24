@@ -84,7 +84,8 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
         case t: Throwable =>
           error(s"${job.getSubmitUser} create jobInfo failed, now stop this EngineConn ${onceJob.getId}.")
           Utils.tryQuietly(onceJob.kill())
-          Utils.tryQuietly {
+          var stopMsg = ""
+          Utils.tryCatch {
             val tmpJobInfo = new EngineConnJobInfo
             tmpJobInfo.setName(StringEscapeUtils.escapeJava(job.getJobName))
             tmpJobInfo.setId(onceJob.getId)
@@ -93,8 +94,13 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
             val managerMode = startupMap.getOrDefault(JobLauncherConfiguration.MANAGER_MODE_KEY.getValue, JobClientType.ATTACH.getName).toString.toLowerCase()
             tmpJobInfo.setClientType(managerMode)
             AbstractJobClientFactory.getJobManager().createJobClient(onceJob, tmpJobInfo, getJobStateManager).stop()
+          } {
+            case e: Exception =>
+              val msg = s"Failed to kill job with id : ${onceJob.getId}, because : ${e.getMessage}, please go to check the app in yarn(停止APP失败，请上yarn查看)"
+              logger.error(msg)
+              stopMsg = msg
           }
-          throw new FlinkJobLaunchErrorException(-1, exceptionAnalyze("Fail to obtain launched job info(获取任务信息失败,引擎服务可能启动失败)", t), t)
+          throw new FlinkJobLaunchErrorException(-1, exceptionAnalyze(s"Fail to obtain launched job info(获取任务信息失败,引擎服务可能启动失败). ${stopMsg}", t), t)
       }
       val client = AbstractJobClientFactory.getJobManager().createJobClient(onceJob, jobInfo, getJobStateManager)
       client
