@@ -16,10 +16,10 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 
 import java.util
 import org.apache.linkis.computation.client.utils.LabelKeyUtils
-import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.Transform
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJob
 import org.apache.commons.lang.StringUtils
