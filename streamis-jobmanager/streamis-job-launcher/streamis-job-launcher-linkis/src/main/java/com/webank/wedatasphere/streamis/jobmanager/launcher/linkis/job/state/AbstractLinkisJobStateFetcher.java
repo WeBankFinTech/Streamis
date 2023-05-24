@@ -70,8 +70,6 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
      */
     Client client;
 
-    private LinkisFlinkManagerJobClient linkisFlinkManagerClient;
-
     private final Class<T> stateClass;
 
     private final JobStateManager jobStateManager;

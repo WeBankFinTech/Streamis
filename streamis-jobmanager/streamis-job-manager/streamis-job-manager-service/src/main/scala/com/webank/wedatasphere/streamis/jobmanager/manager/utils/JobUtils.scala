@@ -1,7 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.utils
 
-import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
-
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import java.util
 import scala.collection.JavaConverters.{asScalaSetConverter, mapAsScalaMapConverter}
 
