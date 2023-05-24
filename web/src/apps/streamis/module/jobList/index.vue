@@ -10,7 +10,7 @@
                 type="primary"
                 :disabled="!selections.length"
                 @click="clickBatchRestart(true)"
-                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.snapshotRestart')}}
               </Button>
@@ -20,7 +20,7 @@
                 type="primary"
                 :disabled="!selections.length"
                 @click="clickBatchRestart(false)"
-                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 16px;display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.directRestart')}}
               </Button>
@@ -30,7 +30,7 @@
                 type="primary"
                 :disabled="!selections.length"
                 @click="showEditTags = true"
-                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 16px;display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.editTags')}}
               </Button>
@@ -39,14 +39,14 @@
               <Button
                 type="primary"
                 @click="hideButtons"
-                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 16px;display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.cancel')}}
               </Button>
             </FormItem>
           </Form>
-          <Form ref="queryForm" inline v-else @submit.native.prevent>
-            <FormItem>
+          <Form ref="queryForm" class="query-form" :model="query" :rules="queryRuleValidate" inline v-else @submit.native.prevent :label-width="80">
+            <FormItem :label="$t('message.streamis.formItems.jobName')">
               <Input
                 v-model="query.jobName"
                 :placeholder="$t('message.streamis.formItems.jobName')"
@@ -67,28 +67,28 @@
                 </Option>
               </Select>
             </FormItem>
-            <FormItem>
+            <FormItem prop="label" :label="$t('message.streamis.formItems.tag')" style="width: 400px">
               <Input
                 v-model="query.label"
                 :placeholder="$t('message.streamis.formItems.tagPlaceHolder')"
               >
               </Input>
             </FormItem>
-            <FormItem>
+            <FormItem class="button-item">
               <Button
                 type="primary"
                 @click="handleQuery()"
-                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;"
+                style="width:100px;height:30px;background:rgba(22, 155, 213, 1);"
               >
                 {{ $t('message.streamis.formItems.queryBtn') }}
               </Button>
             </FormItem>
 
-            <FormItem>
+            <FormItem class="button-item">
               <Button
                 type="primary"
                 @click="showButtons"
-                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+                style="width:100px;height:30px;background:rgba(22, 155, 213, 1);"
               >
                 {{$t('message.streamis.formItems.batchAction')}}
               </Button>
@@ -304,15 +304,17 @@
     </Modal>
     <Modal
       v-model="showEditTags"
-      :title="$t('message.streamis.formItems.editTags')"
-      @on-ok="confirmEditTags"
-      @on-cancel="showEditTags = false">
-      <Input
-        v-model="newTag"
-        :placeholder="$t('message.streamis.formItems.editTagsPlaceHolder')"
-      >
-      </Input>
-      <div style="marginTop: 10px">{{ $t('message.streamis.formItems.editTagsHint') }}</div>
+      :title="$t('message.streamis.formItems.editTags')">
+      <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="0">
+        <FormItem prop="newTag">
+          <Input v-model="formValidate.newTag" :placeholder="$t('message.streamis.formItems.editTagsPlaceHolder')"></Input>
+        </FormItem>
+      </Form>
+      <div>{{ $t('message.streamis.formItems.editTagsHint') }}</div>
+      <template #footer>
+        <Button @click="showEditTags = false">取消</Button>
+        <Button type="primary" @click="confirmEditTags" :loading="editTagsLoading">确定</Button>
+      </template>
     </Modal>
   </div>
 </template>
@@ -355,7 +357,22 @@ export default {
 
       // 批量修改标签
       showEditTags: false,
+      editTagsLoading: false,
       newTag: '',
+      formValidate: {
+        newTag: ''
+      },
+      ruleValidate: {
+        newTag: [
+          { required: true, message: '请输入新标签', trigger: 'blur' },
+          { pattern: /^[a-zA-Z0-9_,.\s]+$/, message: '仅支持大小写字母、数字、下划线、小数点、逗号', trigger: 'blur' }
+        ],
+      },
+      queryRuleValidate: {
+        label: [
+          { pattern: /^[a-zA-Z0-9_,.\s]+$/, message: '仅支持大小写字母、数字、下划线、小数点、逗号', trigger: 'blur' }
+        ],
+      },
 
       tableDatas: [
         {},
@@ -613,8 +630,14 @@ export default {
         })
     },
     handleQuery() {
-      this.pageData.current = 1
-      this.getJobList()
+      this.$refs['queryForm'].validate(async (valid) => {
+        console.log('valid: ', valid);
+        if (valid) {
+          this.pageData.current = 1
+          this.getJobList()
+        }
+      })
+
     },
     handleUpload() {
       this.uploadVisible = true
@@ -646,17 +669,31 @@ export default {
     },
     // 批量修改标签
     async confirmEditTags() {
-      console.log('this.newTag: ', this.newTag);
-      console.log('this.selections: ', this.selections);
-      const tasks = []
-      this.selections.forEach(item => {
-        tasks.push({
-          id: item.id,
-          tag: this.newTag
-        })
+      this.editTagsLoading = true
+      this.$refs['formValidate'].validate(async (valid) => {
+        console.log('valid: ', valid);
+        if (valid) {
+          console.log('this.selections: ', this.selections);
+          const tasks = []
+          this.selections.forEach(item => {
+            tasks.push({
+              id: item.id,
+              label: this.formValidate.newTag
+            })
+          })
+          // 修改标签接口
+          try {
+            await api.fetch('/streamis/streamJobManager/job/updateLabel', { tasks }, 'post');
+            this.$refs['formValidate'].resetFields();
+            this.showEditTags = false;
+            this.editTagsLoading = false;
+          } catch {
+            this.editTagsLoading = false;
+          }
+        } else {
+          this.editTagsLoading = false;
+        }
       })
-      // 修改标签接口
-      await api.fetch('/streamis/streamJobManager/job/updateLabel', { tasks }, 'post');
     },
 
 
@@ -1041,6 +1078,14 @@ export default {
         }
       }
     }
+  }
+}
+</style>
+
+<style lang="scss">
+.button-item {
+  .ivu-form-item-content {
+    margin-left: 16px !important;
   }
 }
 </style>
