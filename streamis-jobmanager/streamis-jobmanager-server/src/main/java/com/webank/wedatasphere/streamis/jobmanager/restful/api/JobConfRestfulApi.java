@@ -25,6 +25,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobErrorException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
+import com.webank.wedatasphere.streamis.jobmanager.utils.HttpClientUtil;
 import org.apache.linkis.httpclient.dws.DWSHttpClient;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
@@ -104,9 +105,12 @@ public class JobConfRestfulApi {
         try {
             String userName = ModuleUserUtils.getOperationUser(request, "query job config json");
             StreamJob streamJob = this.streamJobService.getJobById(jobId);
-            if (!streamJobService.hasPermission(streamJob, userName) &&
-                    !this.privilegeService.hasAccessPrivilege(request, streamJob.getProjectName())){
-                throw new JobErrorException(-1, "Have no permission to view StreamJob [" + jobId + "] configuration");
+            String linkisTicketId = HttpClientUtil.getLinkisTicketId(request);
+            if (!HttpClientUtil.checkSystemAdmin(linkisTicketId)){
+                if (!streamJobService.hasPermission(streamJob, userName) &&
+                        !this.privilegeService.hasAccessPrivilege(request, streamJob.getProjectName())) {
+                    return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
+                }
             }
             result.setData(new HashMap<>(this.streamJobConfService.getJobConfig(jobId)));
         }catch(Exception e){
@@ -139,16 +143,16 @@ public class JobConfRestfulApi {
             }
             this.streamJobConfService.saveJobConfig(jobId, configContent);
         }catch(Exception e){
-           String message = "Fail to save StreamJob configuration(保存/更新任务配置失败), message: " + e.getMessage();
-           LOG.warn(message, e);
-           result = Message.error(message);
+            String message = "Fail to save StreamJob configuration(保存/更新任务配置失败), message: " + e.getMessage();
+            LOG.warn(message, e);
+            result = Message.error(message);
         }
         return result;
     }
 
     @RequestMapping(path = "/view", method = RequestMethod.GET)
     public Message viewConfigTree(@RequestParam(value = "jobId", required = false) Long jobId,
-                              HttpServletRequest req){
+                                  HttpServletRequest req){
         Message result = Message.ok("success");
         try{
             if (Objects.isNull(jobId)){
