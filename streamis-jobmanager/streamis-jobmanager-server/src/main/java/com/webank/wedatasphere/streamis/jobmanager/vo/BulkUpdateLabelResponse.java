@@ -3,13 +3,13 @@ package com.webank.wedatasphere.streamis.jobmanager.vo;
 import java.util.List;
 
 public class BulkUpdateLabelResponse {
-    private List<BulkUpdateLabel>  data;
+    private List<BulkUpdateLabel>  tasks;
 
-    public List<BulkUpdateLabel> getData() {
-        return data;
+    public List<BulkUpdateLabel> getTasks() {
+        return tasks;
     }
 
-    public void setData(List<BulkUpdateLabel> data) {
-        this.data = data;
+    public void setTasks(List<BulkUpdateLabel> tasks) {
+        this.tasks = tasks;
     }
 }
