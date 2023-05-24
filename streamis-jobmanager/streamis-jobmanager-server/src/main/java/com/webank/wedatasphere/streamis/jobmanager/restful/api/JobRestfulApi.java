@@ -31,6 +31,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.*;
+import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobErrorException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobInspectService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
@@ -122,23 +123,31 @@ public class JobRestfulApi {
     }
 
     @RequestMapping(path = "/updateLabel", method = RequestMethod.POST)
-    public Message updateLabel(HttpServletRequest req, @RequestBody BulkUpdateLabelResponse tasks) {
-        String username = ModuleUserUtils.getOperationUser(req, "create or update job");
-        if(!this.privilegeService.hasEditPrivilege(req, username)){
-            return Message.error("Have no permission to create or update StreamJob in project [" + username + "]");
+    public Message updateLabel(HttpServletRequest req, @RequestBody BulkUpdateLabelResponse bulkUpdateLabelResponse) {
+        Message result = Message.ok("success");
+        try {
+            String userName = ModuleUserUtils.getOperationUser(req, "create or update job");
+            List<BulkUpdateLabel> tasksData = bulkUpdateLabelResponse.getTasks();
+            for (BulkUpdateLabel bulkUpdateLabel:tasksData){
+                Long jobId = bulkUpdateLabel.getId();
+                StreamJob streamJob = this.streamJobService.getJobById(jobId);
+                if (!streamJobService.isCreator(jobId, userName) &&
+                        !JobConf.STREAMIS_DEVELOPER().getValue().contains(userName) &&
+                        !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
+                    throw new JobErrorException(-1, "Have no permission to save StreamJob [" + jobId + "] configuration");
+                }
+                String label = bulkUpdateLabel.getLabel();
+                StreamJob job =new StreamJob();
+                job.setLabel(label);
+                job.setId(jobId);
+                streamJobService.updateLabel(job);
+            }
+        }catch(Exception e){
+            String message = "Fail to save StreamJob label(保存/更新标签失败), message: " + e.getMessage();
+            LOG.warn(message, e);
+            result = Message.error(message);
         }
-        List<BulkUpdateLabel> tasksData = tasks.getData();
-        for (BulkUpdateLabel bulkUpdateLabel:tasksData){
-            Long tasksId = bulkUpdateLabel.getId();
-            StreamTask task = streamTaskService.getTaskById(tasksId);
-            Long jobId = task.getJobId();
-            String label = bulkUpdateLabel.getLabel();
-            StreamJob streamJob =new StreamJob();
-            streamJob.setLabel(label);
-            streamJob.setId(jobId);
-            streamJobService.updateLabel(streamJob);
-        };
-        return Message.ok();
+        return result;
     }
 
     @RequestMapping(path = "{jobId:\\w+}/versions", method = RequestMethod.GET)
