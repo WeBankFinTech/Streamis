@@ -21,8 +21,9 @@ import org.apache.linkis.governance.common.enums.OnceJobOperationBoundary
 import org.apache.linkis.httpclient.dws.DWSHttpClient
 import org.apache.linkis.manager.common.constant.AMConstant
 import org.apache.linkis.manager.label.conf.LabelCommonConfig
+import org.apache.linkis.manager.label.constant.LabelKeyConstant
 import org.apache.linkis.manager.label.entity.TenantLabel
-import org.apache.linkis.manager.label.entity.engine.{CodeLanguageLabel, EngineType, EngineTypeLabel, RunType, UserCreatorLabel}
+import org.apache.linkis.manager.label.entity.engine.{CodeLanguageLabel, EngineType, EngineTypeLabel, ManagerLabel, RunType, UserCreatorLabel}
 
 import java.util
 import java.util.concurrent.TimeUnit
@@ -55,9 +56,16 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
       tenantLabel.setTenant(JobLauncherConfiguration.FLINK_MANAGER_EC_TENANT.getValue)
       initLabels.put(tenantLabel.getLabelKey, tenantLabel.getStringValue)
     }
+    val managerLabel = new ManagerLabel
+    managerLabel.setManager(EngineType.FLINK.toString)
     initLabels.put(engineTypeLabel.getLabelKey, engineTypeLabel.getStringValue)
     initLabels.put(codeTypeLabel.getLabelKey, codeTypeLabel.getStringValue)
     initLabels.put(userCreatorLabel.getLabelKey, userCreatorLabel.getStringValue)
+    initLabels.put(managerLabel.getLabelKey, managerLabel.getStringValue)
+    initLabels.put(SimpleOnceJobBuilder.ONCE_ENGINE_CONN_MODE_LABEL_KEY, SimpleOnceJobBuilder.ONCE_ENGINE_CONN_MODE_LABEL_VALUE)
+    if (StringUtils.isNotBlank(JobLauncherConfiguration.FLINK_MANAGER_EC_TENANT.getValue)) {
+      initLabels.put(LabelKeyConstant.TENANT_KEY, JobLauncherConfiguration.FLINK_MANAGER_EC_TENANT.getValue)
+    }
     val initProperties = new util.HashMap[String, String]()
 
     initProperties.put("flink.app.savePointPath", "./tmp")
