@@ -19,6 +19,8 @@ import java.util
 import java.util.Date
 import com.github.pagehelper.PageInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobCreateErrorException, JobFetchErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
@@ -37,6 +39,7 @@ import org.apache.linkis.common.utils.Logging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+
 import scala.collection.JavaConverters._
 
 
@@ -62,6 +65,8 @@ class DefaultStreamJobService extends StreamJobService with Logging {
 
   override def getJobByName(jobName: String): util.List[StreamJob] = streamJobMapper.getJobByName(jobName)
 
+  override def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String): PageInfo[QueryJobListVo] = {
+    val streamJobList = streamJobMapper.getJobLists(projectName, userName, jobName, jobStatus, jobCreator, JobConfKeyConstants.MANAGE_MODE_KEY.getValue)
   override def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String, label: String): PageInfo[QueryJobListVo] = {
     val streamJobList = streamJobMapper.getJobLists(projectName, userName, jobName, jobStatus, jobCreator,label)
     if (streamJobList != null && !streamJobList.isEmpty) {
@@ -88,7 +93,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
    * COre indicator(核心指标)
    */
   override def countByCores(projectName: String, userName: String): TaskCoreNumVo = {
-    val jobs = streamJobMapper.getJobLists(projectName, userName, null, null, null)
+    val jobs = streamJobMapper.getJobLists(projectName, userName, null, null, null, JobConfKeyConstants.MANAGE_MODE_KEY.getValue)
     val taskNum = new TaskCoreNumVo()
     taskNum.setProjectName(projectName)
     if (jobs != null && !jobs.isEmpty) {
