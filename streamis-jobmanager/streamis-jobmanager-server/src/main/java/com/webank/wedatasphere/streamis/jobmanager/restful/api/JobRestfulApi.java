@@ -22,7 +22,7 @@ import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager;
+ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo;
@@ -32,12 +32,16 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.*;
+import com.webank.wedatasphere.streamis.jobmanager.manager.exception.JobErrorException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobInspectService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamTaskService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent;
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils;
+import com.webank.wedatasphere.streamis.jobmanager.utils.RegularUtil;
+import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabel;
+import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabelResponse;
 import com.webank.wedatasphere.streamis.jobmanager.utils.HttpClientUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -126,6 +130,35 @@ public class JobRestfulApi {
         }
         StreamJobVersion job = streamJobService.createOrUpdate(username, metaJsonInfo);
         return Message.ok().data("jobId", job.getJobId());
+    }
+
+    @RequestMapping(path = "/updateLabel", method = RequestMethod.POST)
+    public Message updateLabel(HttpServletRequest req, @RequestBody BulkUpdateLabelResponse bulkUpdateLabelResponse) {
+        Message result = Message.ok("success");
+        try {
+            String userName = ModuleUserUtils.getOperationUser(req, "create or update job");
+            List<BulkUpdateLabel> tasksData = bulkUpdateLabelResponse.getTasks();
+            for (BulkUpdateLabel bulkUpdateLabel:tasksData){
+                Long jobId = bulkUpdateLabel.getId();
+                StreamJob streamJob = this.streamJobService.getJobById(jobId);
+                if (!streamJobService.isCreator(jobId, userName) &&
+                        !JobConf.STREAMIS_DEVELOPER().getValue().contains(userName) &&
+                        !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
+                    throw new JobErrorException(-1, "Have no permission to save StreamJob [" + jobId + "] configuration");
+                }
+                String label = bulkUpdateLabel.getLabel();
+                if (!RegularUtil.matches(label))throw new JobErrorException(-1, "The label content does not meet specifications  [" + jobId + "] ");
+                StreamJob job =new StreamJob();
+                job.setLabel(label);
+                job.setId(jobId);
+                streamJobService.updateLabel(job);
+            }
+        }catch(Exception e){
+            String message = "Fail to save StreamJob label(保存/更新标签失败), message: " + e.getMessage();
+            LOG.warn(message, e);
+            result = Message.error(message);
+        }
+        return result;
     }
 
     @RequestMapping(path = "{jobId:\\w+}/versions", method = RequestMethod.GET)

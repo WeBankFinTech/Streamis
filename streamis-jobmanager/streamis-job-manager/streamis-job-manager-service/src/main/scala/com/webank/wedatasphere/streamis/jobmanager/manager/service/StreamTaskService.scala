@@ -27,6 +27,10 @@ import java.util.concurrent.Future
  */
 trait StreamTaskService {
 
+
+  def getTaskById(Id: Long): StreamTask
+
+
   /**
    * Sync to execute job(task)
    * 1) create a new task
