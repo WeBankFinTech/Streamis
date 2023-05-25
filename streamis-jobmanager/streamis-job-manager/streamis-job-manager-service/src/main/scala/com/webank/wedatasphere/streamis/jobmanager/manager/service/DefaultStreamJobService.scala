@@ -313,7 +313,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
   }
 
 
-  override def updateLabel(streamJob: StreamJob): Unit = streamJobMapper.updateJob(StreamJob)
+  override def updateLabel(streamJob: StreamJob): Unit = streamJobMapper.updateJob(streamJob)
 
 }
 
