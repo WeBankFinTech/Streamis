@@ -136,4 +136,6 @@ trait StreamJobService {
    * @return
    */
   def getAlert(username: String, jobId: Long, version: String): util.List[StreamAlertRecord]
+
+  def updateLabel(streamJob: StreamJob): Unit
 }
