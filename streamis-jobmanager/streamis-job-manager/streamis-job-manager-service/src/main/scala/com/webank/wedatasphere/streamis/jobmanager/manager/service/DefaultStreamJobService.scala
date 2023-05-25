@@ -23,11 +23,9 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobCreateErrorException, JobFetchErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
-import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamAlertMapper, StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity._
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{QueryJobListVo, TaskCoreNumVo, VersionDetailVo}
-import com.webank.wedatasphere.streamis.jobmanager.manager.exception.{JobCreateErrorException, JobFetchErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.DefaultStreamJobService.JobDeployValidateResult
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent
@@ -91,7 +89,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
    * COre indicator(核心指标)
    */
   override def countByCores(projectName: String, userName: String): TaskCoreNumVo = {
-    val jobs = streamJobMapper.getJobLists(projectName, userName, null, null, null, JobConfKeyConstants.MANAGE_MODE_KEY.getValue)
+    val jobs = streamJobMapper.getJobLists(projectName, userName, null, null, null, null, JobConfKeyConstants.MANAGE_MODE_KEY.getValue)
     val taskNum = new TaskCoreNumVo()
     taskNum.setProjectName(projectName)
     if (jobs != null && !jobs.isEmpty) {
