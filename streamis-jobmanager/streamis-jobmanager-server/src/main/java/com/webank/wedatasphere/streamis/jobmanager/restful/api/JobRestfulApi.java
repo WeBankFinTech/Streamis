@@ -38,6 +38,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobServ
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamTaskService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent;
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils;
+import com.webank.wedatasphere.streamis.jobmanager.utils.RegularUtil;
 import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabel;
 import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabelResponse;
 import org.apache.commons.collections.CollectionUtils;
@@ -137,6 +138,7 @@ public class JobRestfulApi {
                     throw new JobErrorException(-1, "Have no permission to save StreamJob [" + jobId + "] configuration");
                 }
                 String label = bulkUpdateLabel.getLabel();
+                if (!RegularUtil.matches(label))throw new JobErrorException(-1, "The label content does not meet specifications  [" + jobId + "] ");
                 StreamJob job =new StreamJob();
                 job.setLabel(label);
                 job.setId(jobId);
