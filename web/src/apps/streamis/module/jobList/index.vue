@@ -687,6 +687,8 @@ export default {
             this.$refs['formValidate'].resetFields();
             this.showEditTags = false;
             this.editTagsLoading = false;
+            this.pageData.current = 1
+            this.getJobList()
           } catch {
             this.editTagsLoading = false;
           }
