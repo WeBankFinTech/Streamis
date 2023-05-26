@@ -43,6 +43,7 @@ public class HttpClientUtil {
 
     public static final CommonVars<String> LINKIS_GATEWAY_URL = CommonVars.apply("wds.dss.gateway.url", "");
 
+    public static final CommonVars<String> LINKIS_HTTP_IS_REQUEST = CommonVars.apply("wds.linkis.http.is.request", "");
 
     static {
         Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
@@ -145,14 +146,15 @@ public class HttpClientUtil {
         String linkisUrl= LINKIS_GATEWAY_URL.getValue()+ "/api/rest_j/v1/jobhistory/governanceStationAdmin";
         Gson gson = BDPJettyServerHelper.gson();
         boolean flag =false;
-        try {
-            String responseStr = get(null, linkisUrl, null, token).getResponseStr();
-            LinkisResponseData linkisResponseData = gson.fromJson(responseStr, LinkisResponse.class).getData();
-            flag =linkisResponseData.getAdmin();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (LINKIS_HTTP_IS_REQUEST.getValue().equals("true")) {
+            try {
+                String responseStr = get(null, linkisUrl, null, token).getResponseStr();
+                LinkisResponseData linkisResponseData = gson.fromJson(responseStr, LinkisResponse.class).getData();
+                flag = linkisResponseData.getAdmin();
+            } catch (IOException e) {
+                logger.error("Failed to request the Linkis system administrator interface");
+            }
         }
-
         return flag;
     }
 }
