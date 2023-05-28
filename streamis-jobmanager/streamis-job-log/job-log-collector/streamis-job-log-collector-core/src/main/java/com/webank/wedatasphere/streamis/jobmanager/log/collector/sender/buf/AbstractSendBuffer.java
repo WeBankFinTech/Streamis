@@ -23,12 +23,12 @@ public abstract class AbstractSendBuffer<E> implements SendBuffer<E>{
     protected int capacity;
 
 
-    public AbstractSendBuffer(int capacity){
+    protected AbstractSendBuffer(int capacity){
         this.capacity = capacity;
         limit(this.capacity);
     }
 
-    public AbstractSendBuffer(){
+    protected AbstractSendBuffer(){
         this(Integer.MAX_VALUE);
     }
 

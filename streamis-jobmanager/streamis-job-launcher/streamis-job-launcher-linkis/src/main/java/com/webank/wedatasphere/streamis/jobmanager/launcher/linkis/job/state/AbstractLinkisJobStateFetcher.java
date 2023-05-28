@@ -21,7 +21,6 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateFetcher;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobStateFetchException;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.StreamisJobLaunchException;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.LinkisFlinkManagerJobClient;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.client.StateFileTree;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.client.LinkisJobStateGetAction;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.client.LinkisJobStateResult;
