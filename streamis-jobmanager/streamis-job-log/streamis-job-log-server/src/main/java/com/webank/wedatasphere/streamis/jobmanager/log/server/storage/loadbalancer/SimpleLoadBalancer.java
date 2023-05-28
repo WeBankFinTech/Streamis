@@ -33,7 +33,7 @@ public class SimpleLoadBalancer implements JobLogStorageLoadBalancer, JobLogStor
 
     @Override
     public void init() {
-
+        //init
     }
 
     @Override

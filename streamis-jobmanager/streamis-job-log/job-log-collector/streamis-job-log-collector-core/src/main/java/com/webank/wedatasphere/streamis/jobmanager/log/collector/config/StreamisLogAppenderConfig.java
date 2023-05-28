@@ -4,7 +4,6 @@ import com.webank.wedatasphere.streamis.jobmanager.log.collector.message.filters
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 /**

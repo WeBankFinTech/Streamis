@@ -112,10 +112,6 @@ public class FlinkStreamisConfigAutowired implements StreamisConfigAutowired {
      * @return configuration
      */
     private synchronized Configuration loadConfiguration(){
-//        String configDir = System.getenv("FLINK_CONF_DIR");
-//        if (null == configDir){
-//            configDir = ".";
-//        }
         String configDir = ".";
         Properties properties = System.getProperties();
         Enumeration<?> enumeration = properties.propertyNames();

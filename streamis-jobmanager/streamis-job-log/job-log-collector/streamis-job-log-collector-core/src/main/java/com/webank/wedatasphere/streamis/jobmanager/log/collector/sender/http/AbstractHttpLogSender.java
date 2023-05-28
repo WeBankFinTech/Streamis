@@ -44,7 +44,7 @@ public abstract class AbstractHttpLogSender<T extends LogElement, E> extends Abs
      */
     private final AtomicLong serverRecoveryTimePoint = new AtomicLong(-1L);
 
-    public AbstractHttpLogSender(RpcLogSenderConfig rpcSenderConfig) {
+    protected AbstractHttpLogSender(RpcLogSenderConfig rpcSenderConfig) {
         super(rpcSenderConfig);
         this.globalHttpClient = HttpClientTool.createHttpClient(rpcSenderConfig);
         this.sendRetryStrategy = new SendLogExceptionStrategy<T>(this) {
@@ -71,17 +71,14 @@ public abstract class AbstractHttpLogSender<T extends LogElement, E> extends Abs
                             break;
                         }
                     }
-                    if (!shouldRetry && e instanceof HttpResponseException){
-                        if (((HttpResponseException) e).getStatusCode() < 500){
+                    if (!shouldRetry && e instanceof HttpResponseException && ((HttpResponseException) e).getStatusCode() < 500){
                             shouldRetry = true;
-                        }
                     }
                 }
                 if (shouldRetry && !sender.getOrCreateLogCache().isCacheable()){
                     // Means that the cache is full
                     // Set the position of buffer to 0
                     sendBuffer.rewind();
-                    // Compact the buffer and transient to write mode;
                     sendBuffer.compact( element -> element.mark() > 1);
                     shouldRetry = false;
                 }

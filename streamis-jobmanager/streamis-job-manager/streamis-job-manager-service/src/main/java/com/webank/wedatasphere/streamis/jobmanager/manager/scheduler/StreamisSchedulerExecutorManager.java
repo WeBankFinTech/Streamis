@@ -57,12 +57,12 @@ public class StreamisSchedulerExecutorManager extends ExecutorManager {
 
     @Override
     public void delete(Executor executor) {
-
+        //nothing
     }
 
     @Override
     public void shutdown() {
-
+        //nothing
     }
 
     private Executor getOrCreateExecutor(){
@@ -114,7 +114,7 @@ public class StreamisSchedulerExecutorManager extends ExecutorManager {
 
         @Override
         public void close() throws IOException {
-
+            //nothing
         }
     }
 }

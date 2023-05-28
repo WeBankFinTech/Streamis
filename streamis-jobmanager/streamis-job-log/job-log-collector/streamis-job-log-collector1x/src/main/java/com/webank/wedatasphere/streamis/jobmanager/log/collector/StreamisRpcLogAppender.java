@@ -57,8 +57,6 @@ public class StreamisRpcLogAppender extends AppenderSkeleton {
     protected void append(LoggingEvent loggingEvent) {
         String content = super.getLayout().format(loggingEvent);
         if (messageFilterFunction.apply(loggingEvent.getLoggerName(), content)) {
-            // Transform to stream log event;
-            // System.currentTimeMills() -> loggingEvent.getTimeStamp()
             StreamisLogEvent logEvent = new StreamisLogEvent(content, loggingEvent.getTimeStamp());
             if (Objects.nonNull(logCache)) {
                 try {

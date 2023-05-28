@@ -72,7 +72,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
       case engineConnType: String =>
         if(!engineConnType.toLowerCase.startsWith(FlinkJobLaunchManager.FLINK_ENGINE_CONN_TYPE))
           throw new FlinkJobLaunchErrorException(30401, s"Only ${FlinkJobLaunchManager.FLINK_ENGINE_CONN_TYPE} job is supported to be launched to Linkis, but $engineConnType is found.(不识别的引擎类型)", null)
-      //todo add flink and spark
+
       case _ => throw new FlinkJobLaunchErrorException(30401, s"Not exists ${LabelKeyUtils.ENGINE_TYPE_LABEL_KEY}(缺少引擎标签), StreamisJob cannot be submitted to Linkis successfully.", null)
     }
     Utils.tryCatch {
@@ -115,7 +115,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
     connect(id, createJobInfo(jobInfo))
   }
 
-  // todo
+
   override def connect(id: String, jobInfo: LinkisJobInfo): JobClient[LinkisJobInfo] = {
     AbstractJobClientFactory.getJobManager().createJobClient(createSubmittedOnceJob(id, jobInfo), jobInfo, getJobStateManager)
   }
