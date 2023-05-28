@@ -1,6 +1,5 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.client;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

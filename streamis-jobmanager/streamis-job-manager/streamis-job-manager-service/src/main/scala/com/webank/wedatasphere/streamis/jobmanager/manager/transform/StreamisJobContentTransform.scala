@@ -25,7 +25,6 @@ trait StreamisJobContentTransform extends Transform {
   override def transform(streamisTransformJob: StreamisTransformJob, job: LaunchJob): LaunchJob = {
     val jobContent = transformJobContent(streamisTransformJob.getStreamisTransformJobContent)
     if(jobContent != null) {
-//      jobContent.put("runType", streamisTransformJob.getStreamisJobEngineConn.getRunType.toString)
       jobContent.put("runType", streamisTransformJob.getStreamisJobConnect.getRunType.toString)
       LaunchJob.builder().setLaunchJob(job).setJobContent(jobContent).build()
     } else job

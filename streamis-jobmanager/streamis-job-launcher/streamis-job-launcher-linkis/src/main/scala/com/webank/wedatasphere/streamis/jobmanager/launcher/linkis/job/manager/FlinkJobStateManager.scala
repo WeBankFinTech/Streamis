@@ -30,7 +30,7 @@ class FlinkJobStateManager extends AbstractJobStateManager with Logging{
    */
   override def init(): Unit = {
     info("Register the loader for JobState fetcher")
-    // TODO register the fetcher
+
     registerJobStateFetcher(classOf[FlinkCheckpoint], () => new FlinkCheckpointJobStateFetcher(classOf[FlinkCheckpoint], this))
     registerJobStateFetcher(classOf[FlinkSavepoint], () => new FlinkSavepointJobStateFetcher(classOf[FlinkSavepoint], this))
   }
@@ -51,6 +51,6 @@ object FlinkJobStateManager{
   URL.setURLStreamHandlerFactory(new LinkisURLStreamHandlerFactory(JobLauncherConfiguration.FLINK_STATE_SUPPORT_SCHEMES.getValue.split(","): _*))
 
   def main(args: Array[String]): Unit = {
-
+      //nothing
   }
 }

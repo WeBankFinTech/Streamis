@@ -29,5 +29,7 @@ class EngineConnJobClientFactory extends JobClientFactory {
   /**
    * Init the factory
    */
-  override def init(): Unit = {}
+  override def init(): Unit = {
+    //init
+  }
 }

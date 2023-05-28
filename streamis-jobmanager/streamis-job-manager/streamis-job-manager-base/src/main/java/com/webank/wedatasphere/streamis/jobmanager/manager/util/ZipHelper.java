@@ -34,7 +34,10 @@ public class ZipHelper {
     private static final String RECURSIVE = "-r";
     private static final String ZIP_TYPE = ".zip";
 
-    public static String unzip(String dirPath)throws Exception { //"D:\\tmp\\streamis\\20210922\\johnnwang\\ab_175950\\ab.zip"
+    private ZipHelper(){}
+
+    public static String unzip(String dirPath)throws Exception {
+        //"D:\\tmp\\streamis\\20210922\\johnnwang\\ab_175950\\ab.zip"
         File file = new File(dirPath);
         if(!file.exists()){
             logger.error("{} does not exist, can not unzip", dirPath);

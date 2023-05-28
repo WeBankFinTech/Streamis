@@ -16,7 +16,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.entity;
 
 import javax.validation.constraints.NotBlank;
-import java.util.HashMap;
 import java.util.Map;
 
 /**

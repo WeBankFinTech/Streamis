@@ -1,6 +1,5 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.utils;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
