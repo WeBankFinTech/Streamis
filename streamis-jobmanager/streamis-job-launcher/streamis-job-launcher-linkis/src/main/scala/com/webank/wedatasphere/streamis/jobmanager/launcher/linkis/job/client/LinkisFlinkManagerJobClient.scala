@@ -45,7 +45,7 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
       case JobClientType.DETACH =>
         true
       case JobClientType.DETACH_STANDALONE =>
-        // TODO  check
+
        true
       case _ =>
         throw new FlinkJobParamErrorException(s"Job with manager mode : ${jobInfo.getClientType} cannot be submited.", null)
@@ -55,7 +55,7 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
   override def getJobInfo(refresh: Boolean): JobInfo = {
     onceJob match {
       case simpleOnceJob: SimpleOnceJob =>
-        // TODO check
+
         if (refresh && isDetachJob(jobInfo)) {
           jobInfo match {
             case engineConnJobInfo: EngineConnJobInfo =>

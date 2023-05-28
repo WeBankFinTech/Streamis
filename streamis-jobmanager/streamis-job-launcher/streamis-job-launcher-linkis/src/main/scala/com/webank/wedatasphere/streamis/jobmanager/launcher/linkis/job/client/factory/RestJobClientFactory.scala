@@ -26,12 +26,7 @@ class RestJobClientFactory extends JobClientFactory {
    */
   override
   def createJobClient(onceJob: OnceJob, jobInfo: JobInfo, jobStateManager: JobStateManager): JobClient[LinkisJobInfo] = {
-
-    //todo create flink spark client
-
-
-
-
+    //create flink spark client
     null
   }
 
