@@ -27,7 +27,6 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.Proje
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import org.apache.linkis.httpclient.dws.DWSHttpClient;
 import org.apache.linkis.server.Message;
-import org.apache.linkis.server.security.SecurityFilter;
 import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -17,7 +17,6 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.alert;
 
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamAlertMapper;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamAlertRecord;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;

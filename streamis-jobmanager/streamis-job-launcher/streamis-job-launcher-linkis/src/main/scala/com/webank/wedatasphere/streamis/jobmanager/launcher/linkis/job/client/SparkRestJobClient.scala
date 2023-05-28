@@ -13,6 +13,6 @@ class SparkRestJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManager: JobSt
    * Stop
    */
   override def stop(): Unit = {
-
+    //nothing
   }
 }

@@ -201,7 +201,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
            // Launch entrance
            launch(newTaskId.asInstanceOf[Long], execUser, jobState)
          } else {
-           // TODO cannot find the new task id
+           // cannot find the new task id
          }
          null
       }

@@ -17,7 +17,6 @@ import org.apache.logging.log4j.core.config.AppenderRef;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -330,7 +329,6 @@ public class Log4j2JobLogBucket implements JobLogBucket{
      * @return file name with absolute path
      */
     private String resolveFileName(String bucketRootPath, String bucketName){
-        // {projectName}.{jobName}
         String fileName = FilenameUtils.normalize(bucketName);
         String basePath = bucketRootPath;
         if (!basePath.endsWith("/")){

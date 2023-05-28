@@ -20,12 +20,8 @@ import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * Streamis rpc log appender
@@ -80,9 +76,8 @@ public class StreamisRpcLogAppender extends AbstractAppender {
 
     @Override
     public void append(LogEvent event) {
-        String content = new String(getLayout().toByteArray(event));
+        String content = Arrays.toString(getLayout().toByteArray(event));
         if (messageFilterFunction.apply(event.getLoggerName(), content)) {
-            // Transform to stream log event;
             StreamisLogEvent logEvent = new StreamisLogEvent(content, event.getTimeMillis());
             try {
                 this.logCache.cacheLog(logEvent);

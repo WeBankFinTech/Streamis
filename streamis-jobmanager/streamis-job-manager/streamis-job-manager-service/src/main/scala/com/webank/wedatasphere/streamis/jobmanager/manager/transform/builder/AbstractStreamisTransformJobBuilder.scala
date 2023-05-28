@@ -50,7 +50,6 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
     jobConfig.put(JobConfKeyConstants.GROUP_INTERNAL.getValue, internalGroup)
     internalLogConfig(internalGroup)
     transformJob.setConfigMap(jobConfig)
-//    transformJob.setConfig(configurationService.getFullTree(streamJob.getId))
     val streamJobVersions = streamJobMapper.getJobVersions(streamJob.getId)
     // 无需判断streamJobVersions是否非空，因为TaskService已经判断了
     transformJob.setStreamJobVersion(streamJobVersions.get(0))
@@ -78,7 +77,6 @@ abstract class AbstractDefaultStreamisTransformJobBuilder extends AbstractStream
     case transformJob: StreamisTransformJobImpl =>
       val engineConn = new StreamisJobEngineConnImpl
       engineConn.setEngineConnType("flink-" + flinkVersion)
-//      engineConn.setRunType(getRunType(transformJob))
       transformJob.setStreamisJobEngineConn(engineConn)
       val streamisJobConnect = new StreamisJobConnectImpl
       streamisJobConnect.setRunType(getRunType(transformJob))

@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 public class FlinkConfigurationLoadTest {
-    private static final Logger LOG = LoggerFactory.getLogger(FlinkConfigurationLoadTest.class);
+
     @Test
     public void loadConfiguration() {
         String configDir = Objects.requireNonNull(FlinkConfigurationLoadTest.class.getResource("/")).getFile();

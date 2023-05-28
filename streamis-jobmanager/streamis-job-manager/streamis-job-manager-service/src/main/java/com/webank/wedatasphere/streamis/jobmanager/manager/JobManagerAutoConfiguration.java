@@ -19,7 +19,6 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.FutureSched
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.StreamisScheduler;
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.StreamisSchedulerExecutorManager;
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.TenancyConsumerManager;
-import org.apache.linkis.scheduler.Scheduler;
 import org.apache.linkis.scheduler.executer.ExecutorManager;
 import org.apache.linkis.scheduler.queue.ConsumerManager;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

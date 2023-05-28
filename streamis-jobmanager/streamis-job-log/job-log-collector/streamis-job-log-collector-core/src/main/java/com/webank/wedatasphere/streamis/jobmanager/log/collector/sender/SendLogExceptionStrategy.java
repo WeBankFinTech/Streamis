@@ -13,7 +13,7 @@ public abstract class SendLogExceptionStrategy<T extends LogElement> {
 
     protected final RpcLogSender<T> sender;
 
-    public SendLogExceptionStrategy(RpcLogSender<T> sender){
+    protected SendLogExceptionStrategy(RpcLogSender<T> sender){
         this.sender = sender;
     }
     /**
