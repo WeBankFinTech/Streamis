@@ -19,7 +19,6 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.util.CookieUtils;
 import com.webank.wedatasphere.streamis.jobmanager.service.UserService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.server.Message;
-import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

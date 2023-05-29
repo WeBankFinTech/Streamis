@@ -67,7 +67,7 @@ public class ProjectManagerRestfulApi {
                            @RequestParam(name = "comment", required = false) String comment,
                            @RequestParam(name = "updateWhenExists", required = false) boolean updateWhenExists,
                            @RequestParam(name = "file") List<MultipartFile> files) throws UnsupportedEncodingException, FileException {
-        String username = ModuleUserUtils.getOperationUser(req, "upload project files");;
+        String username = ModuleUserUtils.getOperationUser(req, "upload project files");
         if (StringUtils.isBlank(version)) {
             return Message.error("version is null");
         }
@@ -134,7 +134,6 @@ public class ProjectManagerRestfulApi {
                                 @RequestParam(value = "projectName",required = false) String projectName,
                                 @RequestParam(value = "pageNow",defaultValue = "1") Integer pageNow,
                                 @RequestParam(value = "pageSize",defaultValue = "20") Integer pageSize) {
-        String username = ModuleUserUtils.getOperationUser(req, "list project files version");;
         if (StringUtils.isBlank(projectName)) {
             return Message.error("projectName is null");
         }

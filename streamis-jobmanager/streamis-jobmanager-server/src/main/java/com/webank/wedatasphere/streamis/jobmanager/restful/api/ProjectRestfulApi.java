@@ -20,7 +20,6 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.TaskCoreNum
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.server.Message;
-
 import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
