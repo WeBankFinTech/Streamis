@@ -94,7 +94,13 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
     jobInfo
   }
 
-  override protected def createJobInfo(jobInfo: String): LinkisJobInfo = DWSHttpClient.jacksonJson.readValue(jobInfo, classOf[EngineConnJobInfo])
+  override protected def createJobInfo(jobInfo: String): LinkisJobInfo = {
+    if (StringUtils.isNotBlank(jobInfo)) {
+      DWSHttpClient.jacksonJson.readValue(jobInfo, classOf[EngineConnJobInfo])
+    } else {
+      null
+    }
+  }
 
   protected def fetchApplicationInfo(onceJob: OnceJob, jobInfo: EngineConnJobInfo): Unit = {
     val isDetach = JobClientType.DETACH.toString.equalsIgnoreCase(jobInfo.getClientType)
