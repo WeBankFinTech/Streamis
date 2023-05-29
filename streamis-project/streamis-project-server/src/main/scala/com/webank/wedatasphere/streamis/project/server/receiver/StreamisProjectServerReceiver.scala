@@ -20,38 +20,13 @@ class StreamisProjectServerReceiver(projectService:StreamisProjectService) exten
 
 
   override def receive(message: Any, sender: Sender): Unit = {
-
+    //nothing
   }
 
   override def receiveAndReply(message: Any, sender: Sender): Any = receiveAndReply(message, Duration.create(300, "seconds"), sender)
 
   override def receiveAndReply(message: Any, duration: Duration, sender: Sender): Any = null
-//    message match {
-//    case createStreamProjectRequest: CreateStreamProjectRequest =>
-//      Utils.tryCatch{
-//        val streamisProject = projectService.createProject(createStreamProjectRequest)
-//        CreateStreamProjectResponse(0, streamisProject.getName, streamisProject.getId, "")
-//      }{
-//        t => logger.error("failed to create project in streamis", t)
-//          CreateStreamProjectResponse(-1, createStreamProjectRequest.projectName, -1, t.getCause.getMessage)
-//      }
-//    case updateStreamProjectRequest: UpdateStreamProjectRequest => Utils.tryCatch{
-//      projectService.updateProject(updateStreamProjectRequest)
-//      UpdateStreamProjectResponse(0, updateStreamProjectRequest.streamisProjectId, "")
-//    }{
-//      t => logger.error(s"failed to update project ${updateStreamProjectRequest.projectName} in streamis",t)
-//        UpdateStreamProjectResponse(-1, updateStreamProjectRequest.streamisProjectId, t.getCause.getMessage)
-//    }
-//
-//    case deleteStreamProjectRequest: DeleteStreamProjectRequest => Utils.tryCatch{
-//      projectService.deleteProject(deleteStreamProjectRequest)
-//      DeleteStreamProjectResponse(0, deleteStreamProjectRequest.projectName, "")
-//    }{
-//      t => logger.error(s"failed to update project ${deleteStreamProjectRequest.projectName} in streamis",t)
-//        DeleteStreamProjectResponse(-1, deleteStreamProjectRequest.projectName, t.getCause.getMessage)
-//    }
-//    case _ =>
-//  }
+
 
 
 
