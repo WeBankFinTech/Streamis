@@ -18,6 +18,7 @@ package com.webank.wedatasphere.streamis.projectmanager.utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -30,6 +31,7 @@ public class DateUtils {
     private static final String FORMAT_HH_MM_SS_S = "yyyy-MM-dd HH:mm:ss.S";
     private static final String FORMAT_HH_MM = "yyyy-MM-dd HH:mm";
 
+    private DateUtils(){}
 
     /**
      * contain T,Z format date time convert
@@ -38,10 +40,9 @@ public class DateUtils {
      * @return
      * @throws Exception
      */
-    public static String dateTimeTZConvert(String dateTime) throws Exception {
+    public static String dateTimeTZConvert(String dateTime) throws ParseException {
         Date date = new SimpleDateFormat(FORMAT_HH_T_Z).parse(dateTime);
-        String time = new SimpleDateFormat(FORMAT_HH_MM_SS).format(date);
-        return time;
+        return new SimpleDateFormat(FORMAT_HH_MM_SS).format(date);
     }
 
     /**

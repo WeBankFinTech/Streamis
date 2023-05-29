@@ -232,7 +232,6 @@ public class StreamisJobLogStorage implements JobLogStorage{
         LOG.info("Init the storage context: [" + StringUtils.join(storagePaths, ",") + "]");
         for(String storagePath : storagePaths){
             if (StringUtils.isNotBlank(storagePath)) {
-                // TODO the score of context
                 this.storageContexts.add(new JobLogStorageContext(storagePath, 1.0));
             }
         }
