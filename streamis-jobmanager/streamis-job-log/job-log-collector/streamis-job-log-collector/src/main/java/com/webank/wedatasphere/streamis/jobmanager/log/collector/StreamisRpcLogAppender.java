@@ -83,6 +83,7 @@ public class StreamisRpcLogAppender extends AbstractAppender {
                 this.logCache.cacheLog(logEvent);
             } catch (InterruptedException e) {
                 LOGGER.error("StreamisRpcLogAppender: {} interrupted when cache the log into the RPC sender, message: {}", this.getName(), e.getMessage());
+                Thread.currentThread().interrupt();
             }
         }
     }

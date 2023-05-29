@@ -206,10 +206,7 @@ public class JobRestfulApi {
 
             Map<String, Object> inspectResultMap = new HashMap<>();
             inspectResultMap.put("inspections", inspections);
-            inspectResult.forEach(inspect -> {
-                inspectResultMap.put(inspect.getInspectName(), inspect);
-            });
-
+            inspectResult.forEach(inspect -> inspectResultMap.put(inspect.getInspectName(), inspect));
             result.data(String.valueOf(jobId), inspectResultMap);
         }
         return result;
