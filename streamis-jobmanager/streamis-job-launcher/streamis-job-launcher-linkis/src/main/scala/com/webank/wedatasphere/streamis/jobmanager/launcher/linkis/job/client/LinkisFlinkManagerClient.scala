@@ -62,7 +62,7 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
     initLabels.put(codeTypeLabel.getLabelKey, codeTypeLabel.getStringValue)
     initLabels.put(userCreatorLabel.getLabelKey, userCreatorLabel.getStringValue)
     initLabels.put(managerLabel.getLabelKey, managerLabel.getStringValue)
-    initLabels.put(SimpleOnceJobBuilder.ONCE_ENGINE_CONN_MODE_LABEL_KEY, SimpleOnceJobBuilder.ONCE_ENGINE_CONN_MODE_LABEL_VALUE)
+//    initLabels.put(SimpleOnceJobBuilder.ONCE_ENGINE_CONN_MODE_LABEL_KEY, SimpleOnceJobBuilder.ONCE_ENGINE_CONN_MODE_LABEL_VALUE)
     if (StringUtils.isNotBlank(JobLauncherConfiguration.FLINK_MANAGER_EC_TENANT.getValue)) {
       initLabels.put(LabelKeyConstant.TENANT_KEY, JobLauncherConfiguration.FLINK_MANAGER_EC_TENANT.getValue)
     }
@@ -72,6 +72,7 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
     initProperties.put("flink.app.name", "FlinkManagerEC")
     initProperties.put(JobLauncherConfiguration.FLINK_MANAGER_MODE_KEY.getValue, true.toString)
     initProperties.put(AMConstant.EC_SYNC_START_KEY, true.toString)
+    initProperties.put(JobLauncherConfiguration.LINKIS_EC_EXPIRE_TIME_KEY.getValue, JobLauncherConfiguration.FLINKK_MANAGER_EXIT_TIME.getHotValue().toString)
 
     var askEngineConnAction = AskEngineConnAction
       .newBuilder()
@@ -176,13 +177,7 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
 
   override def getFlinkManagerEngineConnInstance(): ServiceInstance = {
     if (null == ecInstance) {
-      LinkisFlinkManagerClient.ASK_EC_LOCK.synchronized {
-        if (null == ecInstance) {
-          val rs = getOrCreateLinkisManagerECAndECM()
-          ecInstance = rs._1
-          ecmInstance = rs._2
-        }
-      }
+      refreshManagerEC()
     }
     ecInstance
   }
