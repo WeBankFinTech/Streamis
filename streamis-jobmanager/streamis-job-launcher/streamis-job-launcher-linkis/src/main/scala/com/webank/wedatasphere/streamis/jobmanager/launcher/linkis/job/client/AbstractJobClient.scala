@@ -23,8 +23,9 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.Fli
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.operator.FlinkTriggerSavepointOperator
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.FlinkSavepoint
+import org.apache.linkis.common.ServiceInstance
 import org.apache.linkis.common.utils.{Logging, Utils}
-import org.apache.linkis.computation.client.once.simple.SimpleOnceJob
+import org.apache.linkis.computation.client.once.simple.{SimpleOnceJob, SubmittableSimpleOnceJob}
 import org.apache.linkis.computation.client.once.OnceJob
 
 /**
@@ -49,8 +50,22 @@ abstract class AbstractJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManage
   override def getJobInfo(refresh: Boolean): JobInfo = {
     onceJob match {
       case simpleOnceJob: SimpleOnceJob =>
+        Utils.tryCatch {
         jobInfo.setStatus(if (refresh && null != onceJob.getNodeInfo) onceJob.getNodeInfo
           .getOrDefault("nodeStatus", simpleOnceJob.getStatus).asInstanceOf[String] else simpleOnceJob.getStatus)
+        } {
+          case e: Exception =>
+            val ec: ServiceInstance = simpleOnceJob.getEcServiceInstance
+            if (null != ec) {
+              if (e.getMessage.contains(s"Instance does not exist ServiceInstance(linkis-cg-engineconn, ${ec.getInstance}")) {
+                logger.warn(s"EC instance : ${ec.toString()} not exist, will set status to Failed.")
+                jobInfo.setStatus("Failed")
+              }
+            } else {
+              logger.error(s"EC instance of job : ${jobInfo.getId} is null, no need to get job status.")
+              throw e
+            }
+        }
     }
     jobInfo
   }
