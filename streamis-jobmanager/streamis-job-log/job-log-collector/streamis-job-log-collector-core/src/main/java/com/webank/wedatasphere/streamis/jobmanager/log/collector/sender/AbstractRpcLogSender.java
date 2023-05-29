@@ -46,7 +46,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
     /**
      * Rpc log context
      */
-    private volatile RpcLogContext rpcLogContext;
+    private  RpcLogContext rpcLogContext;
 
     protected boolean isTerminated = false;
     /**
