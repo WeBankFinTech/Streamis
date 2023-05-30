@@ -23,7 +23,7 @@ import org.apache.commons.lang.StringUtils
 import scala.collection.JavaConverters._
 import java.util
 /**
- * TODO dive into JobConfValueSerializer and JobConfValueDeserializer
+ * dive into JobConfValueSerializer and JobConfValueDeserializer
  */
 class JobConfValueUtils {
 
@@ -180,19 +180,5 @@ object JobConfValueUtils{
     }
     result
   }
-//  def main(args: Array[String]): Unit = {
-//    val definitions: util.List[JobConfDefinition] = new util.ArrayList[JobConfDefinition]()
-//    val configValues: util.List[JobConfValue] = new util.ArrayList[JobConfValue]()
-//    definitions.add(new JobConfDefinition(0, "wds.linkis.flink.resource", "None", null, 0))
-//    definitions.add(new JobConfDefinition(1, "wds.linkis.flink.custom", "None", null, 0))
-//    definitions.add(new JobConfDefinition(2, "wds.linkis.flink.taskmanager.num", "NUMBER", 0, 1))
-//    definitions.add(new JobConfDefinition(3, "wds.linkis.flink.jobmanager.memeory", "NUMBER", 0, 1))
-//    configValues.add(new JobConfValue("wds.linkis.flink.taskmanager.num", "1", 2))
-//    configValues.add(new JobConfValue("env.java.opts", "-DHADOOP_USER_NAME=hadoop", 1))
-//    configValues.add(new JobConfValue("security.kerberos.login.principal", "hadoop@WEBANK.com", 1))
-//    configValues.add(new JobConfValue("wds.linkis.flink.jobmanager.memeory", "1024", 3))
-//    val result = serialize(configValues, definitions)
-//    println(DWSHttpClient.jacksonJson.writeValueAsString(result))
-//    println(DWSHttpClient.jacksonJson.writeValueAsString(deserialize(result, definitions)))
-//  }
+
 }

@@ -41,7 +41,7 @@ public class UserServiceImpl implements UserService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Cookie", req.getHeader("Cookie"));
-        HttpEntity<String> httpEntity = new HttpEntity<String>(headers);
+        HttpEntity<String> httpEntity = new HttpEntity<>(headers);
         ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, httpEntity, Map.class);
         Map<String, List> data = (Map<String, List>) response.getBody().get("data");
         List<Map<String, Object>> workspaceUsers = data.get("workspaceUsers");

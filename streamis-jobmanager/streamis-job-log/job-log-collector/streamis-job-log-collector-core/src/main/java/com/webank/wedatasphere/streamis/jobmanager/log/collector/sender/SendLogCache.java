@@ -16,5 +16,5 @@ public interface SendLogCache<E extends LogElement> extends LogCache<E> {
      * @param maxElements max element size
      * @return count
      */
-    int drainLogsTo(SendBuffer<E> sendBuffer, int maxElements);;
+    int drainLogsTo(SendBuffer<E> sendBuffer, int maxElements);
 }

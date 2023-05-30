@@ -19,8 +19,6 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.util.CookieUtils;
 import com.webank.wedatasphere.streamis.jobmanager.service.UserService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.server.Message;
-import org.apache.linkis.server.security.SecurityFilter;
-import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +43,7 @@ public class JobConfExtRestfulApi {
         List<String> userList = new ArrayList<>();
         String workspaceId = CookieUtils.getCookieWorkspaceId(req);
         if (StringUtils.isNotBlank(workspaceId)) {
-            String userName = ModuleUserUtils.getOperationUser(req);
+
             userList.addAll(userService.workspaceUserQuery(req, workspaceId));
         } else {
             LOG.warn("Cannot find the workspaceID from DSS，perhaps the cookie value has been lost in request from: {}", req.getLocalAddr());

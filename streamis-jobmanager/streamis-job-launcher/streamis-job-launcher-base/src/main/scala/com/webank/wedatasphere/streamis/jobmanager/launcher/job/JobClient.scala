@@ -29,7 +29,11 @@ trait JobClient[T <: JobInfo] {
    */
   def stop(): Unit
 
-  def init(): Unit = {}
+  def init(): Unit = {
+    //Done
+  }
 
-  def handshake(): Unit = {}
+  def handshake(): Unit = {
+    //Done
+  }
 }

@@ -47,7 +47,6 @@ public class FlinkSavepointJobStateFetcher extends AbstractLinkisJobStateFetcher
 
     @Override
     protected FlinkSavepoint getState(JobStateFileInfo fileInfo) {
-        // TODO from linkis will lost the authority info
         URI location = URI.create(fileInfo.getPath());
         if (StringUtils.isBlank(location.getAuthority()) &&
                 StringUtils.isNotBlank(JobLauncherConfiguration.FLINK_STATE_DEFAULT_AUTHORITY().getValue())){

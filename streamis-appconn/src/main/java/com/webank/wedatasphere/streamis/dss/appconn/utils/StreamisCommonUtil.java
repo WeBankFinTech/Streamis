@@ -18,7 +18,9 @@ import static com.webank.wedatasphere.streamis.dss.appconn.constraints.Constrain
 
 public class StreamisCommonUtil {
 
-    private final static Logger logger = LoggerFactory.getLogger(StreamisCommonUtil.class);
+    private StreamisCommonUtil() {}
+
+    private static final  Logger logger = LoggerFactory.getLogger(StreamisCommonUtil.class);
 
     public static SSOUrlBuilderOperation getSSOUrlBuilderOperation(WorkspaceRequestRef requestRef, String url) {
         SSOUrlBuilderOperation ssoUrlBuilderOperation = SSOHelper.createSSOUrlBuilderOperation(requestRef.getWorkspace());

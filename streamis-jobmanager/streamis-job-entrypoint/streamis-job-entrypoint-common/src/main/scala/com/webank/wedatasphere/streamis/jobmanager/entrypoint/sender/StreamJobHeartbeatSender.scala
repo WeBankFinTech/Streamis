@@ -26,8 +26,6 @@ class StreamJobHeartbeatSender extends Logging {
   def getHttpClientUtil: HttpClientUtil = this.httpClientUtil
   def setHttpClientUtil(httpClientUtil: HttpClientUtil): Unit = this.httpClientUtil = httpClientUtil
 
-//  def getSenderHttpConfig: SenderHttpConfig = this.senderHttpConfig
-//  def setSenderHttpConfig(senderHttpConfig: SenderHttpConfig): Unit = this.senderHttpConfig = senderHttpConfig
 
   def init(httpClient: CloseableHttpClient, postRequest: HttpPost): Unit = {
     this.httpClient = httpClient
