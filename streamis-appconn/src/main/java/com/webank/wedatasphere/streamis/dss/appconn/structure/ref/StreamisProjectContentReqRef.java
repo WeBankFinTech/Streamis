@@ -8,6 +8,6 @@ import com.webank.wedatasphere.dss.standard.app.structure.project.ref.RefProject
 public class StreamisProjectContentReqRef extends StreamisStructureReqRef<StreamisProjectContentReqRef>
         implements RefProjectContentRequestRef<StreamisProjectContentReqRef> {
     public StreamisProjectContentReqRef(){
-
+        //Do  nothing because of appconn
     }
 }

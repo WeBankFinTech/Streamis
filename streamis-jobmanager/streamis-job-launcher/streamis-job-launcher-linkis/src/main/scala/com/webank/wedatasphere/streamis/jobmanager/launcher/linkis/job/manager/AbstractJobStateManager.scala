@@ -107,7 +107,7 @@ abstract class AbstractJobStateManager extends JobStateManager {
     path = path.replaceAll("/+", "/")
     // Replace "." to "/"
     path = path.replaceAll("\\.", "/")
-    if (path.endsWith("/") && !(path == "/") && !WINDOWS_ROOT_DIR_REGEX.pattern.matcher(path).matches()) path = path.substring(0, path.length - "/".length)
+    if (path.endsWith("/") && (path != "/") && !WINDOWS_ROOT_DIR_REGEX.pattern.matcher(path).matches()) path = path.substring(0, path.length - "/".length)
     path
   }
   def getJobStateRootPath[T <: JobState](clazz: Class[_], schema: String): String

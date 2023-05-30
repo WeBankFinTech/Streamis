@@ -280,10 +280,7 @@ public class JobRestfulApi {
 
             Map<String, Object> inspectResultMap = new HashMap<>();
             inspectResultMap.put("inspections", inspections);
-            inspectResult.forEach(inspect -> {
-                inspectResultMap.put(inspect.getInspectName(), inspect);
-            });
-
+            inspectResult.forEach(inspect -> inspectResultMap.put(inspect.getInspectName(), inspect));
             result.data(String.valueOf(jobId), inspectResultMap);
         }
         return result;
@@ -335,7 +332,7 @@ public class JobRestfulApi {
         }
         if(JobConf.SUPPORTED_MANAGEMENT_JOB_TYPES().getValue().contains(streamJob.getJobType())) {
             try {
-                PauseResultVo resultVo = streamTaskService.pause(jobId, 0L, userName, Objects.nonNull(snapshot)? snapshot : false);
+                PauseResultVo resultVo = streamTaskService.pause(jobId, 0L, userName, snapshot);
                 return snapshot? Message.ok().data("path", resultVo.getSnapshotPath()) : Message.ok();
             } catch (Exception e) {
                 LOG.error("{} kill job {} failed!", userName, jobId, e);

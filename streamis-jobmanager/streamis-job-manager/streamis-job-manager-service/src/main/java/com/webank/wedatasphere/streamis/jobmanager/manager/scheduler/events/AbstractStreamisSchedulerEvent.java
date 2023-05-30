@@ -15,7 +15,6 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events;
 
-import com.ctc.wstx.util.StringUtil;
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.StreamisSchedulerEvent;
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.exception.StreamisScheduleException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.exception.StreamisScheduleRetryException;
@@ -73,7 +72,7 @@ public abstract class AbstractStreamisSchedulerEvent extends Job implements Stre
      */
     protected Map<String, Object> resultSet = new HashMap<>();
 
-    public AbstractStreamisSchedulerEvent(){
+    protected AbstractStreamisSchedulerEvent(){
         setJobListener(new JobListener() {
             @Override
             public void onJobInited(Job job) {

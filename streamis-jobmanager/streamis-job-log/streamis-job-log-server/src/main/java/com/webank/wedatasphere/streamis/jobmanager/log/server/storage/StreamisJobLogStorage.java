@@ -8,14 +8,11 @@ import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.Job
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.JobLogBucketState;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.context.*;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.loadbalancer.JobLogStorageLoadBalancer;
-import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.loadbalancer.RoundRobinLoadBalancer;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.utils.MemUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.common.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
@@ -235,7 +232,6 @@ public class StreamisJobLogStorage implements JobLogStorage{
         LOG.info("Init the storage context: [" + StringUtils.join(storagePaths, ",") + "]");
         for(String storagePath : storagePaths){
             if (StringUtils.isNotBlank(storagePath)) {
-                // TODO the score of context
                 this.storageContexts.add(new JobLogStorageContext(storagePath, 1.0));
             }
         }

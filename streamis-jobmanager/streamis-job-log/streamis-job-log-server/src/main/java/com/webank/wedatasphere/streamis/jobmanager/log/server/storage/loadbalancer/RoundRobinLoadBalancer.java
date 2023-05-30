@@ -43,7 +43,7 @@ public class RoundRobinLoadBalancer implements JobLogStorageLoadBalancer, JobLog
 
     @Override
     public void init() {
-
+        //init
     }
 
     @Override
