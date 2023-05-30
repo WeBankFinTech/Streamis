@@ -18,7 +18,6 @@ class EngineConnJobInfo extends YarnJobInfo with LinkisJobInfo {
   private var jobStates: Array[JobStateInfo] = _
   private var engineType: String = "flink"
   private var engineVersion: String = "1.12.2"
-  // TODO check
   private var clientType: String = JobClientType.ATTACH.toString
 
   private var savepoint: String = _

@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FileExceptionManager {
+
+    private FileExceptionManager(){}
+
     //30600-30700
     private static Map<String, String> desc = new HashMap<String, String>(32);
     static {

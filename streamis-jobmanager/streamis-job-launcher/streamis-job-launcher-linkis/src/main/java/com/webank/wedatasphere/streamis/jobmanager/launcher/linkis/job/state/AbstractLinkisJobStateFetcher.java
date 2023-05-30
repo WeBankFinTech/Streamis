@@ -1,7 +1,7 @@
 
 /*
  * Copyright 2021 WeBank
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -70,11 +70,12 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
      */
     Client client;
 
+
     private final Class<T> stateClass;
 
     private final JobStateManager jobStateManager;
 
-    public AbstractLinkisJobStateFetcher(Class<T> stateClass, JobStateManager jobStateManager){
+    protected AbstractLinkisJobStateFetcher(Class<T> stateClass, JobStateManager jobStateManager){
         this.stateClass = stateClass;
         this.jobStateManager = jobStateManager;
     }
@@ -204,7 +205,8 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
      * @return size
      */
     private long compareTime(StateFileTree leftTree, StateFileTree rightTree){
-        long leftTime = 0L,rightTime = 0L;
+        long leftTime = 0L;
+        long rightTime = 0L;
         try {
             leftTime = Long.parseLong(Optional.ofNullable(leftTree.getProperties()).orElse(new HashMap<>()).getOrDefault(PROPS_MODIFY_TIME, "0"));
         } catch (NumberFormatException e){

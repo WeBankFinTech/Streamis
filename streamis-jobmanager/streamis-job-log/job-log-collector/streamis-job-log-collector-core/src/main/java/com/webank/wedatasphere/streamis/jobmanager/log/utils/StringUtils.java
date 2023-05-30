@@ -5,6 +5,7 @@ package com.webank.wedatasphere.streamis.jobmanager.log.utils;
  */
 public class StringUtils {
 
+    private StringUtils(){}
     /**
      * Convert string to array
      * @param input string

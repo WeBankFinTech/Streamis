@@ -11,7 +11,6 @@ import com.webank.wedatasphere.streamis.project.server.utils.StreamisProjectRest
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.math3.util.Pair;
 import org.apache.linkis.server.Message;
-import org.apache.linkis.server.security.SecurityFilter;
 import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

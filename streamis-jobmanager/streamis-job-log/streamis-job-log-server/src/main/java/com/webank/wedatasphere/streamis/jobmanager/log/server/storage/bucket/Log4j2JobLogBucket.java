@@ -17,7 +17,6 @@ import org.apache.logging.log4j.core.config.AppenderRef;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -145,13 +144,12 @@ public class Log4j2JobLogBucket implements JobLogBucket{
        this.isShutdown.set(true);
        this.shutdownLock.lock();
        try{
-           if (activeThread.get() > 0) {
-               if (!this.canShutdown.await(5, TimeUnit.SECONDS)) {
-                   LOG.warn("Shutdown the bucket: [{}] directly because the timeout of waiting", bucketName);
-               }
+           if (activeThread.get() > 0 && !this.canShutdown.await(5, TimeUnit.SECONDS)) {
+               LOG.warn("Shutdown the bucket: [{}] directly because the timeout of waiting", bucketName);
            }
        } catch (InterruptedException e) {
            // Ignore
+           Thread.currentThread().interrupt();
        } finally {
            this.shutdownLock.unlock();
        }
@@ -286,7 +284,7 @@ public class Log4j2JobLogBucket implements JobLogBucket{
         };
     }
 
-    private void notifyShutdown(){
+    private synchronized void notifyShutdown(){
         this.shutdownLock.lock();
         try{
             this.canShutdown.notifyAll();
@@ -329,7 +327,6 @@ public class Log4j2JobLogBucket implements JobLogBucket{
      * @return file name with absolute path
      */
     private String resolveFileName(String bucketRootPath, String bucketName){
-        // {projectName}.{jobName}
         String fileName = FilenameUtils.normalize(bucketName);
         String basePath = bucketRootPath;
         if (!basePath.endsWith("/")){

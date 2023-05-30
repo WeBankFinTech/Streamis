@@ -18,7 +18,7 @@ public class StreamisProjectRestfulUtils {
         return Message.ok(msg);
     }
 
-
+    private StreamisProjectRestfulUtils () {}
 
     @SafeVarargs
     public static Message dealOk(String msg, Pair<String, Object>... data){
