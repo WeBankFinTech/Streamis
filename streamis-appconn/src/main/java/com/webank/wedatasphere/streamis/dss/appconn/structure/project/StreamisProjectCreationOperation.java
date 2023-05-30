@@ -35,7 +35,6 @@ public class StreamisProjectCreationOperation extends AbstractStructureOperation
         Workspace workspace = dssProjectContentRequestRef.getWorkspace();
         DSSProjectPrivilege dssProjectPrivilege = dssProjectContentRequestRef.getDSSProjectPrivilege();
         if(dssProject == null || dssProjectPrivilege == null){
-            //TODO error code need to amend
             throw new StreamisAppConnErrorException(-1, "the dssProject or dssProjectPrivilege is null");
         }
         streamisPostAction.addRequestPayload("projectName",dssProject.getName());

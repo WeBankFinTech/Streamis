@@ -8,6 +8,7 @@ import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf.Immu
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf.SendBuffer;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.LogElement;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,7 +46,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
     /**
      * Rpc log context
      */
-    private volatile RpcLogContext rpcLogContext;
+    private  RpcLogContext rpcLogContext;
 
     protected boolean isTerminated = false;
     /**
@@ -53,7 +54,8 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
      */
     protected ExceptionListener exceptionListener;
 
-    public AbstractRpcLogSender(RpcLogSenderConfig rpcSenderConfig){
+
+    protected AbstractRpcLogSender(RpcLogSenderConfig rpcSenderConfig){
         this.rpcSenderConfig = rpcSenderConfig;
         SendLogCacheConfig cacheConfig = rpcSenderConfig.getCacheConfig();
         this.cacheSize = cacheConfig.getSize();
@@ -76,6 +78,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
         try {
             getOrCreateLogCache().cacheLog(log);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             // Invoke exception listener
             Optional.ofNullable(exceptionListener).ifPresent(listener ->
                     listener.onException(this, e, null));
@@ -110,7 +113,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
      * @param aggregatedEntity agg entity
      * @param rpcSenderConfig rpc sender config
      */
-    protected abstract void doSend(E aggregatedEntity, RpcLogSenderConfig rpcSenderConfig) throws Exception;
+    protected abstract void doSend(E aggregatedEntity, RpcLogSenderConfig rpcSenderConfig) throws IOException;
 
     /**
      * Send log exception strategy
@@ -189,7 +192,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
 
         public boolean startCacheConsumer(){
             if (consumers >= maxCacheConsume) {
-//                    throw new IllegalStateException("Over the limit number of cache consumers: [" + maxCacheConsume + "]");
+
                 return false;
             }
             this.ctxLock.lock();
@@ -298,7 +301,7 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
         long clock = System.currentTimeMillis();
 
         // interval to control
-        long controlInterval = 1 * 1000;
+        long controlInterval = 1 * 1000L;
 
         // Reentrant lock
         final ReentrantLock lock;
@@ -331,14 +334,11 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
                 }
                 try{
                     flowControl();
-                    if (discard && control.decrementAndGet() <= 0){
-                        if (logElement.mark() < 2){
+                    if (discard && control.decrementAndGet() <= 0 && logElement.mark() < 2){
                             discardCount++;
                             return;
-                        }
                     }
                     while (count == items.length){
-//                        System.out.println("The queue is full, maybe lost the data");
                         long ws = System.currentTimeMillis();
                         notFull.await();
                         cacheWaitTime.addAndGet(System.currentTimeMillis() - ws);

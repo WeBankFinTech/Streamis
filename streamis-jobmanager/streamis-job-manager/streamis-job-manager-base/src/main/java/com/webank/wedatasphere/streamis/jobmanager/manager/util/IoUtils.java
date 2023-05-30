@@ -32,6 +32,8 @@ public class IoUtils {
     private static final String dateFormat_time = "HHmmss";
     private static final String IOUrl = CommonVars.apply("wds.streamis.zip.dir", "/tmp").getValue();
 
+    private IoUtils(){}
+
     public static String generateIOPath(String userName, String projectName, String subDir) {
         String baseIOUrl = IOUrl;
         String file = subDir.substring(0,subDir.lastIndexOf("."));

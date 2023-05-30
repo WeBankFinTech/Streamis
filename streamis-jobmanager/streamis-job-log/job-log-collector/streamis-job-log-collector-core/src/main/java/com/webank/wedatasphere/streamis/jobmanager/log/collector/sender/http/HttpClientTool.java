@@ -18,6 +18,8 @@ import java.util.List;
  */
 public class HttpClientTool {
 
+    private HttpClientTool() {}
+
     /**
      * Connect timeout
      */
@@ -57,16 +59,13 @@ public class HttpClientTool {
         clientBuilder.setDefaultRequestConfig(requestConfig).setDefaultHeaders(defaultHeaders)
                 .useSystemProperties().setMaxConnTotal(maxConn).setMaxConnPerRoute(maxConn);
         CloseableHttpClient httpClient = clientBuilder.build();
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            httpClient.close();
-                        } catch (IOException e) {
-                            // Ignore
-                        }
-                    }
-                }));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                httpClient.close();
+            } catch (IOException e) {
+                // Ignore
+            }
+        }));
         return httpClient;
     }
 }

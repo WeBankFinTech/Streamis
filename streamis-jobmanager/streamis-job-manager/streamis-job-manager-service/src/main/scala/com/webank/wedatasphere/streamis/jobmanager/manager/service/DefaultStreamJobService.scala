@@ -296,16 +296,11 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     Option(streamJobMapper.queryAndLockJobInCondition(projectName, jobName)) match {
       case Some(streamJob) =>
         var updateVersion = true
-        // Use the project privilege at restful api
-        //      if (streamJob.getCreateBy != userName)
-        //        throw new JobCreateErrorException(30030, s"You have no permission to update StreamJob-$jobName.")
-        // Get the latest task directly
         val task = streamTaskMapper.getLatestByJobId(streamJob.getId)
         if (task != null && !JobConf.isCompleted(task.getStatus)) {
           logger.warn(s"StreamJob-$jobName is in status ${task.getStatus}, your deployment will not update the version in job")
           updateVersion = false
-          //          throw new JobCreateErrorException(30030, s"StreamJob-$jobName is in status ${tasks.get(0).getStatus}, you cannot upload the zip.")
-        }
+            }
         JobDeployValidateResult(streamJob, updateVersion)
       case _ =>
         JobDeployValidateResult(null, updateVersion = true)
