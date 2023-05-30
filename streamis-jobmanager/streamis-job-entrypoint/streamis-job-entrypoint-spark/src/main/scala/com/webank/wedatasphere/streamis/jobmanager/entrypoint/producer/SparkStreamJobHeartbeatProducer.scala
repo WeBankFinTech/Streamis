@@ -9,7 +9,6 @@ class SparkStreamJobHeartbeatProducer extends StreamJobHeartbeatProducer {
     var message: JobHeartbeatMessage = new JobHeartbeatMessage
     message.setStreamJobConfig(streamJobConfig)
     message.setEngineType("spark")
-    //todo get engineVersion from env
     message
   }
 }

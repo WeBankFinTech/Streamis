@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class StreamJobHeartbeatListener {
 
-    volatile Map<String, Object> serviceAndPortMap;
+     Map<String, Object> serviceAndPortMap;
 
     /**
      * Need to launch

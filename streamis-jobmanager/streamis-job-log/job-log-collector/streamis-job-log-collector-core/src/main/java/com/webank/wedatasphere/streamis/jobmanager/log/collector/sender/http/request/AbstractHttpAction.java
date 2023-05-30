@@ -20,7 +20,7 @@ public abstract class AbstractHttpAction<T extends HttpRequestBase> implements H
 
     protected String user;
 
-    public AbstractHttpAction(String uri){
+    protected AbstractHttpAction(String uri){
         this.uri = uri;
     }
 

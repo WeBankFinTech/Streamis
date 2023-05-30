@@ -12,6 +12,8 @@ import java.util.concurrent.*;
  **/
 public class RetryUtil {
 
+    private  RetryUtil () {}
+
     private static final Logger LOG = LoggerFactory.getLogger(RetryUtil.class);
 
     private static final long MAX_SLEEP_MILLISECOND = 256L * 1000L;
@@ -91,7 +93,7 @@ public class RetryUtil {
     public static ThreadPoolExecutor createThreadPoolExecutor() {
         return new ThreadPoolExecutor(0, 5,
                 60L, TimeUnit.SECONDS,
-                new SynchronousQueue<Runnable>());
+                new SynchronousQueue<>());
     }
 
 
@@ -151,6 +153,7 @@ public class RetryUtil {
                         try {
                             Thread.sleep(timeToSleep);
                         } catch (InterruptedException ignored) {
+                            Thread.currentThread().interrupt();
                         }
 
                         long realTimeSleep = System.currentTimeMillis() - startTime;

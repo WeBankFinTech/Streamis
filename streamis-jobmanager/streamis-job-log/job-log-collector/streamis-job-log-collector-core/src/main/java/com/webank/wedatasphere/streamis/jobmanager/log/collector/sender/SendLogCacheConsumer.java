@@ -37,7 +37,7 @@ public abstract class SendLogCacheConsumer<T extends LogElement> implements Runn
      */
     private Future<?> future;
 
-    public SendLogCacheConsumer(String id, SendLogCache<T> cache,
+    protected SendLogCacheConsumer(String id, SendLogCache<T> cache,
                                 SendBuffer<T> sendBuffer,
                                 RpcLogSenderConfig rpcSenderConfig){
         this.id = id;
@@ -97,6 +97,7 @@ public abstract class SendLogCacheConsumer<T extends LogElement> implements Runn
                     Thread.sleep(500);
                 } catch (InterruptedException ex) {
                     // Ignore
+                    Thread.currentThread().interrupt();
                 }
             }
         }

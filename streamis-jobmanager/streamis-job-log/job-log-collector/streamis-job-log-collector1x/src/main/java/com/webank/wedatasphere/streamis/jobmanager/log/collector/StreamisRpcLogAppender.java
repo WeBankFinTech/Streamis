@@ -57,8 +57,6 @@ public class StreamisRpcLogAppender extends AppenderSkeleton {
     protected void append(LoggingEvent loggingEvent) {
         String content = super.getLayout().format(loggingEvent);
         if (messageFilterFunction.apply(loggingEvent.getLoggerName(), content)) {
-            // Transform to stream log event;
-            // System.currentTimeMills() -> loggingEvent.getTimeStamp()
             StreamisLogEvent logEvent = new StreamisLogEvent(content, loggingEvent.getTimeStamp());
             if (Objects.nonNull(logCache)) {
                 try {
@@ -66,6 +64,7 @@ public class StreamisRpcLogAppender extends AppenderSkeleton {
                 } catch (InterruptedException e) {
                     LogLog.error("StreamisRpcLogAppender: " + this.getName() +
                             " interrupted when cache the log into the RPC sender, message: " + e.getMessage());
+                    Thread.currentThread().interrupt();
                 }
             }
         }

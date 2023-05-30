@@ -44,6 +44,7 @@ public class StreamisScheduler extends AbstractScheduler implements FutureSchedu
 
     public static class Constraints{
 
+        private Constraints (){}
         private static final CommonVars<String> TENANCY_PATTERN = CommonVars.apply("wds.streamis.job.scheduler.consumer.tenancies", "hadoop");
 
         private static final CommonVars<Integer> GROUP_INIT_CAPACITY = CommonVars.apply("wds.streamis.job.scheduler.group.min.capacity", 1000);

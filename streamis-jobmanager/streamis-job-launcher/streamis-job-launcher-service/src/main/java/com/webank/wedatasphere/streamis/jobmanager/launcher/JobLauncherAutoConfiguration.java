@@ -63,9 +63,9 @@ public class JobLauncherAutoConfiguration {
                     }
                 });
         // Add shutdown hook to destroy the launch manager
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            JobLaunchManager$.MODULE$.getJobManagers().forEach(JobLaunchManager::destroy);
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(() ->
+            JobLaunchManager$.MODULE$.getJobManagers().forEach(JobLaunchManager::destroy)
+        ));
         // Use the flink job launch manager as default
         JobLaunchManager<? extends JobInfo> defaultManager = JobLaunchManager$.MODULE$.getJobManager(DEFAULT_JOB_LAUNCH_MANGER);
         if (Objects.isNull(defaultManager)){

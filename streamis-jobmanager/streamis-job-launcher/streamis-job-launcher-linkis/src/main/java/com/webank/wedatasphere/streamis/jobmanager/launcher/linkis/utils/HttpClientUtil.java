@@ -1,6 +1,5 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.utils;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -30,9 +29,11 @@ import java.util.concurrent.ThreadPoolExecutor;
  **/
 public class HttpClientUtil {
 
+    private HttpClientUtil() {}
+
     private static Logger logger = LoggerFactory.getLogger(HttpClientUtil.class);
 
-    //todo
+
     private static String SPARK_SECRET_PATH = "";
 
     private static int HTTP_TIMEOUT_IN_MILLISECONDS = 5000;
@@ -64,9 +65,8 @@ public class HttpClientUtil {
                 .setConnectTimeout(HTTP_TIMEOUT_IN_MILLISECONDS).setConnectionRequestTimeout(HTTP_TIMEOUT_IN_MILLISECONDS)
                 .setStaleConnectionCheckEnabled(true).build();
 
-        CloseableHttpClient httpClient = HttpClientBuilder.create().setMaxConnTotal(POOL_SIZE).setMaxConnPerRoute(POOL_SIZE)
+        return HttpClientBuilder.create().setMaxConnTotal(POOL_SIZE).setMaxConnPerRoute(POOL_SIZE)
                 .setDefaultRequestConfig(requestConfig).setDefaultCredentialsProvider(provider).build();
-        return httpClient;
     }
 
     public void destroy(CloseableHttpClient httpClient) {
@@ -81,7 +81,6 @@ public class HttpClientUtil {
         try {
             if (httpClient != null) {
                 httpClient.close();
-                httpClient = null;
             }
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
@@ -121,7 +120,7 @@ public class HttpClientUtil {
      * @param <T>
      * @throws Exception
      */
-    public <T>T executeAndGet(CloseableHttpClient httpClient, HttpRequestBase httpRequestBase, Class<T> type) throws Exception {
+    public <T>T executeAndGet(CloseableHttpClient httpClient, HttpRequestBase httpRequestBase, Class<T> type) throws IOException {
         return httpClient.execute(httpRequestBase, httpResponse -> {
             if (httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 logger.info("Request path: " + httpRequestBase.getURI() + ", method：" + httpRequestBase.getMethod()
