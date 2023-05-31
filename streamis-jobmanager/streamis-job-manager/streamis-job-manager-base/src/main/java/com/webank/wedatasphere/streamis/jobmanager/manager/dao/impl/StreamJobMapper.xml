@@ -128,7 +128,7 @@
                 AND aa.`create_by` = #{createBy}
             </if>
             <if test="label != null and label!=''">
-                AND aa.`label` like concat('%', #{label}, '%')
+                AND binary aa.`label` like concat('%', #{label}, '%')
             </if>
             AND EXISTS (SELECT 1 FROM linkis_stream_project_privilege lspp WHERE lspp.project_id =aa.project_id
             <if test="userName != null and userName != ''">
