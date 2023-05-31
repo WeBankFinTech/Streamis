@@ -48,7 +48,7 @@
         "snapshotRestart": "快照重启",
         "editTags": "修改标签",
         "editTagsPlaceHolder": "请输入新标签",
-        "editTagsHint": "输入新标签,现有标签会被覆盖",
+        "editTagsHint": "输入新标签，现有标签会被覆盖",
         "startBtn": "启动",
         "configBtn": "配置",
         "saveBtn": "保存",

@@ -304,7 +304,8 @@
     </Modal>
     <Modal
       v-model="showEditTags"
-      :title="$t('message.streamis.formItems.editTags')">
+      :title="$t('message.streamis.formItems.editTags')"
+      @on-visible-change="changeVisible">
       <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="0">
         <FormItem prop="newTag">
           <Input v-model="formValidate.newTag" :placeholder="$t('message.streamis.formItems.editTagsPlaceHolder')"></Input>
@@ -667,9 +668,17 @@ export default {
           this.getJobList()
         })
     },
+    changeVisible(value) {
+      console.log('value: ', value);
+      if (!value) this.$refs['formValidate'].resetFields()
+    },
     // 批量修改标签
     async confirmEditTags() {
       this.editTagsLoading = true
+      if (this.formValidate.newTag.includes(' ')) {
+        this.editTagsLoading = false;
+        return this.$Message.error({ content: '标签不能有空格，仅支持大小写字母、数字、下划线、小数点、逗号' });
+      }
       this.$refs['formValidate'].validate(async (valid) => {
         console.log('valid: ', valid);
         if (valid) {
@@ -687,7 +696,6 @@ export default {
             this.$refs['formValidate'].resetFields();
             this.showEditTags = false;
             this.editTagsLoading = false;
-            this.pageData.current = 1
             this.getJobList()
           } catch {
             this.editTagsLoading = false;
