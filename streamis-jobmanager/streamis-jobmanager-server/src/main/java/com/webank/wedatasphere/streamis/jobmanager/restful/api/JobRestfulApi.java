@@ -278,10 +278,16 @@ public class JobRestfulApi {
                 return Message.error("Fail to inspect job " + jobId + " of the execution(任务执行前检查失败), message: " + e.getMessage());
             }
 
-            Map<String, Object> inspectResultMap = new HashMap<>();
-            inspectResultMap.put("inspections", inspections);
+            HashMap<String, Object> inspectResultMap = new HashMap<>();
             inspectResult.forEach(inspect -> inspectResultMap.put(inspect.getInspectName(), inspect));
-            result.data(String.valueOf(jobId), inspectResultMap);
+            if (!inspectResultMap.containsKey("snapshot")){
+                inspections.add("snapshot");
+                JobSnapshotInspectVo jobSnapshotInspectVo =new JobSnapshotInspectVo();
+                jobSnapshotInspectVo.setPath("任务无法快照");
+                inspectResultMap.put("snapshot",jobSnapshotInspectVo);
+            }
+            inspectResultMap.put("inspections", inspections);
+            result.setData(inspectResultMap);
         }
         return result;
     }
