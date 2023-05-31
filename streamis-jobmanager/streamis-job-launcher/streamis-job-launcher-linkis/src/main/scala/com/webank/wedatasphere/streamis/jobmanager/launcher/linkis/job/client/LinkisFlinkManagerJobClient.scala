@@ -56,7 +56,7 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
   override def getJobInfo(refresh: Boolean): JobInfo = {
     onceJob match {
       case simpleOnceJob: SimpleOnceJob =>
-        if (JobConf.isCompleted(JobConf.linkisStatusToStreamisStatus(jobInfo.getStatus))) {
+        if (StringUtils.isNotBlank(jobInfo.getStatus) && JobConf.isCompleted(JobConf.linkisStatusToStreamisStatus(jobInfo.getStatus))) {
           jobInfo.setStatus(simpleOnceJob.getStatus)
           logger.info(s"Job : ${simpleOnceJob.getId} is completed, no need to get status from linkis.")
         } else if (refresh && isDetachJob(jobInfo)) {
