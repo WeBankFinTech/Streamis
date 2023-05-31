@@ -51,7 +51,7 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void upload(String username, String fileName, String version, String projectName, String filePath,String comment) throws JsonProcessingException {
-        String fileMd5 = MD5Utils.getMD5(new File(filePath));
+        String fileMd5 = MD5Utils.getMD5(filePath);
         Map<String, Object> result = bmlService.upload(username, filePath);
         ProjectFiles projectFiles = new ProjectFiles();
         projectFiles.setFileName(fileName);
