@@ -108,4 +108,10 @@
         SELECT j.project_name FROM linkis_stream_job_version_files jvf LEFT JOIN linkis_stream_job j ON jvf.job_id =j.id
         WHERE jvf.id = #{id}
     </select>
+
+    <select id="getProjectNameByFileId" resultType="String">
+        SELECT jvf.project_name FROM linkis_stream_project_files jvf
+        WHERE jvf.id = #{id}
+    </select>
+
 </mapper>
