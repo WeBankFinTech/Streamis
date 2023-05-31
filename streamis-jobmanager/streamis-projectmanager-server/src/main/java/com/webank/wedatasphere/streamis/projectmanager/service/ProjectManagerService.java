@@ -48,4 +48,6 @@ public interface ProjectManagerService {
     List<String> getProjectNames(List<Long> ids);
 
     String getProjectNameById(Long id);
+
+    String getProjectNameByFileId(Long id);
 }
