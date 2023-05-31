@@ -76,7 +76,7 @@
     </resultMap>
 
     <sql id="Job_Column">
-        `id`,`project_name`, `workspace_name`,`name`,`create_by`, `create_time`,`label`,`description`,`submit_user`,`job_type`, `current_version`
+        `id`,`project_name`, `workspace_name`,`name`,`create_by`, `create_time`,`label`,`description`,`submit_user`,`job_type`, `current_version`, `status`
     </sql>
 
     <sql id="JobVersion_Column">
@@ -101,7 +101,7 @@
 <!--    </select>-->
 
     <select id="getJobLists" resultMap="StreamJobVOMap">
-        select *, (SELECT jc.value FROM linkis_stream_job_config jc WHERE jc.job_id = aa.id and jc.key = #{managerModeKey} limit 1) AS manage_mode,
+        select *, (SELECT jc.value FROM linkis_stream_job_config jc WHERE jc.job_id = aa.id and jc.key = #{manageModeKey} limit 1) AS manage_mode,
         (SELECT COUNT(1) FROM linkis_stream_job_version v WHERE v.job_id = aa.id AND v.id > aa.version_id) AS version_forward,
         (SELECT v.version FROM linkis_stream_job_version v WHERE v.job_id = aa.id ORDER BY v.id DESC LIMIT 1) AS last_version from (
         SELECT j.`id`,j.`project_name`, j.`workspace_name`,j.`name`,j.`create_by`, j.`create_time`,j.`label`,j.`description`,
