@@ -173,8 +173,9 @@ public class ProjectManagerRestfulApi {
                 idList.add(Long.parseLong(s));
             }
         }
-        List<String> projectNames = projectManagerService.getProjectNames(idList);
-        if (!projectPrivilegeService.hasEditPrivilege(req,projectNames)) {
+        String projectName = projectManagerService.getProjectNameByFileId(Long.valueOf(ids));
+//        List<String> projectNames = projectManagerService.getProjectNames(idList);
+        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) {
             return Message.error("the current user has no operation permission");
         }
 

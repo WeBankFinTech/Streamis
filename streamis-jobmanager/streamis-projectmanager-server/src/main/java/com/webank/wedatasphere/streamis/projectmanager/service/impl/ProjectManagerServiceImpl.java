@@ -141,4 +141,9 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
     public String getProjectNameById(Long id) {
         return projectManagerMapper.getProjectNameById(id);
     }
+
+    @Override
+    public String getProjectNameByFileId(Long id) {
+        return projectManagerMapper.getProjectNameByFileId(id);
+    }
 }
