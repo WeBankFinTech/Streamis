@@ -34,6 +34,8 @@ public class StreamJob {
      */
     private String currentVersion;
 
+    private int status;
+
     public Long getWorkspaceName() {
         return workspaceName;
     }
@@ -125,6 +127,14 @@ public class StreamJob {
     public StreamJob() {
     }
 
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         return "StreamJob{" +
@@ -139,6 +149,7 @@ public class StreamJob {
                 ", submitUser='" + submitUser + '\'' +
                 ", createTime=" + createTime +
                 ", currentVersion='" + currentVersion + '\'' +
+                ", status=" + status +
                 '}';
     }
 }
