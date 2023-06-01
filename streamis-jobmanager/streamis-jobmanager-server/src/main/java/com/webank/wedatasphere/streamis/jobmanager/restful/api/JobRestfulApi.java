@@ -20,6 +20,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobErrorException;
@@ -281,9 +282,16 @@ public class JobRestfulApi {
             HashMap<String, Object> inspectResultMap = new HashMap<>();
             inspectResult.forEach(inspect -> inspectResultMap.put(inspect.getInspectName(), inspect));
             if (!inspectResultMap.containsKey("snapshot")){
+                String value = this.streamJobConfService.getJobConfValue(jobId, JobConfKeyConstants.START_AUTO_RESTORE_SWITCH().getValue());
+                String msg;
+                if (value.equals("ON")){
+                    msg ="获取到了空的快照地址";
+                }else {
+                    msg ="任务未开启快照，无需检查快照地址";
+                }
                 inspections.add("snapshot");
                 JobSnapshotInspectVo jobSnapshotInspectVo =new JobSnapshotInspectVo();
-                jobSnapshotInspectVo.setPath("任务无法快照");
+                jobSnapshotInspectVo.setPath(msg);
                 inspectResultMap.put("snapshot",jobSnapshotInspectVo);
             }
             inspectResultMap.put("inspections", inspections);
