@@ -186,15 +186,15 @@ public class ProjectManagerRestfulApi {
     @RequestMapping(path = "/files/download", method = RequestMethod.GET)
     public Message download( HttpServletRequest req, HttpServletResponse response, @RequestParam(value = "id",required = false) Long id,
                              @RequestParam(value = "projectName",required = false)String projectName) {
+        if(StringUtils.isBlank(projectName)){
+            projectName = projectManagerService.getProjectNameByFileId(id);
+        }
         ProjectFiles projectFiles = projectManagerService.getFile(id, projectName);
         if (projectFiles == null) {
             return Message.error("no such file in this project");
         }
         if (StringUtils.isBlank(projectFiles.getStorePath())) {
             return Message.error("storePath is null");
-        }
-        if(StringUtils.isBlank(projectName)){
-            projectName = projectManagerService.getProjectNameByFileId(id);
         }
         if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
 
