@@ -194,7 +194,7 @@ public class ProjectManagerRestfulApi {
             return Message.error("storePath is null");
         }
         if(StringUtils.isBlank(projectName)){
-            projectName = projectManagerService.getProjectNameById(id);
+            projectName = projectManagerService.getProjectNameByFileId(id);
         }
         if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
 
