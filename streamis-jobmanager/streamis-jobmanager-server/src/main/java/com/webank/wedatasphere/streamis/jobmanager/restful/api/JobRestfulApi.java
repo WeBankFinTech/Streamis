@@ -251,7 +251,7 @@ public class JobRestfulApi {
                         List<String> userList=Arrays.asList(users.split(","));
                         int i =0;
                         for (String user :userList){
-                            if (user.contentEquals("hduser")){
+                            if (user.toLowerCase().contains("hduser")){
                                 i++;
                             }
                         }
