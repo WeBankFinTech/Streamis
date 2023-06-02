@@ -29,7 +29,7 @@ public class JobDetailsVo {
     /**
      * Manage mode
      */
-    private StreamJobMode manageMode = StreamJobMode.EngineConn;
+    private String manageMode = StreamJobMode.EngineConn.getClientType();
 
     public LinkisJobInfo getLinkisJobInfo() {
         return linkisJobInfo;
@@ -64,14 +64,10 @@ public class JobDetailsVo {
     }
 
     public String getManageMode() {
-        if (null != manageMode) {
-            return manageMode.name();
-        } else {
-            return null;
-        }
+        return manageMode;
     }
 
-    public void setManageMode(StreamJobMode manageMode) {
+    public void setManageMode(String manageMode) {
         this.manageMode = manageMode;
     }
 
