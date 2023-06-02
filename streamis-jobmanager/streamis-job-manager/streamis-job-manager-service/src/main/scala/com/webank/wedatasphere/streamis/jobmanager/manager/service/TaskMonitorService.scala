@@ -18,7 +18,6 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 import java.util
 import java.util.Date
 import java.util.concurrent.{Future, TimeUnit}
-import com.google.common.collect.Sets
 import com.webank.wedatasphere.streamis.jobmanager.launcher.JobLauncherAutoConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
@@ -26,7 +25,6 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.{EngineConnJobInfo, LinkisJobInfo}
-import com.webank.wedatasphere.streamis.jobmanager.manager
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.{AlertLevel, Alerter}
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
@@ -34,6 +32,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils
 
 import javax.annotation.{PostConstruct, PreDestroy, Resource}
 import org.apache.commons.lang.exception.ExceptionUtils
+import org.apache.commons.lang3.StringUtils
 import org.apache.linkis.common.exception.ErrorException
 import org.apache.linkis.common.utils.{Logging, RetryHandler, Utils}
 import org.springframework.beans.factory.annotation.Autowired
@@ -88,6 +87,7 @@ class TaskMonitorService extends Logging {
       val job = streamJobMapper.getJobById(streamTask.getJobId)
       if(!JobConf.SUPPORTED_MANAGEMENT_JOB_TYPES.getValue.contains(job.getJobType)) {
         val userList = getAlertUsers(job)
+        //user
         val alertMsg = s"Spark Streaming应用[${job.getName}]已经超过 ${Utils.msDurationToString(System.currentTimeMillis - streamTask.getLastUpdateTime.getTime)} 没有更新状态, 请及时确认应用是否正常！"
         alert(jobService.getAlertLevel(job), alertMsg, userList, streamTask)
       } else {
@@ -109,7 +109,7 @@ class TaskMonitorService extends Logging {
             streamTask.setErrDesc("Not exists EngineConn.")
           } else {
             // 连续三次还是出现异常，说明Linkis的Manager已经不能正常提供服务，告警并不再尝试获取状态，等待下次尝试
-            val users = getAlertUsers(job)
+            val users = getAdminAlertUsers()
             alert(jobService.getAlertLevel(job), s"请求LinkisManager失败，Linkis集群出现异常，请关注！影响任务[${job.getName}]", users, streamTask)
           }
         }
@@ -160,14 +160,25 @@ class TaskMonitorService extends Logging {
   protected def getAlertUsers(job: StreamJob): util.List[String] = {
     val allUsers = new util.LinkedHashSet[String]()
     val alertUsers = jobService.getAlertUsers(job)
+    var isValid = false
     if (alertUsers!= null) {
       alertUsers.foreach(user => {
-        allUsers.add(user)
+        if (StringUtils.isNotBlank(user) && !user.toLowerCase().contains("hduser")) {
+          isValid = true
+          allUsers.add(user)
+        }
       })
     }
-    allUsers.add(job.getSubmitUser)
-    allUsers.add(job.getCreateBy)
-    util.Arrays.asList(JobConf.STREAMIS_DEVELOPER.getValue.split(","):_*).foreach(user => {
+    if (!isValid){
+      allUsers.add(job.getSubmitUser)
+      allUsers.add(job.getCreateBy)
+    }
+    new util.ArrayList[String](allUsers)
+  }
+
+  protected def getAdminAlertUsers(): util.List[String] = {
+    val allUsers = new util.LinkedHashSet[String]()
+    util.Arrays.asList(JobConf.STREAMIS_DEVELOPER.getHotValue().split(","):_*).foreach(user => {
       allUsers.add(user)
     })
     new util.ArrayList[String](allUsers)
