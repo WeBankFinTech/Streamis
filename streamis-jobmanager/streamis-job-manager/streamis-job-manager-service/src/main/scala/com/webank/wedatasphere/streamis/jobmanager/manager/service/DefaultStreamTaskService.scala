@@ -636,7 +636,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           warn(s"Fail to delete the temporary configuration for job [${streamTask.getJobId}], task [${streamTask.getId}]", e)
       })
     }{case e: Exception =>
-      val message = s"Error occurred when to refresh and store the info of StreamJob [${streamJob.getName}] with JobClient"
+      val message = s"Error occurred when to refresh and store the info of StreamJob [${streamJob.getName}] with JobClient. ${e.getMessage}"
       warn(s"$message, stop and destroy the Client connection.")
       // Stop the JobClient directly
       Utils.tryAndWarn(jobClient.stop())
@@ -753,11 +753,18 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   override def getJobDetailsVO(streamJob: StreamJob, version: String): JobDetailsVo = {
     val flinkJobInfo = getTaskJobInfo(streamJob.getId, version)
     val jobStateInfos = flinkJobInfo.getJobStates
-    val manageMode = Option(streamJobMapper.getJobVersionById(streamJob.getId, version)) match {
+    var manageMod = StreamJobMode.EngineConn
+    if (JobConf.isCompleted(streamJob.getStatus)) {
+      // should read param
+      val value = streamJobConfMapper.getRawConfValue(streamJob.getId, JobConfKeyConstants.MANAGE_MODE_KEY.getValue)
+      manageMod = Option(Utils.tryAndWarn(StreamJobMode.valueOf(value))).getOrElse(StreamJobMode.EngineConn)
+    } else {
+      manageMod = Option(streamJobMapper.getJobVersionById(streamJob.getId, version)) match {
       case Some(jobVersion) =>
         Option(Utils.tryQuietly(StreamJobMode
           .valueOf(jobVersion.getManageMode))).getOrElse(StreamJobMode.EngineConn)
       case _ => StreamJobMode.EngineConn
+    }
     }
 
     val metricsStr = if (JobConf.SUPPORTED_MANAGEMENT_JOB_TYPES.getValue.contains(streamJob.getJobType)) null
@@ -765,7 +772,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       else jobStateInfos(0).getLocation
     taskMetricsParser.find(_.canParse(streamJob)).map(_.parse(metricsStr)).filter { jobDetailsVO =>
       jobDetailsVO.setLinkisJobInfo(flinkJobInfo)
-      jobDetailsVO.setManageMode(manageMode)
+      jobDetailsVO.setManageMode(manageMod.getClientType)
       true
     }.getOrElse(throw new JobFetchErrorException(30030, s"Cannot find a TaskMetricsParser to parse job details."))
   }
