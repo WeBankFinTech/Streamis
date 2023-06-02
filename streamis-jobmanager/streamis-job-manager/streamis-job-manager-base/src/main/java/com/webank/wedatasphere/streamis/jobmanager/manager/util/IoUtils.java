@@ -38,7 +38,7 @@ public class IoUtils {
         String baseIOUrl = IOUrl;
         String file = subDir.substring(0,subDir.lastIndexOf("."));
         String dayStr = new SimpleDateFormat(dateFormat_day).format(new Date());
-        String timeStr = new SimpleDateFormat(dateFormat_time).format(new Date());
+        String timeStr = String.valueOf(System.currentTimeMillis());
         return addFileSeparator(baseIOUrl, projectName, dayStr, userName, file + "_" + timeStr, subDir);
     }
 
