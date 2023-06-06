@@ -1,4 +1,4 @@
-package com.webank.wedatasphere.streamis.jobmanager.entrypoint.entrypoint;
+package com.webank.wedatasphere.streamis.jobmanager.entrypoint;
 
 import com.webank.wedatasphere.streamis.jobmanager.entrypoint.config.StreamJobConfig;
 import com.webank.wedatasphere.streamis.jobmanager.entrypoint.exception.JobHeartbeatException;

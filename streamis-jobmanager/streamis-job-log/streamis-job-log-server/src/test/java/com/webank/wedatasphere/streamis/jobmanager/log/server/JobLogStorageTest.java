@@ -1,6 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.server;
 
 import com.webank.wedatasphere.streamis.jobmanager.log.server.config.StreamJobLogConfig;
+import com.webank.wedatasphere.streamis.jobmanager.log.server.exception.StreamJobLogException;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.JobLogStorage;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.StreamisJobLogStorage;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.JobLogBucket;
@@ -22,16 +23,16 @@ import java.util.Objects;
 
 public class JobLogStorageTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JobLogStorageTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(JobLogStorageTest.class);
     @Test
     public void storageContext() throws IOException {
         URL url = JobLogStorageTest.class.getResource("/");
         if (null != url){
             JobLogStorageContext context = new JobLogStorageContext(url.getPath(), 1.0d);
-            System.out.println("disk total(bytes):  " + context.getTotalSpace());
-            System.out.println("disk total(gb):     " + MemUtils.convertToGB(context.getTotalSpace(), "B"));
-            System.out.println("disk usable(bytes): " + context.getUsableSpace());
-            System.out.println("disk usable(gb):    " + MemUtils.convertToGB(context.getUsableSpace(), "B"));
+            logger.info("disk total(bytes):  " + context.getTotalSpace());
+            logger.info("disk total(gb):     " + MemUtils.convertToGB(context.getTotalSpace(), "B"));
+            logger.info("disk usable(bytes): " + context.getUsableSpace());
+            logger.info("disk usable(gb):    " + MemUtils.convertToGB(context.getUsableSpace(), "B"));
         }
     }
     @Test
@@ -57,7 +58,7 @@ public class JobLogStorageTest {
             double usage = (double)(totalSpace - usableSpace) / (double)totalSpace;
             double weight = 0d;
             if (usage >= storageThreshold){
-                LOG.info("The usage of storage context:[{}] reach the threshold: {} > {}, set the weight of it to 0",
+                logger.info("The usage of storage context:[{}] reach the threshold: {} > {}, set the weight of it to 0",
                         context.getStorePath(), usage, storageThreshold);
             } else {
                 long freeSpaceInGB = MemUtils.convertToGB(usableSpace, "B");
@@ -79,11 +80,11 @@ public class JobLogStorageTest {
         for (; i >= 0; i--){
             weights[i] = (sub > 0? (maxNormalizeWt - 1) * (weights[i] - minWeight) * sub : 0) + 1;
         }
-        System.out.println(StringUtils.join(weights, '|'));
+        logger.info(StringUtils.join(weights, '|'));
     }
 
     @Test
-    public void startLogStorage() throws Exception {
+    public void startLogStorage() throws InterruptedException, StreamJobLogException {
         BDPConfiguration.set("wds.stream.job.log.storage.context.paths", Objects.requireNonNull(JobLogStorage.class.getResource("/"))
                 .getPath());
         JobLogStorage storage = createJobLogStorage();

@@ -11,5 +11,5 @@ public interface StreamisConfigAutowired {
      * Log appender config
      * @param builder builder
      */
-    StreamisLogAppenderConfig logAppenderConfig(StreamisLogAppenderConfig.Builder builder) throws Exception;
+    StreamisLogAppenderConfig logAppenderConfig(StreamisLogAppenderConfig.Builder builder) throws IllegalAccessException;
 }

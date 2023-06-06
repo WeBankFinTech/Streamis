@@ -29,7 +29,7 @@ public class StreamJobHeartbeatListener {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-
+            //nothing
 
 
             }
@@ -41,7 +41,7 @@ public class StreamJobHeartbeatListener {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-
+            //nothing
 
 
             }

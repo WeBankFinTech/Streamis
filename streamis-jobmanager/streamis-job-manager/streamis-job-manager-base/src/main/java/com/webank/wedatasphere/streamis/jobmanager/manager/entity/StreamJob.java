@@ -125,6 +125,7 @@ public class StreamJob {
     }
 
     public StreamJob() {
+        //parameterless construction
     }
 
     public int getStatus() {

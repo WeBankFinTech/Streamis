@@ -62,7 +62,6 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
     initLabels.put(codeTypeLabel.getLabelKey, codeTypeLabel.getStringValue)
     initLabels.put(userCreatorLabel.getLabelKey, userCreatorLabel.getStringValue)
     initLabels.put(managerLabel.getLabelKey, managerLabel.getStringValue)
-//    initLabels.put(SimpleOnceJobBuilder.ONCE_ENGINE_CONN_MODE_LABEL_KEY, SimpleOnceJobBuilder.ONCE_ENGINE_CONN_MODE_LABEL_VALUE)
     if (StringUtils.isNotBlank(JobLauncherConfiguration.FLINK_MANAGER_EC_TENANT.getValue)) {
       initLabels.put(LabelKeyConstant.TENANT_KEY, JobLauncherConfiguration.FLINK_MANAGER_EC_TENANT.getValue)
     }

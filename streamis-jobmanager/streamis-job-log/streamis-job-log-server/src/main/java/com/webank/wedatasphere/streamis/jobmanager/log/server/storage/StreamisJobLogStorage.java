@@ -32,7 +32,7 @@ import static com.webank.wedatasphere.streamis.jobmanager.log.server.config.Stre
  */
 public class StreamisJobLogStorage implements JobLogStorage{
 
-    private static final Logger LOG = LoggerFactory.getLogger(StreamisJobLogStorage.class);
+    private static final Logger logger = LoggerFactory.getLogger(StreamisJobLogStorage.class);
 
     /**
      * Storage context
@@ -94,7 +94,7 @@ public class StreamisJobLogStorage implements JobLogStorage{
                         try {
                             return (JobLogBucket) constructor.newInstance(bucketName, context, bucketConfig);
                         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                            LOG.warn("Cannot create storage log bucket from [{}]", bucketClass.getName(), e);
+                            logger.warn("Cannot create storage log bucket from [{}]", bucketClass.getName(), e);
                         }
                     }
                 }
@@ -123,7 +123,7 @@ public class StreamisJobLogStorage implements JobLogStorage{
 
     @Override
     @PostConstruct
-    public synchronized void init() throws Exception{
+    public synchronized void init() throws StreamJobLogException {
         initStorageContexts(StringUtils.split(StreamJobLogConfig.STORAGE_CONTEXT_PATHS.getValue(), ","));
         onContextEvent(new ContextLaunchEvent(new ArrayList<>(this.storageContexts)));
         // Init load balancer
@@ -139,10 +139,9 @@ public class StreamisJobLogStorage implements JobLogStorage{
                     JobLogStorageContext[] contexts = this.storageContexts.toArray(new JobLogStorageContext[0]);
                     try {
                         updateContextWeight(contexts);
-                        // Notify the listener to refresh the context information
                         onContextEvent(new ContextRefreshAllEvent());
                     } catch (IOException e) {
-                        LOG.warn("Unable to calculate weight array of storage context list", e);
+                        logger.warn("Unable to calculate weight array of storage context list", e);
                     }
                     if (buckets.size() > 0) {
                         StringBuilder builder = new StringBuilder("Buckets(").append(buckets.size()).append(") in LogStorage: [\n");
@@ -157,11 +156,12 @@ public class StreamisJobLogStorage implements JobLogStorage{
                                     .append(" ]\n");
                             boolean closeBucket = false;
                             if (bucketState.getBucketWriteTime() + maxIdleTime <= System.currentTimeMillis()) {
-                                LOG.info("Close the idle bucket: [ name: {}, last-write-time: {} ]",
+                                logger.info("Close the idle bucket: [ name: {}, last-write-time: {} ]",
                                         bucketName, dateFormat.format(bucketState.getBucketWriteTime()));
                                 closeBucket = true;
-                            } if (Objects.nonNull(bucketDriftPolicy) && bucketDriftPolicy.onPolicy(bucket, contexts)){
-                                LOG.info("Drift the bucket: [ name: {}, last-write-time: {} ]", bucketName,
+                            }
+                            if (Objects.nonNull(bucketDriftPolicy) && bucketDriftPolicy.onPolicy(bucket, contexts)){
+                                logger.info("Drift the bucket: [ name: {}, last-write-time: {} ]", bucketName,
                                         dateFormat.format(bucketState.getBucketWriteTime()));
                                 closeBucket = true;
                             }
@@ -172,11 +172,11 @@ public class StreamisJobLogStorage implements JobLogStorage{
                                 bucket.close();
                             }
                         });
-                        LOG.info(builder.toString());
+                        logger.info(builder.toString());
                     }
                 } catch (Throwable e){
-                    assert LOG != null;
-                    LOG.warn("Some exception happened in monitor thread", e);
+                    assert logger != null;
+                    logger.warn("Some exception happened in monitor thread", e);
                   //Ignore
                 } finally {
                     Thread.currentThread().setName(threadName);
@@ -229,7 +229,7 @@ public class StreamisJobLogStorage implements JobLogStorage{
      * @param storagePaths storage paths
      */
     private void initStorageContexts(String[] storagePaths) throws StreamJobLogException {
-        LOG.info("Init the storage context: [" + StringUtils.join(storagePaths, ",") + "]");
+        logger.info("Init the storage context: [" + StringUtils.join(storagePaths, ",") + "]");
         for(String storagePath : storagePaths){
             if (StringUtils.isNotBlank(storagePath)) {
                 this.storageContexts.add(new JobLogStorageContext(storagePath, 1.0));
@@ -257,7 +257,7 @@ public class StreamisJobLogStorage implements JobLogStorage{
             context.setStoreWeight(weights[i]);
         }
         builder.append("\n]");
-        LOG.info(builder.toString());
+        logger.info(builder.toString());
     }
     /**
      * Calculate the base weight of storage context
@@ -281,7 +281,7 @@ public class StreamisJobLogStorage implements JobLogStorage{
                 double usage = (double)(totalSpace - usableSpace) / (double)totalSpace;
                 double weight = 0d;
                 if (usage >= storageThreshold){
-                    LOG.warn("The usage of storage context:[{}] reach the threshold: {} > {}, set the weight of it to 0",
+                    logger.warn("The usage of storage context:[{}] reach the threshold: {} > {}, set the weight of it to 0",
                             context.getStorePath(), usage, storageThreshold);
                 } else {
                     long freeSpaceInGB = MemUtils.convertToGB(usableSpace, "B");
