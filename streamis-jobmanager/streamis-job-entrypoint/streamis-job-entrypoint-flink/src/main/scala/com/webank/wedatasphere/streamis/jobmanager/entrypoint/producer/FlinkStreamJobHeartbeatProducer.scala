@@ -9,7 +9,7 @@ class FlinkStreamJobHeartbeatProducer extends StreamJobHeartbeatProducer {
     var message: JobHeartbeatMessage = new JobHeartbeatMessage
     message.setStreamJobConfig(streamJobConfig)
     message.setEngineType("flink")
-    message.setEngineVersion("1.12.2")//todo get from env
+    message.setEngineVersion("1.12.2")
     message
   }
 }

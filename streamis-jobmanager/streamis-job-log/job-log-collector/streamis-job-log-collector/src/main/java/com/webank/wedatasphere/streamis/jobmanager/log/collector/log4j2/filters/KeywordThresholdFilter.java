@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.collector.log4j2.filters;
 
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.StreamisRpcLogAppender;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.message.filters.KeywordMessageFilter;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.message.filters.LogMessageFilter;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.message.filters.LogMessageFilterAdapter;
@@ -10,6 +11,7 @@ import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.filter.AbstractFilter;
 import org.apache.logging.log4j.message.Message;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
@@ -18,6 +20,7 @@ import java.util.Optional;
  */
 public class KeywordThresholdFilter extends AbstractFilter implements LogMessageFilterAdapter {
 
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(KeywordThresholdFilter.class);
     /**
      * Level
      */
@@ -33,7 +36,7 @@ public class KeywordThresholdFilter extends AbstractFilter implements LogMessage
         // If accept keywords is empty, set the log level to warn
         if (null == acceptKeywords || acceptKeywords.length <= 0){
             this.level = Level.WARN;
-            System.out.println("The keywords is empty, set the log threshold level >= " + this.level);
+            logger.info("The keywords is empty, set the log threshold level >= " + this.level);
         } else {
             this.level = Level.ALL;
         }

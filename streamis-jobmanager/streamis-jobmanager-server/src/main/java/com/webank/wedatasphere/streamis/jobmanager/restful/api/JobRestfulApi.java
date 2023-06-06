@@ -178,11 +178,11 @@ public class JobRestfulApi {
             return Message.error("Unknown StreamJob with id: " + jobId + "(无法找到对应的流任务)");
         }
         String linkisTicketId = HttpClientUtil.getLinkisTicketId(req);
-        if (!HttpClientUtil.checkSystemAdmin(linkisTicketId)){
-            if (!streamJobService.hasPermission(streamJob, userName) &&
-                    !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
+        if (!HttpClientUtil.checkSystemAdmin(linkisTicketId)
+                &&!streamJobService.hasPermission(streamJob, userName)
+                &&!this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())){
                 return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
-            }
+
         }
         Message result = Message.ok();
         PageHelper.startPage(pageNow, pageSize);
@@ -367,11 +367,10 @@ public class JobRestfulApi {
         String username = ModuleUserUtils.getOperationUser(req, "view the job details");
         StreamJob streamJob = streamJobService.getJobById(jobId);
         String linkisTicketId = HttpClientUtil.getLinkisTicketId(req);
-        if (!HttpClientUtil.checkSystemAdmin(linkisTicketId)){
-            if (!streamJobService.hasPermission(streamJob, username) &&
-                    !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
+        if (!HttpClientUtil.checkSystemAdmin(linkisTicketId)
+                &&!streamJobService.hasPermission(streamJob, username)
+                && !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())){
                 return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
-            }
         }
         if(streamJob == null) {
             return Message.error("not exists job " + jobId);
@@ -392,11 +391,9 @@ public class JobRestfulApi {
         }
         StreamJob streamJob = this.streamJobService.getJobById(jobId);
         String linkisTicketId = HttpClientUtil.getLinkisTicketId(req);
-        if (!HttpClientUtil.checkSystemAdmin(linkisTicketId)){
-            if (!streamJobService.hasPermission(streamJob, username) &&
-                    !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
-                return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
-            }
+        if (!HttpClientUtil.checkSystemAdmin(linkisTicketId) &&!streamJobService.hasPermission(streamJob, username) &&
+                !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())){
+            return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
         }
         List<StreamTaskListVo> details = streamTaskService.queryHistory(jobId, version);
         return Message.ok().data("details", details);
@@ -651,11 +648,9 @@ public class JobRestfulApi {
             return Message.error("Job " + streamJob.getName() + " is not supported to get client logs.");
         }
         String linkisTicketId = HttpClientUtil.getLinkisTicketId(req);
-        if (!HttpClientUtil.checkSystemAdmin(linkisTicketId)){
-            if (!streamJobService.hasPermission(streamJob, username) &&
-                    !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
-                return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
-            }
+        if (!HttpClientUtil.checkSystemAdmin(linkisTicketId) && !streamJobService.hasPermission(streamJob, username) &&
+                !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())){
+            return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
         }
         LogRequestPayload payload = new LogRequestPayload();
         payload.setFromLine(fromLine);

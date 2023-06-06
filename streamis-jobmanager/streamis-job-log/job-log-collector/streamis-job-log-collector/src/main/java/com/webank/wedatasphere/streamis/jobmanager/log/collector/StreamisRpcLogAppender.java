@@ -18,16 +18,20 @@ import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 
 /**
  * Streamis rpc log appender
  */
 @Plugin(name = "StreamRpcLog", category = "Core", elementType = "appender", printObject = true)
 public class StreamisRpcLogAppender extends AbstractAppender {
+
+    private static final Logger logger = LoggerFactory.getLogger(StreamisRpcLogAppender.class);
     private static final String DEFAULT_APPENDER_NAME = "StreamRpcLog";
     /**
      * Appender config
@@ -47,7 +51,7 @@ public class StreamisRpcLogAppender extends AbstractAppender {
     /**
      * Filter function
      */
-    private BiFunction<String, String, Boolean> messageFilterFunction = (logger, message) -> true;
+    private BiPredicate<String, String> messageFilterFunction = (logger, message) -> true;
 
     protected StreamisRpcLogAppender(String name, Filter filter,
                                      Layout<? extends Serializable> layout,
@@ -77,7 +81,7 @@ public class StreamisRpcLogAppender extends AbstractAppender {
     @Override
     public void append(LogEvent event) {
         String content = Arrays.toString(getLayout().toByteArray(event));
-        if (messageFilterFunction.apply(event.getLoggerName(), content)) {
+        if (messageFilterFunction.test(event.getLoggerName(), content)) {
             StreamisLogEvent logEvent = new StreamisLogEvent(content, event.getTimeMillis());
             try {
                 this.logCache.cacheLog(logEvent);
@@ -94,7 +98,7 @@ public class StreamisRpcLogAppender extends AbstractAppender {
                                                         @PluginAttribute("ignoreExceptions") boolean ignoreExceptions,
                                                         @PluginElement("Filter") final Filter filter,
                                                         @PluginElement("Layout") Layout<? extends Serializable> layout,
-                                                         @PluginElement("RpcLogSender")RpcLogSenderConfig rpcLogSenderConfig) throws Exception{
+                                                         @PluginElement("RpcLogSender")RpcLogSenderConfig rpcLogSenderConfig) throws IllegalAccessException {
         if (null == name || name.trim().equals("")){
             name = DEFAULT_APPENDER_NAME;
         }
@@ -117,7 +121,7 @@ public class StreamisRpcLogAppender extends AbstractAppender {
         if (null == applicationName || applicationName.trim().equals("")){
             throw new IllegalArgumentException("Application name cannot be empty");
         }
-        System.out.println("StreamisRpcLogAppender: init with config => " + logAppenderConfig);
+        logger.info("StreamisRpcLogAppender: init with config => " + logAppenderConfig);
         return new StreamisRpcLogAppender(name, logAppenderConfig.getFilter(), layout, ignoreExceptions, Property.EMPTY_ARRAY, logAppenderConfig);
     }
 

@@ -36,7 +36,7 @@ public class FlinkStreamisConfigAutowired implements StreamisConfigAutowired {
         // We should sleep and wait for append of the flink-yaml.conf
     }
     @Override
-    public StreamisLogAppenderConfig logAppenderConfig(StreamisLogAppenderConfig.Builder builder) throws Exception{
+    public StreamisLogAppenderConfig logAppenderConfig(StreamisLogAppenderConfig.Builder builder) throws IllegalAccessException {
         this.configuration = loadConfiguration();
         String applicationName  =
                 this.configuration.getString(YarnConfigOptions.APPLICATION_NAME);

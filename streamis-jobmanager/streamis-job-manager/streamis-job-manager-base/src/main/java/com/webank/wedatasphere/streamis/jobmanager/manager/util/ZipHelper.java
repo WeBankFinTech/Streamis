@@ -29,15 +29,12 @@ import java.util.List;
 
 public class ZipHelper {
     private static final Logger logger = LoggerFactory.getLogger(ZipHelper.class);
-    private static final String ZIP_CMD = "zip";
     private static final String UN_ZIP_CMD = "unzip";
-    private static final String RECURSIVE = "-r";
     private static final String ZIP_TYPE = ".zip";
 
     private ZipHelper(){}
 
     public static String unzip(String dirPath)throws Exception {
-        //"D:\\tmp\\streamis\\20210922\\johnnwang\\ab_175950\\ab.zip"
         File file = new File(dirPath);
         if(!file.exists()){
             logger.error("{} does not exist, can not unzip", dirPath);

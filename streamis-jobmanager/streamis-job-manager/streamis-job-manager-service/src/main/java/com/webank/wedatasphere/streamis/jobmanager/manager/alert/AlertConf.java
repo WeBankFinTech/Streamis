@@ -23,11 +23,12 @@ import org.apache.linkis.common.conf.CommonVars;
 
 public class AlertConf {
 
-    public static CommonVars<String> ALERT_IP = CommonVars.apply("wds.streamis.alert.streamis.ip", "127.0.0.1");
+    private AlertConf(){}
+    public static final CommonVars<String> ALERT_IP = CommonVars.apply("wds.streamis.alert.streamis.ip", "127.0.0.1");
 
-    public static  CommonVars<String> ALERT_SUB_SYS_ID = CommonVars.apply("wds.streamis.alert.streamis.systemid", "7495");
+    public static final CommonVars<String> ALERT_SUB_SYS_ID = CommonVars.apply("wds.streamis.alert.streamis.systemid", "7495");
 
-    public static  Gson COMMON_GSON = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
+    public static final Gson COMMON_GSON = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
 
 
 }
