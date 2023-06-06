@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.*;
 
@@ -132,7 +131,7 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
     @Override
     public List<String> getProjectNames(List<Long> ids) {
         if(CollectionUtils.isEmpty(ids)){
-            return null;
+            return Collections.emptyList();
         }
         return projectManagerMapper.selectProjectNamesByIds(ids);
     }

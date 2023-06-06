@@ -1,7 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.utils;
 
 import com.google.gson.Gson;
-import com.google.gson.internal.LinkedTreeMap;
 import com.webank.wedatasphere.streamis.jobmanager.model.ResponseWithHeaders;
 import com.webank.wedatasphere.streamis.jobmanager.vo.LinkisResponse;
 import com.webank.wedatasphere.streamis.jobmanager.vo.LinkisResponseData;
@@ -20,7 +19,6 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.util.EntityUtils;
 import org.apache.linkis.common.conf.CommonVars;
 import org.apache.linkis.server.BDPJettyServerHelper;
-import org.apache.linkis.server.security.SecurityFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +35,8 @@ import java.util.Map;
 public class HttpClientUtil {
 
     private static Logger logger = LoggerFactory.getLogger(HttpClientUtil.class);
+
+    private HttpClientUtil(){}
 
     private static PoolingHttpClientConnectionManager cm = null;
     private static RequestConfig requestConfig = null;
@@ -129,11 +129,6 @@ public class HttpClientUtil {
         Cookie[] cookies = request.getCookies();
         String token = null;
         for (Cookie cookie : cookies) {
-            //优先使用proxyCookie，自测是发现用不了。无法通过Linkis登录验证
-//            if (cookie.getName().equalsIgnoreCase("linkis_user_session_proxy_ticket_id_v1")) {
-//                token="linkis_user_session_proxy_ticket_id_v1" + "=" + cookie.getValue();
-//                continue;
-//            }
             if (cookie.getName().equalsIgnoreCase("linkis_user_session_ticket_id_v1")) {
                 token ="linkis_user_session_ticket_id_v1" + "=" + cookie.getValue();
             }

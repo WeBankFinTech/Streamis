@@ -1,5 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.utils;
 
+import java.util.Collections;
+
 /**
  * Tool to operate str
  */
@@ -17,7 +19,7 @@ public class StringUtils {
                 !input.equals(delimiter.trim())){
             return input.split(",");
         }
-        return null;
+        return new String[0];
     }
 
 }
