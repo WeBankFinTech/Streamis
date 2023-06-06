@@ -1,15 +1,15 @@
-package com.webank.wedatasphere.streamis.jobmanager.entrypoint.entrypoint;
+package com.webank.wedatasphere.streamis.jobmanager.entrypoint;
 
-import com.webank.wedatasphere.streamis.jobmanager.entrypoint.config.SparkStreamJobConfig;
+import com.webank.wedatasphere.streamis.jobmanager.entrypoint.config.FlinkStreamJobConfig;
 import com.webank.wedatasphere.streamis.jobmanager.entrypoint.config.StreamJobConfig;
 import com.webank.wedatasphere.streamis.jobmanager.entrypoint.exception.JobHeartbeatException;
 import com.webank.wedatasphere.streamis.jobmanager.entrypoint.message.JobHeartbeatMessage;
-import com.webank.wedatasphere.streamis.jobmanager.entrypoint.producer.SparkStreamJobHeartbeatProducer;
 import com.webank.wedatasphere.streamis.jobmanager.entrypoint.producer.StreamJobHeartbeatProducer;
-import com.webank.wedatasphere.streamis.jobmanager.entrypoint.sender.SparkStreamJobHeartbeatSender;
+import com.webank.wedatasphere.streamis.jobmanager.entrypoint.sender.FlinkStreamJobHeartbeatSender;
 import com.webank.wedatasphere.streamis.jobmanager.entrypoint.service.StreamJobHeartbeatService;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.utils.GsonUtil;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.utils.HttpClientUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -17,9 +17,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
-public class SparkStreamJobEntrypoint extends StreamJobEntrypoint {
+public class FlinkStreamJobEntrypoint extends StreamJobEntrypoint {
 
     /**
      * @param config
@@ -35,10 +34,9 @@ public class SparkStreamJobEntrypoint extends StreamJobEntrypoint {
         JobHeartbeatMessage message = producer.produce(config);
 
         // Create sender and init
-        SparkStreamJobHeartbeatSender sender = new SparkStreamJobHeartbeatSender();
+        FlinkStreamJobHeartbeatSender sender = new FlinkStreamJobHeartbeatSender();
 
-        Properties prop = HttpClientUtil.getSecurityProperties();
-        CloseableHttpClient httpClient = HttpClientUtil.createHttpClientUtil(prop);
+        CloseableHttpClient httpClient = HttpClientUtil.createHttpClientUtil(null);
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("message", message);
@@ -46,7 +44,7 @@ public class SparkStreamJobEntrypoint extends StreamJobEntrypoint {
         try {
             entity = new StringEntity(GsonUtil.toJson(requestBody));
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+            throw new UnsupportedEncodingException(e);
         }
         entity.setContentEncoding("UTF-8");
         entity.setContentType("application/json");
@@ -63,8 +61,10 @@ public class SparkStreamJobEntrypoint extends StreamJobEntrypoint {
 
     @Override
     public Boolean checkConfig(StreamJobConfig config) {
-        if (config instanceof SparkStreamJobConfig) {
-            return super.checkConfig(config);
+        if (config instanceof FlinkStreamJobConfig) {
+            return super.checkConfig(config) &&
+                    StringUtils.isNoneBlank(((FlinkStreamJobConfig) config).getApplicationUrl()) &&
+                    StringUtils.isNoneBlank(((FlinkStreamJobConfig) config).getJobId());
         }
         return false;
     }

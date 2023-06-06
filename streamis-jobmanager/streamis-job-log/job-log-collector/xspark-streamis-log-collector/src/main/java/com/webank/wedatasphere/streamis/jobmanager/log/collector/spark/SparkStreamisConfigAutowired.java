@@ -1,17 +1,22 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.collector.spark;
 
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.StreamisRpcLogAppender;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.StreamisLogAppenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.log4j1.StreamisLog4jAppenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.log4j1.filters.KeywordAllMatchFilter;
 import com.webank.wedatasphere.streamis.jobmanager.log.utils.StringUtils;
 import com.webank.wedatasphere.streamis.jobmanager.plugin.StreamisConfigAutowired;
 import org.apache.log4j.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 /**
  * Autoconfigure the streamis config in Spark environment
  */
 public class SparkStreamisConfigAutowired implements StreamisConfigAutowired {
+
+    private static final Logger logger = LoggerFactory.getLogger(SparkStreamisConfigAutowired.class);
 
     private static final String DEBUG_MODE = "log.debug.mode";
 
@@ -35,7 +40,7 @@ public class SparkStreamisConfigAutowired implements StreamisConfigAutowired {
 
     private static final String FILTER_KEYWORD_EXCLUDE = "filter.keywords.exclude";
     @Override
-    public StreamisLogAppenderConfig logAppenderConfig(StreamisLogAppenderConfig.Builder builder) throws Exception {
+    public StreamisLogAppenderConfig logAppenderConfig(StreamisLogAppenderConfig.Builder builder) throws IllegalAccessException {
         // Load the config from system properties
         String debugMode = System.getProperty(DEBUG_MODE, "false");
         if (null != debugMode && debugMode.equals("true")){
@@ -58,7 +63,7 @@ public class SparkStreamisConfigAutowired implements StreamisConfigAutowired {
             if (null != projectName && !projectName.trim().equals("")){
                 appName = projectName + "." + appName;
             }
-            System.out.println("Spark env to streamis: application name =>" + appName);
+            logger.info("Spark env to streamis: application name =>" + appName);
             builder.setAppName(appName);
         });
         String serverAddress = System.getProperty(SERVER_ADDRESS_CONFIG);
@@ -73,14 +78,14 @@ public class SparkStreamisConfigAutowired implements StreamisConfigAutowired {
                 }
                 serverAddress += collectorUri;
             }
-            System.out.println("Spark env to streamis: server address =>" + serverAddress);
+            logger.info("Spark env to streamis: server address =>" + serverAddress);
             builder.setRpcAddress(serverAddress);
         }
         String user = System.getenv("USER");
         if (null == user || user.trim().equals("")){
             user = System.getProperty("user.name", "hadoop");
         }
-        System.out.println("Spark env to streamis: log user =>" + user);
+        logger.info("Spark env to streamis: log user =>" + user);
         builder.setRpcAuthTokenUser(user);
         // Set filter
         boolean filterEnable = true;
@@ -96,7 +101,7 @@ public class SparkStreamisConfigAutowired implements StreamisConfigAutowired {
                     acceptKeywords,
                     StringUtils.convertStrToArray(System.getProperty(FILTER_KEYWORD_EXCLUDE), ","));
             if (null == acceptKeywords || acceptKeywords.length <=0 ){
-                System.out.println("The keywords is empty, set the log threshold level >= " + Level.WARN);
+                logger.info("The keywords is empty, set the log threshold level >= " + Level.WARN);
                 log4jBuilder.threshold(Level.WARN, true);
             }
             log4jBuilder.setFilter(keywordAllMatchFilter);

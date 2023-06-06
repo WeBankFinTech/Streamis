@@ -7,6 +7,8 @@ import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.SendLogC
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf.ImmutableSendBuffer;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf.SendBuffer;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.LogElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
@@ -23,6 +25,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public abstract class AbstractRpcLogSender<T extends LogElement, E> implements RpcLogSender<T>{
 
+    private static final Logger logger = LoggerFactory.getLogger(AbstractRpcLogSender.class);
     /**
      * Size of log cache
      */
@@ -553,12 +556,12 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
                 long interval = ws - clock + controlInterval;
                 clock = ws + controlInterval;
                 if (rpcSenderConfig.isDebugMode()) {
-                    System.out.println("cacheWait: " + cacheWaitTime.get() + ", takeWait:" + takeWaitTime.get() + ", discarded: " + discardCount);
+                    logger.info("cacheWait: " + cacheWaitTime.get() + ", takeWait:" + takeWaitTime.get() + ", discarded: " + discardCount);
                 }
                 if (takeWaitTime.get() <= 0 && process.get() > 0){
                     this.control.set((long) ((double)process.get() * ((double)controlInterval / (double)interval)));
                     if (rpcSenderConfig.isDebugMode()) {
-                        System.out.println("new window control: " + this.control.get());
+                        logger.info("new window control: " + this.control.get());
                     }
                 } else {
                     this.control.set(Long.MAX_VALUE);

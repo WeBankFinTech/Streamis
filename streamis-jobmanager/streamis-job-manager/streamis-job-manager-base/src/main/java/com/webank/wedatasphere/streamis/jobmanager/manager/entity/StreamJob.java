@@ -123,6 +123,7 @@ public class StreamJob {
     }
 
     public StreamJob() {
+        //parameterless construction
     }
 
     @Override
