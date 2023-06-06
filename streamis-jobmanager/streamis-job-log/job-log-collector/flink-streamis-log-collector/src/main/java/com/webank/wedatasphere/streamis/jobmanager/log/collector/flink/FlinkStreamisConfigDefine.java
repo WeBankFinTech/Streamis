@@ -13,7 +13,7 @@ public class FlinkStreamisConfigDefine {
     private FlinkStreamisConfigDefine(){}
 
 
-    private static String  Error ="ERROR";
+    private static String  error ="ERROR";
 
     /**
      * Gateway address of log module for streamis
@@ -126,14 +126,14 @@ public class FlinkStreamisConfigDefine {
      * Level value of LevelMatch filter strategy
      */
     public static final ConfigOption<String> LOG_FILTER_LEVEL_MATCH = ConfigOptions.key("stream.log.filter.level-match.level")
-            .stringType().defaultValue(Error).withDescription("Level value of LevelMatch filter strategy");
+            .stringType().defaultValue(error).withDescription("Level value of LevelMatch filter strategy");
 
 
     /**
      * Level value of ThresholdMatch filter strategy
      */
     public static final ConfigOption<String> LOG_FILTER_THRESHOLD_MATCH = ConfigOptions.key("stream.log.filter.threshold.level")
-            .stringType().defaultValue(Error).withDescription("Level value of ThresholdMatch filter strategy");
+            .stringType().defaultValue(error).withDescription("Level value of ThresholdMatch filter strategy");
     /**
      * Regex value of RegexMatch filter strategy
      */
@@ -144,7 +144,7 @@ public class FlinkStreamisConfigDefine {
      * Accept keywords of Keyword filter strategy
      */
     public static final ConfigOption<String> LOG_FILTER_KEYWORDS = ConfigOptions.key("stream.log.filter.keywords")
-            .stringType().defaultValue(Error).withDescription("Accept keywords of Keyword filter strategy");
+            .stringType().defaultValue(error).withDescription("Accept keywords of Keyword filter strategy");
 
     /**
      * Exclude keywords of Keyword filter strategy

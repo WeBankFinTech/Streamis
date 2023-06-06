@@ -58,6 +58,7 @@ public class ReaderUtils {
         try (InputStream inputStream = generateInputStream(basePath)) {
             return read(inputStream);
         } catch (Exception e) {
+            LOG.error(e.getMessage());
             throw e;
         }
     }
@@ -139,6 +140,7 @@ public class ReaderUtils {
              BufferedReader reader = new BufferedReader(streamReader);) {
             return readJson(reader);
         } catch (Exception e) {
+            LOG.error(e.getMessage());
             throw e;
         }
     }
@@ -156,6 +158,7 @@ public class ReaderUtils {
              BufferedReader reader = new BufferedReader(streamReader);) {
             return readFile(reader);
         } catch (Exception e) {
+            LOG.error(e.getMessage());
             throw e;
         }
     }

@@ -1,6 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf;
 
-import java.util.function.Function;
+
+import java.util.function.Predicate;
 
 /**
  * Buffer for Rpc sender
@@ -86,7 +87,7 @@ public interface SendBuffer<E> {
      * @param dropAble drop function
      * @return send buffer
      */
-    SendBuffer<E> compact(Function<E, Boolean> dropAble);
+    SendBuffer<E> compact(Predicate<E> dropAble);
 
 
 }

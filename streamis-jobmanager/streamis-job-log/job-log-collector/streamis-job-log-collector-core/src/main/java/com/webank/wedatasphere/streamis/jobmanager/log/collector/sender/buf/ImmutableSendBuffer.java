@@ -2,6 +2,7 @@ package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf;
 
 import java.util.Arrays;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Immutable send buffer (use array)
@@ -79,13 +80,13 @@ public class ImmutableSendBuffer<E> extends AbstractSendBuffer<E>{
 
     @Override
     @SuppressWarnings("unchecked")
-    public SendBuffer<E> compact(Function<E, Boolean> dropAble) {
+    public SendBuffer<E> compact(Predicate<E> dropAble) {
         checkFlag(Flag.READ_MODE);
         int offset = 0;
         int compact = position() - 1;
         for(int i = position(); i < capacity; i ++){
            Object element = buf[i];
-           if (dropAble.apply((E)element)){
+           if (dropAble.test((E) element)){
                buf[i] = null;
                offset ++;
            } else {
