@@ -28,17 +28,17 @@ import java.util.Date;
 
 public class IoUtils {
     private static Logger logger = LoggerFactory.getLogger(IoUtils.class);
-    private static final String dateFormat_day = "yyyyMMdd";
-    private static final String dateFormat_time = "HHmmss";
-    private static final String IOUrl = CommonVars.apply("wds.streamis.zip.dir", "/tmp").getValue();
+    private static final String dateFormatDay = "yyyyMMdd";
+    private static final String dateFormatTime = "HHmmss";
+    private static final String ioUrl = CommonVars.apply("wds.streamis.zip.dir", "/tmp").getValue();
 
     private IoUtils(){}
 
     public static String generateIOPath(String userName, String projectName, String subDir) {
-        String baseIOUrl = IOUrl;
+        String baseIOUrl = ioUrl;
         String file = subDir.substring(0,subDir.lastIndexOf("."));
-        String dayStr = new SimpleDateFormat(dateFormat_day).format(new Date());
-        String timeStr = String.valueOf(System.currentTimeMillis());
+        String dayStr = new SimpleDateFormat(dateFormatDay).format(new Date());
+        String timeStr = new SimpleDateFormat(dateFormatTime).format(new Date());
         return addFileSeparator(baseIOUrl, projectName, dayStr, userName, file + "_" + timeStr, subDir);
     }
 

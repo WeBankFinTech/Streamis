@@ -7,6 +7,7 @@ import org.apache.linkis.common.conf.TimeType;
  * Store the configuration defined for job log
  */
 public class StreamJobLogConfig {
+    private StreamJobLogConfig(){}
 
     /**
      * Set the log restful api as no-auth
