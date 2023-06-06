@@ -28,7 +28,7 @@
     </insert>
 
     <update id="updateFileById" parameterType="com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles">
-        update linkis_stream_project_files set store_path = #{storePath},update_time = #{updateTime}
+        update linkis_stream_project_files set store_path = #{storePath},update_time = #{updateTime},md5 = #{MD5}
         <if test="version != null and version !=''">
             ,version = #{version}
         </if>
