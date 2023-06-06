@@ -52,7 +52,7 @@ public class JobLogBucketConfig {
     /**
      * Layout pattern
      */
-    private String LogLayOutPattern = StreamJobLogConfig.BUCKET_LAYOUT.getValue();
+    private String logLayOutPattern = StreamJobLogConfig.BUCKET_LAYOUT.getValue();
 
     public Class<? extends JobLogBucket> getBucketClass() {
         return bucketClass;
@@ -95,18 +95,18 @@ public class JobLogBucketConfig {
     }
 
     public String getLogLayOutPattern() {
-        return LogLayOutPattern;
+        return logLayOutPattern;
     }
 
     public void setLogLayOutPattern(String logLayOutPattern) {
-        LogLayOutPattern = logLayOutPattern;
+        this.logLayOutPattern = logLayOutPattern;
     }
-
 
     public static final class Define{
         /**
          * Default bucket class
          */
+        private Define(){}
         public static final CommonVars<String> JOB_LOG_BUCKET_CLASS = CommonVars.apply("wds.streamis.job.log.bucket.class", "com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.Log4j2JobLogBucket");
     }
 }

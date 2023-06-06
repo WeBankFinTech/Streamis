@@ -1,10 +1,15 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf;
 
+import java.util.function.Predicate;
+
 /**
  * Abstract sender buffer;
  * non-blocking and reduces out-of-bounds exceptions
  */
 public abstract class AbstractSendBuffer<E> implements SendBuffer<E>{
+
+    @SuppressWarnings("unchecked")
+    public abstract SendBuffer<E> compact(Predicate<E> dropAble);
 
     protected enum Flag{
         WRITE_MODE, READ_MODE

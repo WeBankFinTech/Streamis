@@ -30,7 +30,7 @@ public class CookieUtils {
     }
 
     static Cookie getCookie(HttpServletRequest request, String name) {
-        Cookie cookies[] = request.getCookies();
+        Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if (name.equals(cookie.getName())) {

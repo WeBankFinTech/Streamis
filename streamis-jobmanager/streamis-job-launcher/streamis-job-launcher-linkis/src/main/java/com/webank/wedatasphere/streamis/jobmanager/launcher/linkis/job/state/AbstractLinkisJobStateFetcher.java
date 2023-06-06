@@ -21,7 +21,6 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateFetcher;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobStateFetchException;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.StreamisJobLaunchException;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.LinkisFlinkManagerJobClient;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.client.StateFileTree;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.client.LinkisJobStateGetAction;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.client.LinkisJobStateResult;
@@ -40,7 +39,7 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 
 /**
@@ -129,12 +128,12 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
      * @param resolved resolved
      * @return
      */
-    private StateFileTree traverseFileTreeToFind(JobInfo jobInfo, StateFileTree stateFileTree, Function<String, Boolean> matcher,
+    private StateFileTree traverseFileTreeToFind(JobInfo jobInfo, StateFileTree stateFileTree, Predicate<String> matcher,
                                                     boolean resolved){
         AtomicReference<StateFileTree> latestFileTree = new AtomicReference<>(new StateFileTree());
         if (Objects.nonNull(stateFileTree)){
             if (!resolved && stateFileTree.getIsLeaf()){
-                if (matcher.apply(stateFileTree.getPath()) && compareTime(stateFileTree, latestFileTree.get()) > 0){
+                if (matcher.test(stateFileTree.getPath()) && compareTime(stateFileTree, latestFileTree.get()) > 0){
                     latestFileTree.set(stateFileTree);
                 }
             } else if (!stateFileTree.getIsLeaf()){
@@ -144,7 +143,7 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
                                 Objects.nonNull(childStateFileTree.getChildren())? childStateFileTree : getDirFileTree(jobInfo, childStateFileTree.getPath()),
                                 matcher,
                                 true);
-                    if (compareTime(candidateFileTree, latestFileTree.get()) > 0 && matcher.apply(candidateFileTree.getPath())){
+                    if (compareTime(candidateFileTree, latestFileTree.get()) > 0 && matcher.test(candidateFileTree.getPath())){
                         latestFileTree.set(candidateFileTree);
                     }
                 }));

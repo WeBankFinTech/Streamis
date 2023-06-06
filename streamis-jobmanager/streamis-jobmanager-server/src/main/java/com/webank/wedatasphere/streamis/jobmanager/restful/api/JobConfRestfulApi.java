@@ -105,11 +105,10 @@ public class JobConfRestfulApi {
             String userName = ModuleUserUtils.getOperationUser(request, "query job config json");
             StreamJob streamJob = this.streamJobService.getJobById(jobId);
             String linkisTicketId = HttpClientUtil.getLinkisTicketId(request);
-            if (!HttpClientUtil.checkSystemAdmin(linkisTicketId)){
-                if (!streamJobService.hasPermission(streamJob, userName) &&
-                        !this.privilegeService.hasAccessPrivilege(request, streamJob.getProjectName())) {
+            if (!HttpClientUtil.checkSystemAdmin(linkisTicketId)
+                    && !streamJobService.hasPermission(streamJob, userName)
+                    && !this.privilegeService.hasAccessPrivilege(request, streamJob.getProjectName())){
                     return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
-                }
             }
             result.setData(new HashMap<>(this.streamJobConfService.getJobConfig(jobId)));
         }catch(Exception e){

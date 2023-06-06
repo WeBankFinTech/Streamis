@@ -26,7 +26,7 @@ public class ProjectPrivilegeServiceImpl implements ProjectPrivilegeService {
     @Autowired
     RestTemplate restTemplate;
 
-    private String url_prefix = Configuration.getGateWayURL()+ ServerConfiguration.BDP_SERVER_RESTFUL_URI().getValue()+ "/streamis/project/projectPrivilege";
+    private String urlPrefix = Configuration.getGateWayURL()+ ServerConfiguration.BDP_SERVER_RESTFUL_URI().getValue()+ "/streamis/project/projectPrivilege";
 
     @Override
     public Boolean hasReleasePrivilege(HttpServletRequest req, String projectName) {
@@ -71,7 +71,7 @@ public class ProjectPrivilegeServiceImpl implements ProjectPrivilegeService {
     }
 
     private Map<String, Object> getResponseData(String reqPath, HttpServletRequest req){
-        String url = url_prefix + reqPath;
+        String url = urlPrefix + reqPath;
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie",req.getHeader("Cookie"));
         headers.setContentType(MediaType.APPLICATION_JSON);
