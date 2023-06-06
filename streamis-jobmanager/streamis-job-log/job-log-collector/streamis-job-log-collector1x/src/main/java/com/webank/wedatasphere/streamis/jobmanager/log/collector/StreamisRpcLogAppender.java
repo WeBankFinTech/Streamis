@@ -12,15 +12,18 @@ import org.apache.log4j.Level;
 import org.apache.log4j.SimpleLayout;
 import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LoggingEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 
 /**
  * Rpc appender for log4j1
  */
 public class StreamisRpcLogAppender extends AppenderSkeleton {
 
+    private static final Logger logger = LoggerFactory.getLogger(StreamisRpcLogAppender.class);
     /**
      * Application name
      */
@@ -51,12 +54,12 @@ public class StreamisRpcLogAppender extends AppenderSkeleton {
     /**
      * Filter function
      */
-    private BiFunction<String, String, Boolean> messageFilterFunction = (logger, message) -> false;
+    private BiPredicate<String, String> messageFilterFunction = (logger, message) -> false;
 
     @Override
     protected void append(LoggingEvent loggingEvent) {
         String content = super.getLayout().format(loggingEvent);
-        if (messageFilterFunction.apply(loggingEvent.getLoggerName(), content)) {
+        if (messageFilterFunction.test(loggingEvent.getLoggerName(), content)) {
             StreamisLogEvent logEvent = new StreamisLogEvent(content, loggingEvent.getTimeStamp());
             if (Objects.nonNull(logCache)) {
                 try {
@@ -121,7 +124,7 @@ public class StreamisRpcLogAppender extends AppenderSkeleton {
         clearFilters();
         // Then to add filter
         logAppenderConfig.getFilters().forEach(this::addFilter);
-        System.out.println("StreamisRpcLogAppender: init with config => " + logAppenderConfig);
+        logger.info("StreamisRpcLogAppender: init with config => " + logAppenderConfig);
         this.rpcLogSender = new StreamisRpcLogSender(this.appenderConfig.getApplicationName(),
                 this.appenderConfig.getSenderConfig());
         this.rpcLogSender.setExceptionListener((subject, t, message) ->

@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.utils;
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobErrorException;
 import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -154,22 +155,22 @@ public class HttpClientUtil {
      * @param <T>
      */
     public <T>T executeAndGetWithRetry(CloseableHttpClient httpClient, final HttpRequestBase httpRequestBase,
-                                       Class<T> type, final int retryTimes, final long retryInterval) {
+                                       Class<T> type, final int retryTimes, final long retryInterval) throws JobErrorException {
         try {
             return RetryUtil.asyncExecuteWithRetry(() -> executeAndGet(httpClient, httpRequestBase, type),
                     retryTimes, retryInterval, true, HTTP_TIMEOUT_IN_MILLISECONDS + 1000L, asyncExecutor);
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+            throw new JobErrorException(-1,e.getMessage());
         }
     }
 
-    public static synchronized Properties getSecurityProperties() {
+    public static synchronized Properties getSecurityProperties() throws JobErrorException {
         if (properties == null) {
             InputStream secretStream = null;
             try {
                 secretStream = new FileInputStream(SPARK_SECRET_PATH);
             } catch (FileNotFoundException e) {
-                throw new RuntimeException("Spark配置要求加解密，但无法找到密钥的配置文件");
+                throw new JobErrorException(-1,"Spark配置要求加解密，但无法找到密钥的配置文件");
             }
 
             properties = new Properties();
@@ -177,7 +178,7 @@ public class HttpClientUtil {
                 properties.load(secretStream);
                 secretStream.close();
             } catch (IOException e) {
-                throw new RuntimeException("读取加解密配置文件出错", e);
+                throw new JobErrorException(-1,"读取加解密配置文件出错");
             }
         }
 

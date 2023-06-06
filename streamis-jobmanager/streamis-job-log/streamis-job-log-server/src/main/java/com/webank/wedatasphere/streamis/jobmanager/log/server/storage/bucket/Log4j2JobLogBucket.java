@@ -270,9 +270,9 @@ public class Log4j2JobLogBucket implements JobLogBucket{
             @Override
             public int getBucketParts() {
                 AtomicInteger parts = new AtomicInteger(-1);
-                String bucketPath = getBucketPath();
-                if (StringUtils.isNotBlank(bucketPath)){
-                    Optional.ofNullable(new File(bucketPath).list()).ifPresent(list -> parts.set(list.length));
+                String path = getBucketPath();
+                if (StringUtils.isNotBlank(path)){
+                    Optional.ofNullable(new File(path).list()).ifPresent(list -> parts.set(list.length));
                 }
                 return parts.get();
             }

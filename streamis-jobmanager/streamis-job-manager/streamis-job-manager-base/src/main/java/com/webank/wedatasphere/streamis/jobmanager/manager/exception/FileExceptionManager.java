@@ -24,7 +24,7 @@ public class FileExceptionManager {
     private FileExceptionManager(){}
 
     //30600-30700
-    private static Map<String, String> desc = new HashMap<String, String>(32);
+    private static Map<String, String> desc = new HashMap<>(32);
     static {
         desc.put("30600", "%s length exceeds limit(长度超出限制)，Please limit input within %d characters");
         desc.put("30601", "%s should only contains numeric/English characters and '-'(仅允许包含数字，英文和中划线)");
