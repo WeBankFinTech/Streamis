@@ -1,5 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.utils;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class RegularUtil {
     public static final String LETTER_PATTERN="^.*[a-zA-Z]+.*$";//字母
     public static final String NUMBER_PATTERN="^.*[0-9]+.*$";//数字
@@ -9,7 +11,26 @@ public class RegularUtil {
 
 
     public static boolean matches(String input) {
-      return   input.matches(PATTERN);
+        if (StringUtils.isNotBlank(input)){
+            return input.matches(PATTERN);
+        }
+        return false;
+    }
+
+
+    /**
+     * 特殊字符查询加转义符
+     * @param string
+     * @return
+     */
+    public static String escapeChar(String string) {
+        if (StringUtils.isNotBlank(string)) {
+            string = string.replaceAll("\\\\", "\\\\\\\\")
+                    .replace("_", "\\_").replace("\'", "\\'")
+                    .replace("%", "\\%").replace("*", "\\*");
+
+        }
+        return string;
     }
 
 }
