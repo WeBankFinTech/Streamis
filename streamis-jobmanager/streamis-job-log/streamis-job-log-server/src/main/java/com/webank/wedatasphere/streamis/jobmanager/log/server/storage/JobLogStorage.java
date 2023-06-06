@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.server.storage;
 
+import com.webank.wedatasphere.streamis.jobmanager.log.server.exception.StreamJobLogException;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.JobLogBucket;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.JobLogBucketConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.JobLogBucketDriftPolicy;
@@ -40,7 +41,7 @@ public interface JobLogStorage {
     /**
      * Init method
      */
-    void init() throws Exception;
+    void init() throws StreamJobLogException;
 
     /**
      * Destroy method
