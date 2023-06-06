@@ -1,14 +1,13 @@
 package com.webank.wedatasphere.streamis.projectmanager.utils;
 
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.digest.DigestUtils;
-
 import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 public class MD5Utils {
+    private MD5Utils(){}
+
     public static String getMD5(String filePath) {
         byte[] key = getBytes(filePath);
         String cacheKey;

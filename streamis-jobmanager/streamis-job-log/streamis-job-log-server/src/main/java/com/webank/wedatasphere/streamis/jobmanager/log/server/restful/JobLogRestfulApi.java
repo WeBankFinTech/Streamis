@@ -21,7 +21,6 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping(path = "/streamis/streamJobManager/log")
 public class JobLogRestfulApi {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JobLogRestfulApi.class);
 
     @Resource
     private StreamisJobLogService streamisJobLogService;
@@ -37,11 +36,7 @@ public class JobLogRestfulApi {
             if (StreamJobLogConfig.NO_AUTH_REST.getValue()){
                 userName = request.getHeader("Token-User");
                 if (StringUtils.isBlank(userName)){
-                    try {
-                        userName = SecurityFilter.getLoginUsername(request);
-                    }catch(Exception e){
-                        // Ignore
-                    }
+                    userName = SecurityFilter.getLoginUsername(request);
                     if (StringUtils.isBlank(userName)){
                         userName = "hadoop";
                     }
