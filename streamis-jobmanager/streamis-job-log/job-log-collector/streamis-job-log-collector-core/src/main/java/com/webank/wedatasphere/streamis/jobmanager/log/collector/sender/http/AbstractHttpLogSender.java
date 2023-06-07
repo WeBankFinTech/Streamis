@@ -18,6 +18,7 @@ import java.io.*;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -103,36 +104,39 @@ public abstract class AbstractHttpLogSender<T extends LogElement, E> extends Abs
                     return;
                 }
             }
-            String address = rpcSenderConfig.getAddress();
-            if (null != address && !address.trim().equals("")) {
-                StringPostAction postAction = new StringPostAction(rpcSenderConfig.getAddress(), convertToJsonString(aggregatedEntity));
-                RpcAuthConfig authConfig = rpcSenderConfig.getAuthConfig();
-                postAction.getRequestHeaders().put(authConfig.getTokenUserKey(), authConfig.getTokenUser());
-                HttpResponse response = null;
-                try {
-                    response = postAction.execute(this.globalHttpClient);
-                    int statusCode = response.getStatusLine().getStatusCode();
-                    if (statusCode > 200){
-                        throw new HttpResponseException(statusCode,
-                                convertToString(response.getEntity().getContent(), StandardCharsets.UTF_8));
-                    }
-                }finally {
-                    // Close the response and release the conn
-                    if (null != response){
-                        if (response instanceof CloseableHttpResponse){
-                            ((CloseableHttpResponse)response).close();
-                        } else {
-                            // Destroy the stream
-                            response.getEntity().getContent().close();
-                        }
-                    }
-                }
-                // Init the counter
-                this.exceptionCounter.set(0);
-            }
+            httpResponse(aggregatedEntity,rpcSenderConfig);
         }
     }
 
+    private void httpResponse(E aggregatedEntity,RpcLogSenderConfig rpcSenderConfig) throws IOException {
+        String address = rpcSenderConfig.getAddress();
+        if (null != address && !address.trim().equals("")) {
+            StringPostAction postAction = new StringPostAction(rpcSenderConfig.getAddress(), convertToJsonString(aggregatedEntity));
+            RpcAuthConfig authConfig = rpcSenderConfig.getAuthConfig();
+            postAction.getRequestHeaders().put(authConfig.getTokenUserKey(), authConfig.getTokenUser());
+            HttpResponse response = null;
+            try {
+                response = postAction.execute(this.globalHttpClient);
+                int statusCode = response.getStatusLine().getStatusCode();
+                if (statusCode > 200){
+                    throw new HttpResponseException(statusCode,
+                            convertToString(response.getEntity().getContent(), StandardCharsets.UTF_8));
+                }
+            }finally {
+                // Close the response and release the conn
+                if (null != response){
+                    if (response instanceof CloseableHttpResponse){
+                        ((CloseableHttpResponse)response).close();
+                    } else {
+                        // Destroy the stream
+                        response.getEntity().getContent().close();
+                    }
+                }
+            }
+            // Init the counter
+            this.exceptionCounter.set(0);
+        }
+    }
     /**
      * Convert input to string
      * @param inputStream input stream
