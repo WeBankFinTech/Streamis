@@ -31,7 +31,7 @@ import java.util.function.BiPredicate;
 @Plugin(name = "StreamRpcLog", category = "Core", elementType = "appender", printObject = true)
 public class StreamisRpcLogAppender extends AbstractAppender {
 
-    private static final Logger logger = LoggerFactory.getLogger(StreamisRpcLogAppender.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StreamisRpcLogAppender.class);
     private static final String DEFAULT_APPENDER_NAME = "StreamRpcLog";
     /**
      * Appender config
@@ -121,7 +121,7 @@ public class StreamisRpcLogAppender extends AbstractAppender {
         if (null == applicationName || applicationName.trim().equals("")){
             throw new IllegalArgumentException("Application name cannot be empty");
         }
-        logger.info("StreamisRpcLogAppender: init with config => " + logAppenderConfig);
+        LOGGER.info("StreamisRpcLogAppender: init with config => " + logAppenderConfig);
         return new StreamisRpcLogAppender(name, logAppenderConfig.getFilter(), layout, ignoreExceptions, Property.EMPTY_ARRAY, logAppenderConfig);
     }
 

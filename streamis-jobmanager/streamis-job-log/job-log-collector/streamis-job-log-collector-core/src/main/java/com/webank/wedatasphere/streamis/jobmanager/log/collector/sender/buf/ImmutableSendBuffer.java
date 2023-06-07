@@ -1,7 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf;
 
 import java.util.Arrays;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
