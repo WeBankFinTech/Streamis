@@ -1,6 +1,5 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.utils;
 
-import java.util.Collections;
 
 /**
  * Tool to operate str

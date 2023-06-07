@@ -130,7 +130,6 @@ class TaskMonitorService extends Logging {
               Utils.tryCatch{
                 info(s"Start to reLaunch the StreamisJob [${job.getName}], now to submit and schedule it...")
                 // Use submit user to start job
-                val startAutoRestoreSwitch = "ON".equals(this.streamJobConfMapper.getRawConfValue(job.getId, JobConfKeyConstants.START_AUTO_RESTORE_SWITCH.getValue))
               }{
                 case e:Exception =>
                   warn(s"Fail to reLaunch the StreamisJob [${job.getName}]", e)
