@@ -123,56 +123,57 @@ public class RetryUtil {
             throw saveException;
         }
 
+        private static void realTimeSleep(int i, long retryTimes, long sleepTimeInMilliSecond, boolean exponential, Exception e){
+            if (i + 1 < retryTimes && sleepTimeInMilliSecond > 0) {
+                long startTime = System.currentTimeMillis();
+                long timeToSleep = timeToSleep(exponential, sleepTimeInMilliSecond, i);
+                try {
+                    Thread.sleep(timeToSleep);
+                } catch (InterruptedException ignored) {
+                    Thread.currentThread().interrupt();
+                }
+                long realTimeSleep = System.currentTimeMillis() - startTime;
+                LOG.error(String.format("Exception when calling callable, 即将尝试执行第%s次重试.本次重试计划等待[%s]ms,实际等待[%s]ms, 异常Msg:[%s]",
+                        i + 1, timeToSleep, realTimeSleep, e.getMessage()));
+            }
+        }
+
+        private static void checkRetryException(List<Class<?>> retryExceptionClasss, Exception saveException) throws Exception {
+            if (null != retryExceptionClasss && !retryExceptionClasss.isEmpty()) {
+                boolean needRetry = false;
+                for (Class<?> eachExceptionClass : retryExceptionClasss) {
+                    if (eachExceptionClass == saveException.getClass()) {
+                        needRetry = true;
+                        break;
+                    }
+                }
+                if (!needRetry) {
+                    throw saveException;
+                }
+            }
+        }
+
+        private static Long timeToSleep(boolean exponential, long sleepTimeInMilliSecond, int i) {
+            long timeToSleep;
+            if (exponential) {
+                timeToSleep = sleepTimeInMilliSecond * (long) Math.pow(2, i);
+                if (timeToSleep >= MAX_SLEEP_MILLISECOND) {
+                    timeToSleep = MAX_SLEEP_MILLISECOND;
+                }
+            } else {
+                timeToSleep = sleepTimeInMilliSecond;
+                if (timeToSleep >= MAX_SLEEP_MILLISECOND) {
+                    timeToSleep = MAX_SLEEP_MILLISECOND;
+                }
+            }
+            return timeToSleep;
+        }
+
         protected <T> T call(Callable<T> callable) throws Exception {
             return callable.call();
         }
     }
 
-    private static void realTimeSleep(int i, long retryTimes, long sleepTimeInMilliSecond, boolean exponential, Exception e){
-        if (i + 1 < retryTimes && sleepTimeInMilliSecond > 0) {
-            long startTime = System.currentTimeMillis();
-            long timeToSleep = timeToSleep(exponential, sleepTimeInMilliSecond, i);
-            try {
-                Thread.sleep(timeToSleep);
-            } catch (InterruptedException ignored) {
-                Thread.currentThread().interrupt();
-            }
-            long realTimeSleep = System.currentTimeMillis() - startTime;
-            LOG.error(String.format("Exception when calling callable, 即将尝试执行第%s次重试.本次重试计划等待[%s]ms,实际等待[%s]ms, 异常Msg:[%s]",
-                    i + 1, timeToSleep, realTimeSleep, e.getMessage()));
-        }
-    }
-
-    private static void checkRetryException(List<Class<?>> retryExceptionClasss, Exception saveException) throws Exception {
-        if (null != retryExceptionClasss && !retryExceptionClasss.isEmpty()) {
-            boolean needRetry = false;
-            for (Class<?> eachExceptionClass : retryExceptionClasss) {
-                if (eachExceptionClass == saveException.getClass()) {
-                    needRetry = true;
-                    break;
-                }
-            }
-            if (!needRetry) {
-                throw saveException;
-            }
-        }
-    }
-
-    private static Long timeToSleep(boolean exponential, long sleepTimeInMilliSecond, int i) {
-        long timeToSleep;
-        if (exponential) {
-            timeToSleep = sleepTimeInMilliSecond * (long) Math.pow(2, i);
-            if (timeToSleep >= MAX_SLEEP_MILLISECOND) {
-                timeToSleep = MAX_SLEEP_MILLISECOND;
-            }
-        } else {
-            timeToSleep = sleepTimeInMilliSecond;
-            if (timeToSleep >= MAX_SLEEP_MILLISECOND) {
-                timeToSleep = MAX_SLEEP_MILLISECOND;
-            }
-        }
-        return timeToSleep;
-    }
 
     private static class AsyncRetry extends Retry {
 

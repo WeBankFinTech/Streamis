@@ -242,11 +242,11 @@ public class JobRestfulApi {
                 HashMap<String, Object> jobConfig = new HashMap<>(this.streamJobConfService.getJobConfig(jobId));
                 HashMap<String, Object> flinkProduce = (HashMap<String, Object>) jobConfig.get("wds.linkis.flink.produce");
                 if (!flinkProduce.containsKey("wds.linkis.flink.alert.failure.user")){
-                    return Message.error("The StreamJob alarm recipient is not configured (未配置告警接收人)  [" + jobId + "]");
+                    return Message.error("The StreamJob alarm recipient is not configured (未配置有效的失败告警用户)  [" + jobId + "]");
                 } else {
                     String users = String.valueOf(flinkProduce.get("wds.linkis.flink.alert.failure.user"));
                     if (users.isEmpty()){
-                        return Message.error("The StreamJob alarm recipient is not configured (未配置告警接收人)  [" + jobId + "]");
+                        return Message.error("The StreamJob alarm recipient is not configured (未配置有效的失败告警用户)  [" + jobId + "]");
                     }else {
                         List<String> userList=Arrays.asList(users.split(","));
                         int i =0;
