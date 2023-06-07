@@ -124,22 +124,18 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
      */
     protected abstract SendLogExceptionStrategy<T> getSendLogExceptionStrategy();
 
-    protected RpcLogContext getOrCreateRpcLogContext(){
-        if (null == this.rpcLogContext){
-            synchronized (this){
-                if (null == this.rpcLogContext){
-                    // Use fair lock
-                    SendLogCache<T> logCache = new QueuedSendLogCache(this.cacheSize,
-                            this.rpcSenderConfig.getCacheConfig().isDiscard(),
-                            this.rpcSenderConfig.getCacheConfig().getDiscardWindow() * 1000,false);
-                    this.rpcLogContext = new RpcLogContext(logCache);
-                    // Start cache consumers
-                    for(int i = 0; i < maxCacheConsume; i++) {
-                        this.rpcLogContext.startCacheConsumer();
-                    }
-                }
+    protected synchronized RpcLogContext getOrCreateRpcLogContext() {
+        if (null == this.rpcLogContext) {
+            // Use fair lock
+            SendLogCache<T> logCache = new QueuedSendLogCache(this.cacheSize,
+                    this.rpcSenderConfig.getCacheConfig().isDiscard(),
+                    this.rpcSenderConfig.getCacheConfig().getDiscardWindow() * 1000, false);
+            RpcLogContext rpcLogContext = new RpcLogContext(logCache);
+            // Start cache consumers
+            for (int i = 0; i < maxCacheConsume; i++) {
+                rpcLogContext.startCacheConsumer();
             }
-
+            this.rpcLogContext =rpcLogContext;
         }
         return this.rpcLogContext;
     }
