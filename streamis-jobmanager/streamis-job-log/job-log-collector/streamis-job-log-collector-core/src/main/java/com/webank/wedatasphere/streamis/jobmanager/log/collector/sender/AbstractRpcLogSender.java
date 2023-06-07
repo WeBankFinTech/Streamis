@@ -130,12 +130,12 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
             SendLogCache<T> logCache = new QueuedSendLogCache(this.cacheSize,
                     this.rpcSenderConfig.getCacheConfig().isDiscard(),
                     this.rpcSenderConfig.getCacheConfig().getDiscardWindow() * 1000, false);
-            RpcLogContext rpcLogContext = new RpcLogContext(logCache);
+            RpcLogContext context = new RpcLogContext(logCache);
             // Start cache consumers
             for (int i = 0; i < maxCacheConsume; i++) {
-                rpcLogContext.startCacheConsumer();
+                context.startCacheConsumer();
             }
-            this.rpcLogContext =rpcLogContext;
+            this.rpcLogContext =context;
         }
         return this.rpcLogContext;
     }
