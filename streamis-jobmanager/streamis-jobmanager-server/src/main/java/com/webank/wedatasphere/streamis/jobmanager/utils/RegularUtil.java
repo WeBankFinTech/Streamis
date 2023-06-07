@@ -3,6 +3,9 @@ package com.webank.wedatasphere.streamis.jobmanager.utils;
 import org.apache.commons.lang3.StringUtils;
 
 public class RegularUtil {
+
+    private RegularUtil(){}
+
     public static final String LETTER_PATTERN="^.*[a-zA-Z]+.*$";//字母
     public static final String NUMBER_PATTERN="^.*[0-9]+.*$";//数字
     public static final String SPECIAL_CHAR_PATTERN="^.*[/^/$/.//,;:'!@#%&/*/|/?/+/(/)/[/]/{/}]+.*$";//特殊字符
@@ -25,7 +28,7 @@ public class RegularUtil {
      */
     public static String escapeChar(String string) {
         if (StringUtils.isNotBlank(string)) {
-            string = string.replaceAll("\\\\", "\\\\\\\\")
+            string = string.replace("\\\\", "\\\\\\\\")
                     .replace("_", "\\_").replace("\'", "\\'")
                     .replace("%", "\\%").replace("*", "\\*");
 
