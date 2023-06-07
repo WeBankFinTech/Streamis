@@ -87,15 +87,7 @@ public class StreamisRpcLogAppender extends AppenderSkeleton {
 
     @Override
     public void activateOptions() {
-        if (Objects.nonNull(this.logCache)){
-            return;
-        }
-        if (Objects.isNull(getLayout())){
-            setLayout(new SimpleLayout());
-        }
-        if (System.getProperty("filter.enable") == null){
-            System.setProperty("filter.enable", filterEnable);
-        }
+        check();
         // Search the config autowired class
         List<StreamisConfigAutowired> configAutowiredEntities = new ArrayList<>();
         StreamisLog4jAppenderConfig logAppenderConfig = null;
@@ -140,6 +132,18 @@ public class StreamisRpcLogAppender extends AppenderSkeleton {
                 }
                 return true;
             };
+        }
+    }
+
+    private void check(){
+        if (Objects.nonNull(this.logCache)){
+            return;
+        }
+        if (Objects.isNull(getLayout())){
+            setLayout(new SimpleLayout());
+        }
+        if (System.getProperty("filter.enable") == null){
+            System.setProperty("filter.enable", filterEnable);
         }
     }
 
