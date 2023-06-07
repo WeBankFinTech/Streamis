@@ -1,6 +1,5 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.collector.log4j2.filters;
 
-import com.webank.wedatasphere.streamis.jobmanager.log.collector.StreamisRpcLogAppender;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.message.filters.KeywordMessageFilter;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.message.filters.LogMessageFilter;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.message.filters.LogMessageFilterAdapter;

@@ -23,7 +23,7 @@ import java.util.function.BiPredicate;
  */
 public class StreamisRpcLogAppender extends AppenderSkeleton {
 
-    private static final Logger logger = LoggerFactory.getLogger(StreamisRpcLogAppender.class);
+    private static final Logger LOG = LoggerFactory.getLogger(StreamisRpcLogAppender.class);
     /**
      * Application name
      */
@@ -116,7 +116,7 @@ public class StreamisRpcLogAppender extends AppenderSkeleton {
         clearFilters();
         // Then to add filter
         logAppenderConfig.getFilters().forEach(this::addFilter);
-        logger.info("StreamisRpcLogAppender: init with config => " + logAppenderConfig);
+        LOG.info("StreamisRpcLogAppender: init with config => " + logAppenderConfig);
         this.rpcLogSender = new StreamisRpcLogSender(this.appenderConfig.getApplicationName(),
                 this.appenderConfig.getSenderConfig());
         this.rpcLogSender.setExceptionListener((subject, t, message) ->
