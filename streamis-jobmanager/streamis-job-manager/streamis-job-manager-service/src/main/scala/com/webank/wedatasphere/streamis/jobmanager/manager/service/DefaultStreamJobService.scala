@@ -277,6 +277,12 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     AlertLevel.valueOf(level)
   }
 
+  override def getLinkisFlinkAlertLevel(job: StreamJob): AlertLevel = {
+    val level = this.streamJobConfService.getJobConfValue(job.getId, JobConfKeyConstants.ALERT_LEVEL.getValue)
+    if (StringUtils.isBlank(level)) return AlertLevel.MAJOR
+    AlertLevel.valueOf(level)
+  }
+
   override def isCreator(jobId: Long, username: String): Boolean = {
     val job = streamJobMapper.getJobById(jobId)
     if (job == null) return false
@@ -300,7 +306,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
         if (task != null && !JobConf.isCompleted(task.getStatus)) {
           logger.warn(s"StreamJob-$jobName is in status ${task.getStatus}, your deployment will not update the version in job")
           updateVersion = false
-            }
+        }
         JobDeployValidateResult(streamJob, updateVersion)
       case _ =>
         JobDeployValidateResult(null, updateVersion = true)
