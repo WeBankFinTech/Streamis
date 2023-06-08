@@ -145,10 +145,10 @@ public class JobRestfulApi {
                 if (!streamJobService.isCreator(jobId, userName) &&
                         !JobConf.STREAMIS_DEVELOPER().getValue().contains(userName) &&
                         !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
-                    throw new JobErrorException(-1, "Have no permission to save StreamJob [" + jobId + "] configuration");
+                    return Message.error( "Have no permission to save StreamJob [" + jobId + "] configuration");
                 }
                 String label = bulkUpdateLabel.getLabel();
-                if (!RegularUtil.matches(label))throw new JobErrorException(-1, "The label content does not meet specifications  [" + jobId + "] ");
+                if (!RegularUtil.matches(label))return Message.error("Fail to save StreamJob label(保存/更新标签失败), message: " + "仅支持大小写字母、数字、下划线、小数点、逗号且长度小于64位  [" + jobId + "] ");
                 StreamJob job =new StreamJob();
                 job.setLabel(label);
                 job.setId(jobId);
