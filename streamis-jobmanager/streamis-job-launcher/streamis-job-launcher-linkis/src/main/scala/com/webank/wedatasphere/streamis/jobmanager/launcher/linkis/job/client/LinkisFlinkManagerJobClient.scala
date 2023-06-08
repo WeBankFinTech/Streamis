@@ -1,20 +1,23 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.YarnAppVo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.enums.JobClientType
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.errorcode.JobLaunchErrorCode
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobFetchErrorException
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{FlinkManagerClient, JobClient, JobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkECHandshakeErrorException, FlinkJobKillECErrorException, FlinkJobParamErrorException, FlinkJobStateFetchException, FlinkSavePointException}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.action.{FlinkKillAction, FlinkSaveAction, FlinkStatusAction}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.action.{FlinkKillAction, FlinkSaveAction, FlinkStatusAction, ListYarnAppAction}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.LinkisFlinkManagerJobClient.linkisFlinkManagerClient
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.{EngineConnJobInfo, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.FlinkSavepoint
 import org.apache.commons.lang3.StringUtils
 import org.apache.linkis.common.exception.LinkisRetryException
-import org.apache.linkis.common.utils.{JsonUtils, RetryHandler, Utils}
+import org.apache.linkis.common.utils.{JsonUtils, Logging, RetryHandler, Utils}
 import org.apache.linkis.computation.client.once.OnceJob
 import org.apache.linkis.computation.client.once.result.EngineConnOperateResult
 import org.apache.linkis.computation.client.once.simple.SimpleOnceJob
@@ -24,17 +27,14 @@ import org.apache.linkis.ujes.client.exception.UJESJobException
 
 import java.util
 import java.util.concurrent.TimeUnit
-import scala.collection.JavaConverters.mapAsScalaMapConverter
+import scala.collection.JavaConverters.{asScalaBufferConverter, mapAsScalaMapConverter}
 import scala.tools.scalap.scalax.util.StringUtil
 
 class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManager: JobStateManager) extends EngineConnJobClient(onceJob, jobInfo, stateManager) {
 
-  private lazy val linkisFlinkManagerClient: LinkisFlinkManagerClient = LinkisFlinkManagerClient.getInstance()
 
   override def init(): Unit = {
     super.init()
-    // 初始化linkisclient，调用managerexecutor进行操作的client
-
     logger.info("LinkisFlinkManagerJobClient inited.")
   }
 
@@ -183,24 +183,34 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
     }
   }
 
-  override def handshake(): Unit = {
-    val engineConnJobInfo = jobInfo.asInstanceOf[EngineConnJobInfo]
-    val handshakeAction = new FlinkStatusAction(engineConnJobInfo.getApplicationId, "handshake")
-    handshakeAction.setECInstance(engineConnJobInfo.getEcInstance())
-    handshakeAction.setExeuteUser(engineConnJobInfo.getUser)
-    val rs = linkisFlinkManagerClient.doExecution(handshakeAction.build())
-    rs match {
-      case engineConnOperateResult: EngineConnOperateResult =>
-        if (engineConnOperateResult.getIsError()) {
-          throw new FlinkECHandshakeErrorException(s"Do hankshake error. Because : ${engineConnOperateResult.getErrorMsg()}", null)
-        } else {
-          val status = engineConnOperateResult.getResult.getOrDefault(ECConstants.NODE_STATUS_KEY, null)
-          logger.info(s"Handshake success. Status : ${status}")
-        }
-      case _ =>
-        val rsMsg = JsonUtils.jackson.writeValueAsString(rs)
-        val msg = s"Get status error. Result : ${rsMsg}"
-        throw new FlinkECHandshakeErrorException(errorMsg = msg, t = null)
+}
+
+object LinkisFlinkManagerJobClient extends Logging {
+
+  private lazy val linkisFlinkManagerClient: LinkisFlinkManagerClient = LinkisFlinkManagerClient.getInstance()
+
+  def listYarnApp(jobName: String, user: String, msg: String = "streamis"): util.List[YarnAppVo] = {
+    val resultList = new util.ArrayList[YarnAppVo]()
+    val listAction = new ListYarnAppAction(jobName, user, msg)
+    listAction.setExeuteUser(user)
+    val result = linkisFlinkManagerClient.executeAction(listAction).asInstanceOf[EngineConnOperateResult]
+    if (result.getIsError()) {
+      val msg = s"list failed for jobName : ${jobName} and user : ${user}, because : ${result.getErrorMsg()}"
+      logger.error(msg)
+      throw new JobFetchErrorException(JobLaunchErrorCode.JOB_LIST_YARN_APP_ERROR, msg)
+    } else {
+      val rsMap = result.getResult
+      if (rsMap.containsKey(ECConstants.YARN_APP_RESULT_LIST_KEY)) {
+        val rsListStr = rsMap.get(ECConstants.YARN_APP_RESULT_LIST_KEY).asInstanceOf[String]
+        val rsList = JsonUtils.jackson.readValue(rsListStr, classOf[util.List[util.Map[String, String]]])
+        rsList.asScala.foreach(app => {
+          val tmpYarnApp = new YarnAppVo(app.getOrDefault(ECConstants.YARN_APPID_NAME_KEY, null),
+            app.getOrDefault(ECConstants.YARN_APP_URL_KEY, null),
+            app.getOrDefault(ECConstants.NODE_STATUS_KEY, null))
+          resultList.add(tmpYarnApp)
+        })
+      }
     }
+    resultList
   }
 }
