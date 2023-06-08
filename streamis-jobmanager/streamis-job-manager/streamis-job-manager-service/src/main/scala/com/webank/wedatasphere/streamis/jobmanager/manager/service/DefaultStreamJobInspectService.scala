@@ -1,6 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.errorcode.JobLaunchErrorCode
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobErrorException, JobFetchErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
@@ -8,8 +9,9 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.Li
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobInspectVo, JobListInspectVo, JobSnapshotInspectVo, JobVersionInspectVo}
+import org.apache.commons.lang3.StringUtils
 import org.apache.linkis.common.exception.ErrorException
-import org.apache.linkis.common.utils.{Logging, Utils}
+import org.apache.linkis.common.utils.{JsonUtils, Logging, Utils}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -109,12 +111,27 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
   private def listInspect(job: StreamJob): JobListInspectVo = {
     // 如果分离式特性开关开启，就获取分离式client，发送list请求
     val listVo = new JobListInspectVo
-    if (JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE.getValue && JobLauncherConfiguration.ENABLE_FLINK_LIST_INSPECT.getValue) {
+    if (JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE.getValue && JobLauncherConfiguration.ENABLE_FLINK_LIST_INSPECT.getHotValue) {
       val appName = s"${job.getProjectName}.${job.getName}"
       Utils.tryCatch {
-        val appList = LinkisFlinkManagerJobClient.listYarnApp(appName, job.getSubmitUser)
+        val appType = if (job.getJobType.toLowerCase().contains("flink")) {
+          JobConstants.APP_TYPE_FLINK
+        } else if (job.getJobType.toLowerCase().contains("spark")) {
+          JobConstants.APP_TYPE_SPARK
+        } else {
+          logger.error(s"Unknown job type : ${job.getJobType}")
+          null.asInstanceOf[String]
+        }
+        val appTypeList = new util.ArrayList[String]()
+        if (StringUtils.isNotBlank(appType)) {
+          appTypeList.add(appType)
+        }
+        logger.info(s"job appType is  : ${appType}")
+        val appList = LinkisFlinkManagerJobClient.listYarnApp(appName, job.getSubmitUser, "streamis", appTypeList)
         if (null != appList && !appList.isEmpty) {
           appList.asScala.foreach(app => listVo.addYarnApp(app))
+          logger.info(s"There are ${appList.size()} apps with same name : ${appName}")
+          logger.info(JsonUtils.jackson.writeValueAsString(appList))
         } else {
           listVo.addOneUrl(null, "无", null)
         }
