@@ -292,11 +292,19 @@
       :mask-closable="false"
     >
       <div class="wrap">
-        <Table border :columns="checkColumns" :data="checkData"></Table>
+        <Table border :columns="checkColumns" :data="checkData">
+          <template slot-scope="{row}" slot="yarn">
+            <div v-for="(item, index) in row.yarn" :key="index">
+              <a v-if="item.applicationUrl && item.applicationUrl !== '无'" style="display: block" @click="goToNewTab(item.applicationUrl)">{{item.applicationUrl}}</a>
+              <div v-else>无</div>
+            </div>
+          </template>
+        </Table>
       </div>
       <template slot="footer">
         <div style="display: flex; width: 100%">
-          <div style="textAlign: left; width: 836px; position: relative; top: 3px">当前一共需要确认的作业数量：{{checkData.length}}个</div>
+          <div style="marginRight: 16px; position: relative; top: 3px; width: 225px">当前一共需要确认的作业数量：{{checkData.length}}个</div>
+          <div style="position: relative; top: 3px; textAlign: left; width: 600px" :class="hasYarnCount ? 'red-color' : ''">共计有{{hasYarnCount}}个作业含有同名运行中的yarn任务，请检查无误后再启动</div>
           <Button type="primary" @click="confirmStarting">{{ $t('message.streamis.formItems.confirmBtn') }}</Button>
           <Button type="primary" @click="cancelStartHint">{{ $t('message.streamis.formItems.cancel') }}</Button>
         </div>
@@ -552,11 +560,18 @@ export default {
           align: 'center'
         },
         {
+          title: '同名yarn任务',
+          slot: 'yarn',
+          align: 'center',
+          width: 200,
+        },
+        {
           title: '快照',
           key: 'link',
           align: 'center'
         },
       ],
+      hasYarnCount: 0,
       checkData: [],
       // 当前正在查看的data
       currentViewData: {}
@@ -580,7 +595,7 @@ export default {
         // projectName: 'stream_job',
         // projectName: 'streamis025_checkpoint',
         // 本地开发sit环境用的
-        // projectName: 'streamis025_version',
+        // projectName: 'streamis0606',
         // 正式环境用的
         projectName: this.projectName
       }
@@ -629,6 +644,9 @@ export default {
           console.log('getJobList err: ', err);
           this.loading = false
         })
+    },
+    goToNewTab(url) {
+      window.open(url, new Date().getTime())
     },
     handleQuery() {
       this.$refs['queryForm'].validate(async (valid) => {
@@ -768,6 +786,7 @@ export default {
 
       if (this.isBatchRestart) {
         // 是批量重启，tempData是数组
+        this.hasYarnCount = 0;
         this.tempData.forEach(async (item) => {
           const { id, name } = item
           const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
@@ -779,6 +798,15 @@ export default {
             link: inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--',
             latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
             lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
+            yarn: inspectRes.list && inspectRes.list.list ? inspectRes.list.list : [],
+          }
+          if (Array.isArray(tempData.yarn)) {
+            for (let i = 0; i < tempData.yarn.length; i++) {
+              if (tempData.yarn[i].applicationUrl && tempData.yarn[i].applicationUrl !== '无') {
+                this.hasYarnCount++
+                break
+              }
+            }
           }
           this.checkData.push(tempData)
         })
@@ -787,6 +815,7 @@ export default {
         console.log('打开弹框 this.startHintData: ', this.startHintData);
       } else {
         // 是单个重启，tempData是对象
+        this.hasYarnCount = 0;
         const { id, name } = this.tempData
         const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
         const inspectRes = await api.fetch(checkPath, {}, 'put')
@@ -796,8 +825,18 @@ export default {
           link: inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--',
           latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
           lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
+          yarn: inspectRes.list && inspectRes.list.list ? inspectRes.list.list : [],
+        }
+        if (Array.isArray(tempData.yarn)) {
+          for (let i = 0; i < tempData.yarn.length; i++) {
+            if (tempData.yarn[i].applicationUrl && tempData.yarn[i].applicationUrl !== '无') {
+              this.hasYarnCount++
+              break
+            }
+          }
         }
         this.checkData.push(tempData)
+        console.log('this.checkData: ', this.checkData);
         this.startHintVisible = true
         console.log('打开弹框 this.startHintData: ', this.startHintData);
       }
@@ -819,25 +858,31 @@ export default {
         this.tempData.buttonLoading = true
         this.choosedRowId = id
         this.$set(this.tableDatas, this.tempIndex, this.tempData)
-        api
-          .fetch(path, second)
-          .then(res => {
-            console.log('execute res: ', res);
-            this.tempData.buttonLoading = false
-            this.choosedRowId = ''
-            if (res) {
-              this.$emit('refreshCoreIndex')
+        try {
+          api
+            .fetch(path, second)
+            .then(res => {
+              console.log('execute res: ', res);
+              this.tempData.buttonLoading = false
+              this.choosedRowId = ''
+              if (res) {
+                this.$emit('refreshCoreIndex')
+                this.loading = false
+                this.getJobList()
+              }
+            })
+            .catch(err => {
+              console.log('err: ', err);
               this.loading = false
+              this.tempData.buttonLoading = false
+              this.choosedRowId = ''
               this.getJobList()
-            }
-          })
-          .catch(err => {
-            console.log('execute err: ', err);
-            this.loading = false
-            this.tempData.buttonLoading = false
-            this.choosedRowId = ''
-            this.getJobList()
-          })
+              throw new Error(err)
+            })
+        } catch (error) {
+          console.log('error: ', error);
+          this.$Message.error({ content: '后台接口异常，请联系开发处理！' });
+        }
       } else {
         // 批量启动
         console.log('bulkExecution');
@@ -1089,6 +1134,9 @@ export default {
       }
     }
   }
+}
+.red-color {
+  color: red;
 }
 </style>
 

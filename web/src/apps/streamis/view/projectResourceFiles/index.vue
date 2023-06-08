@@ -301,6 +301,12 @@ export default {
                 )
                 item.createTime = newDate
               }
+              if (item && item.updateTime) {
+                const newDate = moment(new Date(item.updateTime)).format(
+                  'YYYY-MM-DD HH:mm:ss'
+                )
+                item.updateTime = newDate
+              }
             })
             datas.unshift({})
             this.tableDatas = datas
@@ -393,6 +399,12 @@ export default {
                   'YYYY-MM-DD HH:mm:ss'
                 )
                 item.createTime = newDate
+              }
+              if (item && item.updateTime) {
+                const newDate = moment(new Date(item.updateTime)).format(
+                  'YYYY-MM-DD HH:mm:ss'
+                )
+                item.updateTime = newDate
               }
             })
             this.versionDatas = datas
