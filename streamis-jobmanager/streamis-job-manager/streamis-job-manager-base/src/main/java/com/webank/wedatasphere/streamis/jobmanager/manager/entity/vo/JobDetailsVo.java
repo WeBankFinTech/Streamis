@@ -29,7 +29,7 @@ public class JobDetailsVo {
     /**
      * Manage mode
      */
-    private StreamJobMode manageMode = StreamJobMode.engineConn;
+    private StreamJobMode manageMode = StreamJobMode.ENGINE_CONN;
 
     public LinkisJobInfo getLinkisJobInfo() {
         return linkisJobInfo;
