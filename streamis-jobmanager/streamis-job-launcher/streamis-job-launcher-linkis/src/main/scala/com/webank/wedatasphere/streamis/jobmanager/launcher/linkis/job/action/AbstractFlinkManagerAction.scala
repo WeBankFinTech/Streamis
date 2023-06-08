@@ -68,7 +68,7 @@ class FlinkSaveAction(applicationId: String, msg: String) extends AbstractFlinkM
   def setMode(mode: String): Unit = getParams().put(JobConstants.MODE_KEY, mode)
 }
 
-class ListYarnAppAction(appName: String, user: String, msg: String) extends AbstractFlinkManagerAction {
+class ListYarnAppAction(appName: String, user: String, msg: String, appTypeList: util.List[String]) extends AbstractFlinkManagerAction {
 
   override def getApplicationId: String = null
 
@@ -84,11 +84,9 @@ class ListYarnAppAction(appName: String, user: String, msg: String) extends Abst
     }
   }
 
-  def setAppName(): Unit = getParams().put(ECConstants.YARN_APP_NAME_KEY, appName)
+  getParams().put(ECConstants.YARN_APP_NAME_KEY, appName)
 
-  def setMsg(): Unit = getParams().put(JobConstants.MSG_KEY, msg)
+  getParams().put(JobConstants.MSG_KEY, msg)
 
-  setAppName()
-
-  setMsg()
+  getParams().put(ECConstants.YARN_APP_TYPE_LIST_KEY, appTypeList)
 }
