@@ -7,7 +7,8 @@ public enum FlinkManagerActionType {
 
     STATUS("status"),
     KILL("kill"),
-    SAVE("doSavepoint");
+    SAVE("doSavepoint"),
+    LIST("list");
 
     private String name;
 

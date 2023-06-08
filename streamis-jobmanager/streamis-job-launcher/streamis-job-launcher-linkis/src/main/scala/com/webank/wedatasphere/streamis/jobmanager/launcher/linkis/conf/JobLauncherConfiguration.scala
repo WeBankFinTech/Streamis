@@ -62,11 +62,13 @@ object JobLauncherConfiguration {
 
   val MANAGER_MODE_KEY: CommonVars[String] = CommonVars("wds.streamis.job.manager.mode.key", GovernanceCommonConf.EC_APP_MANAGE_MODE.key)
 
-  val FLINK_MANAGER_MODE_KEY: CommonVars[String] = CommonVars("linkis.flink.manager.mode.key", "linkis.flink.manager.mode.on")
+  val FLINK_MANAGER_EC_KEY: CommonVars[String] = CommonVars("linkis.flink.manager.ec.key", "linkis.flink.manager.mode.on")
 
-  val ENABLE_FLINK_MANAGER_EC_REFRESH_TASK: CommonVars[Boolean] = CommonVars("wds.streamis.flink.manager.ec.refresh.enable", true)
+  val ENABLE_FLINK_MANAGER_EC_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.flink.manager.ec.enable", true)
 
   val FLINKK_MANAGER_EXIT_TIME: CommonVars[Long] = CommonVars("wds.streamis.flink.manager.ec.expire.time.mills", 3600 * 1000)
 
   val LINKIS_EC_EXPIRE_TIME_KEY: CommonVars[String] = CommonVars("linkis.ec.expire.key", "wds.linkis.engineconn.max.free.time")
+
+  val ENABLE_FLINK_LIST_INSPECT: CommonVars[Boolean] = CommonVars("wds.streamis.job.inspact.list.enable", true)
 }
