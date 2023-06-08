@@ -69,7 +69,7 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
 
     initProperties.put("flink.app.savePointPath", "./tmp")
     initProperties.put("flink.app.name", "FlinkManagerEC")
-    initProperties.put(JobLauncherConfiguration.FLINK_MANAGER_MODE_KEY.getValue, true.toString)
+    initProperties.put(JobLauncherConfiguration.FLINK_MANAGER_EC_KEY.getValue, true.toString)
     initProperties.put(AMConstant.EC_SYNC_START_KEY, true.toString)
     initProperties.put(JobLauncherConfiguration.LINKIS_EC_EXPIRE_TIME_KEY.getValue, JobLauncherConfiguration.FLINKK_MANAGER_EXIT_TIME.getHotValue().toString)
 
@@ -294,7 +294,7 @@ object LinkisFlinkManagerClient extends Logging {
 
 
   def initScheduledTask(): Unit = {
-    if (!JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_REFRESH_TASK.getValue) {
+    if (!JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE.getValue) {
       logger.info("Flink manager ec refresh task was disabled. Will skip the scheduled refreshing task.")
       return
     }
