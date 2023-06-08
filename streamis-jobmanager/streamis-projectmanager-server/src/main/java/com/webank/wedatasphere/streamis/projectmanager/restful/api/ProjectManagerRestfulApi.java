@@ -74,6 +74,7 @@ public class ProjectManagerRestfulApi {
         if (StringUtils.isBlank(projectName)) {
             return Message.error("projectName is null");
         }
+        if (version.length()>=30) return Message.error("version character length is to long ,Please less than 30 （版本字符长度过长，请小于30）");
         if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
 
         //Only uses 1st file(只取第一个文件)
