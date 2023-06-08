@@ -26,4 +26,7 @@ object JobConstants {
 
   val RESULT_EC_METRICS_KEY = "ecMetrics"
 
+  val APP_TYPE_FLINK = "Apache Flink"
+
+  val APP_TYPE_SPARK = "SPARK"
 }
