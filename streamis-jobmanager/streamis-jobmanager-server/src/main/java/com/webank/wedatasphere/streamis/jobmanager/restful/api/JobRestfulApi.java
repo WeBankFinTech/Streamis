@@ -23,7 +23,6 @@ import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobErrorException;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload;
@@ -43,7 +42,6 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils
 import com.webank.wedatasphere.streamis.jobmanager.utils.RegularUtil;
 import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabel;
 import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabelResponse;
-import com.webank.wedatasphere.streamis.jobmanager.utils.HttpClientUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -58,7 +56,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -95,10 +92,8 @@ public class JobRestfulApi {
                               @RequestParam(value = "jobName", required = false) String jobName,
                               @RequestParam(value = "jobStatus", required = false) Integer jobStatus,
                               @RequestParam(value = "jobCreator", required = false) String jobCreator,
-                              @RequestParam(value = "label", required = false) String label)throws IOException {
+                              @RequestParam(value = "label", required = false) String label) {
         String username = ModuleUserUtils.getOperationUser(req, "list jobs");
-        String linkisTicketId = HttpClientUtil.getLinkisTicketId(req);
-        if (HttpClientUtil.checkSystemAdmin(linkisTicketId)) username =null;
         if(StringUtils.isBlank(projectName)){
             return Message.error("Project name cannot be empty(项目名不能为空，请指定)");
         }
@@ -143,7 +138,6 @@ public class JobRestfulApi {
                 Long jobId = bulkUpdateLabel.getId();
                 StreamJob streamJob = this.streamJobService.getJobById(jobId);
                 if (!streamJobService.isCreator(jobId, userName) &&
-                        !JobConf.STREAMIS_DEVELOPER().getValue().contains(userName) &&
                         !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
                     return Message.error( "Have no permission to save StreamJob [" + jobId + "] configuration");
                 }
@@ -177,9 +171,7 @@ public class JobRestfulApi {
         if (Objects.isNull(streamJob)){
             return Message.error("Unknown StreamJob with id: " + jobId + "(无法找到对应的流任务)");
         }
-        String linkisTicketId = HttpClientUtil.getLinkisTicketId(req);
-        if (!HttpClientUtil.checkSystemAdmin(linkisTicketId)
-                &&!streamJobService.hasPermission(streamJob, userName)
+        if (!streamJobService.hasPermission(streamJob, userName)
                 &&!this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())){
                 return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
 
@@ -366,9 +358,7 @@ public class JobRestfulApi {
         }
         String username = ModuleUserUtils.getOperationUser(req, "view the job details");
         StreamJob streamJob = streamJobService.getJobById(jobId);
-        String linkisTicketId = HttpClientUtil.getLinkisTicketId(req);
-        if (!HttpClientUtil.checkSystemAdmin(linkisTicketId)
-                &&!streamJobService.hasPermission(streamJob, username)
+        if (!streamJobService.hasPermission(streamJob, username)
                 && !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())){
                 return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
         }
@@ -390,8 +380,7 @@ public class JobRestfulApi {
             throw JobExceptionManager.createException(30301, "version");
         }
         StreamJob streamJob = this.streamJobService.getJobById(jobId);
-        String linkisTicketId = HttpClientUtil.getLinkisTicketId(req);
-        if (!HttpClientUtil.checkSystemAdmin(linkisTicketId) &&!streamJobService.hasPermission(streamJob, username) &&
+        if (!streamJobService.hasPermission(streamJob, username) &&
                 !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())){
             return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
         }
@@ -647,8 +636,7 @@ public class JobRestfulApi {
                 "client".equals(logType)) {
             return Message.error("Job " + streamJob.getName() + " is not supported to get client logs.");
         }
-        String linkisTicketId = HttpClientUtil.getLinkisTicketId(req);
-        if (!HttpClientUtil.checkSystemAdmin(linkisTicketId) && !streamJobService.hasPermission(streamJob, username) &&
+        if (!streamJobService.hasPermission(streamJob, username) &&
                 !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())){
             return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
         }
