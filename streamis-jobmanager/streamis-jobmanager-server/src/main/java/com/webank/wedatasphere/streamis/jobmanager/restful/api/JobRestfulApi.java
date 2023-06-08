@@ -272,7 +272,7 @@ public class JobRestfulApi {
             List<String> inspections = new ArrayList<>();
             try {
                 inspectResult = this.streamJobInspectService
-                        .inspect(jobId, new JobInspectVo.Types[]{JobInspectVo.Types.VERSION, JobInspectVo.Types.SNAPSHOT});
+                        .inspect(jobId, new JobInspectVo.Types[]{JobInspectVo.Types.VERSION, JobInspectVo.Types.SNAPSHOT, JobInspectVo.Types.LIST});
                 inspections = inspectResult.stream().map(JobInspectVo::getInspectName)
                         .collect(Collectors.toList());
             } catch (Exception e){
