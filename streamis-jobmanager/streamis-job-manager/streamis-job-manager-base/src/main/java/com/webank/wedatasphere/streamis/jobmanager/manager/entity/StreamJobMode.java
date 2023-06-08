@@ -10,12 +10,12 @@ public enum StreamJobMode {
     /**
      * Engine Conn mode
      */
-    engineConn(JobClientType.ATTACH.getName()),
+    ENGINE_CONN(JobClientType.ATTACH.getName()),
 
     /**
      * Client mode
      */
-    client(JobClientType.DETACH.getName());
+    CLIENT(JobClientType.DETACH.getName());
 
     /**
      * According to client type

@@ -753,17 +753,17 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   override def getJobDetailsVO(streamJob: StreamJob, version: String): JobDetailsVo = {
     val flinkJobInfo = getTaskJobInfo(streamJob.getId, version)
     val jobStateInfos = flinkJobInfo.getJobStates
-    var manageMod = StreamJobMode.EngineConn
+    var manageMod = StreamJobMode.ENGINE_CONN
     if (JobConf.isCompleted(streamJob.getStatus)) {
       // should read param
       val value = streamJobConfMapper.getRawConfValue(streamJob.getId, JobConfKeyConstants.MANAGE_MODE_KEY.getValue)
-      manageMod = Option(Utils.tryAndWarn(StreamJobMode.valueOf(value))).getOrElse(StreamJobMode.EngineConn)
+      manageMod = Option(Utils.tryAndWarn(StreamJobMode.valueOf(value))).getOrElse(StreamJobMode.ENGINE_CONN)
     } else {
       manageMod = Option(streamJobMapper.getJobVersionById(streamJob.getId, version)) match {
       case Some(jobVersion) =>
         Option(Utils.tryQuietly(StreamJobMode
-          .valueOf(jobVersion.getManageMode))).getOrElse(StreamJobMode.EngineConn)
-      case _ => StreamJobMode.EngineConn
+          .valueOf(jobVersion.getManageMode))).getOrElse(StreamJobMode.ENGINE_CONN)
+      case _ => StreamJobMode.ENGINE_CONN
     }
     }
 
