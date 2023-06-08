@@ -25,7 +25,6 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobErrorException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
-import com.webank.wedatasphere.streamis.jobmanager.utils.HttpClientUtil;
 import org.apache.linkis.httpclient.dws.DWSHttpClient;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.utils.ModuleUserUtils;
@@ -55,10 +54,11 @@ public class JobConfRestfulApi {
 
     /**
      * Definitions
+     *
      * @return message
      */
     @RequestMapping(value = "/definitions")
-    public Message definitions(){
+    public Message definitions() {
         Message result = Message.ok("success");
         try {
             List<JobConfDefinition> definitionList = this.streamJobConfService.loadAllDefinitions();
@@ -81,12 +81,12 @@ public class JobConfRestfulApi {
                     definitionRelation.values().stream().filter(definitionVo -> definitionVo.getLevel() == 0)
                             .sorted((o1, o2) -> o2.getSort() - o1.getSort()).collect(Collectors.toList());
             def.forEach(definitionVo -> {
-                if (Objects.isNull(definitionVo.getChildDef())){
+                if (Objects.isNull(definitionVo.getChildDef())) {
                     definitionVo.setChildDef(Collections.emptyList());
                 }
             });
             result.data("def", def);
-        }catch(Exception e){
+        } catch (Exception e) {
             String message = "Fail to obtain StreamJob configuration definitions(获取任务配置定义集失败), message: " + e.getMessage();
             LOG.warn(message, e);
             result = Message.error(message);
@@ -96,22 +96,22 @@ public class JobConfRestfulApi {
 
     /**
      * Query job config json
+     *
      * @return config json
      */
     @RequestMapping(value = "/json/{jobId:\\w+}", method = RequestMethod.GET)
-    public Message queryConfig(@PathVariable("jobId") Long jobId, HttpServletRequest request){
+    public Message queryConfig(@PathVariable("jobId") Long jobId, HttpServletRequest request) {
         Message result = Message.ok("success");
         try {
             String userName = ModuleUserUtils.getOperationUser(request, "query job config json");
             StreamJob streamJob = this.streamJobService.getJobById(jobId);
-            String linkisTicketId = HttpClientUtil.getLinkisTicketId(request);
-            if (!HttpClientUtil.checkSystemAdmin(linkisTicketId)
-                    && !streamJobService.hasPermission(streamJob, userName)
-                    && !this.privilegeService.hasAccessPrivilege(request, streamJob.getProjectName())){
-                    return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
+
+            if (!streamJobService.hasPermission(streamJob, userName)
+                    && !this.privilegeService.hasAccessPrivilege(request, streamJob.getProjectName())) {
+                return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
             }
             result.setData(new HashMap<>(this.streamJobConfService.getJobConfig(jobId)));
-        }catch(Exception e){
+        } catch (Exception e) {
             String message = "Fail to view StreamJob configuration(查看任务配置失败), message: " + e.getMessage();
             LOG.warn(message, e);
             result = Message.error(message);
@@ -121,16 +121,17 @@ public class JobConfRestfulApi {
 
     /**
      * Save job config json
-     * @param jobId job id
+     *
+     * @param jobId         job id
      * @param configContent config content
-     * @param request request
+     * @param request       request
      * @return
      */
     @RequestMapping(value = "/json/{jobId:\\w+}", method = RequestMethod.POST)
     public Message saveConfig(@PathVariable("jobId") Long jobId, @RequestBody Map<String, Object> configContent,
-                              HttpServletRequest request){
+                              HttpServletRequest request) {
         Message result = Message.ok("success");
-        try{
+        try {
             String userName = ModuleUserUtils.getOperationUser(request, "save job config json");
             StreamJob streamJob = this.streamJobService.getJobById(jobId);
             // Accept the developer to modify
@@ -140,7 +141,7 @@ public class JobConfRestfulApi {
                 throw new JobErrorException(-1, "Have no permission to save StreamJob [" + jobId + "] configuration");
             }
             this.streamJobConfService.saveJobConfig(jobId, configContent);
-        }catch(Exception e){
+        } catch (Exception e) {
             String message = "Fail to save StreamJob configuration(保存/更新任务配置失败), message: " + e.getMessage();
             LOG.warn(message, e);
             result = Message.error(message);
@@ -150,20 +151,20 @@ public class JobConfRestfulApi {
 
     @RequestMapping(path = "/view", method = RequestMethod.GET)
     public Message viewConfigTree(@RequestParam(value = "jobId", required = false) Long jobId,
-                                  HttpServletRequest req){
+                                  HttpServletRequest req) {
         Message result = Message.ok("success");
-        try{
-            if (Objects.isNull(jobId)){
+        try {
+            if (Objects.isNull(jobId)) {
                 throw new JobErrorException(-1, "Params 'jobId' cannot be empty");
             }
             String userName = ModuleUserUtils.getOperationUser(req, "view config tree");
             StreamJob streamJob = this.streamJobService.getJobById(jobId);
             if (!this.streamJobService.hasPermission(streamJob, userName)
-                    && !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())){
+                    && !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
                 throw new JobErrorException(-1, "Have no permission to view the configuration tree of StreamJob [" + jobId + "]");
             }
             result.data("fullTree", this.streamJobConfService.getJobConfValueSet(jobId));
-        }catch (Exception e){
+        } catch (Exception e) {
             String message = "Fail to view configuration tree(查看任务配置树失败), message: " + e.getMessage();
             LOG.warn(message, e);
             result = Message.error(message);
@@ -172,9 +173,9 @@ public class JobConfRestfulApi {
     }
 
     @RequestMapping(path = {"/add", "/update"}, method = RequestMethod.POST)
-    public Message saveConfigTree(@RequestBody JsonNode json, HttpServletRequest req){
+    public Message saveConfigTree(@RequestBody JsonNode json, HttpServletRequest req) {
         Message result = Message.ok("success");
-        try{
+        try {
             String userName = ModuleUserUtils.getOperationUser(req, "save config tree");
             JobConfValueSet fullTrees = DWSHttpClient.jacksonJson().readValue(json.get("fullTree").traverse(), JobConfValueSet.class);
             // Accept the developer to modify
@@ -183,7 +184,7 @@ public class JobConfRestfulApi {
                 return Message.error("you con not modify the config ,the job is not belong to you");
             }
             streamJobConfService.saveJobConfValueSet(fullTrees);
-        }catch (Exception e){
+        } catch (Exception e) {
             String message = "Fail to insert/update configuration tree(保存/更新任务配置树失败), message: " + e.getMessage();
             LOG.warn(message, e);
             result = Message.error(message);
