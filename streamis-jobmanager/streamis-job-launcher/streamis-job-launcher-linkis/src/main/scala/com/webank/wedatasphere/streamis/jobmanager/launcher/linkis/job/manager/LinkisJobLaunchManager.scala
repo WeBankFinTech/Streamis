@@ -42,8 +42,6 @@ trait LinkisJobLaunchManager extends JobLaunchManager[LinkisJobInfo] with Loggin
       }
     }
 
-
-
      if (StringUtils.isNotBlank(linkisVersion)){
           val versionSplitter: Array[String] = linkisVersion.split("\\.")
           val major = Integer.valueOf(versionSplitter(0))

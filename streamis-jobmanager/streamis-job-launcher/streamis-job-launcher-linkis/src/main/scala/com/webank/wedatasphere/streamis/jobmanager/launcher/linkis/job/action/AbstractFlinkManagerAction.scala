@@ -4,7 +4,9 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.enums.FlinkManagerAc
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.FlinkManagerAction
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
 import org.apache.linkis.computation.client.once.action.{ECMOperateAction, EngineConnOperateAction}
+import org.apache.linkis.governance.common.constant.ec.ECConstants
 import org.apache.linkis.governance.common.enums.OnceJobOperationBoundary
+import java.util
 
 import scala.collection.JavaConverters.mapAsScalaMapConverter
 
@@ -32,6 +34,8 @@ abstract class AbstractFlinkManagerAction extends FlinkManagerAction {
     operateAction.setUser(getExecuteUser)
     operateAction
   }
+
+  override def getOperationBoundry: OnceJobOperationBoundary = FlinkManagerActionType.getOperationBoundary(getActionType)
 }
 
 
@@ -42,7 +46,6 @@ class FlinkStatusAction(applicationId: String, msg: String) extends AbstractFlin
 
   override def getActionType: FlinkManagerActionType = FlinkManagerActionType.STATUS
 
-  override def getOperationBoundry: OnceJobOperationBoundary = FlinkManagerActionType.getOperationBoundary(getActionType)
 }
 
 class FlinkKillAction(applicationId: String, msg: String) extends AbstractFlinkManagerAction {
@@ -51,8 +54,6 @@ class FlinkKillAction(applicationId: String, msg: String) extends AbstractFlinkM
   override def getMsg: String = msg
 
   override def getActionType: FlinkManagerActionType = FlinkManagerActionType.KILL
-
-  override def getOperationBoundry: OnceJobOperationBoundary = FlinkManagerActionType.getOperationBoundary(getActionType)
 }
 
 class FlinkSaveAction(applicationId: String, msg: String) extends AbstractFlinkManagerAction {
@@ -62,10 +63,32 @@ class FlinkSaveAction(applicationId: String, msg: String) extends AbstractFlinkM
 
   override def getActionType: FlinkManagerActionType = FlinkManagerActionType.SAVE
 
-  override def getOperationBoundry: OnceJobOperationBoundary = FlinkManagerActionType.getOperationBoundary(getActionType)
-
   def setSavepointPath(path: String): Unit = getParams().put(JobConstants.SAVAPOINT_PATH_KEY, path)
 
   def setMode(mode: String): Unit = getParams().put(JobConstants.MODE_KEY, mode)
 }
 
+class ListYarnAppAction(appName: String, user: String, msg: String) extends AbstractFlinkManagerAction {
+
+  override def getApplicationId: String = null
+
+  override def getMsg: String = msg
+
+  override def getActionType: FlinkManagerActionType = FlinkManagerActionType.LIST
+
+  def addAppType(appType: String): Unit = {
+    val appTypeList = getParams().getOrDefault(ECConstants.YARN_APP_TYPE_LIST_KEY, new util.ArrayList[String]).asInstanceOf[util.List[String]]
+    getParams().putIfAbsent(ECConstants.YARN_APP_STATE_LIST_KEY, appTypeList)
+    if (!appTypeList.contains(appType)) {
+      appTypeList.add(appType)
+    }
+  }
+
+  def setAppName(): Unit = getParams().put(ECConstants.YARN_APP_NAME_KEY, appName)
+
+  def setMsg(): Unit = getParams().put(JobConstants.MSG_KEY, msg)
+
+  setAppName()
+
+  setMsg()
+}
