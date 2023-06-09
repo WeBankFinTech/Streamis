@@ -295,7 +295,7 @@
         <Table border :columns="checkColumns" :data="checkData">
           <template slot-scope="{row}" slot="yarn">
             <div v-for="(item, index) in row.yarn" :key="index">
-              <a v-if="item.applicationUrl && item.applicationUrl !== '无'" style="display: block" @click="goToNewTab(item.applicationUrl)">{{item.applicationUrl}}</a>
+              <a v-if="item.applicationUrl && item.applicationUrl !== '无'" style="display: block" @click="goToNewTab(item.applicationUrl)">{{item.yarnAppType}}: {{item.applicationName}}</a>
               <div v-else>无</div>
             </div>
           </template>
