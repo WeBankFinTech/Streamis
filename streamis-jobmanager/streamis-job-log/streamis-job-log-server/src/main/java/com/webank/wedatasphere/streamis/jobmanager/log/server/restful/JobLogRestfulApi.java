@@ -7,6 +7,8 @@ import com.webank.wedatasphere.streamis.jobmanager.log.server.service.StreamisJo
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -19,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping(path = "/streamis/streamJobManager/log")
 public class JobLogRestfulApi {
 
-
+    private static final Logger LOG = LoggerFactory.getLogger(JobLogRestfulApi.class);
     @Resource
     private StreamisJobLogService streamisJobLogService;
 
@@ -34,7 +36,11 @@ public class JobLogRestfulApi {
             if (StreamJobLogConfig.NO_AUTH_REST.getValue()){
                 userName = request.getHeader("Token-User");
                 if (StringUtils.isBlank(userName)){
-                    userName = SecurityFilter.getLoginUsername(request);
+                    try {
+                        userName = SecurityFilter.getLoginUsername(request);
+                    }catch(Exception e){
+                        LOG.error("获取登录用户失败");
+                    }
                     if (StringUtils.isBlank(userName)){
                         userName = "hadoop";
                     }
