@@ -144,10 +144,8 @@ public class Log4j2JobLogBucket implements JobLogBucket{
        this.isShutdown.set(true);
        this.shutdownLock.lock();
        try{
-           while (activeThread.get() > 0 ){
-               if (!this.canShutdown.await(5, TimeUnit.SECONDS)) {
-                   LOG.warn("Shutdown the bucket: [{}] directly because the timeout of waiting", bucketName);
-               }
+           if (activeThread.get() > 0 && !this.canShutdown.await(5, TimeUnit.SECONDS)) {
+               LOG.warn("Shutdown the bucket: [{}] directly because the timeout of waiting", bucketName);
            }
        } catch (InterruptedException e) {
            // Ignore
