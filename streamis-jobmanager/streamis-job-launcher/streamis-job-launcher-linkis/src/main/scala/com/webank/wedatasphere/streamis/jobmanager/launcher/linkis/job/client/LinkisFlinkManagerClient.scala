@@ -72,6 +72,7 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
     initProperties.put(JobLauncherConfiguration.FLINK_MANAGER_EC_KEY.getValue, true.toString)
     initProperties.put(AMConstant.EC_SYNC_START_KEY, true.toString)
     initProperties.put(JobLauncherConfiguration.LINKIS_EC_EXPIRE_TIME_KEY.getValue, JobLauncherConfiguration.FLINKK_MANAGER_EXIT_TIME.getHotValue().toString)
+    initProperties.put(JobLauncherConfiguration.LINKIS_EC_SUPPORT_PARALLEM, true.toString)
 
     var askEngineConnAction = AskEngineConnAction
       .newBuilder()
