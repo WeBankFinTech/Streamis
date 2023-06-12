@@ -25,6 +25,7 @@ import org.apache.linkis.governance.common.constant.ec.ECConstants
 import org.apache.linkis.ujes.client.exception.UJESJobException
 
 import java.util
+import scala.collection.JavaConverters.asScalaBufferConverter
 
 class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManager: JobStateManager) extends EngineConnJobClient(onceJob, jobInfo, stateManager) {
 
@@ -198,10 +199,18 @@ object LinkisFlinkManagerJobClient extends Logging {
       val rsMap = result.getResult
       if (rsMap.containsKey(ECConstants.YARN_APP_RESULT_LIST_KEY)) {
         val rsListStr = rsMap.get(ECConstants.YARN_APP_RESULT_LIST_KEY).asInstanceOf[String]
-        val rsList = JsonUtils.jackson.readValue(rsListStr, classOf[util.List[YarnAppVo]])
-        resultList.addAll(rsList)
+        val rsList = JsonUtils.jackson.readValue(rsListStr, classOf[util.List[util.Map[String, String]]])
+        rsList.asScala.foreach(map => {
+          val tmpVo = new YarnAppVo()
+          tmpVo.setAppicationName(map.getOrDefault(ECConstants.YARN_APP_NAME_KEY, null))
+          tmpVo.setApplicationState(map.getOrDefault(ECConstants.NODE_STATUS_KEY, null))
+          tmpVo.setYarnAppType(map.getOrDefault(ECConstants.YARN_APP_TYPE_KEY, null))
+          tmpVo.setApplicationId(map.getOrDefault(ECConstants.YARN_APPID_NAME_KEY, null))
+          tmpVo.setApplicationUrl(map.getOrDefault(ECConstants.YARN_APP_URL_KEY, null))
+          resultList.add(tmpVo)
+        })
       }
+      resultList
     }
-    resultList
   }
 }
