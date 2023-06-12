@@ -5,7 +5,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobCon
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobGenericState, JobStateInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{FlinkManagerAction, FlinkManagerClient, JobClient, JobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkJobFlinkECErrorException, FlinkJobLaunchErrorException, FlinkJobParamErrorException}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkECOperateErrorException, FlinkJobFlinkECErrorException, FlinkJobLaunchErrorException, FlinkJobParamErrorException, FlinkJobStateFetchException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.LinkisFlinkManagerClient.initScheduledTask
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo
 import org.apache.commons.lang3.{SerializationUtils, StringUtils}
@@ -214,19 +214,55 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
   }
 
   def doExecution(operationAction: EngineConnOperateAction): EngineConnOperateResult = {
-    Utils.tryCatch {
-      SimpleOnceJobBuilder.getLinkisManagerClient.executeEngineConnOperation(operationAction)
-    } {
-      case e: Exception =>
-        logger.error(s"executeEngineConnOperation failed with action : ${operationAction}")
-        Utils.defaultScheduler.submit(new Runnable {
-          override def run(): Unit = {
-            logger.info("Will refresh manager ec in single thread.")
+    var ended = false
+    var count = 1
+    var refreshed = false
+    val operation = JsonUtils.jackson.writeValueAsString(operationAction)
+    val MAX_COUNT = 180
+    val SLEEP_DURATION_MILLS = 1000
+    while (!ended) {
+      val managerEcInstance = getFlinkManagerEngineConnInstance()
+      val notFoundMsg = s"Ec : ${managerEcInstance.toString()} not found"
+      Utils.tryCatch {
+        val ecOperateResult = SimpleOnceJobBuilder.getLinkisManagerClient.executeEngineConnOperation(operationAction)
+        if (ecOperateResult.getIsError()) {
+          if (null != ecOperateResult.getErrorMsg() && ecOperateResult.getErrorMsg().contains(notFoundMsg)) {
+            logger.warn(notFoundMsg)
+          } else {
+            logger.error(s"There are errors, but the errorMsg is null. rs : ${JsonUtils.jackson.writeValueAsString(ecOperateResult)}")
+            return ecOperateResult
+          }
+        } else {
+          return ecOperateResult
+        }
+      } {
+        case e: Exception =>
+          logger.error(s"executeEngineConnOperation failed with action : ${operationAction}")
+          if (!refreshed) {
+            refreshed = true
             Utils.tryAndError(refreshManagerEC())
           }
-        })
-        throw e
+          if (null == managerEcInstance || e.getMessage.contains(notFoundMsg)) {
+            ended = false
+            logger.error(e.getMessage)
+            if (count % 20 == 0 && refreshed) {
+              refreshed = false
+            }
+            null
+          } else {
+            throw e
+          }
+      }
+      logger.info(s"Retried ${count} times to do execution : ${operation}")
+      count += 1
+      Thread.sleep(SLEEP_DURATION_MILLS)
+      if (count >= MAX_COUNT) {
+        ended = true
+        logger.error(s"Operation : ${operation} has failed for ${count} times, will end.")
+      }
     }
+    val time = SLEEP_DURATION_MILLS * MAX_COUNT / 1000.0
+    throw new FlinkECOperateErrorException(errorMsg = s"Cannot get valid manager ec in ${time}s", t = null)
   }
 
   private def getServiceInstance(nodeInfo: util.Map[String, Any]): ServiceInstance =
