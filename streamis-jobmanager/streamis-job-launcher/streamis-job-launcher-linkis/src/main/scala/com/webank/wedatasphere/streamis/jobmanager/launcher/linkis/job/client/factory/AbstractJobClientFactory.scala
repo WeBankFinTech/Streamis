@@ -50,31 +50,38 @@ class AbstractJobClientFactory extends Logging {
    */
   def getJobClientFactory(connectType: String): JobClientFactory = {
     connectType match {
-      case "attach" => {
-        if (null == this.engineConnJobClientFactory) {
-          this.synchronized {
-            if (null == this.engineConnJobClientFactory) {
-              this.engineConnJobClientFactory = new EngineConnJobClientFactory
-              this.engineConnJobClientFactory.init()
-            }
-          }
-        }
-        this.engineConnJobClientFactory
-      }
-      case "detach" => {
-        if (null == this.linkisFlinkManagerClientFactory) {
-          this.synchronized {
-            if (null == this.linkisFlinkManagerClientFactory) {
-              this.linkisFlinkManagerClientFactory = new LinkisFlinkManagerClientFactory
-              this.linkisFlinkManagerClientFactory.init()
-            }
-          }
-        }
-        this.linkisFlinkManagerClientFactory
-      }
+      case "attach" =>
+        getAttachClientFactory()
+      case "detach" =>
+        getDetachClientFactory()
       case _ =>
-        throw new FlinkJobLaunchErrorException(-1, "ConnectType on flinkJobInfo should be attach、detach or detach_standalone", null)
+        logger.warn("Manage type is null, will use 'attach' as default.")
+        getAttachClientFactory()
     }
+  }
+
+  def getAttachClientFactory(): JobClientFactory = {
+    if (null == this.engineConnJobClientFactory) {
+      this.synchronized {
+        if (null == this.engineConnJobClientFactory) {
+          this.engineConnJobClientFactory = new EngineConnJobClientFactory
+          this.engineConnJobClientFactory.init()
+        }
+      }
+    }
+    this.engineConnJobClientFactory
+  }
+
+  def getDetachClientFactory(): JobClientFactory = {
+    if (null == this.linkisFlinkManagerClientFactory) {
+      this.synchronized {
+        if (null == this.linkisFlinkManagerClientFactory) {
+          this.linkisFlinkManagerClientFactory = new LinkisFlinkManagerClientFactory
+          this.linkisFlinkManagerClientFactory.init()
+        }
+      }
+    }
+    this.linkisFlinkManagerClientFactory
   }
 }
 
