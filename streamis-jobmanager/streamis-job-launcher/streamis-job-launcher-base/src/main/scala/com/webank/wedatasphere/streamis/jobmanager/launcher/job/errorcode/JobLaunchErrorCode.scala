@@ -20,4 +20,7 @@ object JobLaunchErrorCode {
   val JOB_EC_HANDSHAKE_ERROR = 30511
 
   val JOB_LIST_YARN_APP_ERROR = 30512
+
+  val MANAGER_EC_OPERATE_ERROR = 30513
+
 }
