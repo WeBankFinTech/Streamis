@@ -23,7 +23,6 @@ import java.util.function.BiPredicate;
  */
 public class StreamisRpcLogAppender extends AppenderSkeleton {
 
-    private static final Logger LOG = LoggerFactory.getLogger(StreamisRpcLogAppender.class);
     /**
      * Application name
      */
@@ -67,7 +66,6 @@ public class StreamisRpcLogAppender extends AppenderSkeleton {
                 } catch (InterruptedException e) {
                     LogLog.error("StreamisRpcLogAppender: " + this.getName() +
                             " interrupted when cache the log into the RPC sender, message: " + e.getMessage());
-                    Thread.currentThread().interrupt();
                 }
             }
         }
@@ -116,7 +114,7 @@ public class StreamisRpcLogAppender extends AppenderSkeleton {
         clearFilters();
         // Then to add filter
         logAppenderConfig.getFilters().forEach(this::addFilter);
-        LOG.info("StreamisRpcLogAppender: init with config => " + logAppenderConfig);
+        System.out.println("StreamisRpcLogAppender: init with config => " + logAppenderConfig);
         this.rpcLogSender = new StreamisRpcLogSender(this.appenderConfig.getApplicationName(),
                 this.appenderConfig.getSenderConfig());
         this.rpcLogSender.setExceptionListener((subject, t, message) ->

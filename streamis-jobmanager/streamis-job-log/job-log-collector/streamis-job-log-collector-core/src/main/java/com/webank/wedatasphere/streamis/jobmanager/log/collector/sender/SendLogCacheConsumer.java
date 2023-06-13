@@ -3,8 +3,6 @@ package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcLogSenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.buf.SendBuffer;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.LogElement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -15,7 +13,6 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class SendLogCacheConsumer<T extends LogElement> implements Runnable{
 
-    private static final Logger logger = LoggerFactory.getLogger(SendLogCacheConsumer.class);
 
     private boolean isTerminated = false;
 
@@ -91,16 +88,15 @@ public abstract class SendLogCacheConsumer<T extends LogElement> implements Runn
                     return;
                 } else {
                     e.printStackTrace();
-                    logger.error("SendLogCacheConsumer[" + Thread.currentThread().getName() + "] occurred exception [" + e.getLocalizedMessage() + "]");
-                   // For the unknown exception clear the cache
+                    System.err.println("SendLogCacheConsumer[" + Thread.currentThread().getName() + "] occurred exception [" + e.getLocalizedMessage() + "]");
+                    // For the unknown exception clear the cache
                    sendBuffer.clear();
                    expireTimeInMills = requireNewFlushTime();
                 }
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException ex) {
-                    // Ignore
-                    Thread.currentThread().interrupt();
+                    ex.printStackTrace();
                 }
             }
         }
