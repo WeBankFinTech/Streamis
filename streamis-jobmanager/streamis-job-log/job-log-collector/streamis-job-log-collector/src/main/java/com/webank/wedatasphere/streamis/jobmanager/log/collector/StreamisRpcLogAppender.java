@@ -18,8 +18,6 @@ import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.PatternLayout;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.*;
@@ -31,7 +29,6 @@ import java.util.function.BiPredicate;
 @Plugin(name = "StreamRpcLog", category = "Core", elementType = "appender", printObject = true)
 public class StreamisRpcLogAppender extends AbstractAppender {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StreamisRpcLogAppender.class);
     private static final String DEFAULT_APPENDER_NAME = "StreamRpcLog";
     /**
      * Appender config
@@ -87,7 +84,7 @@ public class StreamisRpcLogAppender extends AbstractAppender {
                 this.logCache.cacheLog(logEvent);
             } catch (InterruptedException e) {
                 LOGGER.error("StreamisRpcLogAppender: {} interrupted when cache the log into the RPC sender, message: {}", this.getName(), e.getMessage());
-                Thread.currentThread().interrupt();
+                
             }
         }
     }
@@ -121,7 +118,7 @@ public class StreamisRpcLogAppender extends AbstractAppender {
         if (null == applicationName || applicationName.trim().equals("")){
             throw new IllegalArgumentException("Application name cannot be empty");
         }
-        LOGGER.info("StreamisRpcLogAppender: init with config => " + logAppenderConfig);
+        System.out.println("StreamisRpcLogAppender: init with config => " + logAppenderConfig);
         return new StreamisRpcLogAppender(name, logAppenderConfig.getFilter(), layout, ignoreExceptions, Property.EMPTY_ARRAY, logAppenderConfig);
     }
 
