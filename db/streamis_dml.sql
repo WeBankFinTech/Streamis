@@ -23,3 +23,4 @@ INSERT INTO `linkis_stream_job_config_def` VALUES (33,'wds.linkis.flink.authorit
 INSERT INTO `linkis_stream_job_config_def` VALUES (34,'wds.linkis.rm.yarnqueue','使用Yarn队列','INPUT',0,'使用Yarn队列','None',NULL,'',1,1,NULL,NULL,'',1,0,0);
 INSERT INTO `linkis_stream_job_config_def` VALUES (35,'wds.linkis.flink.app.fail-restart.switch','作业失败自动拉起开关','SELECT',1,'作业失败自动拉起开关','None',NULL,'',1,1,NULL,'OFF','ON,OFF',8,0,0);
 INSERT INTO `linkis_stream_job_config_def` VALUES (36,'wds.linkis.flink.app.start-auto-restore.switch','作业启动状态自恢复','SELECT',2,'作业启动状态自恢复','None',NULL,'',1,1,NULL,'ON','ON,OFF',8,0,0);
+INSERT INTO `linkis_stream_job_config_def` VALUES (38, 'linkis.ec.app.manage.mode', '管理模式', 'SELECT', 3, 'EngineConn管理模式', 'None', NULL, '', 1, 1, NULL, 'attach', 'detach,attach', 8, 0, 0);
