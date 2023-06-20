@@ -145,7 +145,7 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
       // 封装提示
       listVo.addOneUrl(null, "管理员未开启管理引擎特性，无法查看运行中同名yarn应用", null)
     } else {
-      listVo.addOneUrl(null, "http://管理员未开启检查运行中同名yarn应用特性", null)
+      listVo.addOneUrl(null, "管理员未开启检查运行中同名yarn应用特性", null)
     }
     listVo
   }
