@@ -12,7 +12,7 @@ public class YarnAppVo {
 
     private String applicationState;
 
-    private String appicationName;
+    private String applicationName;
 
     private String yarnAppType;
 
@@ -48,12 +48,12 @@ public class YarnAppVo {
         this.applicationState = applicationState;
     }
 
-    public String getAppicationName() {
-        return appicationName;
+    public String getApplicationName() {
+        return applicationName;
     }
 
-    public void setAppicationName(String appicationName) {
-        this.appicationName = appicationName;
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
     }
 
     public String getYarnAppType() {
