@@ -202,7 +202,7 @@ object LinkisFlinkManagerJobClient extends Logging {
         val rsList = JsonUtils.jackson.readValue(rsListStr, classOf[util.List[util.Map[String, String]]])
         rsList.asScala.foreach(map => {
           val tmpVo = new YarnAppVo()
-          tmpVo.setAppicationName(map.getOrDefault(ECConstants.YARN_APP_NAME_KEY, null))
+          tmpVo.setApplicationName(map.getOrDefault(ECConstants.YARN_APP_NAME_KEY, null))
           tmpVo.setApplicationState(map.getOrDefault(ECConstants.NODE_STATUS_KEY, null))
           tmpVo.setYarnAppType(map.getOrDefault(ECConstants.YARN_APP_TYPE_KEY, null))
           tmpVo.setApplicationId(map.getOrDefault(ECConstants.YARN_APPID_NAME_KEY, null))
