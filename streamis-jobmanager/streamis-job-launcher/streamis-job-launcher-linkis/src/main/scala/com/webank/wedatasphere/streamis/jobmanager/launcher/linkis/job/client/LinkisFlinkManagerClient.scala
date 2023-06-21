@@ -27,6 +27,7 @@ import org.apache.linkis.manager.label.entity.engine.{CodeLanguageLabel, EngineT
 
 import java.util
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.JavaConverters.mapAsScalaMapConverter
 import scala.tools.scalap.scalax.util.StringUtil
 
@@ -34,6 +35,7 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
 
   private var ecInstance: ServiceInstance = _
   private var ecmInstance: ServiceInstance = _
+  private val healthy = new AtomicBoolean(true)
 
   def init(): Unit = {
     refreshManagerEC()
@@ -215,55 +217,39 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
   }
 
   def doExecution(operationAction: EngineConnOperateAction): EngineConnOperateResult = {
-    var ended = false
-    var count = 1
-    var refreshed = false
     val operation = JsonUtils.jackson.writeValueAsString(operationAction)
-    val MAX_COUNT = 180
-    val SLEEP_DURATION_MILLS = 1000
-    while (!ended) {
-      val managerEcInstance = getFlinkManagerEngineConnInstance()
-      val notFoundMsg = s"Ec : ${managerEcInstance.toString()} not found"
-      Utils.tryCatch {
-        val ecOperateResult = SimpleOnceJobBuilder.getLinkisManagerClient.executeEngineConnOperation(operationAction)
-        if (ecOperateResult.getIsError()) {
-          if (null != ecOperateResult.getErrorMsg() && ecOperateResult.getErrorMsg().contains(notFoundMsg)) {
-            logger.warn(notFoundMsg)
-          } else {
-            logger.error(s"There are errors, but the errorMsg is null. rs : ${JsonUtils.jackson.writeValueAsString(ecOperateResult)}")
-            return ecOperateResult
-          }
+    if (!healthy.get()) {
+      logger.warn(s"FlinkManager is not healthy, will skip the operation : ${operation}.")
+      throw new FlinkJobFlinkECErrorException(s"FlinkManager is not healthy, skip the operation : ${operation}(管理EC异常，请稍后再试).")
+    }
+    val managerEcInstance = getFlinkManagerEngineConnInstance()
+    val notFoundMsg = s"Ec : ${managerEcInstance.toString()} not found"
+    Utils.tryCatch {
+      var ecOperateResult = SimpleOnceJobBuilder.getLinkisManagerClient.executeEngineConnOperation(operationAction)
+      if (ecOperateResult.getIsError()) {
+        if (null != ecOperateResult.getErrorMsg() && ecOperateResult.getErrorMsg().contains(notFoundMsg)) {
+          logger.warn(notFoundMsg)
+          Utils.tryAndError(refreshManagerEC())
+          ecOperateResult = SimpleOnceJobBuilder.getLinkisManagerClient.executeEngineConnOperation(operationAction)
+          return ecOperateResult
         } else {
+          logger.error(s"There are errors, but the errorMsg is null. rs : ${JsonUtils.jackson.writeValueAsString(ecOperateResult)}")
           return ecOperateResult
         }
-      } {
-        case e: Exception =>
-          logger.error(s"executeEngineConnOperation failed with action : ${operationAction}")
-          if (!refreshed) {
-            refreshed = true
-            Utils.tryAndError(refreshManagerEC())
-          }
-          if (null == managerEcInstance || e.getMessage.contains(notFoundMsg)) {
-            ended = false
-            logger.error(e.getMessage)
-            if (count % 20 == 0 && refreshed) {
-              refreshed = false
-            }
-            null
-          } else {
-            throw e
-          }
+      } else {
+        return ecOperateResult
       }
-      logger.info(s"Retried ${count} times to do execution : ${operation}")
-      count += 1
-      Thread.sleep(SLEEP_DURATION_MILLS)
-      if (count >= MAX_COUNT) {
-        ended = true
-        logger.error(s"Operation : ${operation} has failed for ${count} times, will end.")
-      }
+    } {
+      case e: Exception =>
+        logger.error(s"executeEngineConnOperation failed with action : ${operationAction}", e)
+        if (null == managerEcInstance || e.getMessage.contains(notFoundMsg)) {
+          logger.error(e.getMessage)
+          Utils.tryAndError(refreshManagerEC())
+          return SimpleOnceJobBuilder.getLinkisManagerClient.executeEngineConnOperation(operationAction)
+        }
+        throw e
     }
-    val time = SLEEP_DURATION_MILLS * MAX_COUNT / 1000.0
-    throw new FlinkECOperateErrorException(errorMsg = s"Cannot get valid manager ec in ${time}s", t = null)
+
   }
 
   private def getServiceInstance(nodeInfo: util.Map[String, Any]): ServiceInstance =
@@ -303,9 +289,26 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
 
   override def refreshManagerEC(): Unit = {
     LinkisFlinkManagerClient.ASK_EC_LOCK.synchronized {
-      val rs = getOrCreateLinkisManagerECAndECM()
-      ecInstance = rs._1
-      ecmInstance = rs._2
+      logger.info("Start to refresh manager ec.")
+
+      def refreshEC(): Unit = {
+        val rs = getOrCreateLinkisManagerECAndECM()
+        ecInstance = rs._1
+        ecmInstance = rs._2
+        healthy.set(true)
+      }
+
+      Utils.tryCatch(refreshEC()) {
+        case e: Exception =>
+          logger.error("Refresh manager ec failed. Will try once.", e)
+          healthy.set(false)
+          Utils.tryCatch(refreshEC()) {
+            case  e1: Exception =>
+              logger.error("Refresh manager ec again failed. Will throw the exception.", e1)
+              healthy.set(false)
+              throw e1
+          }
+      }
     }
   }
 }

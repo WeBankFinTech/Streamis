@@ -1,11 +1,17 @@
 package com.webank.wedatasphere.streamis.projectmanager.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 public class MD5Utils {
+
+    private static final Logger logger = LoggerFactory.getLogger(MD5Utils.class);
+
     private MD5Utils(){}
 
     public static String getMD5(String filePath) {
@@ -35,10 +41,12 @@ public class MD5Utils {
 
     private static byte[] getBytes(String filePath) {
         byte[] buffer = null;
+        FileInputStream fis = null;
+        ByteArrayOutputStream bos = null;
         try {
             File file = new File(filePath);
-            FileInputStream fis = new FileInputStream(file);
-            ByteArrayOutputStream bos = new ByteArrayOutputStream(1000);
+            fis = new FileInputStream(file);
+            bos = new ByteArrayOutputStream(1000);
             byte[] b = new byte[1000];
             int n;
             while ((n = fis.read(b)) != -1) {
@@ -49,6 +57,17 @@ public class MD5Utils {
             buffer = bos.toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (null != fis) {
+                    fis.close();
+                }
+                if (null != bos) {
+                    bos.close();
+                }
+            } catch (Exception e1) {
+                logger.warn("close stream error. {}", e1.getMessage());
+            }
         }
         return buffer;
     }
