@@ -39,9 +39,10 @@ public class JobLogRestfulApi {
                     try {
                         userName = SecurityFilter.getLoginUsername(request);
                     }catch(Exception e){
-                        LOG.error("获取登录用户失败");
+                        LOG.error("获取登录用户失败. {}", e.getMessage(), e);
                     }
                     if (StringUtils.isBlank(userName)){
+                        LOG.error("获取登录用户失败, 使用默认用户: hadoop");
                         userName = "hadoop";
                     }
                 }
