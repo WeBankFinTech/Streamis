@@ -41,7 +41,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.Stre
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils;
 import com.webank.wedatasphere.streamis.jobmanager.utils.RegularUtil;
 import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabel;
-import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabelResponse;
+import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabelRequest;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -129,11 +129,11 @@ public class JobRestfulApi {
     }
 
     @RequestMapping(path = "/updateLabel", method = RequestMethod.POST)
-    public Message updateLabel(HttpServletRequest req, @RequestBody BulkUpdateLabelResponse bulkUpdateLabelResponse) {
+    public Message updateLabel(HttpServletRequest req, @RequestBody BulkUpdateLabelRequest bulkUpdateLabelRequest) {
         Message result = Message.ok("success");
         try {
             String userName = ModuleUserUtils.getOperationUser(req, "create or update job");
-            List<BulkUpdateLabel> tasksData = bulkUpdateLabelResponse.getTasks();
+            List<BulkUpdateLabel> tasksData = bulkUpdateLabelRequest.getTasks();
             for (BulkUpdateLabel bulkUpdateLabel:tasksData){
                 Long jobId = bulkUpdateLabel.getId();
                 StreamJob streamJob = this.streamJobService.getJobById(jobId);

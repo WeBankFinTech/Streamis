@@ -67,8 +67,7 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
     /**
      * Http Client
      */
-    Client client;
-
+    protected Client client;
 
     private final Class<T> stateClass;
 
