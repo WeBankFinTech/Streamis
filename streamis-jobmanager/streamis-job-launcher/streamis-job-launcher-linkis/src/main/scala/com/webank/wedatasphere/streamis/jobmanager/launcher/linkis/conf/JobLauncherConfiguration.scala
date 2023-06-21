@@ -66,7 +66,7 @@ object JobLauncherConfiguration {
 
   val ENABLE_FLINK_MANAGER_EC_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.flink.manager.ec.enable", true)
 
-  val FLINKK_MANAGER_EXIT_TIME: CommonVars[Long] = CommonVars("wds.streamis.flink.manager.ec.expire.time.mills", 3600 * 1000)
+  val FLINKK_MANAGER_EXIT_TIME: CommonVars[Long] = CommonVars("wds.streamis.flink.manager.ec.expire.time.mills", 12 * 3600 * 1000)
 
   val LINKIS_EC_EXPIRE_TIME_KEY: CommonVars[String] = CommonVars("linkis.ec.expire.key", "wds.linkis.engineconn.max.free.time")
 
