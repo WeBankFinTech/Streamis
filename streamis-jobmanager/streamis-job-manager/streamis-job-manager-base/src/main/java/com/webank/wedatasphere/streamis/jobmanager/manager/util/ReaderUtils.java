@@ -135,13 +135,27 @@ public class ReaderUtils {
 
     public MetaJsonInfo parseJson(String dirPath) throws IOException, FileException {
         getBasePath(dirPath);
-        try (InputStream inputStream = generateInputStream(basePath);
-             InputStreamReader streamReader = new InputStreamReader(inputStream);
-             BufferedReader reader = new BufferedReader(streamReader);) {
+        InputStream inputStream = null;
+        InputStreamReader streamReader = null;
+        try {
+            inputStream = generateInputStream(basePath);
+            streamReader = new InputStreamReader(inputStream);
+            BufferedReader reader = new BufferedReader(streamReader);
             return readJson(reader);
         } catch (Exception e) {
             LOG.error(e.getMessage());
             throw e;
+        } finally {
+            try {
+                if (null != inputStream) {
+                    inputStream.close();
+                }
+                if (null != streamReader) {
+                    streamReader.close();
+                }
+            } catch (Exception e1) {
+                LOG.warn("close stream error, {}", e1.getMessage());
+            }
         }
     }
 

@@ -3,7 +3,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConst
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.errorcode.JobLaunchErrorCode
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobErrorException, JobFetchErrorException}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobCreateErrorException, JobErrorException, JobFetchErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.LinkisFlinkManagerJobClient
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
@@ -120,7 +120,7 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
           JobConstants.APP_TYPE_SPARK
         } else {
           logger.error(s"Unknown job type : ${job.getJobType}")
-          null.asInstanceOf[String]
+          throw new JobCreateErrorException(JobLaunchErrorCode.JOB_LIST_YARN_APP_ERROR, s"Unknown job type : ${job.getJobType}")
         }
         val appTypeList = new util.ArrayList[String]()
         if (StringUtils.isNotBlank(appType)) {
@@ -129,8 +129,15 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
         logger.info(s"job appType is  : ${appType}")
         val appList = LinkisFlinkManagerJobClient.listYarnApp(appName, job.getSubmitUser, "streamis", appTypeList)
         if (null != appList && !appList.isEmpty) {
-          appList.asScala.foreach(app => listVo.addYarnApp(app))
-          logger.info(s"There are ${appList.size()} apps with same name : ${appName}")
+          appList.asScala.foreach{
+            app =>
+              if (app.getApplicationName().equalsIgnoreCase(appName)) {
+                listVo.addYarnApp(app)
+              } else {
+                logger.info(s"yarn app name : ${app.getApplicationName()} like but not equals job name : ${appName}, ignore it. ")
+              }
+          }
+          logger.info(s"There are ${listVo.getList.size()} apps with same name : ${appName}")
           logger.info(JsonUtils.jackson.writeValueAsString(appList))
         } else {
           listVo.addOneUrl(null, "无", null)
@@ -142,7 +149,7 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
           throw new JobFetchErrorException(JobLaunchErrorCode.JOB_LIST_YARN_APP_ERROR, msg)
       }
     } else if (JobLauncherConfiguration.ENABLE_FLINK_LIST_INSPECT.getValue) {
-      // 封装提示
+      // default notice
       listVo.addOneUrl(null, "管理员未开启管理引擎特性，无法查看运行中同名yarn应用", null)
     } else {
       listVo.addOneUrl(null, "管理员未开启检查运行中同名yarn应用特性", null)

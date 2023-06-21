@@ -2,7 +2,7 @@ package com.webank.wedatasphere.streamis.jobmanager.vo;
 
 import java.util.List;
 
-public class BulkUpdateLabelResponse {
+public class BulkUpdateLabelRequest {
     private List<BulkUpdateLabel>  tasks;
 
     public List<BulkUpdateLabel> getTasks() {
