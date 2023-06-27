@@ -149,7 +149,7 @@ public class Log4j2JobLogBucket implements JobLogBucket{
            }
        } catch (InterruptedException e) {
            // Ignore
-           Thread.currentThread().interrupt();
+           
        } finally {
            this.shutdownLock.unlock();
        }
