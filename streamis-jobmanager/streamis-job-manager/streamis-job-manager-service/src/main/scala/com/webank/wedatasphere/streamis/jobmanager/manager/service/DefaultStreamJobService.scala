@@ -314,7 +314,8 @@ class DefaultStreamJobService extends StreamJobService with Logging {
 
   }
 
-
+  @throws(classOf[ErrorException])
+  @Transactional(rollbackFor = Array(classOf[Exception]))
   override def updateLabel(streamJob: StreamJob): Unit = streamJobMapper.updateJob(streamJob)
 
 }
