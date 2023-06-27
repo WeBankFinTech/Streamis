@@ -9,10 +9,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 public class MD5Utils {
+    private MD5Utils(){}
 
     private static final Logger logger = LoggerFactory.getLogger(MD5Utils.class);
-
-    private MD5Utils(){}
 
     public static String getMD5(String filePath) {
         byte[] key = getBytes(filePath);
@@ -39,34 +38,38 @@ public class MD5Utils {
         return sb.toString();
     }
 
-    private static byte[] getBytes(String filePath) {
+    private static byte[] getBytes(String filePath){
         byte[] buffer = null;
         FileInputStream fis = null;
         ByteArrayOutputStream bos = null;
         try {
-            File file = new File(filePath);
-            fis = new FileInputStream(file);
-            bos = new ByteArrayOutputStream(1000);
+             File file = new File(filePath);
+             fis = new FileInputStream(file);
+             bos = new ByteArrayOutputStream(1000);
             byte[] b = new byte[1000];
             int n;
             while ((n = fis.read(b)) != -1) {
                 bos.write(b, 0, n);
             }
-            fis.close();
-            bos.close();
             buffer = bos.toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (null != fis) {
+
+            try{
+                if(fis != null){
                     fis.close();
                 }
-                if (null != bos) {
+            }catch(Exception e){
+                logger.error("关闭输入流错误！", e);
+            }
+
+            try{
+                if(bos != null){
                     bos.close();
                 }
-            } catch (Exception e1) {
-                logger.warn("close stream error. {}", e1.getMessage());
+            }catch(Exception e){
+                logger.error("关闭输出流错误！", e);
             }
         }
         return buffer;

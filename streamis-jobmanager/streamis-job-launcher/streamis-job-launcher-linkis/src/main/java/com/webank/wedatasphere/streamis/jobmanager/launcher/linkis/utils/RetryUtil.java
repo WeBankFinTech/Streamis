@@ -130,7 +130,7 @@ public class RetryUtil {
                 try {
                     Thread.sleep(timeToSleep);
                 } catch (InterruptedException ignored) {
-                    Thread.currentThread().interrupt();
+                    
                 }
                 long realTimeSleep = System.currentTimeMillis() - startTime;
                 LOG.error(String.format("Exception when calling callable, 即将尝试执行第%s次重试.本次重试计划等待[%s]ms,实际等待[%s]ms, 异常Msg:[%s]",

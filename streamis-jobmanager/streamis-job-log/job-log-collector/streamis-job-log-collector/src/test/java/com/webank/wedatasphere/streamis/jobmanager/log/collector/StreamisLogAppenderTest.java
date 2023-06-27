@@ -19,7 +19,6 @@ public class StreamisLogAppenderTest {
                         Thread.sleep(sleep);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
-                        Thread.currentThread().interrupt();
                     }
                 }
                 timer = System.currentTimeMillis() + 1000;
