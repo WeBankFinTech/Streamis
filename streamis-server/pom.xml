@@ -59,6 +59,10 @@
                     <artifactId>jackson-mapper-asl</artifactId>
                     <groupId>org.codehaus.jackson</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>xstream</artifactId>
+                    <groupId>com.thoughtworks.xstream</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -87,6 +91,13 @@
             <artifactId>streamis-job-log-server</artifactId>
             <version>${streamis.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>${xstream.version}</version>
+        </dependency>
+
     </dependencies>
 
 
