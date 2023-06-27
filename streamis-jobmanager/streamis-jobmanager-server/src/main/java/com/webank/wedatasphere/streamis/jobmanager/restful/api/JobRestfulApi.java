@@ -131,27 +131,27 @@ public class JobRestfulApi {
     @RequestMapping(path = "/updateLabel", method = RequestMethod.POST)
     public Message updateLabel(HttpServletRequest req, @RequestBody BulkUpdateLabelRequest bulkUpdateLabelRequest) {
         Message result = Message.ok("success");
-        try {
-            String userName = ModuleUserUtils.getOperationUser(req, "create or update job");
-            List<BulkUpdateLabel> tasksData = bulkUpdateLabelRequest.getTasks();
-            for (BulkUpdateLabel bulkUpdateLabel:tasksData){
-                Long jobId = bulkUpdateLabel.getId();
-                StreamJob streamJob = this.streamJobService.getJobById(jobId);
-                if (!streamJobService.isCreator(jobId, userName) &&
-                        !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
-                    return Message.error( "Have no permission to save StreamJob [" + jobId + "] configuration");
-                }
-                String label = bulkUpdateLabel.getLabel();
-                if (!RegularUtil.matches(label))return Message.error("Fail to save StreamJob label(保存/更新标签失败), message: " + "仅支持大小写字母、数字、下划线、小数点、逗号且长度小于64位  [" + jobId + "] ");
-                StreamJob job =new StreamJob();
-                job.setLabel(label);
-                job.setId(jobId);
-                streamJobService.updateLabel(job);
+
+        String userName = ModuleUserUtils.getOperationUser(req, "update Label");
+        List<BulkUpdateLabel> tasksData = bulkUpdateLabelRequest.getTasks();
+        List<StreamJob> jobList = new ArrayList<>();
+        for (BulkUpdateLabel bulkUpdateLabel : tasksData) {
+            Long jobId = bulkUpdateLabel.getId();
+            StreamJob streamJob = this.streamJobService.getJobById(jobId);
+            if (!streamJobService.isCreator(jobId, userName) &&
+                    !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
+                return Message.error("Have no permission to save StreamJob [" + jobId + "] configuration");
             }
-        }catch(Exception e){
-            String message = "Fail to save StreamJob label(保存/更新标签失败), message: " + e.getMessage();
-            LOG.warn(message, e);
-            result = Message.error(message);
+            String label = bulkUpdateLabel.getLabel();
+            if (!RegularUtil.matches(label))
+                return Message.error("Fail to save StreamJob label(保存/更新标签失败), message: " + "仅支持大小写字母、数字、下划线、小数点、逗号且长度小于64位  [" + jobId + "] ");
+            StreamJob job = new StreamJob();
+            job.setLabel(label);
+            job.setId(jobId);
+            jobList.add(job);
+        }
+        for (StreamJob streamJob : jobList) {
+            streamJobService.updateLabel(streamJob);
         }
         return result;
     }

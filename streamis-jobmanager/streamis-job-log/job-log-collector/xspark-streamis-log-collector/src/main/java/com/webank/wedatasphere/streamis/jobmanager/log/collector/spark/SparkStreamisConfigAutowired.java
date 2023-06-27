@@ -15,7 +15,6 @@ import java.util.Optional;
  */
 public class SparkStreamisConfigAutowired implements StreamisConfigAutowired {
 
-    private static final Logger logger = LoggerFactory.getLogger(SparkStreamisConfigAutowired.class);
 
     private static final String DEBUG_MODE = "log.debug.mode";
 
@@ -62,7 +61,7 @@ public class SparkStreamisConfigAutowired implements StreamisConfigAutowired {
             if (null != projectName && !projectName.trim().equals("")){
                 appName = projectName + "." + appName;
             }
-            logger.info("Spark env to streamis: application name =>" + appName);
+            System.out.println("Spark env to streamis: application name =>" + appName);
             builder.setAppName(appName);
         });
         String serverAddress = System.getProperty(SERVER_ADDRESS_CONFIG);
@@ -77,14 +76,14 @@ public class SparkStreamisConfigAutowired implements StreamisConfigAutowired {
                 }
                 serverAddress += collectorUri;
             }
-            logger.info("Spark env to streamis: server address =>" + serverAddress);
+            System.out.println("Spark env to streamis: server address =>" + serverAddress);
             builder.setRpcAddress(serverAddress);
         }
         String user = System.getenv("USER");
         if (null == user || user.trim().equals("")){
             user = System.getProperty("user.name", "hadoop");
         }
-        logger.info("Spark env to streamis: log user =>" + user);
+        System.out.println("Spark env to streamis: log user =>" + user);
         builder.setRpcAuthTokenUser(user);
         // Set filter
         boolean filterEnable = true;
@@ -96,11 +95,9 @@ public class SparkStreamisConfigAutowired implements StreamisConfigAutowired {
         if (filterEnable && builder instanceof StreamisLog4jAppenderConfig.Builder){
             StreamisLog4jAppenderConfig.Builder log4jBuilder = ((StreamisLog4jAppenderConfig.Builder) builder);
             String[] acceptKeywords = StringUtils.convertStrToArray(System.getProperty(FILTER_KEYWORD, "ERROR"), ",");
-            KeywordAllMatchFilter keywordAllMatchFilter = new KeywordAllMatchFilter(
-                    acceptKeywords,
-                    StringUtils.convertStrToArray(System.getProperty(FILTER_KEYWORD_EXCLUDE), ","));
+            KeywordAllMatchFilter keywordAllMatchFilter = new KeywordAllMatchFilter(acceptKeywords, StringUtils.convertStrToArray(System.getProperty(FILTER_KEYWORD_EXCLUDE), ","));
             if (null == acceptKeywords || acceptKeywords.length <=0 ){
-                logger.info("The keywords is empty, set the log threshold level >= " + Level.WARN);
+                System.out.println("The keywords is empty, set the log threshold level >= " + Level.WARN);
                 log4jBuilder.threshold(Level.WARN, true);
             }
             log4jBuilder.setFilter(keywordAllMatchFilter);
