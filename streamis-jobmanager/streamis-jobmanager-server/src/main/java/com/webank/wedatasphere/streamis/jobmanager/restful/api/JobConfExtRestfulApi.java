@@ -19,6 +19,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.util.CookieUtils;
 import com.webank.wedatasphere.streamis.jobmanager.service.UserService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.server.Message;
+import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,8 @@ public class JobConfExtRestfulApi {
 
     @RequestMapping(path = "/getWorkspaceUsers", method = RequestMethod.GET)
     public Message getWorkspaceUsers(HttpServletRequest req) {
+        String userName = ModuleUserUtils.getOperationUser(req,"get Workspace Users");
+        LOG.info(userName);
         //获取工作空间
         List<String> userList = new ArrayList<>();
         String workspaceId = CookieUtils.getCookieWorkspaceId(req);
