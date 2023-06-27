@@ -1,35 +1,30 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.enums.FlinkManagerActionType
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobGenericState, JobStateInfo}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{FlinkManagerAction, FlinkManagerClient, JobClient, JobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{FlinkManagerAction, FlinkManagerClient}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkECOperateErrorException, FlinkJobFlinkECErrorException, FlinkJobLaunchErrorException, FlinkJobParamErrorException, FlinkJobStateFetchException}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.LinkisFlinkManagerClient.initScheduledTask
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkJobFlinkECErrorException, FlinkJobParamErrorException}
 import org.apache.commons.lang3.{SerializationUtils, StringUtils}
 import org.apache.linkis.common.ServiceInstance
 import org.apache.linkis.common.utils.{JsonUtils, Logging, Utils}
-import org.apache.linkis.computation.client.once.OnceJob
-import org.apache.linkis.computation.client.once.action.{AskEngineConnAction, CreateEngineConnAction, ECMOperateAction, ECResourceInfoAction, EngineConnOperateAction}
-import org.apache.linkis.computation.client.once.result.{ECResourceInfoResult, EngineConnOperateResult}
+import org.apache.linkis.computation.client.LinkisJobBuilder
+import org.apache.linkis.computation.client.once.LinkisManagerClient
+import org.apache.linkis.computation.client.once.action.{AskEngineConnAction, ECMOperateAction, EngineConnOperateAction, GetEngineConnAction}
+import org.apache.linkis.computation.client.once.result.EngineConnOperateResult
+import org.apache.linkis.computation.client.once.simple.SimpleOnceJobBuilder
 import org.apache.linkis.computation.client.once.simple.SimpleOnceJobBuilder.getLinkisManagerClient
-import org.apache.linkis.computation.client.once.simple.{SimpleOnceJobBuilder, SubmittableSimpleOnceJob}
 import org.apache.linkis.governance.common.constant.ec.ECConstants
 import org.apache.linkis.governance.common.enums.OnceJobOperationBoundary
-import org.apache.linkis.httpclient.dws.DWSHttpClient
 import org.apache.linkis.manager.common.constant.AMConstant
+import org.apache.linkis.manager.common.entity.enumeration.NodeStatus
 import org.apache.linkis.manager.label.conf.LabelCommonConfig
 import org.apache.linkis.manager.label.constant.LabelKeyConstant
 import org.apache.linkis.manager.label.entity.TenantLabel
-import org.apache.linkis.manager.label.entity.engine.{CodeLanguageLabel, EngineType, EngineTypeLabel, ManagerLabel, RunType, UserCreatorLabel}
+import org.apache.linkis.manager.label.entity.engine._
 
 import java.util
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-import scala.collection.JavaConverters.mapAsScalaMapConverter
-import scala.tools.scalap.scalax.util.StringUtil
 
 class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
 
@@ -72,7 +67,6 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
     initProperties.put("flink.app.savePointPath", "./tmp")
     initProperties.put("flink.app.name", "FlinkManagerEC")
     initProperties.put(JobLauncherConfiguration.FLINK_MANAGER_EC_KEY.getValue, true.toString)
-    initProperties.put(AMConstant.EC_SYNC_START_KEY, true.toString)
     initProperties.put(JobLauncherConfiguration.LINKIS_EC_EXPIRE_TIME_KEY.getValue, JobLauncherConfiguration.FLINKK_MANAGER_EXIT_TIME.getHotValue().toString)
     initProperties.put(JobLauncherConfiguration.LINKIS_EC_SUPPORT_PARALLEM, true.toString)
 
@@ -90,64 +84,57 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
     var ecServiceInstance: ServiceInstance = null
     var ecmInstance: ServiceInstance = null
     logger.info(s"ask flink manager ec askEngineConnAction: ${askEngineConnAction.getRequestPayload}")
-    var nodeInfo = linkisManagerClient.askEngineConn(askEngineConnAction).getNodeInfo
+    var nodeInfo: util.Map[String, Any] = null
+    Utils.tryCatch {
+      nodeInfo = linkisManagerClient.askEngineConn(askEngineConnAction).getNodeInfo
+    } {
+      case e: Exception =>
+        logger.error("call askEngineConn to get manager ec failed. ", e)
+    }
     val tmpLabels = SerializationUtils.clone(initLabels).asInstanceOf[util.Map[String, String]]
     val tmpProps = SerializationUtils.clone(initProperties).asInstanceOf[util.Map[String, String]]
-    var lastAsyncId: String = null
-    var lastManagerInstance: ServiceInstance = null
+//    var lastAsyncId: String = null
+//    var lastManagerInstance: ServiceInstance = null
     var retryCount = 0
     val MAX_RETRY_COUNT = 10
 
     while (!end) {
       retryCount = retryCount + 1
-      nodeInfo.get(AMConstant.EC_ASYNC_START_RESULT_KEY) match {
-        case AMConstant.EC_ASYNC_START_RESULT_SUCCESS =>
-          end = true
-          ecServiceInstance = getServiceInstance(nodeInfo)
-          ecmInstance = getECMInstance(nodeInfo)
-        case AMConstant.EC_ASYNC_START_RESULT_STARTING =>
-          end = false
-          if (initProperties.getOrDefault(AMConstant.EC_SYNC_START_KEY, "false").toBoolean) {
-            logger.error("EC is starting but syncStart is true, there are errors in the linkismanager.")
-          }
-          val asyncId = nodeInfo.get(AMConstant.EC_ASYNC_START_ID_KEY).toString
-          val ecmInstance = getECMInstance(nodeInfo)
-          val managerInstance = getManagerInstance(nodeInfo)
-          tmpProps.put(AMConstant.EC_ASYNC_START_ID_KEY, asyncId)
-          if (null == lastAsyncId) {
-            lastAsyncId = asyncId
-          }
-          if (null == lastManagerInstance && null != managerInstance) {
-            lastManagerInstance = managerInstance
-          }
-          if (!lastAsyncId.equals(asyncId)) {
-            logger.error(s"lastAsyncId from : ${lastAsyncId} changed to ${asyncId}.")
-          }
-          if (null != lastManagerInstance && !lastManagerInstance.equals(ecmInstance)) {
-            logger.error("Manager instance changed! Please use fixed manager.")
-          }
-        case AMConstant.EC_ASYNC_START_RESULT_FAIL =>
-          if (retryCount < MAX_RETRY_COUNT) {
-            end = false
-          } else {
+      if (null != nodeInfo) {
+        nodeInfo.get(AMConstant.EC_ASYNC_START_RESULT_KEY) match {
+          case AMConstant.EC_ASYNC_START_RESULT_SUCCESS =>
             end = true
-          }
-          val failMsg = nodeInfo.getOrDefault(AMConstant.EC_ASYNC_START_FAIL_MSG_KEY, "no reason")
-          logger.error(s"start flink manager ec failed because: ${failMsg}")
-          logger.warn(s"askEngineConnAction: ${askEngineConnAction.getRequestPayload}")
+            ecServiceInstance = getServiceInstance(nodeInfo)
+            ecmInstance = getECMInstance(nodeInfo)
+            val ticketId = getTicketId(nodeInfo)
+            val status = getAs[String](nodeInfo, ECConstants.NODE_STATUS_KEY)
+            if (!NodeStatus.Unlock.toString.equalsIgnoreCase(status)) {
+              logger.info(s"Get manager ec with status : ${status}")
+              waitUntilRunOrFailed(ecServiceInstance, ticketId, submitUser)
+            }
+          case AMConstant.EC_ASYNC_START_RESULT_FAIL =>
+            if (retryCount < MAX_RETRY_COUNT) {
+              end = false
+            } else {
+              end = true
+            }
+            val failMsg = nodeInfo.getOrDefault(AMConstant.EC_ASYNC_START_FAIL_MSG_KEY, "no reason")
+            logger.error(s"start flink manager ec failed because: ${failMsg}")
+            logger.warn(s"askEngineConnAction: ${askEngineConnAction.getRequestPayload}")
             if (tmpProps.containsKey(AMConstant.EC_ASYNC_START_ID_KEY)) {
               tmpProps.remove(AMConstant.EC_ASYNC_START_ID_KEY)
             }
-          if (nodeInfo.get(AMConstant.EC_ASYNC_START_FAIL_RETRY_KEY).toString.toBoolean) {
-            logger.warn("start manager ec failed but can retry.")
-          } else {
-            throw new FlinkJobFlinkECErrorException(s"Start manager ec failed. Because : ${failMsg}")
-          }
-        case null =>
-          end = true
-          logger.error(s"start flink manager ec failed because: null ec result status")
-          logger.warn(s"askEngineConnAction: ${askEngineConnAction.getRequestPayload}")
-          throw new FlinkJobFlinkECErrorException(s"Start manager ec failed. Null ec result status")
+            if (nodeInfo.get(AMConstant.EC_ASYNC_START_FAIL_RETRY_KEY).toString.toBoolean) {
+              logger.warn("start manager ec failed but can retry.")
+            } else {
+              throw new FlinkJobFlinkECErrorException(s"Start manager ec failed. Because : ${failMsg}")
+            }
+          case null =>
+            end = true
+            logger.error(s"start flink manager ec failed because: null ec result status")
+            logger.warn(s"askEngineConnAction: ${askEngineConnAction.getRequestPayload}")
+            throw new FlinkJobFlinkECErrorException(s"Start manager ec failed. Null ec result status")
+        }
       }
       Thread.sleep(1000)
       askEngineConnAction = AskEngineConnAction
@@ -159,7 +146,9 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
         .setMaxSubmitTime(30000)
         .setDescription("Ask a flink manager ec.")
         .build()
-      nodeInfo = linkisManagerClient.askEngineConn(askEngineConnAction).getNodeInfo
+      Utils.tryAndWarn{
+        nodeInfo = linkisManagerClient.askEngineConn(askEngineConnAction).getNodeInfo
+      }
       logger.debug(JsonUtils.jackson.writeValueAsString(nodeInfo))
     }
     if (null != ecServiceInstance) {
@@ -173,6 +162,36 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
       logger.warn("Got null ecm Instance")
     }
     (ecServiceInstance, ecmInstance)
+  }
+
+  private def waitUntilRunOrFailed(serviceInstance: ServiceInstance, ticketId: String, user: String): Unit = {
+    var end = false
+    val MAX_RETRY = 10
+    var count = 0
+    while (!end) {
+      count = count + 1
+      Utils.tryAndWarn {
+        val result = LinkisManagerClient.apply(LinkisJobBuilder.getDefaultUJESClient).getEngineConn(GetEngineConnAction
+          .newBuilder()
+          .setApplicationName(serviceInstance.getApplicationName)
+          .setInstance(serviceInstance.getInstance)
+          .setTicketId(ticketId)
+          .setUser(user)
+          .build())
+        val nodeInfo = result.getNodeInfo
+        val status = getAs[String](nodeInfo, ECConstants.NODE_STATUS_KEY)
+        logger.info(s"ec : ${serviceInstance.toString()} status : ${status}")
+        if (NodeStatus.Unlock == NodeStatus.isCompleted(NodeStatus.toNodeStatus(status))) {
+          end = true
+        } else {
+          end = false
+        }
+      }
+      if (count > MAX_RETRY) {
+        end = true
+      }
+      Thread.sleep(1000)
+    }
   }
 
   override def setFlinkManagerEngineConnInstance(ecInstance: ServiceInstance): Unit = this.ecInstance = ecInstance
@@ -283,7 +302,7 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
     }
 
   private def getAs[T](map: util.Map[String, Any], key: String): T =
-    map.get(key).asInstanceOf[T]
+    map.getOrDefault(key, null).asInstanceOf[T]
 
   def getTicketId(nodeInfo: util.Map[String, Any]): String = getAs(nodeInfo, "ticketId")
 
