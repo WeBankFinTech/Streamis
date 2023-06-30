@@ -47,13 +47,21 @@
             </Button>
           </FormItem>
         </Form>
-        <Input
-          v-model="logs"
-          type="textarea"
-          :autosize="{ minRows: 10, maxRows: 15 }"
-          readonly
-          :placeholder="$t('message.streamis.logDetail.noLog')"
-        />
+        <div class="log-wrapper" :class="full ? 'full' : ''">
+          <Input
+            v-model="logs"
+            type="textarea"
+            :autosize="{ minRows: 10, maxRows: 15 }"
+            readonly
+            :placeholder="$t('message.streamis.logDetail.noLog')"
+          />
+          <span 
+            class="full-btn"
+            @click="fullToggle"
+          >
+            {{ full ? '> <' : '< >' }}
+          </span>
+        </div>
         <div class="btnWrap">
           <Button
             type="primary"
@@ -110,7 +118,8 @@ export default {
       fromLine: 1,
       endLine: 0,
       logs: '',
-      spinShow: false
+      spinShow: false,
+      full: false,
     }
   },
   methods: {
@@ -179,8 +188,11 @@ export default {
       this.fromLine = 1
       this.endLine = 0
       this.getDatas()
-    }
-  }
+    },
+    fullToggle(){
+      this.full = !this.full
+    },
+  },
 }
 </script>
 <style lang="scss" scoped>
@@ -189,5 +201,29 @@ export default {
   justify-content: center;
   align-items: center;
   margin-top: 20px;
+}
+.log-wrapper{
+  position: relative;
+  .full-btn{
+    position: absolute;
+    cursor: pointer;
+    top: 5px;
+    right: 8px;
+    font-weight: bold;
+  }
+}
+.full {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 100;
+  /deep/textarea{
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vw !important;
+    max-width: 100vw !important;
+  }
 }
 </style>
