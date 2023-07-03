@@ -106,7 +106,7 @@ public class JobRestfulApi {
         PageInfo<QueryJobListVo> pageInfo;
         PageHelper.startPage(pageNow, pageSize);
         try {
-            pageInfo = streamJobService.getByProList(projectName, username, RegularUtil.escapeChar(jobName), jobStatus, jobCreator,RegularUtil.escapeChar(label));
+            pageInfo = streamJobService.getByProList(projectName, username, jobName, jobStatus, jobCreator,label);
         } finally {
             PageHelper.clearPage();
         }
