@@ -121,6 +121,12 @@
             <if test="name != null and name!=''">
                 AND aa.`name` like concat('%', #{name}, '%')
             </if>
+            <if test="jobNameList != null">
+                AND aa.`name` in
+                <foreach collection="jobNameList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
             <if test="status != null">
                 AND aa.`status`=#{status}
             </if>

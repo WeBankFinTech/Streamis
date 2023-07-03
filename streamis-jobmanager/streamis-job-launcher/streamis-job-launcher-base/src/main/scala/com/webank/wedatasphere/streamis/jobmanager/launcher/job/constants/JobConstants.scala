@@ -29,4 +29,6 @@ object JobConstants {
   val APP_TYPE_FLINK = "Apache Flink"
 
   val APP_TYPE_SPARK = "SPARK"
+
+  val JOB_NAME_DELIMITER = ","
 }

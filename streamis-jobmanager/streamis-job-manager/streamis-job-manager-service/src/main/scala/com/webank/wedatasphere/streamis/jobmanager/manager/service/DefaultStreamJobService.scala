@@ -16,10 +16,11 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import java.util
-import java.util.Date
+import java.util.{Date, List}
 import com.github.pagehelper.PageInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobCreateErrorException, JobFetchErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
@@ -29,7 +30,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{QueryJobLi
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.DefaultStreamJobService.JobDeployValidateResult
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent
-import com.webank.wedatasphere.streamis.jobmanager.manager.util.{ReaderUtils, ZipHelper}
+import com.webank.wedatasphere.streamis.jobmanager.manager.util.{JobUtils, ReaderUtils, ZipHelper}
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.lang3.ObjectUtils
 import org.apache.linkis.common.exception.ErrorException
@@ -64,7 +65,14 @@ class DefaultStreamJobService extends StreamJobService with Logging {
   override def getJobByName(jobName: String): util.List[StreamJob] = streamJobMapper.getJobByName(jobName)
 
   override def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String, label: String): PageInfo[QueryJobListVo] = {
-    val streamJobList = streamJobMapper.getJobLists(projectName, userName, jobName, jobStatus, jobCreator, label, JobConfKeyConstants.MANAGE_MODE_KEY.getValue)
+    var streamJobList: util.List[QueryJobListVo] = null
+    if (StringUtils.isNotBlank(jobName) && jobName.contains(JobConstants.JOB_NAME_DELIMITER)) {
+      val jobNameList = new util.ArrayList[String]()
+      jobName.split(JobConstants.JOB_NAME_DELIMITER).filter(StringUtils.isNotBlank(_)).foreach(jobNameList.add)
+      streamJobList = streamJobMapper.getJobLists(projectName, userName, null, jobStatus, jobCreator, JobUtils.escapeChar(label), JobConfKeyConstants.MANAGE_MODE_KEY.getValue, jobNameList)
+    } else {
+      streamJobList = streamJobMapper.getJobLists(projectName, userName, JobUtils.escapeChar(jobName), jobStatus, jobCreator, JobUtils.escapeChar(label), JobConfKeyConstants.MANAGE_MODE_KEY.getValue, null)
+    }
     if (streamJobList != null && !streamJobList.isEmpty) {
       val pageInfo = new PageInfo[QueryJobListVo](streamJobList)
       return pageInfo
@@ -89,7 +97,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
    * COre indicator(核心指标)
    */
   override def countByCores(projectName: String, userName: String): TaskCoreNumVo = {
-    val jobs = streamJobMapper.getJobLists(projectName, userName, null, null, null, null, JobConfKeyConstants.MANAGE_MODE_KEY.getValue)
+    val jobs = streamJobMapper.getJobLists(projectName, userName, null, null, null, null, JobConfKeyConstants.MANAGE_MODE_KEY.getValue, null)
     val taskNum = new TaskCoreNumVo()
     taskNum.setProjectName(projectName)
     if (jobs != null && !jobs.isEmpty) {
