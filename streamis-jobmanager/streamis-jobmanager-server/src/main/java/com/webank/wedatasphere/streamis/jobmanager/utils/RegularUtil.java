@@ -26,14 +26,6 @@ public class RegularUtil {
      * @param string
      * @return
      */
-    public static String escapeChar(String string) {
-        if (StringUtils.isNotBlank(string)) {
-            string = string.replace("\\\\", "\\\\\\\\")
-                    .replace("_", "\\_").replace("\'", "\\'")
-                    .replace("%", "\\%").replace("*", "\\*");
 
-        }
-        return string;
-    }
 
 }
