@@ -117,6 +117,9 @@ trait StreamTaskService {
    */
    def queryHistory(jobId: Long, version: String): util.List[StreamTaskListVo]
 
+
+  def queryErrorCode(jobId: Long): StreamTask
+
   /**
    * Get realtime log
    * @param jobId job id

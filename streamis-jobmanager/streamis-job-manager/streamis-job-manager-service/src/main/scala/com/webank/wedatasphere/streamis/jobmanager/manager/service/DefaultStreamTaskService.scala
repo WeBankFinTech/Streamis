@@ -795,4 +795,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       case _ => this.jobLaunchManager
     }
   }
+
+  override def queryErrorCode(jobId: Long): StreamTask = {
+     streamTaskMapper.getLatestByJobId(jobId)
+  }
 }

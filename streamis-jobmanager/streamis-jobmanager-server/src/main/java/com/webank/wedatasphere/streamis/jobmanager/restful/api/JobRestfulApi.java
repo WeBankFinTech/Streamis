@@ -388,6 +388,22 @@ public class JobRestfulApi {
         return Message.ok().data("details", details);
     }
 
+    @RequestMapping(path = "/execute/errorCode", method = RequestMethod.GET)
+    public Message executeJobErrorCode(HttpServletRequest req,
+                                     @RequestParam(value = "jobId", required = false) Long jobId) throws JobException {
+        String username = ModuleUserUtils.getOperationUser(req, "view the job history");
+        if (jobId == null) {
+            throw JobExceptionManager.createException(30301, "jobId");
+        }
+        StreamJob streamJob = this.streamJobService.getJobById(jobId);
+        if (!streamJobService.hasPermission(streamJob, username) &&
+                !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())){
+            return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
+        }
+        StreamTask details = streamTaskService.queryErrorCode(jobId);
+        return Message.ok().data("details", details);
+    }
+
     private Message withStreamJob(HttpServletRequest req, String projectName,
                                   String jobName, String username,
                                   Function<StreamJob, Message> streamJobFunction) {
@@ -647,7 +663,8 @@ public class JobRestfulApi {
         payload.setOnlyKeywords(onlyKeywords);
         payload.setLogType(logType);
         payload.setPageSize(pageSize);
-        return Message.ok().data("logs", streamTaskService.getRealtimeLog(jobId, null != taskId? taskId : 0L, username, payload));
+        Map<String, Object> realtimeLog = streamTaskService.getRealtimeLog(jobId, null != taskId ? taskId : 0L, username, payload);
+        return Message.ok().data("logs",realtimeLog);
     }
 
     /**
