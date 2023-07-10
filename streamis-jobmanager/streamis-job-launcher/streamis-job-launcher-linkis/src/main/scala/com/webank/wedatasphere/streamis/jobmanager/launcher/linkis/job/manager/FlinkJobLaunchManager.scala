@@ -47,7 +47,6 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
 
   protected var jobStateManager: JobStateManager = _
 
-  private val errorCodeHandler = StreamisErrorCodeHandler.getInstance()
 
 
   /**
@@ -160,7 +159,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
     //      case _ => errorMsg
     //    }
     if (null != t) {
-      val errorCodes = errorCodeHandler.handle(t.getMessage)
+      val errorCodes = StreamisErrorCodeHandler.getInstance().handle(t.getMessage)
       if (errorCodes != null && errorCodes.size() > 0) {
         errorCodes.asScala.map(e => e.getErrorDesc).mkString("。")
       } else {

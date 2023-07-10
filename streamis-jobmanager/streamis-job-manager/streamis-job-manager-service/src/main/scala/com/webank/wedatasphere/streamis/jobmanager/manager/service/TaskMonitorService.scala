@@ -213,7 +213,7 @@ class TaskMonitorService extends Logging {
   }
 
   def exceptionAnalyze(errorMsg: String, log: String): String = {
-    if (null == log) {
+    if (null != log) {
       val errorCodes = errorCodeHandler.handle(log)
       if (errorCodes != null && errorCodes.size() > 0) {
         errorCodes.asScala.map(e => e.getErrorDesc).mkString("。")

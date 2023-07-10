@@ -8,6 +8,7 @@ import org.apache.linkis.errorcode.client.ClientConfiguration;
 import org.apache.linkis.errorcode.client.handler.ExceptionErrorCodeHandler;
 import org.apache.linkis.errorcode.client.handler.LogErrorCodeHandler;
 import org.apache.linkis.errorcode.client.handler.LogFileErrorCodeHandler;
+import org.apache.linkis.errorcode.client.synchronizer.LinkisErrorCodeSynchronizer;
 import org.apache.linkis.errorcode.client.utils.ErrorCodeMatcher;
 import org.apache.linkis.errorcode.common.ErrorCode;
 import org.apache.linkis.errorcode.common.LinkisErrorCode;
@@ -49,11 +50,14 @@ public class StreamisErrorCodeHandler implements LogErrorCodeHandler, LogFileErr
         return streamisErrorCodeHandler;
     }
 
-    private StreamisErrorCodeHandler() {}
+    private StreamisErrorCodeHandler() {
+        LinkisErrorCodeSynchronizer.getInstance();
+    }
 
     static {
         // Initialize our timing thread and other thread pools through the getInstance method.
         getInstance();
+
     }
 
     @Override
