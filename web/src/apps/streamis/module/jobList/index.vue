@@ -138,6 +138,16 @@
                 </div>
               </div>
             </template>
+            <template slot-scope="{ row, index }" slot="status">
+              <div v-if="index !== 0">
+                <strong :style="`color: ${row.statusObj.color || '#000'};`">
+                  {{   row.statusObj.name ? $t('message.streamis.jobStatus.' + row.statusObj.name) : '' }}
+                </strong>
+                <strong v-if="row.status === 6" class="failureReasonWrapper" @click="showFailureReason(row)">
+                  {{ $t('message.streamis.jobStatus.failureReason') }}
+                </strong>
+              </div>
+            </template>
             <template slot-scope="{ row, index }" slot="version">
               <div v-show="index !== 0" class="versionWrap">
                 <div class="version" @click="versionDetail(row)">
@@ -325,6 +335,13 @@
         <Button type="primary" @click="confirmEditTags" :loading="editTagsLoading">确定</Button>
       </template>
     </Modal>
+    <Modal
+      v-model="failureReasonShow"
+      :title="$t('message.streamis.formItems.failureReason')"
+      :footer-hide="true"
+    >
+      {{ failureReason }}
+    </Modal>
   </div>
 </template>
 <script>
@@ -440,24 +457,7 @@ export default {
           title: this.$t('message.streamis.jobListTableColumns.taskStatus'),
           key: 'status',
           renderHeader: renderSpecialHeader,
-          render: (h, params) => {
-            const hitStatus = allJobStatuses.find(
-              item => item.code === params.row.status
-            )
-            if (hitStatus) {
-              return h('div', [
-                h(
-                  'strong',
-                  {
-                    style: {
-                      color: hitStatus.color
-                    }
-                  },
-                  this.$t('message.streamis.jobStatus.' + hitStatus.name)
-                )
-              ])
-            }
-          }
+          slot: 'status'
         },
         {
           title: this.$t('message.streamis.jobListTableColumns.jobType'),
@@ -574,7 +574,10 @@ export default {
       hasYarnCount: 0,
       checkData: [],
       // 当前正在查看的data
-      currentViewData: {}
+      currentViewData: {},
+      // 失败原因
+      failureReason: '',
+      failureReasonShow: false,
     }
   },
   mounted() {
@@ -629,7 +632,7 @@ export default {
               }
             })
             datas.unshift({})
-            this.tableDatas = datas.map(r => ({...r, poptipVisible: false, manageMode: r.manageMode && r.manageMode.toUpperCase() === 'DETACH' ? 'DETACH' : 'ATTACH', manageModeChinese: r.manageMode && r.manageMode.toUpperCase() === 'DETACH' ? '分离式' : '非分离式'}))
+            this.tableDatas = datas.map(r => ({...r, poptipVisible: false, manageMode: r.manageMode && r.manageMode.toUpperCase() === 'DETACH' ? 'DETACH' : 'ATTACH', manageModeChinese: r.manageMode && r.manageMode.toUpperCase() === 'DETACH' ? '分离式' : '非分离式', statusObj: allJobStatuses.find(item => item.code === r.status)}))
             if (this.tableDatas[0]) {
               delete this.tableDatas[0].manageMode
               delete this.tableDatas[0].manageModeChinese
@@ -959,6 +962,18 @@ export default {
       this.pageData.current = 1
       this.getJobList()
     },
+    showFailureReason(row){
+      api.fetch(`streamis/streamJobManager/job/execute/errorMsg?jobId=${row.id}`,'get').then(
+        res=>{
+          console.log(res)
+          this.failureReason = res.details.errDesc || '原因未知'
+        }
+      ).catch(err=>{
+        console.log('showFailureReason err:',err)
+      }).finally(()=>{
+        this.failureReasonShow = true
+      })
+    },
     versionDetailPageChange(page) {
       this.versionDetail(this.currentViewData, page)
     },
@@ -1081,6 +1096,10 @@ export default {
 }
 .page {
   margin-top: 20px;
+}
+.failureReasonWrapper{
+  color: #990033;
+  cursor: pointer;
 }
 .versionWrap {
   display: flex;
