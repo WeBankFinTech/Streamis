@@ -26,6 +26,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunc
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobGenericState, JobState}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobInfo, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.handler.StreamisErrorCodeHandler
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.{AbstractJobClient, EngineConnJobClient}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.SimpleFlinkJobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{FlinkCheckpoint, FlinkSavepoint}
@@ -69,11 +70,16 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
 
   @Resource
   private var streamJobConfMapper: StreamJobConfMapper = _
+
+  @Resource
+  private var streamTaskService: StreamTaskService = _
   /**
    * Scheduler
    */
   @Resource
   private var scheduler: FutureScheduler = _
+
+  private val errorCodeHandler = StreamisErrorCodeHandler.getInstance()
 
   /**
    *
@@ -196,37 +202,37 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       }
 
       override def schedule(context: StreamisPhaseInSchedulerEvent.StateContext, jobInfo: queue.JobInfo): util.Map[String, AnyRef] = {
-         val newTaskId = context.getVar("newTaskId")
-         if (null != newTaskId){
-           val restoreTaskId = taskId
-           val jobState: JobState = if (restoreTaskId <= 0){
-             getStateInfo(streamTaskMapper.getLatestLaunchedById(jobId))
-           } else getStateInfo(restoreTaskId)
-           if (null != jobState){
-             // If jobState.setToRestore(true) means that using the job state to restore stream task
-             jobState.setToRestore(restore)
-           }
-           // Launch entrance
-           launch(newTaskId.asInstanceOf[Long], execUser, jobState)
-         } else {
-           // cannot find the new task id
-         }
-         null
+        val newTaskId = context.getVar("newTaskId")
+        if (null != newTaskId){
+          val restoreTaskId = taskId
+          val jobState: JobState = if (restoreTaskId <= 0){
+            getStateInfo(streamTaskMapper.getLatestLaunchedById(jobId))
+          } else getStateInfo(restoreTaskId)
+          if (null != jobState){
+            // If jobState.setToRestore(true) means that using the job state to restore stream task
+            jobState.setToRestore(restore)
+          }
+          // Launch entrance
+          launch(newTaskId.asInstanceOf[Long], execUser, jobState)
+        } else {
+          // cannot find the new task id
+        }
+        null
       }
 
       override def onErrorHandle(context: StreamisPhaseInSchedulerEvent.StateContext, scheduleJob: queue.JobInfo, t: Throwable): Unit = {
         // Change the task status
         val newTaskId = context.getVar("newTaskId")
         if (null != newTaskId) {
-            info(s"Error to launch StreamTask [$newTaskId], now try to persist the status and message output", t)
-            val finalTask = new StreamTask()
-            finalTask.setId(newTaskId.asInstanceOf[Long])
-            finalTask.setStatus(JobConf.FLINK_JOB_STATUS_FAILED.getValue)
-            // Output message equals error message, you can use t.getMessage()
-            finalTask.setErrDesc(scheduleJob.getOutput)
-            if (streamTaskMapper.updateTaskInStatus(finalTask, JobConf.FLINK_JOB_STATUS_STARTING.getValue) > 0) {
-              info(s"Transient the StreamTask [$newTaskId]'status from STARTING to FAILED and flush the output message.")
-            }
+          info(s"Error to launch StreamTask [$newTaskId], now try to persist the status and message output", t)
+          val finalTask = new StreamTask()
+          finalTask.setId(newTaskId.asInstanceOf[Long])
+          finalTask.setStatus(JobConf.FLINK_JOB_STATUS_FAILED.getValue)
+          // Output message equals error message, you can use t.getMessage()
+          finalTask.setErrDesc(scheduleJob.getOutput)
+          if (streamTaskMapper.updateTaskInStatus(finalTask, JobConf.FLINK_JOB_STATUS_STARTING.getValue) > 0) {
+            info(s"Transient the StreamTask [$newTaskId]'status from STARTING to FAILED and flush the output message.")
+          }
         }
       }
     })
@@ -298,12 +304,12 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     val event = new StreamisPhaseInSchedulerEvent(if (jobId > 0) "pauseJob-" + jobId else "pauseTask-" + taskId, new ScheduleCommand {
 
       override def onPrepare(context: StreamisPhaseInSchedulerEvent.StateContext, scheduleJob: queue.JobInfo): Unit = {
-          if (finalJobId < 0){
-            finalJobId = getTaskInfo(taskId)._1
-          }
-          // Assign the status STOPPING default
-          val pauseTaskId = self.transitionTaskStatus(jobId, taskId, JobConf.FLINK_JOB_STATUS_STOPPING.getValue)
-          if (pauseTaskId > 0) context.addVar("pauseTaskId", pauseTaskId)
+        if (finalJobId < 0){
+          finalJobId = getTaskInfo(taskId)._1
+        }
+        // Assign the status STOPPING default
+        val pauseTaskId = self.transitionTaskStatus(jobId, taskId, JobConf.FLINK_JOB_STATUS_STOPPING.getValue)
+        if (pauseTaskId > 0) context.addVar("pauseTaskId", pauseTaskId)
       }
 
       override def onErrorHandle(context: StreamisPhaseInSchedulerEvent.StateContext, scheduleJob: queue.JobInfo, t: Throwable): Unit = {
@@ -321,37 +327,37 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       }
 
       override def schedule(context: StreamisPhaseInSchedulerEvent.StateContext, jobInfo: queue.JobInfo): util.Map[String, AnyRef] = {
-          val pauseTaskId = context.getVar("pauseTaskId")
-          val resultSet = new util.HashMap[String, AnyRef]()
-          if (null != pauseTaskId){
-            val streamTask = streamTaskMapper.getTaskById(pauseTaskId.asInstanceOf[Long])
-            if (null == streamTask){
-              throw new JobPauseErrorException(-1, s"Not found the StreamTask [$pauseTaskId] to pause, please examined the system runtime status!")
-            }
-            if (StringUtils.isBlank(streamTask.getLinkisJobId)){
-              throw new JobPauseErrorException(-1, s"Unable to pause the StreamTask [$pauseTaskId}], the linkis job id is null")
-            }
-            val streamJob = streamJobMapper.getJobById(finalJobId)
-            logger.info(s"Try to stop StreamJob [${streamJob.getName} with task(taskId: ${streamTask.getId}, linkisJobId: ${streamTask.getLinkisJobId}).")
-            val jobClient = getJobLaunchManager(streamTask).connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
-            val status = JobConf.linkisStatusToStreamisStatus(jobClient.getJobInfo(true).getStatus)
-            if (!JobConf.isCompleted(status)) {
-              val jobStateInfo = Utils.tryCatch(jobClient.stop(snapshot)){
-                case e: Exception =>
-                  val pauseError =  new JobPauseErrorException(-1, s"Fail to stop the StreamJob [${streamJob.getName}] " +
-                    s"with task(taskId: ${streamTask.getId}, linkisJobId: ${streamTask.getLinkisJobId}), reason: ${e.getMessage}.")
-                  pauseError.initCause(e)
-                  throw pauseError
-                case pauseE: JobPauseErrorException =>
-                  throw pauseE
-              }
-              Option(jobStateInfo).foreach(stateInfo => resultSet.put("snapshotPath", stateInfo.getLocation))
-            }
-            streamTask.setLastUpdateTime(Calendar.getInstance.getTime)
-            streamTask.setStatus(JobConf.FLINK_JOB_STATUS_STOPPED.getValue)
-            streamTaskMapper.updateTask(streamTask)
+        val pauseTaskId = context.getVar("pauseTaskId")
+        val resultSet = new util.HashMap[String, AnyRef]()
+        if (null != pauseTaskId){
+          val streamTask = streamTaskMapper.getTaskById(pauseTaskId.asInstanceOf[Long])
+          if (null == streamTask){
+            throw new JobPauseErrorException(-1, s"Not found the StreamTask [$pauseTaskId] to pause, please examined the system runtime status!")
           }
-          resultSet
+          if (StringUtils.isBlank(streamTask.getLinkisJobId)){
+            throw new JobPauseErrorException(-1, s"Unable to pause the StreamTask [$pauseTaskId}], the linkis job id is null")
+          }
+          val streamJob = streamJobMapper.getJobById(finalJobId)
+          logger.info(s"Try to stop StreamJob [${streamJob.getName} with task(taskId: ${streamTask.getId}, linkisJobId: ${streamTask.getLinkisJobId}).")
+          val jobClient = getJobLaunchManager(streamTask).connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
+          val status = JobConf.linkisStatusToStreamisStatus(jobClient.getJobInfo(true).getStatus)
+          if (!JobConf.isCompleted(status)) {
+            val jobStateInfo = Utils.tryCatch(jobClient.stop(snapshot)){
+              case e: Exception =>
+                val pauseError =  new JobPauseErrorException(-1, s"Fail to stop the StreamJob [${streamJob.getName}] " +
+                  s"with task(taskId: ${streamTask.getId}, linkisJobId: ${streamTask.getLinkisJobId}), reason: ${e.getMessage}.")
+                pauseError.initCause(e)
+                throw pauseError
+              case pauseE: JobPauseErrorException =>
+                throw pauseE
+            }
+            Option(jobStateInfo).foreach(stateInfo => resultSet.put("snapshotPath", stateInfo.getLocation))
+          }
+          streamTask.setLastUpdateTime(Calendar.getInstance.getTime)
+          streamTask.setStatus(JobConf.FLINK_JOB_STATUS_STOPPED.getValue)
+          streamTaskMapper.updateTask(streamTask)
+        }
+        resultSet
       }
     })
     (event, this.scheduler.submit(event, returnMapping))
@@ -397,7 +403,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     returnMap.put("logs", util.Arrays.asList("No log content is available. Perhaps the task has not been scheduled"))
     returnMap.put("endLine", 1);
     val streamTask = if(taskId > 0) streamTaskMapper.getTaskById(taskId)
-      else streamTaskMapper.getLatestByJobId(jobId)
+    else streamTaskMapper.getLatestByJobId(jobId)
     if (null != streamTask && StringUtils.isNotBlank(streamTask.getLinkisJobId)) {
       Utils.tryCatch {
         val jobClient = getJobLaunchManager(streamTask).connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
@@ -443,7 +449,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
    */
   override def snapshot(jobId: Long, taskId: Long, operator: String): String = {
     val streamTask = if (taskId > 0) streamTaskMapper.getTaskById(taskId)
-      else streamTaskMapper.getLatestByJobId(jobId)
+    else streamTaskMapper.getLatestByJobId(jobId)
     if (null != streamTask && StringUtils.isNotBlank(streamTask.getLinkisJobId)){
       val jobClient = getJobLaunchManager(streamTask).connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
       return jobClient match {
@@ -478,17 +484,17 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
    * @param jobIds job ids
    */
   override def getStatusList(jobIds: util.List[Long]): util.List[JobStatusVo] = {
-      val streamTask: util.List[StreamTask] = this.streamTaskMapper.getStatusInfoByJobIds(jobIds.asScala.map(id => {
-        id.asInstanceOf[java.lang.Long]
-      }).asJava)
-      streamTask.asScala.map(task => {
-        val statusVo = new JobStatusVo()
-        statusVo.setStatusCode(task.getStatus)
-        statusVo.setStatus(JobConf.getStatusString(task.getStatus))
-        statusVo.setJobId(task.getJobId)
-        statusVo.setMessage(task.getErrDesc)
-        statusVo
-      }).asJava
+    val streamTask: util.List[StreamTask] = this.streamTaskMapper.getStatusInfoByJobIds(jobIds.asScala.map(id => {
+      id.asInstanceOf[java.lang.Long]
+    }).asJava)
+    streamTask.asScala.map(task => {
+      val statusVo = new JobStatusVo()
+      statusVo.setStatusCode(task.getStatus)
+      statusVo.setStatus(JobConf.getStatusString(task.getStatus))
+      statusVo.setJobId(task.getJobId)
+      statusVo.setMessage(task.getErrDesc)
+      statusVo
+    }).asJava
   }
 
   def getTaskJobInfo(jobId:Long, version: String): EngineConnJobInfo ={
@@ -514,7 +520,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       case None => throw new JobTaskErrorException(-1, s"Unable to update status of StreamTask, the StreamJob [$jobId] is not exists.")
       case Some(job) =>
         val streamTask = if(taskId > 0) streamTaskMapper.getTaskById(taskId)
-            else streamTaskMapper.getLatestByJobId(jobId)
+        else streamTaskMapper.getLatestByJobId(jobId)
         if (null == streamTask){
           throw new JobTaskErrorException(-1, s"Unable to find any StreamTask for job [id: ${job.getId}, name: ${job.getName}]")
         }
@@ -545,35 +551,35 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   @Transactional(rollbackFor = Array(classOf[Exception]))
   override def createTask(jobId: Long, status: Int, creator: String): StreamTask = {
     logger.trace(s"Query and lock the StreamJob in [$jobId] before creating StreamTask")
-     Option(streamJobMapper.queryAndLockJobById(jobId)) match {
-       case None => throw new JobTaskErrorException(-1, s"Unable to create StreamTask, the StreamJob [$jobId] is not exists.")
-       case Some(job) =>
-          // Then to fetch latest job version
-          Option(streamJobMapper.getLatestJobVersion(jobId)) match {
-            case None => throw new JobTaskErrorException(-1, s"No versions can be found for job [id: ${job.getId}, name: ${job.getName}]")
-            case Some(jobVersion) =>
-              var noticeMessage = s"Fetch the latest version: ${jobVersion.getVersion} for job [id: ${job.getId}, name: ${job.getName}]"
-              if (!jobVersion.getVersion.equals(job.getCurrentVersion)){
-                noticeMessage += s", last version used for task is ${job.getCurrentVersion}"
-                // Update job current version
-                job.setCurrentVersion(jobVersion.getVersion)
-                streamJobMapper.updateJob(job)
-              }
-              logger.info(noticeMessage)
-              // Get the latest task by job id
-              val latestTask = streamTaskMapper.getLatestByJobId(jobId)
-              if (null == latestTask || JobConf.isCompleted(latestTask.getStatus)){
-                val streamTask = new StreamTask(jobId, jobVersion.getId, jobVersion.getVersion, creator)
-                streamTask.setStatus(status)
-                logger.info(s"Produce a new StreamTask [jobId: $jobId, version: ${jobVersion.getVersion}, creator: $creator, status: ${streamTask.getStatus}]")
-                streamTaskMapper.insertTask(streamTask)
-                streamTask
-              } else {
-                throw new JobTaskErrorException(-1, s"Unable to create new task, StreamTask [${latestTask.getId}] is still " +
-                  s"not completed for job [id: ${job.getId}, name: ${job.getName}]")
-              }
-          }
-     }
+    Option(streamJobMapper.queryAndLockJobById(jobId)) match {
+      case None => throw new JobTaskErrorException(-1, s"Unable to create StreamTask, the StreamJob [$jobId] is not exists.")
+      case Some(job) =>
+        // Then to fetch latest job version
+        Option(streamJobMapper.getLatestJobVersion(jobId)) match {
+          case None => throw new JobTaskErrorException(-1, s"No versions can be found for job [id: ${job.getId}, name: ${job.getName}]")
+          case Some(jobVersion) =>
+            var noticeMessage = s"Fetch the latest version: ${jobVersion.getVersion} for job [id: ${job.getId}, name: ${job.getName}]"
+            if (!jobVersion.getVersion.equals(job.getCurrentVersion)){
+              noticeMessage += s", last version used for task is ${job.getCurrentVersion}"
+              // Update job current version
+              job.setCurrentVersion(jobVersion.getVersion)
+              streamJobMapper.updateJob(job)
+            }
+            logger.info(noticeMessage)
+            // Get the latest task by job id
+            val latestTask = streamTaskMapper.getLatestByJobId(jobId)
+            if (null == latestTask || JobConf.isCompleted(latestTask.getStatus)){
+              val streamTask = new StreamTask(jobId, jobVersion.getId, jobVersion.getVersion, creator)
+              streamTask.setStatus(status)
+              logger.info(s"Produce a new StreamTask [jobId: $jobId, version: ${jobVersion.getVersion}, creator: $creator, status: ${streamTask.getStatus}]")
+              streamTaskMapper.insertTask(streamTask)
+              streamTask
+            } else {
+              throw new JobTaskErrorException(-1, s"Unable to create new task, StreamTask [${latestTask.getId}] is still " +
+                s"not completed for job [id: ${job.getId}, name: ${job.getName}]")
+            }
+        }
+    }
   }
 
   override def updateTask(streamTask: StreamTask): Unit = streamTaskMapper.updateTask(streamTask)
@@ -584,7 +590,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
    * @param taskId task id
    */
   override def launch(taskId: Long, execUser: String): Unit = {
-      launch(taskId, execUser, null)
+    launch(taskId, execUser, null)
   }
 
   /**
@@ -626,7 +632,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       streamTaskMapper.updateTask(streamTask)
       info(s"StreamJob [${streamJob.getName}] is ${jobInfo.getStatus} with $jobInfo.")
       if (JobConf.FLINK_JOB_STATUS_FAILED.getValue == streamTask.getStatus){
-         throw new JobExecuteErrorException(-1, s"(提交流式应用状态失败, 请检查日志), errorDesc: ${streamTask.getErrDesc}")
+        val result: Future[_] = streamTaskService.errorCodeMatching(streamJob.getId,streamTask)
+        throw new JobExecuteErrorException(-1, s"(提交流式应用状态失败, 请检查日志), errorDesc: ${streamTask.getErrDesc}")
       }
       // Drop the temporary configuration
       Utils.tryQuietly(streamJobConfMapper.deleteTemporaryConfValue(streamTask.getJobId), {
@@ -651,11 +658,11 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
    * @return
    */
   private def getTaskInfo(taskId: Long): (Long, StreamTask) = {
-      val oldStreamTask = streamTaskMapper.getTaskById(taskId)
-      if (Option(oldStreamTask).isEmpty){
-        throw new JobTaskErrorException(-1, s"Cannot find the StreamTask in id: $taskId")
-      }
-     (oldStreamTask.getJobId, oldStreamTask)
+    val oldStreamTask = streamTaskMapper.getTaskById(taskId)
+    if (Option(oldStreamTask).isEmpty){
+      throw new JobTaskErrorException(-1, s"Cannot find the StreamTask in id: $taskId")
+    }
+    (oldStreamTask.getJobId, oldStreamTask)
   }
 
   /**
@@ -758,16 +765,16 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       manageMod = Option(Utils.tryAndWarn(StreamJobMode.valueOf(value))).getOrElse(StreamJobMode.ENGINE_CONN)
     } else {
       manageMod = Option(streamJobMapper.getJobVersionById(streamJob.getId, version)) match {
-      case Some(jobVersion) =>
-        Option(Utils.tryQuietly(StreamJobMode
-          .valueOf(jobVersion.getManageMode))).getOrElse(StreamJobMode.ENGINE_CONN)
-      case _ => StreamJobMode.ENGINE_CONN
-    }
+        case Some(jobVersion) =>
+          Option(Utils.tryQuietly(StreamJobMode
+            .valueOf(jobVersion.getManageMode))).getOrElse(StreamJobMode.ENGINE_CONN)
+        case _ => StreamJobMode.ENGINE_CONN
+      }
     }
 
     val metricsStr = if (JobConf.SUPPORTED_MANAGEMENT_JOB_TYPES.getValue.contains(streamJob.getJobType)) null
-      else if(jobStateInfos == null || jobStateInfos.length == 0) null
-      else jobStateInfos(0).getLocation
+    else if(jobStateInfos == null || jobStateInfos.length == 0) null
+    else jobStateInfos(0).getLocation
     taskMetricsParser.find(_.canParse(streamJob)).map(_.parse(metricsStr)).filter { jobDetailsVO =>
       jobDetailsVO.setLinkisJobInfo(flinkJobInfo)
       jobDetailsVO.setManageMode(manageMod.getClientType)
@@ -797,6 +804,54 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   }
 
   override def queryErrorCode(jobId: Long): StreamTask = {
-     streamTaskMapper.getLatestByJobId(jobId)
+    streamTaskMapper.getLatestByJobId(jobId)
+  }
+
+  override def  errorCodeMatching(jobId: Long, streamTask: StreamTask): Future[_] = {
+    var errorMsg =""
+    var taskId =streamTask.getId
+    var user =streamTask.getSubmitUser
+    Utils.defaultScheduler.submit(new Runnable {
+      override def run(): Unit = {
+        Utils.tryCatch{
+          val logs = getLog(jobId, taskId,user, "client")
+          errorMsg =exceptionAnalyze(errorMsg,logs)
+          if (errorMsg.isEmpty){
+            val logs = getLog(jobId, taskId, user, "yarn")
+            errorMsg =exceptionAnalyze(errorMsg,logs)
+          }
+          if (errorMsg.isEmpty){
+            errorMsg ="原因分析失败，请手动检查日志"
+          }
+          val streamTask = new StreamTask()
+          streamTask.setId(taskId);
+          streamTask.setErrDesc(errorMsg)
+          streamTaskService.updateTask(streamTask)
+        }{
+          case e: Exception =>
+            logger.error("errorCodeMatching failed. ", e)
+        }
+      }
+    })
+  }
+
+  protected def getLog(jobId : Long,taskId: Long, username: String,logType: String): String = {
+    val payload = new LogRequestPayload
+    payload.setLogType(logType)
+    streamTaskService.getRealtimeLog(jobId, if (null != taskId) taskId else 0L, username, payload).get("logs").toString
+  }
+
+  def exceptionAnalyze(errorMsg: String, log: String): String = {
+    if (null != log) {
+      val errorCodes = errorCodeHandler.handle(log)
+      if (errorCodes != null && errorCodes.size() > 0) {
+        errorCodes.asScala.map(e => e.getErrorDesc).mkString("。")
+      } else {
+        errorMsg
+      }
+    } else {
+      errorMsg
+    }
+
   }
 }

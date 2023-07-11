@@ -131,7 +131,7 @@ class TaskMonitorService extends Logging {
           var alertMsg = s"Streamis 流式应用[${job.getName}${extraMessage}]已经失败, 请登陆Streamis查看应用日志."
           streamTask.setErrDesc("原因分析中，请稍后重试"+streamTask.getErrDesc)
           streamTaskMapper.updateTask(streamTask)
-          val result: Future[_] = errorCodeMatching(job.getId,streamTask.getId)
+          val result: Future[_] = streamTaskService.errorCodeMatching(job.getId,streamTask)
           this.streamJobConfMapper.getRawConfValue(job.getId, JobConfKeyConstants.FAIL_RESTART_SWITCH.getValue) match {
             case "ON" =>
               alertMsg = s"${alertMsg} 现将自动拉起该应用"
@@ -206,48 +206,4 @@ class TaskMonitorService extends Logging {
     JobConf.linkisStatusToStreamisStatus(jobInfo.getStatus)
   }
 
-  protected def getLog(jobId : Long,taskId: Long, username: String,logType: String): String = {
-    val payload = new LogRequestPayload
-    payload.setLogType(logType)
-    streamTaskService.getRealtimeLog(jobId, if (null != taskId) taskId else 0L, username, payload).get("logs").toString
-  }
-
-  def exceptionAnalyze(errorMsg: String, log: String): String = {
-    if (null != log) {
-      val errorCodes = errorCodeHandler.handle(log)
-      if (errorCodes != null && errorCodes.size() > 0) {
-        errorCodes.asScala.map(e => e.getErrorDesc).mkString("。")
-      } else {
-        errorMsg
-      }
-    } else {
-      errorMsg
-    }
-
-  }
-
-
-  def  errorCodeMatching(jobId: Long, taskId: Long): Future[_] = {
-    var errorMsg =""
-    Utils.defaultScheduler.submit(new Runnable {
-      override def run(): Unit = {
-        Utils.tryCatch{
-          val logs = getLog(jobId, taskId, "", "client")
-          errorMsg =exceptionAnalyze(errorMsg,logs)
-          if (errorMsg.isEmpty){
-            val logs = getLog(jobId, taskId, "", "yarn")
-            errorMsg =exceptionAnalyze(errorMsg,logs)
-          }
-          errorMsg ="原因分析失败"
-          val streamTask = new StreamTask()
-          streamTask.setId(taskId);
-          streamTask.setErrDesc(errorMsg)
-          streamTaskService.updateTask(streamTask)
-        }{
-          case e: Exception =>
-            logger.error("errorCodeMatching failed. ", e)
-        }
-      }
-    })
-  }
 }

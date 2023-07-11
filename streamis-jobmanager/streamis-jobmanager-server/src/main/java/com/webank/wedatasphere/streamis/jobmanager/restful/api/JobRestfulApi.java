@@ -389,7 +389,7 @@ public class JobRestfulApi {
     }
 
     @RequestMapping(path = "/execute/errorMsg", method = RequestMethod.GET)
-    public Message executeJobErrorCode(HttpServletRequest req,
+    public Message executeJobErrorMsg(HttpServletRequest req,
                                      @RequestParam(value = "jobId", required = false) Long jobId) throws JobException {
         String username = ModuleUserUtils.getOperationUser(req, "view the job history");
         if (jobId == null) {
