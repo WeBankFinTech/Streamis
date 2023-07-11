@@ -16,11 +16,8 @@
           <Form ref="queryForm" inline>
             <FormItem>
               <Input
-                search
                 v-model="query.filename"
                 :placeholder="$t('message.streamis.projectFile.fileName')"
-                @on-click="handleNameQuery"
-                @on-enter="handleNameQuery"
               >
               </Input>
             </FormItem>
@@ -200,6 +197,18 @@ export default {
           key: 'createTime'
         },
         {
+          title: this.$t(
+            'message.streamis.jobListTableColumns.updateTime'
+          ),
+          key: 'updateTime'
+        },
+        {
+          title: this.$t(
+            'message.streamis.jobListTableColumns.md5'
+          ),
+          key: 'md5'
+        },
+        {
           title: this.$t('message.streamis.jobListTableColumns.description'),
           key: 'comment'
         },
@@ -291,6 +300,12 @@ export default {
                   'YYYY-MM-DD HH:mm:ss'
                 )
                 item.createTime = newDate
+              }
+              if (item && item.updateTime) {
+                const newDate = moment(new Date(item.updateTime)).format(
+                  'YYYY-MM-DD HH:mm:ss'
+                )
+                item.updateTime = newDate
               }
             })
             datas.unshift({})
@@ -384,6 +399,12 @@ export default {
                   'YYYY-MM-DD HH:mm:ss'
                 )
                 item.createTime = newDate
+              }
+              if (item && item.updateTime) {
+                const newDate = moment(new Date(item.updateTime)).format(
+                  'YYYY-MM-DD HH:mm:ss'
+                )
+                item.updateTime = newDate
               }
             })
             this.versionDatas = datas

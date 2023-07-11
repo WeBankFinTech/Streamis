@@ -10,7 +10,7 @@
                 type="primary"
                 :disabled="!selections.length"
                 @click="clickBatchRestart(true)"
-                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.snapshotRestart')}}
               </Button>
@@ -20,7 +20,7 @@
                 type="primary"
                 :disabled="!selections.length"
                 @click="clickBatchRestart(false)"
-                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 16px;display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.directRestart')}}
               </Button>
@@ -28,21 +28,28 @@
             <FormItem>
               <Button
                 type="primary"
+                :disabled="!selections.length"
+                @click="showEditTags = true"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 16px;display: flex;align-items: center;justify-content: center;"
+              >
+                {{$t('message.streamis.formItems.editTags')}}
+              </Button>
+            </FormItem>
+            <FormItem>
+              <Button
+                type="primary"
                 @click="hideButtons"
-                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 16px;display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.cancel')}}
               </Button>
             </FormItem>
           </Form>
-          <Form ref="queryForm" inline v-else @submit.native.prevent>
-            <FormItem>
+          <Form ref="queryForm" class="query-form" :model="query" :rules="queryRuleValidate" inline v-else @submit.native.prevent :label-width="80">
+            <FormItem :label="$t('message.streamis.formItems.jobName')">
               <Input
-                search
                 v-model="query.jobName"
                 :placeholder="$t('message.streamis.formItems.jobName')"
-                @on-click="handleNameQuery"
-                @on-enter="handleNameQuery"
               >
               </Input>
             </FormItem>
@@ -60,22 +67,28 @@
                 </Option>
               </Select>
             </FormItem>
-
-            <FormItem>
+            <FormItem prop="label" :label="$t('message.streamis.formItems.tag')" style="width: 400px">
+              <Input
+                v-model="query.label"
+                :placeholder="$t('message.streamis.formItems.tagPlaceHolder')"
+              >
+              </Input>
+            </FormItem>
+            <FormItem class="button-item">
               <Button
                 type="primary"
                 @click="handleQuery()"
-                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;"
+                style="width:100px;height:30px;background:rgba(22, 155, 213, 1);"
               >
                 {{ $t('message.streamis.formItems.queryBtn') }}
               </Button>
             </FormItem>
 
-            <FormItem>
+            <FormItem class="button-item">
               <Button
                 type="primary"
                 @click="showButtons"
-                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+                style="width:100px;height:30px;background:rgba(22, 155, 213, 1);"
               >
                 {{$t('message.streamis.formItems.batchAction')}}
               </Button>
@@ -123,6 +136,16 @@
                 <div style="margin-left: 5px" @click="handleRouter(row)">
                   <a href="javascript:void(0)">{{ row.name }} </a>
                 </div>
+              </div>
+            </template>
+            <template slot-scope="{ row, index }" slot="status">
+              <div v-if="index !== 0">
+                <strong :style="`color: ${row.statusObj.color || '#000'};`">
+                  {{   row.statusObj.name ? $t('message.streamis.jobStatus.' + row.statusObj.name) : '' }}
+                </strong>
+                <strong v-if="row.status === 6" class="failureReasonWrapper" @click="showFailureReason(row)">
+                  {{ $t('message.streamis.jobStatus.failureReason') }}
+                </strong>
               </div>
             </template>
             <template slot-scope="{ row, index }" slot="version">
@@ -279,15 +302,45 @@
       :mask-closable="false"
     >
       <div class="wrap">
-        <Table border :columns="checkColumns" :data="checkData"></Table>
+        <Table border :columns="checkColumns" :data="checkData">
+          <template slot-scope="{row}" slot="yarn">
+            <div v-for="(item, index) in row.yarn" :key="index">
+              <a v-if="item.applicationUrl && item.applicationUrl !== '无'" style="display: block" @click="goToNewTab(item.applicationUrl)">{{item.yarnAppType}}: {{item.applicationName}}</a>
+              <div v-else>无</div>
+            </div>
+          </template>
+        </Table>
       </div>
       <template slot="footer">
         <div style="display: flex; width: 100%">
-          <div style="textAlign: left; width: 836px; position: relative; top: 3px">当前一共需要确认的作业数量：{{checkData.length}}个</div>
+          <div style="marginRight: 16px; position: relative; top: 3px; width: 225px">当前一共需要确认的作业数量：{{checkData.length}}个</div>
+          <div style="position: relative; top: 3px; textAlign: left; width: 600px" :class="hasYarnCount ? 'red-color' : ''">共计有{{hasYarnCount}}个作业含有同名运行中的yarn任务，请检查无误后再启动</div>
           <Button type="primary" @click="confirmStarting">{{ $t('message.streamis.formItems.confirmBtn') }}</Button>
           <Button type="primary" @click="cancelStartHint">{{ $t('message.streamis.formItems.cancel') }}</Button>
         </div>
       </template>
+    </Modal>
+    <Modal
+      v-model="showEditTags"
+      :title="$t('message.streamis.formItems.editTags')"
+      @on-visible-change="changeVisible">
+      <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="0">
+        <FormItem prop="newTag">
+          <Input v-model="formValidate.newTag" :placeholder="$t('message.streamis.formItems.editTagsPlaceHolder')"></Input>
+        </FormItem>
+      </Form>
+      <div>{{ $t('message.streamis.formItems.editTagsHint') }}</div>
+      <template #footer>
+        <Button @click="showEditTags = false">取消</Button>
+        <Button type="primary" @click="confirmEditTags" :loading="editTagsLoading">确定</Button>
+      </template>
+    </Modal>
+    <Modal
+      v-model="failureReasonShow"
+      :title="$t('message.streamis.formItems.failureReason')"
+      :footer-hide="true"
+    >
+      {{ failureReason }}
     </Modal>
   </div>
 </template>
@@ -323,9 +376,29 @@ export default {
     return {
       query: {
         jobName: '',
-        jobStatus: 'all'
+        jobStatus: 'all',
+        label: '',
       },
       jobStatus: ['all'].concat(allJobStatuses.map(item => item.name)),
+
+      // 批量修改标签
+      showEditTags: false,
+      editTagsLoading: false,
+      newTag: '',
+      formValidate: {
+        newTag: ''
+      },
+      ruleValidate: {
+        newTag: [
+          { required: true, message: '请输入新标签', trigger: 'blur' },
+          { pattern: /^[a-zA-Z0-9_,.\s]+$/, message: '仅支持大小写字母、数字、下划线、小数点、逗号', trigger: 'blur' }
+        ],
+      },
+      queryRuleValidate: {
+        label: [
+          { pattern: /^[a-zA-Z0-9_,.\s]+$/, message: '仅支持大小写字母、数字、下划线、小数点、逗号', trigger: 'blur' }
+        ],
+      },
 
       tableDatas: [
         {},
@@ -384,24 +457,7 @@ export default {
           title: this.$t('message.streamis.jobListTableColumns.taskStatus'),
           key: 'status',
           renderHeader: renderSpecialHeader,
-          render: (h, params) => {
-            const hitStatus = allJobStatuses.find(
-              item => item.code === params.row.status
-            )
-            if (hitStatus) {
-              return h('div', [
-                h(
-                  'strong',
-                  {
-                    style: {
-                      color: hitStatus.color
-                    }
-                  },
-                  this.$t('message.streamis.jobStatus.' + hitStatus.name)
-                )
-              ])
-            }
-          }
+          slot: 'status'
         },
         {
           title: this.$t('message.streamis.jobListTableColumns.jobType'),
@@ -504,14 +560,24 @@ export default {
           align: 'center'
         },
         {
+          title: '同名yarn任务',
+          slot: 'yarn',
+          align: 'center',
+          width: 200,
+        },
+        {
           title: '快照',
           key: 'link',
           align: 'center'
         },
       ],
+      hasYarnCount: 0,
       checkData: [],
       // 当前正在查看的data
-      currentViewData: {}
+      currentViewData: {},
+      // 失败原因
+      failureReason: '',
+      failureReasonShow: false,
     }
   },
   mounted() {
@@ -532,13 +598,16 @@ export default {
         // projectName: 'stream_job',
         // projectName: 'streamis025_checkpoint',
         // 本地开发sit环境用的
-        // projectName: 'streamis025_version',
+        // projectName: 'streamis0606',
         // 正式环境用的
         projectName: this.projectName
       }
-      const { jobName, jobStatus } = this.query
+      const { jobName, jobStatus, label } = this.query
       if (jobName) {
         params.jobName = jobName
+      }
+      if (label) {
+        params.label = label
       }
       if (jobStatus !== 'all') {
         const hitStatus = allJobStatuses.find(item => item.name === jobStatus)
@@ -563,7 +632,7 @@ export default {
               }
             })
             datas.unshift({})
-            this.tableDatas = datas.map(r => ({...r, poptipVisible: false, manageMode: r.manageMode && r.manageMode.toUpperCase() === 'DETACH' ? 'DETACH' : 'ATTACH', manageModeChinese: r.manageMode && r.manageMode.toUpperCase() === 'DETACH' ? '分离式' : '非分离式'}))
+            this.tableDatas = datas.map(r => ({...r, poptipVisible: false, manageMode: r.manageMode && r.manageMode.toUpperCase() === 'DETACH' ? 'DETACH' : 'ATTACH', manageModeChinese: r.manageMode && r.manageMode.toUpperCase() === 'DETACH' ? '分离式' : '非分离式', statusObj: allJobStatuses.find(item => item.code === r.status)}))
             if (this.tableDatas[0]) {
               delete this.tableDatas[0].manageMode
               delete this.tableDatas[0].manageModeChinese
@@ -579,11 +648,18 @@ export default {
           this.loading = false
         })
     },
-    handleNameQuery() {
+    goToNewTab(url) {
+      window.open(url, new Date().getTime())
     },
     handleQuery() {
-      this.pageData.current = 1
-      this.getJobList()
+      this.$refs['queryForm'].validate(async (valid) => {
+        console.log('valid: ', valid);
+        if (valid) {
+          this.pageData.current = 1
+          this.getJobList()
+        }
+      })
+
     },
     handleUpload() {
       this.uploadVisible = true
@@ -612,6 +688,43 @@ export default {
           this.choosedRowId = ''
           this.getJobList()
         })
+    },
+    changeVisible(value) {
+      console.log('value: ', value);
+      if (!value) this.$refs['formValidate'].resetFields()
+    },
+    // 批量修改标签
+    async confirmEditTags() {
+      this.editTagsLoading = true
+      if (this.formValidate.newTag.includes(' ')) {
+        this.editTagsLoading = false;
+        return this.$Message.error({ content: '标签不能有空格，仅支持大小写字母、数字、下划线、小数点、逗号' });
+      }
+      this.$refs['formValidate'].validate(async (valid) => {
+        console.log('valid: ', valid);
+        if (valid) {
+          console.log('this.selections: ', this.selections);
+          const tasks = []
+          this.selections.forEach(item => {
+            tasks.push({
+              id: item.id,
+              label: this.formValidate.newTag
+            })
+          })
+          // 修改标签接口
+          try {
+            await api.fetch('/streamis/streamJobManager/job/updateLabel', { tasks }, 'post');
+            this.$refs['formValidate'].resetFields();
+            this.showEditTags = false;
+            this.editTagsLoading = false;
+            this.getJobList()
+          } catch {
+            this.editTagsLoading = false;
+          }
+        } else {
+          this.editTagsLoading = false;
+        }
+      })
     },
 
 
@@ -676,6 +789,7 @@ export default {
 
       if (this.isBatchRestart) {
         // 是批量重启，tempData是数组
+        this.hasYarnCount = 0;
         this.tempData.forEach(async (item) => {
           const { id, name } = item
           const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
@@ -687,6 +801,15 @@ export default {
             link: inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--',
             latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
             lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
+            yarn: inspectRes.list && inspectRes.list.list ? inspectRes.list.list : [],
+          }
+          if (Array.isArray(tempData.yarn)) {
+            for (let i = 0; i < tempData.yarn.length; i++) {
+              if (tempData.yarn[i].applicationUrl && tempData.yarn[i].applicationUrl !== '无') {
+                this.hasYarnCount++
+                break
+              }
+            }
           }
           this.checkData.push(tempData)
         })
@@ -695,6 +818,7 @@ export default {
         console.log('打开弹框 this.startHintData: ', this.startHintData);
       } else {
         // 是单个重启，tempData是对象
+        this.hasYarnCount = 0;
         const { id, name } = this.tempData
         const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
         const inspectRes = await api.fetch(checkPath, {}, 'put')
@@ -704,8 +828,18 @@ export default {
           link: inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--',
           latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
           lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
+          yarn: inspectRes.list && inspectRes.list.list ? inspectRes.list.list : [],
+        }
+        if (Array.isArray(tempData.yarn)) {
+          for (let i = 0; i < tempData.yarn.length; i++) {
+            if (tempData.yarn[i].applicationUrl && tempData.yarn[i].applicationUrl !== '无') {
+              this.hasYarnCount++
+              break
+            }
+          }
         }
         this.checkData.push(tempData)
+        console.log('this.checkData: ', this.checkData);
         this.startHintVisible = true
         console.log('打开弹框 this.startHintData: ', this.startHintData);
       }
@@ -727,25 +861,31 @@ export default {
         this.tempData.buttonLoading = true
         this.choosedRowId = id
         this.$set(this.tableDatas, this.tempIndex, this.tempData)
-        api
-          .fetch(path, second)
-          .then(res => {
-            console.log('execute res: ', res);
-            this.tempData.buttonLoading = false
-            this.choosedRowId = ''
-            if (res) {
-              this.$emit('refreshCoreIndex')
+        try {
+          api
+            .fetch(path, second)
+            .then(res => {
+              console.log('execute res: ', res);
+              this.tempData.buttonLoading = false
+              this.choosedRowId = ''
+              if (res) {
+                this.$emit('refreshCoreIndex')
+                this.loading = false
+                this.getJobList()
+              }
+            })
+            .catch(err => {
+              console.log('err: ', err);
               this.loading = false
+              this.tempData.buttonLoading = false
+              this.choosedRowId = ''
               this.getJobList()
-            }
-          })
-          .catch(err => {
-            console.log('execute err: ', err);
-            this.loading = false
-            this.tempData.buttonLoading = false
-            this.choosedRowId = ''
-            this.getJobList()
-          })
+              throw new Error(err)
+            })
+        } catch (error) {
+          console.log('error: ', error);
+          this.$Message.error({ content: '后台接口异常，请联系开发处理！' });
+        }
       } else {
         // 批量启动
         console.log('bulkExecution');
@@ -821,6 +961,18 @@ export default {
       this.pageData.pageSize = pageSize
       this.pageData.current = 1
       this.getJobList()
+    },
+    showFailureReason(row){
+      api.fetch(`streamis/streamJobManager/job/execute/errorMsg?jobId=${row.id}`,'get').then(
+        res=>{
+          console.log(res)
+          this.failureReason = res.details.errDesc || '原因未知'
+        }
+      ).catch(err=>{
+        console.log('showFailureReason err:',err)
+      }).finally(()=>{
+        this.failureReasonShow = true
+      })
     },
     versionDetailPageChange(page) {
       this.versionDetail(this.currentViewData, page)
@@ -945,6 +1097,10 @@ export default {
 .page {
   margin-top: 20px;
 }
+.failureReasonWrapper{
+  color: #990033;
+  cursor: pointer;
+}
 .versionWrap {
   display: flex;
   justify-content: flex-start;
@@ -996,6 +1152,17 @@ export default {
         }
       }
     }
+  }
+}
+.red-color {
+  color: red;
+}
+</style>
+
+<style lang="scss">
+.button-item {
+  .ivu-form-item-content {
+    margin-left: 16px !important;
   }
 }
 </style>
