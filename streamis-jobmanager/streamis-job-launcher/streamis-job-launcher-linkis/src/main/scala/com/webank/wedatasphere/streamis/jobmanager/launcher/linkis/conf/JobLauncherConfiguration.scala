@@ -70,7 +70,7 @@ object JobLauncherConfiguration {
 
   val LINKIS_EC_EXPIRE_TIME_KEY: CommonVars[String] = CommonVars("linkis.ec.expire.key", "wds.linkis.engineconn.max.free.time")
 
-  val ENABLE_FLINK_LIST_INSPECT: CommonVars[Boolean] = CommonVars("wds.streamis.job.inspact.list.enable", true)
+  val ENABLE_FLINK_LIST_INSPECT: CommonVars[Boolean] = CommonVars("wds.streamis.job.inspect.list.enable", true)
 
   val LINKIS_EC_SUPPORT_PARALLEM = "wds.linkis.engineconn.support.parallelism"
 }
