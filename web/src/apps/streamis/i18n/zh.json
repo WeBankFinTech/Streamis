@@ -30,7 +30,8 @@
         "uploaded" : "已上传",
         "all": "全部",
         "stopped": "已停止",
-        "unstarted": "未启动"
+        "unstarted": "未启动",
+        "failureReason": "查看失败原因"
       },
       "formItems": {
         "queryBtn": "查询",
@@ -55,7 +56,8 @@
         "confirmBtn": "确认",
         "updateBtn": "更新",
         "notEmpty": "不能为空",
-        "wrongFormat": "格式错误"
+        "wrongFormat": "格式错误",
+        "failureReason": "失败原因"
       },
       "startHint": {
         "title": "作业启动确认",
