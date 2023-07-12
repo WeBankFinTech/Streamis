@@ -56,6 +56,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 import scala.collection.JavaConverters._
+import scala.util.control.Breaks.{break, breakable}
 
 
 @Service
@@ -815,13 +816,15 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     Utils.defaultScheduler.submit(new Runnable {
       override def run(): Unit = {
         Utils.tryCatch{
-          for(i <- 0 to 10){
-            val logs = getLog(jobId, taskId, user, "client",i*100)
-            errorMsg =exceptionAnalyze(errorMsg,logs)
-            if (errorMsg.nonEmpty){
-              return
+          breakable(
+            for(i<-0 to 10) {
+              val logs = getLog(jobId, taskId, user, "client",i*100)
+              errorMsg =exceptionAnalyze(errorMsg,logs)
+              if(errorMsg.nonEmpty){
+                break()
+              }
             }
-          }
+          )
           //          if (errorMsg.isEmpty){
           //            val logs = getLog(jobId, taskId, "", "yarn",1)
           //            errorMsg =exceptionAnalyze(errorMsg,logs)
