@@ -37,6 +37,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.Proje
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobInspectService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamTaskService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.RealtimeLogEntity;
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent;
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils;
 import com.webank.wedatasphere.streamis.jobmanager.utils.RegularUtil;
@@ -663,7 +664,7 @@ public class JobRestfulApi {
         payload.setOnlyKeywords(onlyKeywords);
         payload.setLogType(logType);
         payload.setPageSize(pageSize);
-        Map<String, Object> realtimeLog = streamTaskService.getRealtimeLog(jobId, null != taskId ? taskId : 0L, username, payload);
+        RealtimeLogEntity realtimeLog = streamTaskService.getRealtimeLog(jobId, null != taskId ? taskId : 0L, username, payload);
         return Message.ok().data("logs",realtimeLog);
     }
 

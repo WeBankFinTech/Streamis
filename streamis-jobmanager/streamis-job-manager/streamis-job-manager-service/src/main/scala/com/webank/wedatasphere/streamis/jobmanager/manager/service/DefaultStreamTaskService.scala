@@ -17,7 +17,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import java.util
 import java.util.concurrent.Future
-import java.util.{Calendar, function}
+import java.util.{Calendar, Map, function}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
@@ -39,6 +39,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.FutureSched
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events.AbstractStreamisSchedulerEvent.StreamisEventInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events.StreamisPhaseInSchedulerEvent
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events.StreamisPhaseInSchedulerEvent.ScheduleCommand
+import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.RealtimeLogEntity
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.exception.TransformFailedErrorException
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.{StreamisTransformJobBuilder, TaskMetricsParser, Transform}
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.DateUtils
@@ -397,11 +398,11 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     list
   }
 
-  def getRealtimeLog(jobId: Long, taskId: Long, operator: String, requestPayload: LogRequestPayload): util.Map[String, Any] = {
-    val returnMap = new util.HashMap[String, Any]
-    returnMap.put("logPath", "undefined")
-    returnMap.put("logs", util.Arrays.asList("No log content is available. Perhaps the task has not been scheduled"))
-    returnMap.put("endLine", 1);
+  def getRealtimeLog(jobId: Long, taskId: Long, operator: String, requestPayload: LogRequestPayload): RealtimeLogEntity = {
+    val returnMap = new RealtimeLogEntity
+    returnMap.setLogPath("undefined")
+    returnMap.setLogs(util.Arrays.asList("No log content is available. Perhaps the task has not been scheduled"))
+    returnMap.setEndLine(1);
     val streamTask = if(taskId > 0) streamTaskMapper.getTaskById(taskId)
     else streamTaskMapper.getLatestByJobId(jobId)
     if (null != streamTask && StringUtils.isNotBlank(streamTask.getLinkisJobId)) {
@@ -412,9 +413,9 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           case client: EngineConnJobClient =>
             requestPayload.setLogHistory(JobConf.isCompleted(streamTask.getStatus))
             val logIterator = client.fetchLogs(requestPayload)
-            returnMap.put("logPath", logIterator.getLogPath)
-            returnMap.put("logs", logIterator.getLogs)
-            returnMap.put("endLine", logIterator.getEndLine)
+            returnMap.setLogPath(logIterator.getLogPath)
+            returnMap.setLogs(logIterator.getLogs)
+            returnMap.setEndLine(logIterator.getEndLine);
             logIterator.close()
             jobClient.getJobInfo match {
               case linkisInfo: EngineConnJobInfo =>
@@ -809,17 +810,22 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
 
   override def  errorCodeMatching(jobId: Long, streamTask: StreamTask): Future[_] = {
     var errorMsg =""
-    var taskId =streamTask.getId
-    var user =streamTask.getSubmitUser
+    val taskId =streamTask.getId
+    val user =streamTask.getSubmitUser
     Utils.defaultScheduler.submit(new Runnable {
       override def run(): Unit = {
         Utils.tryCatch{
-          val logs = getLog(jobId, taskId,user, "client")
-          errorMsg =exceptionAnalyze(errorMsg,logs)
-          if (errorMsg.isEmpty){
-            val logs = getLog(jobId, taskId, user, "yarn")
+          for(i <- 0 to 10){
+            val logs = getLog(jobId, taskId, user, "client",i*100)
             errorMsg =exceptionAnalyze(errorMsg,logs)
+            if (errorMsg.nonEmpty){
+              return
+            }
           }
+          //          if (errorMsg.isEmpty){
+          //            val logs = getLog(jobId, taskId, "", "yarn",1)
+          //            errorMsg =exceptionAnalyze(errorMsg,logs)
+          //          }
           if (errorMsg.isEmpty){
             errorMsg ="原因分析失败，请手动检查日志"
           }
@@ -835,11 +841,16 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     })
   }
 
-  protected def getLog(jobId : Long,taskId: Long, username: String,logType: String): String = {
+   def getLog(jobId : Long,taskId: Long, username: String,logType: String, fromLine: Int): String = {
     val payload = new LogRequestPayload
     payload.setLogType(logType)
-    streamTaskService.getRealtimeLog(jobId, if (null != taskId) taskId else 0L, username, payload).get("logs").toString
-  }
+    payload.setFromLine(fromLine+1)
+    payload.setPageSize(100)
+     val realtimeLog = streamTaskService.getRealtimeLog(jobId, if (null != taskId) taskId else 0L, username, payload)
+     val logs = realtimeLog.getLogs
+     val logString =logs.asScala.mkString("\n")
+     logString
+   }
 
   def exceptionAnalyze(errorMsg: String, log: String): String = {
     if (null != log) {

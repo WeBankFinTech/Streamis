@@ -20,6 +20,8 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogReq
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{ExecResultVo, JobDetailsVo, JobProgressVo, JobStatusVo, PauseResultVo, StreamTaskListVo}
+import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.RealtimeLogEntity
+
 import java.util
 import java.util.concurrent.Future
 
@@ -142,7 +144,7 @@ trait StreamTaskService {
    * @param requestPayload request payload
    * @return
    */
-  def getRealtimeLog(jobId: Long, taskId: Long, operator: String, requestPayload: LogRequestPayload): util.Map[String, Any]
+  def getRealtimeLog(jobId: Long, taskId: Long, operator: String, requestPayload: LogRequestPayload): RealtimeLogEntity
 
   /**
    * Do snapshot
