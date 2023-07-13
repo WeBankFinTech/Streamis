@@ -143,9 +143,9 @@
                 <strong :style="`color: ${row.statusObj.color || '#000'};`">
                   {{   row.statusObj.name ? $t('message.streamis.jobStatus.' + row.statusObj.name) : '' }}
                 </strong>
-                <strong v-if="row.status === 6" class="failureReasonWrapper" @click="showFailureReason(row)">
+                <span v-if="row.status === 6" class="failureReasonWrapper" @click="showFailureReason(row)">
                   {{ $t('message.streamis.jobStatus.failureReason') }}
-                </strong>
+                </span>
               </div>
             </template>
             <template slot-scope="{ row, index }" slot="version">
@@ -1098,7 +1098,7 @@ export default {
   margin-top: 20px;
 }
 .failureReasonWrapper{
-  color: #990033;
+  color: red;
   cursor: pointer;
 }
 .versionWrap {
