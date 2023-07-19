@@ -22,15 +22,16 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration.{VAR_FLINK_APP_NAME, VAR_FLINK_SAVEPOINT_PATH}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobLaunchErrorException
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.handler.StreamisErrorCodeHandler
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.{EngineConnJobInfo, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.factory.AbstractJobClientFactory
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.FlinkJobLaunchManager.EXCEPTION_PATTERN
 import org.apache.commons.lang3.StringEscapeUtils
 import org.apache.linkis.common.utils.{Logging, Utils}
 import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
 import org.apache.linkis.computation.client.utils.LabelKeyUtils
 import org.apache.linkis.protocol.utils.TaskUtils
 
+import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.util.matching.Regex
 
 
@@ -45,6 +46,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
   protected def createJobInfo(jobInfo: String): LinkisJobInfo
 
   protected var jobStateManager: JobStateManager = _
+
 
 
   /**
@@ -151,12 +153,24 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
    * @return
    */
   def exceptionAnalyze(errorMsg: String, t: Throwable): String = {
-    EXCEPTION_PATTERN.findFirstMatchIn(t.getMessage) match {
-      case Some(m) =>
-        errorMsg + s", 原因分析[${m.group(1)}]"
-      case _ => errorMsg
+    //    EXCEPTION_PATTERN.findFirstMatchIn(t.getMessage) match {
+    //      case Some(m) =>
+    //        errorMsg + s", 原因分析[${m.group(1)}]"
+    //      case _ => errorMsg
+    //    }
+    if (null != t) {
+      val errorCodes = StreamisErrorCodeHandler.getInstance().handle(t.getMessage)
+      if (errorCodes != null && errorCodes.size() > 0) {
+        errorCodes.asScala.map(e => e.getErrorDesc).mkString("。")
+      } else {
+        errorMsg
+      }
+    } else {
+      errorMsg
     }
+
   }
+
 }
 
 object FlinkJobLaunchManager {

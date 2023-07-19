@@ -21,6 +21,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.errorcode.JobLau
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState, JobStateInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, JobInfo, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.handler.StreamisErrorCodeHandler
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.SimpleFlinkJobLaunchManager.INSTANCE_NAME
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.LinkisJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo
@@ -82,7 +83,7 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
       error(message, t)
       // Mark failed
       jobInfo.setStatus("failed")
-      jobInfo.setCompletedMsg(message)
+      jobInfo.setCompletedMsg(exceptionAnalyze(message,t))
     }
     jobInfo.setJobParams(job.getParams.asInstanceOf[util.Map[String, Object]])
     jobInfo.setResources(nodeInfo.get("nodeResource").asInstanceOf[util.Map[String, Object]])

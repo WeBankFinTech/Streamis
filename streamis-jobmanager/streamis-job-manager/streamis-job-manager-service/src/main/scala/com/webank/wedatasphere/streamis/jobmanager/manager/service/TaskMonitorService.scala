@@ -16,14 +16,16 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import java.util
-import java.util.Date
-import java.util.concurrent.{Future, TimeUnit}
+import java.util.{Date, function}
+import java.util.concurrent.{CompletableFuture, ExecutorService, Future, TimeUnit}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.JobLauncherAutoConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.handler.StreamisErrorCodeHandler
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.{EngineConnJobInfo, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.{AlertLevel, Alerter}
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
@@ -38,6 +40,7 @@ import org.apache.linkis.common.utils.{Logging, RetryHandler, Utils}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
+import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.collection.convert.WrapAsScala._
 
 
@@ -57,6 +60,8 @@ class TaskMonitorService extends Logging {
   private var streamJobConfMapper: StreamJobConfMapper = _
 
   private var future: Future[_] = _
+
+  private val errorCodeHandler = StreamisErrorCodeHandler.getInstance()
 
   @PostConstruct
   def init(): Unit = {
@@ -124,6 +129,9 @@ class TaskMonitorService extends Logging {
           }
           // Need to add restart feature if user sets the restart parameters.
           var alertMsg = s"Streamis 流式应用[${job.getName}${extraMessage}]已经失败, 请登陆Streamis查看应用日志."
+          streamTask.setErrDesc("原因分析中，请稍后重试"+streamTask.getErrDesc)
+          streamTaskMapper.updateTask(streamTask)
+          val result: Future[_] = streamTaskService.errorCodeMatching(job.getId,streamTask)
           this.streamJobConfMapper.getRawConfValue(job.getId, JobConfKeyConstants.FAIL_RESTART_SWITCH.getValue) match {
             case "ON" =>
               alertMsg = s"${alertMsg} 现将自动拉起该应用"
@@ -131,7 +139,7 @@ class TaskMonitorService extends Logging {
                 info(s"Start to reLaunch the StreamisJob [${job.getName}], now to submit and schedule it...")
                 // Use submit user to start job
                 val startAutoRestoreSwitch = "ON".equals(this.streamJobConfMapper.getRawConfValue(job.getId, JobConfKeyConstants.START_AUTO_RESTORE_SWITCH.getValue))
-                val future: Future[String] = streamTaskService.asyncExecute(job.getId, 0L, job.getSubmitUser, startAutoRestoreSwitch)
+                val future = streamTaskService.asyncExecute(job.getId, 0L, job.getSubmitUser, startAutoRestoreSwitch)
               }{
                 case e:Exception =>
                   warn(s"Fail to reLaunch the StreamisJob [${job.getName}]", e)

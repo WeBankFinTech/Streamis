@@ -73,4 +73,6 @@ object JobLauncherConfiguration {
   val ENABLE_FLINK_LIST_INSPECT: CommonVars[Boolean] = CommonVars("wds.streamis.job.inspact.list.enable", true)
 
   val LINKIS_EC_SUPPORT_PARALLEM = "wds.linkis.engineconn.support.parallelism"
+
+  val LINKIS_LOG_Match: CommonVars[String] = CommonVars("linkis.log.match", "^(01|12|13|22|30|31|41|42|43|47|)\\d+")
 }
