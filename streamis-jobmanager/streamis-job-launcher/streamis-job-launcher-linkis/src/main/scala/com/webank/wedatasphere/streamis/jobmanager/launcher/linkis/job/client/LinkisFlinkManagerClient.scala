@@ -93,8 +93,6 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
     }
     val tmpLabels = SerializationUtils.clone(initLabels).asInstanceOf[util.Map[String, String]]
     val tmpProps = SerializationUtils.clone(initProperties).asInstanceOf[util.Map[String, String]]
-//    var lastAsyncId: String = null
-//    var lastManagerInstance: ServiceInstance = null
     var retryCount = 0
     val MAX_RETRY_COUNT = 10
 
@@ -129,11 +127,11 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
             } else {
               throw new FlinkJobFlinkECErrorException(s"Start manager ec failed. Because : ${failMsg}")
             }
-          case null =>
+          case _ =>
             end = true
-            logger.error(s"start flink manager ec failed because: null ec result status")
+            logger.error(s"start flink manager ec failed because: unknonw ec result status : ${nodeInfo.get(AMConstant.EC_ASYNC_START_RESULT_KEY)}")
             logger.warn(s"askEngineConnAction: ${askEngineConnAction.getRequestPayload}")
-            throw new FlinkJobFlinkECErrorException(s"Start manager ec failed. Null ec result status")
+            throw new FlinkJobFlinkECErrorException(s"Start manager ec failed. Unkown ec result status")
         }
       }
       Thread.sleep(1000)
