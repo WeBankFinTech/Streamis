@@ -48,6 +48,7 @@ public class StreamisErrorCodeManager   {
                 errorCodes.add(item);
             }
         }
+        LOGGER.info("加载完成，加载错误码个数为: {}",errorCodes.size());
         return errorCodes;
     }
 }
