@@ -340,7 +340,9 @@
       :title="$t('message.streamis.formItems.failureReason')"
       :footer-hide="true"
     >
-      {{ failureReason }}
+      <div class="text">
+        {{ failureReason }}
+      </div>
     </Modal>
   </div>
 </template>
@@ -1081,6 +1083,9 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+.text{
+  word-break: break-all;
+}
 .select {
   width: 200px;
 }
