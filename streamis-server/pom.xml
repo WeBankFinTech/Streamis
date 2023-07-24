@@ -63,6 +63,14 @@
                     <artifactId>xstream</artifactId>
                     <groupId>com.thoughtworks.xstream</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>spring-core</artifactId>
+                    <groupId>org.springframework</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>spring-jcl</artifactId>
+                    <groupId>org.springframework</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
