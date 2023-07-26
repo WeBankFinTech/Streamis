@@ -201,6 +201,8 @@ CREATE TABLE `linkis_stream_project_files` (
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `create_by` varchar(32) DEFAULT NULL,
   `comment` varchar(255) DEFAULT NULL COMMENT '说明',
+  `update_time` datetime DEFAULT NULL,
+  `md5` varchar(100) DEFAULT NULL COMMENT '文件md5',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='项目表';
 
