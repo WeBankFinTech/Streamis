@@ -602,7 +602,7 @@ export default {
         // 本地开发sit环境用的
         // projectName: 'streamis0606',
         // 正式环境用的
-        projectName: this.projectName
+        // projectName: this.projectName
       }
       const { jobName, jobStatus, label } = this.query
       if (jobName) {
@@ -770,8 +770,12 @@ export default {
         return;
       }
 
-      // 1、快照重启和直接重启只有调用接口时snapshot参数的区别
-      this.handleAction(this.selections, 0, snapshot)
+      try {
+        // 1、快照重启和直接重启只有调用接口时snapshot参数的区别
+        await this.handleAction(this.selections, 0, snapshot)
+      } catch (error) {
+        this.processModalVisable = false;
+      }
     },
     async handleAction(data, index, snapshot) {
       console.log('handleAction snapshot: ', snapshot);
@@ -792,11 +796,10 @@ export default {
       if (this.isBatchRestart) {
         // 是批量重启，tempData是数组
         this.hasYarnCount = 0;
-        this.tempData.forEach(async (item) => {
+        const inspectRes = await Promise.all( this.tempData.map(async (item) => {
           const { id, name } = item
           const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
           const inspectRes = await api.fetch(checkPath, {}, 'put')
-          console.log('inspectRes: ', inspectRes);
           const tempData = {
             id,
             jobName: name,
@@ -814,7 +817,8 @@ export default {
             }
           }
           this.checkData.push(tempData)
-        })
+        }))
+        console.log('inspectRes: ', inspectRes);
         // 上面虽然是调用多个接口，但因为是await，所以这里的打开弹框的顺序可以按照同步的方式写
         this.startHintVisible = true
         console.log('打开弹框 this.startHintData: ', this.startHintData);
