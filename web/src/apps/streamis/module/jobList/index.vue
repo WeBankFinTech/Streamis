@@ -602,7 +602,7 @@ export default {
         // 本地开发sit环境用的
         // projectName: 'streamis0606',
         // 正式环境用的
-        // projectName: this.projectName
+        projectName: this.projectName
       }
       const { jobName, jobStatus, label } = this.query
       if (jobName) {
