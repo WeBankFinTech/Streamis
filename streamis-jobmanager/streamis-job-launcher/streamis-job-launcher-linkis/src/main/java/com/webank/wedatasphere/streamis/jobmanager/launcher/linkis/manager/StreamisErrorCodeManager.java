@@ -48,6 +48,7 @@ public class StreamisErrorCodeManager   {
             errorCode.setErrorCode(item.getErrorCode());
             errorCode.setErrorDesc(item.getErrorDesc());
             errorCode.setErrorRegexStr(item.getErrorRegex());
+            errorCode.setErrorType(item.getErrorType());
             errorCodes.add(errorCode);
         }
         LOGGER.info("加载完成，加载错误码个数为: {}",linkisErrorCodes.size());
