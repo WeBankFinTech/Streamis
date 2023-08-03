@@ -7,8 +7,7 @@ public class StreamErrorCode {
     private Integer id;
     private String errorCode;
     private String errorDesc;
-    private Pattern errorRegex;
-    private String errorRegexStr;
+    private String errorRegex;
     private Integer errorType;
 
     public StreamErrorCode() {
@@ -19,13 +18,12 @@ public class StreamErrorCode {
         this.errorDesc = errorDesc;
     }
 
-    public StreamErrorCode(Integer id, String errorCode, String errorDesc, String errorRegexStr, Integer errorType) {
+    public StreamErrorCode(Integer id, String errorCode, String errorDesc, String errorRegex, Integer errorType) {
         this.id = id;
         this.errorCode = errorCode;
         this.errorDesc = errorDesc;
-        this.errorRegexStr = errorRegexStr;
+        this.errorRegex = errorRegex;
         this.errorType = errorType;
-        this.errorRegex = Pattern.compile(errorRegexStr);
     }
 
     public Integer getId() {
@@ -52,21 +50,12 @@ public class StreamErrorCode {
         this.errorDesc = errorDesc;
     }
 
-    public Pattern getErrorRegex() {
+    public String getErrorRegex() {
         return errorRegex;
     }
 
-    public void setErrorRegex(Pattern errorRegex) {
+    public void setErrorRegex(String errorRegex) {
         this.errorRegex = errorRegex;
-    }
-
-    public String getErrorRegexStr() {
-        return errorRegexStr;
-    }
-
-    public void setErrorRegexStr(String errorRegexStr) {
-        this.errorRegexStr = errorRegexStr;
-        this.errorRegex = Pattern.compile(errorRegexStr);
     }
 
     public Integer getErrorType() {
