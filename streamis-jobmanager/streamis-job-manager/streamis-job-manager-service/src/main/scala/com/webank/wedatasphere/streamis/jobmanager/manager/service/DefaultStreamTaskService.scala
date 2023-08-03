@@ -400,10 +400,10 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   }
 
   def getRealtimeLog(jobId: Long, taskId: Long, operator: String, requestPayload: LogRequestPayload): RealtimeLogEntity = {
-    val returnMap = new RealtimeLogEntity
-    returnMap.setLogPath("undefined")
-    returnMap.setLogs(util.Arrays.asList("No log content is available. Perhaps the task has not been scheduled"))
-    returnMap.setEndLine(1);
+    val realtimeLogEntity = new RealtimeLogEntity
+    realtimeLogEntity.setLogPath("undefined")
+    realtimeLogEntity.setLogs(util.Arrays.asList("No log content is available. Perhaps the task has not been scheduled"))
+    realtimeLogEntity.setEndLine(1);
     val streamTask = if(taskId > 0) streamTaskMapper.getTaskById(taskId)
     else streamTaskMapper.getLatestByJobId(jobId)
     if (null != streamTask && StringUtils.isNotBlank(streamTask.getLinkisJobId)) {
@@ -414,9 +414,9 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           case client: EngineConnJobClient =>
             requestPayload.setLogHistory(JobConf.isCompleted(streamTask.getStatus))
             val logIterator = client.fetchLogs(requestPayload)
-            returnMap.setLogPath(logIterator.getLogPath)
-            returnMap.setLogs(logIterator.getLogs)
-            returnMap.setEndLine(logIterator.getEndLine);
+            realtimeLogEntity.setLogPath(logIterator.getLogPath)
+            realtimeLogEntity.setLogs(logIterator.getLogs)
+            realtimeLogEntity.setEndLine(logIterator.getEndLine);
             logIterator.close()
             jobClient.getJobInfo match {
               case linkisInfo: EngineConnJobInfo =>
@@ -439,7 +439,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           s"[id: ${streamTask.getId}, jobId: ${streamTask.getJobId}, linkis_id: ${streamTask.getLinkisJobId}]", e)
       }
     }
-    returnMap
+    realtimeLogEntity
   }
 
   /**
