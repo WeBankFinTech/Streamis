@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager.StreamisErrorCodeManager;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.linkis.common.utils.Utils;
 import org.apache.linkis.errorcode.client.ClientConfiguration;
 import org.apache.linkis.errorcode.client.handler.ExceptionErrorCodeHandler;
 import org.apache.linkis.errorcode.client.handler.LinkisErrorCodeHandler;
@@ -25,18 +26,9 @@ public class StreamisErrorCodeHandler extends LinkisErrorCodeHandler {
     private static StreamisErrorCodeHandler streamisErrorCodeHandler;
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamisErrorCodeHandler.class);
     private final StreamisErrorCodeManager streamisErrorCodeManager = StreamisErrorCodeManager.getInstance();
-    private final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("streamis-errorcode-handler-%d").build();
     private final long futureTimeOut = ClientConfiguration.FUTURE_TIME_OUT.getValue();
 
-    private final ExecutorService threadPool =
-            new ThreadPoolExecutor(
-                    5,
-                    200,
-                    0L,
-                    TimeUnit.MILLISECONDS,
-                    new LinkedBlockingQueue<Runnable>(1024),
-                    threadFactory,
-                    new ThreadPoolExecutor.AbortPolicy());
+
 
     public static StreamisErrorCodeHandler getInstance() {
         if (null == streamisErrorCodeHandler) {
@@ -68,7 +60,7 @@ public class StreamisErrorCodeHandler extends LinkisErrorCodeHandler {
                                         }
                                     });
                 };
-        Future<?> future = threadPool.submit(runnable);
+        Future<?> future = Utils.defaultScheduler().submit(runnable);
         try {
             future.get(futureTimeOut, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {

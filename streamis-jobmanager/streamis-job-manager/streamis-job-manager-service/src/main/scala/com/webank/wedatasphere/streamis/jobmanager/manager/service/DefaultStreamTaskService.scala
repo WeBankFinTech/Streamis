@@ -635,7 +635,6 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       info(s"StreamJob [${streamJob.getName}] is ${jobInfo.getStatus} with $jobInfo.")
       if (JobConf.FLINK_JOB_STATUS_FAILED.getValue == streamTask.getStatus){
         val result: Future[_] = streamTaskService.errorCodeMatching(streamJob.getId,streamTask)
-        val resultYarn: Future[_] = streamTaskService.errorCodeMatchingYarn(streamJob.getId,streamTask)
         throw new JobExecuteErrorException(-1, s"(提交流式应用状态失败, 请检查日志), errorDesc: ${streamTask.getErrDesc}")
       }
       // Drop the temporary configuration
@@ -812,46 +811,17 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
 
   override def  errorCodeMatching(jobId: Long, streamTask: StreamTask): Future[_] = {
     var errorMsg =""
-    val taskId =streamTask.getId
-    val user =streamTask.getSubmitUser
-    Utils.defaultScheduler.submit(new Runnable {
-      override def run(): Unit = {
-        Utils.tryCatch{
-          breakable(
-            for(i<-0 to 10) {
-              val logs = getLog(jobId, taskId, user, "client",i*100)
-              errorMsg =exceptionAnalyze(errorMsg,logs)
-              if(errorMsg.nonEmpty){
-                break()
-              }
-            })
-          if (errorMsg.isEmpty){
-            errorMsg ="正在分析日志，请稍后"
-          }
-          val streamTask = new StreamTask()
-          streamTask.setId(taskId);
-          streamTask.setErrDesc(errorMsg)
-          streamTaskService.updateTask(streamTask)
-        }{
-          case e: Exception =>
-            logger.error("errorCodeMatching failed. ", e)
-        }
-      }
-    })
-  }
-
-  override def  errorCodeMatchingYarn(jobId: Long, streamTask: StreamTask): Future[_] = {
-    var errorMsg ="正在分析日志，请稍后"
+    var logs =""
     val taskId =streamTask.getId
     val user =streamTask.getSubmitUser
     var index = 0
       Utils.defaultScheduler.submit(new Runnable {
       override def run(): Unit = {
-        while (index < 2){
+        while (index < JobConf.ERROR_CODE_MATCHING_YARN_TIME.getHotValue() || logs.isEmpty){
           Utils.tryCatch{
             breakable(
               for(i<-0 to 10) {
-                var logs = getLog(jobId, taskId, user, "yarn",i*100)
+                logs = getLog(jobId, taskId, user, "yarn",i*100)
                 if (logs.isEmpty){break()}
                 errorMsg =exceptionAnalyze(errorMsg,logs)
                 if(errorMsg.nonEmpty){break()}
@@ -865,6 +835,29 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           streamTask.setErrDesc(errorMsg)
           streamTaskService.updateTask(streamTask)
           index +=1
+          wait(3000)
+        }
+        if (errorMsg.isEmpty){
+          Utils.tryCatch{
+            breakable(
+              for(i<-0 to 10) {
+                val logs = getLog(jobId, taskId, user, "client",i*100)
+                errorMsg =exceptionAnalyze(errorMsg,logs)
+                if(errorMsg.nonEmpty){
+                  break()
+                }
+              })
+            if (errorMsg.isEmpty){
+              errorMsg =JobConf.DEFAULT_ERROR_MSG.getHotValue()
+            }
+            val streamTask = new StreamTask()
+            streamTask.setId(taskId);
+            streamTask.setErrDesc(errorMsg)
+            streamTaskService.updateTask(streamTask)
+          }{
+            case e: Exception =>
+              logger.error("errorCodeMatching failed. ", e)
+          }
         }
       }
     })
