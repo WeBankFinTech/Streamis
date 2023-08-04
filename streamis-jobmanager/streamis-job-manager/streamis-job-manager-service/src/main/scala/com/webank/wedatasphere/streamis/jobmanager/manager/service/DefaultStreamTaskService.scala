@@ -16,7 +16,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import java.util
-import java.util.concurrent.Future
+import java.util.concurrent.{Executors, Future, ScheduledExecutorService, TimeUnit}
 import java.util.{Calendar, Map, function}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
@@ -635,6 +635,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       info(s"StreamJob [${streamJob.getName}] is ${jobInfo.getStatus} with $jobInfo.")
       if (JobConf.FLINK_JOB_STATUS_FAILED.getValue == streamTask.getStatus){
         val result: Future[_] = streamTaskService.errorCodeMatching(streamJob.getId,streamTask)
+        val resultYarn: Future[_] = streamTaskService.errorCodeMatchingYarn(streamJob.getId,streamTask)
         throw new JobExecuteErrorException(-1, s"(提交流式应用状态失败, 请检查日志), errorDesc: ${streamTask.getErrDesc}")
       }
       // Drop the temporary configuration
@@ -823,14 +824,9 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
               if(errorMsg.nonEmpty){
                 break()
               }
-            }
-          )
-          //          if (errorMsg.isEmpty){
-          //            val logs = getLog(jobId, taskId, "", "yarn",1)
-          //            errorMsg =exceptionAnalyze(errorMsg,logs)
-          //          }
+            })
           if (errorMsg.isEmpty){
-            errorMsg ="原因分析失败，请手动检查日志"
+            errorMsg ="正在分析日志，请稍后"
           }
           val streamTask = new StreamTask()
           streamTask.setId(taskId);
@@ -844,16 +840,46 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     })
   }
 
-   def getLog(jobId : Long,taskId: Long, username: String,logType: String, fromLine: Int): String = {
+  override def  errorCodeMatchingYarn(jobId: Long, streamTask: StreamTask): Future[_] = {
+    var errorMsg ="正在分析日志，请稍后"
+    val taskId =streamTask.getId
+    val user =streamTask.getSubmitUser
+    var index = 0
+      Utils.defaultScheduler.submit(new Runnable {
+      override def run(): Unit = {
+        while (index < 2){
+          Utils.tryCatch{
+            breakable(
+              for(i<-0 to 10) {
+                var logs = getLog(jobId, taskId, user, "yarn",i*100)
+                if (logs.isEmpty){break()}
+                errorMsg =exceptionAnalyze(errorMsg,logs)
+                if(errorMsg.nonEmpty){break()}
+              })
+          }{
+            case e: Exception =>
+              logger.error("errorCodeMatching failed. ", e)
+          }
+          val streamTask = new StreamTask()
+          streamTask.setId(taskId);
+          streamTask.setErrDesc(errorMsg)
+          streamTaskService.updateTask(streamTask)
+          index +=1
+        }
+      }
+    })
+  }
+
+  def getLog(jobId : Long,taskId: Long, username: String,logType: String, fromLine: Int): String = {
     val payload = new LogRequestPayload
     payload.setLogType(logType)
     payload.setFromLine(fromLine+1)
     payload.setPageSize(100)
-     val realtimeLog = streamTaskService.getRealtimeLog(jobId, if (null != taskId) taskId else 0L, username, payload)
-     val logs = realtimeLog.getLogs
-     val logString =logs.asScala.mkString("\n")
-     logString
-   }
+    val realtimeLog = streamTaskService.getRealtimeLog(jobId, if (null != taskId) taskId else 0L, username, payload)
+    val logs = realtimeLog.getLogs
+    val logString =logs.asScala.mkString("\n")
+    logString
+  }
 
   def exceptionAnalyze(errorMsg: String, log: String): String = {
     if (null != log) {

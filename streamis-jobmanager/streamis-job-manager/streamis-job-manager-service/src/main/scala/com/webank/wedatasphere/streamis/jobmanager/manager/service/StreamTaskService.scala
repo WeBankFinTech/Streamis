@@ -189,4 +189,6 @@ trait StreamTaskService {
   def getJobDetailsVO(streamJob: StreamJob, version: String): JobDetailsVo
 
   def errorCodeMatching(jobId: Long, streamTask: StreamTask): Future[_]
+
+  def errorCodeMatchingYarn(jobId: Long, streamTask: StreamTask): Future[_]
 }
