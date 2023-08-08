@@ -190,5 +190,4 @@ trait StreamTaskService {
 
   def errorCodeMatching(jobId: Long, streamTask: StreamTask): Future[_]
 
-  def errorCodeMatchingYarn(jobId: Long, streamTask: StreamTask): Future[_]
 }

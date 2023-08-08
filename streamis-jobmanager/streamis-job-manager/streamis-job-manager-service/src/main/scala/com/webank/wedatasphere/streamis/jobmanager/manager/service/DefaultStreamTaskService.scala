@@ -830,10 +830,6 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
             case e: Exception =>
               logger.error("errorCodeMatching failed. ", e)
           }
-          val streamTask = new StreamTask()
-          streamTask.setId(taskId);
-          streamTask.setErrDesc(errorMsg)
-          streamTaskService.updateTask(streamTask)
           index +=1
           wait(3000)
         }
@@ -859,6 +855,10 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
               logger.error("errorCodeMatching failed. ", e)
           }
         }
+        val streamTask = new StreamTask()
+        streamTask.setId(taskId);
+        streamTask.setErrDesc(errorMsg)
+        streamTaskService.updateTask(streamTask)
       }
     })
   }
