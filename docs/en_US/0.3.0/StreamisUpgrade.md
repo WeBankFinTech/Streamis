@@ -8,7 +8,7 @@ not involved
 
 A structure modification involving two data tables and a data modification of one data table have been added to the project version branch and included when packaging
 
-![](../../../images/0.3.1/upgrade/upgrade-to-0.3.1.jpg)
+![](../../images/0.3.1/upgrade/upgrade-to-0.3.1.jpg)
 
 ### Base script changes
 
