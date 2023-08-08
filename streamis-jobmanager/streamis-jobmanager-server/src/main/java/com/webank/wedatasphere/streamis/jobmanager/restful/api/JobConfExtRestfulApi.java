@@ -46,17 +46,12 @@ public class JobConfExtRestfulApi {
         //获取工作空间
         List<String> userList = new ArrayList<>();
         String workspaceId = CookieUtils.getCookieWorkspaceId(req);
-        if (StringUtils.isNotBlank(workspaceId)) {
+        if (RegularUtil.matches(workspaceId)) {
             userList.addAll(userService.workspaceUserQuery(req, workspaceId));
         } else {
             LOG.warn("Cannot find the workspaceID from DSS，perhaps the cookie value has been lost in request from: {}", req.getLocalAddr());
         }
-        if (RegularUtil.matches(userList)){
-            return Message.ok().data("users", userList);
-        }else {
-            return Message.error("username regular verification failed");
-        }
-
+        return Message.ok().data("users", userList);
     }
 
 }
