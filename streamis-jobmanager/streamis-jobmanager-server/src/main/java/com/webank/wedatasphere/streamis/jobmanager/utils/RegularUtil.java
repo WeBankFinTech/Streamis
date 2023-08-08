@@ -2,6 +2,8 @@ package com.webank.wedatasphere.streamis.jobmanager.utils;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
+
 public class RegularUtil {
 
     private RegularUtil(){}
@@ -16,6 +18,13 @@ public class RegularUtil {
     public static boolean matches(String input) {
         if (StringUtils.isNotBlank(input)){
             return input.matches(PATTERN);
+        }
+        return false;
+    }
+
+    public static boolean matches(List<String> userList) {
+        if (userList.isEmpty()){
+            return userList.toString().matches(LETTER_PATTERN);
         }
         return false;
     }
