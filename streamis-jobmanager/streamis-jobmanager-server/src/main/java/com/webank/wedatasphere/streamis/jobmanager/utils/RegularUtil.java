@@ -30,11 +30,5 @@ public class RegularUtil {
     }
 
 
-    /**
-     * 特殊字符查询加转义符
-     * @param string
-     * @return
-     */
-
 
 }
