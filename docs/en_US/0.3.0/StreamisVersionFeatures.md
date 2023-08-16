@@ -7,7 +7,7 @@ From 0.3.0 onwards, the task is non-separated by default. If you want to change 
 ```
 "wds.linkis.flink.produce": {
 		"wds.linkis.flink.checkpoint.switch":"ON",
-		"wds.linkis.flink.alert.failure.user":"alexyang",
+		"wds.linkis.flink.alert.failure.user":"",
 		"wds.linkis.flink.app.fail-restart.switch":"OFF",
 		"wds.linkis.flink.app.start-auto-restore.switch":"OFF",
 		"linkis.ec.app.manage.mode": "detach"
@@ -44,7 +44,7 @@ You can configure the alerter when importing a task, or on the task configuratio
 ```
 "wds.linkis.flink.produce": {
 		"wds.linkis.flink.checkpoint.switch":"ON",
-		"wds.linkis.flink.alert.failure.user":"alexyang",
+		"wds.linkis.flink.alert.failure.user":"",
 		"wds.linkis.flink.app.fail-restart.switch":"OFF",
 		"wds.linkis.flink.app.start-auto-restore.switch":"OFF",
 		"linkis.ec.app.manage.mode": "detach"
