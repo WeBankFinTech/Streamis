@@ -1,7 +1,7 @@
-Streamis upgrade document. This article mainly introduces the upgrade steps of adapting DSS1.1.0 and linkis1.1.1 based on the original installation of Streamis service. The biggest difference between Streamis 0.2.5 and Streamis 0.1.0 is that it accesses DSS appconn and optimizes the start and stop of jobs.
+Streamis upgrade document. This article mainly introduces the upgrade steps of adapting DSS1.1.2 and linkis1.4.0 based on the original installation of Streamis service. The biggest difference between Streamis 0.3.0 and Streamis 0.1.0 is that it accesses DSS appconn and optimizes the start and stop of jobs.
 
 # 1. Work before upgrading streamis
-Before upgrading Streamis, please install linkis1.1.1 and DSS1.1.0 or above, and ensure that the linkis Flink engine and DSS can be used normally. For the installation of DSS and linkis, please refer to [dss & linkis one click installation and deployment document](https://github.com/WeBankFinTech/DataSphereStudio-Doc/blob/main/zh_CN/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/DSS%E5%8D%95%E6%9C%BA%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.md).
+Before upgrading Streamis, please install linkis1.4.0 and DSS1.1.2 or above, and ensure that the linkis Flink engine and DSS can be used normally. For the installation of DSS and linkis, please refer to [dss & linkis one click installation and deployment document](https://github.com/WeBankFinTech/DataSphereStudio-Doc/blob/main/zh_CN/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/DSS%E5%8D%95%E6%9C%BA%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.md).
 
 # 2. Streamis upgrade steps
 
