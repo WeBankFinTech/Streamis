@@ -52,10 +52,10 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 ## Depended ecosystems
 
-| Depended Component | Description | Streamis compatibility |
-| -------------- | -------------------------------------------------------------- | --------------|
-| [DataSphereStudio](https://github.com/WeBankFinTech/DataSphereStudio) | Data application development management framework. With a unified UI, the workflow-like graphical drag-and-drop development experience meets the entire lifecycle of data application development from data import, desensitization cleaning, data analysis, data mining, quality inspection, visualization, scheduling to data output applications, etc. | &gt;= DSS1.1.0 (Released) |
-| [Linkis](https://github.com/apache/incubator-linkis) | Apache Linkis, builds a layer of computation middleware, by using standard interfaces such as REST/WS/JDBC provided by Linkis, the upper applications can easily access the underlying engines such as MySQL/Spark/Hive/Presto/Flink, etc. | &gt;= Linkis1.1.1 (Released),some functions need to be supported by linkis 1.1.2 |
+| Depended Component | Description | Streamis compatibility       |
+| -------------- | -------------------------------------------------------------- |------------------------------|
+| [DataSphereStudio](https://github.com/WeBankFinTech/DataSphereStudio) | Data application development management framework. With a unified UI, the workflow-like graphical drag-and-drop development experience meets the entire lifecycle of data application development from data import, desensitization cleaning, data analysis, data mining, quality inspection, visualization, scheduling to data output applications, etc. | &gt;= DSS1.1.2 (Released)    |
+| [Linkis](https://github.com/apache/linkis) | Apache Linkis, builds a layer of computation middleware, by using standard interfaces such as REST/WS/JDBC provided by Linkis, the upper applications can easily access the underlying engines such as MySQL/Spark/Hive/Presto/Flink, etc. | &gt;= Linkis1.4.0 (Released) |
 
 ## Demo Trial environment
 
