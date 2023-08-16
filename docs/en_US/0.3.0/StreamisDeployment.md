@@ -1,7 +1,7 @@
 # Streamis installation and deployment documentation
 
 ## 1. Component introduction
-Streamis0.3.0-webank provides the Streamis-JobManager component, the role of the component is <br>
+Streamis0.3.0 provides the Streamis-JobManager component, the role of the component is <br>
 1. Publish streaming applications<br>
 2. Set streaming application parameters, such as the number of Flink slots, checkpoint related parameters, etc.<br>
 3. Manage streaming applications (e.g. start and stop)<br>
@@ -194,10 +194,10 @@ sudo nginx -s reload
 
 ## 5. Access to DSS
 
-If you want to use the streamis0.3.0-webank front end normally, you also need to install the DSS StreamisAppConn plug-in. Please refer to: [StreamisAppConn plug-in installation document](development/StreamisAppConnInstallationDocument.md)
+If you want to use the streamis0.3.0 front end normally, you also need to install the DSS StreamisAppConn plug-in. Please refer to: [StreamisAppConn plug-in installation document](development/StreamisAppConnInstallationDocument.md)
 
 ## 6. Linkis Flink engine compilation and installation
-If you want to run streamis0.3.0-webank normally, you also need to install the linkis Flink engine. Please refer to: [linkis Flink engine installation document](https://linkis.apache.org/zh-CN/docs/1.1.2/engine_usage/flink/)
+If you want to run streamis0.3.0 normally, you also need to install the linkis Flink engine. Please refer to: [linkis Flink engine installation document](https://linkis.apache.org/zh-CN/docs/1.1.2/engine_usage/flink/)
 
 ## 7. Streamis component upgrade document / script
-If you want to upgrade from a lower version of streamis to streamis0.3.0-webank, please refer to: [streamis upgrade document](development/StreamisUpgradeDocumentation.md)
+If you want to upgrade from a lower version of streamis to streamis0.3.0, please refer to: [streamis upgrade document](development/StreamisUpgradeDocumentation.md)
