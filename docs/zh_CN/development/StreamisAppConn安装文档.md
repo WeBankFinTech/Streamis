@@ -1,7 +1,7 @@
-StreamisAppConn安装文档 本文主要介绍在DSS(DataSphere Studio)1.1.0中StreamisAppConn的部署、配置以及安装
+StreamisAppConn安装文档 本文主要介绍在DSS(DataSphere Studio)1.1.2中StreamisAppConn的部署、配置以及安装
 
 # 1.部署StreamisAppConn的准备工作
-您在部署StreamisAppConn之前，请安装完成Streamis0.2.5-webank及其他相关组件的安装，并确保工程基本功能可用。
+您在部署StreamisAppConn之前，请安装完成Streamis0.3.0及其他相关组件的安装，并确保工程基本功能可用。
 
 # 2.StreamisAppConn插件的下载和编译
 1）下载二进制包
