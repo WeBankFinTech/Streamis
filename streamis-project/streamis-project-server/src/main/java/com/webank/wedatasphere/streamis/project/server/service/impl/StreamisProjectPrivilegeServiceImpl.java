@@ -149,7 +149,7 @@ public class StreamisProjectPrivilegeServiceImpl implements StreamisProjectPrivi
                 .filter(privilege -> username!=null && username.equals(privilege.getUserName())
                         && (ProjectUserPrivilegeEnum.RELEASE.getRank() == privilege.getPrivilege()
                         || ProjectUserPrivilegeEnum.EDIT.getRank() == privilege.getPrivilege()
-                        || ProjectUserPrivilegeEnum.EDIT.getRank() == privilege.getPrivilege()))
+                        || ProjectUserPrivilegeEnum.ACCESS.getRank() == privilege.getPrivilege()))
                 .collect(Collectors.toList());
         return CollectionUtils.isNotEmpty(privilegeList);
     }

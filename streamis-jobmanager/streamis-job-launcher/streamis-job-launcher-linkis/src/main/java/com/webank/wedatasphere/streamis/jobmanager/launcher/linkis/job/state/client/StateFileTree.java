@@ -1,13 +1,13 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.client;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class StateFileTree {
 
     private String name;
     private String path;
-    private HashMap<String, String> properties;
+    private Map<String, String> properties;
     private List<StateFileTree> children;
     private Boolean isLeaf = false;
     private String parentPath;
@@ -44,11 +44,11 @@ public class StateFileTree {
         this.path = path;
     }
 
-    public HashMap<String, String> getProperties() {
+    public Map<String, String> getProperties() {
         return properties;
     }
 
-    public void setProperties(HashMap<String, String> properties) {
+    public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
 

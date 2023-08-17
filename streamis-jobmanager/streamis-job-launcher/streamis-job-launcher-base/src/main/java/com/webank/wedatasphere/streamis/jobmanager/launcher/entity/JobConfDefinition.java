@@ -1,6 +1,6 @@
 /*
  * Copyright 2021 WeBank
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -98,6 +98,8 @@ public class JobConfDefinition {
      * Is required
      */
     private boolean required;
+
+    private boolean mark;
 
     public JobConfDefinition(){
 
@@ -237,5 +239,13 @@ public class JobConfDefinition {
 
     public void setRequired(boolean required) {
         this.required = required;
+    }
+
+    public boolean isMark() {
+        return mark;
+    }
+
+    public void setMark(boolean mark) {
+        this.mark = mark;
     }
 }

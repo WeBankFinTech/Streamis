@@ -24,8 +24,10 @@ class StreamisTransformJobImpl extends StreamisTransformJob {
 
   private var streamJob: StreamJob = _
   private var streamJobVersion: StreamJobVersion = _
-  private var configMap: util.Map[String, Any] = _
+  private var configMap: util.Map[String, AnyRef] = _
+  @deprecated
   private var streamisJobEngineConn: StreamisJobEngineConn = _
+  private var streamisJobConnect: StreamisJobConnect = _
   private var streamisTransformJobContent: StreamisTransformJobContent = _
 
   override def getStreamJob: StreamJob = streamJob
@@ -34,16 +36,20 @@ class StreamisTransformJobImpl extends StreamisTransformJob {
   override def getStreamJobVersion: StreamJobVersion = streamJobVersion
   def setStreamJobVersion(streamJobVersion: StreamJobVersion): Unit = this.streamJobVersion = streamJobVersion
 
+  @deprecated
   override def getStreamisJobEngineConn: StreamisJobEngineConn = streamisJobEngineConn
   def setStreamisJobEngineConn(streamisJobEngineConn: StreamisJobEngineConn): Unit = this.streamisJobEngineConn = streamisJobEngineConn
+
+  override def getStreamisJobConnect: StreamisJobConnect = streamisJobConnect
+  def setStreamisJobConnect(streamisJobConnect: StreamisJobConnect): Unit = this.streamisJobConnect = streamisJobConnect
 
   override def getStreamisTransformJobContent: StreamisTransformJobContent = streamisTransformJobContent
   def setStreamisTransformJobContent(streamisTransformJobContent: StreamisTransformJobContent): Unit =
     this.streamisTransformJobContent = streamisTransformJobContent
 
-  override def getConfigMap: util.Map[String, Any] =this.configMap
+  override def getConfigMap: util.Map[String, AnyRef] =this.configMap
 
-  def setConfigMap(mapValue: util.Map[String, Any]): Unit = {
+  def setConfigMap(mapValue: util.Map[String, AnyRef]): Unit = {
     this.configMap = mapValue
   }
 }

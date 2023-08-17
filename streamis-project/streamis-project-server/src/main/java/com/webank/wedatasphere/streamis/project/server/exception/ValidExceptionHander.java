@@ -25,7 +25,7 @@ public class ValidExceptionHander {
         LOG.error("Request parameter validation exception", e);
         BindingResult bindingResult = e.getBindingResult();
         StringBuilder stringBuilder = new StringBuilder();
-        bindingResult.getFieldErrors().forEach((item) -> stringBuilder.append(item.getDefaultMessage()).append(";"));
+        bindingResult.getFieldErrors().forEach(item -> stringBuilder.append(item.getDefaultMessage()).append(";"));
         return Message.error("failed to validate request parameter, detail:"+stringBuilder.toString());
     }
 

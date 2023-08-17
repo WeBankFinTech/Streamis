@@ -38,7 +38,7 @@ class ResourceConfigTransform extends ConfigTransform {
   override protected def configGroup(): String = JobConfKeyConstants.GROUP_RESOURCE.getValue
 
 
-  override protected def transform(valueSet: util.Map[String, Any], job: LaunchJob): LaunchJob = {
+  override protected def transform(valueSet: util.Map[String, AnyRef], job: LaunchJob): LaunchJob = {
     val startupMap = valueSet.asScala.map{
       case (key, value) =>
         RESOURCE_CONFIG_MAP.get(key) match {
@@ -47,7 +47,7 @@ class ResourceConfigTransform extends ConfigTransform {
           case _ => (key, value)
         }
     }.asJava
-    val params = if(job.getParams == null) new util.HashMap[String, Any] else job.getParams
+    val params = if(job.getParams == null) new util.HashMap[String, AnyRef] else job.getParams
     if(!startupMap.isEmpty) TaskUtils.addStartupMap(params, JobUtils.filterParameterSpec(startupMap))
     LaunchJob.builder().setLaunchJob(job).setParams(params).build()
   }

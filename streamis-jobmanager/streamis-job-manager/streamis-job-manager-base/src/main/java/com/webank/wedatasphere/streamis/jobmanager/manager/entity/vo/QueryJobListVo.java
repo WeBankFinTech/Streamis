@@ -24,12 +24,21 @@ public class QueryJobListVo {
     private String projectId;
     private String projectName;
     private String jobType;
+    private String manageMode;
     private String label;
     private String createBy;
     private Date createTime;
     private Integer status;
     private String version;
+    /**
+     * Last version
+     */
+    private String lastVersion;
     private Date lastVersionTime;
+    /**
+     * Number of version forward
+     */
+    private Integer versionForwards;
     private String description;
 
     public Long getId() {
@@ -78,6 +87,14 @@ public class QueryJobListVo {
 
     public void setJobType(String jobType) {
         this.jobType = jobType;
+    }
+
+    public String getManageMode() {
+        return manageMode;
+    }
+
+    public void setManageMode(String manageMode) {
+        this.manageMode = manageMode;
     }
 
     public String getLabel() {
@@ -134,5 +151,21 @@ public class QueryJobListVo {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Integer getVersionForwards() {
+        return versionForwards;
+    }
+
+    public void setVersionForwards(Integer versionForwards) {
+        this.versionForwards = versionForwards;
+    }
+
+    public String getLastVersion() {
+        return lastVersion;
+    }
+
+    public void setLastVersion(String lastVersion) {
+        this.lastVersion = lastVersion;
     }
 }

@@ -134,11 +134,11 @@ public class TenancyConsumerManager extends ConsumerManager {
             String tenancy = tenancyGroupFactory.getTenancyByGroupName(groupName);
             groupFactory.getGroup(groupName);
             if (StringUtils.isNotBlank(tenancy)){
-                return tenancyExecutorServices.computeIfAbsent(tenancy, tenancyName -> {
+                return tenancyExecutorServices.computeIfAbsent(tenancy, tenancyName ->
                     // Use the default value of max running jobs
-                    return Utils.newCachedThreadPool(tenancyGroupFactory.getDefaultMaxRunningJobs()  + 1,
-                            TenancyGroupFactory.GROUP_NAME_PREFIX + tenancy + "-Executor-", true);
-                });
+                     Utils.newCachedThreadPool(tenancyGroupFactory.getDefaultMaxRunningJobs()  + 1,
+                            TenancyGroupFactory.GROUP_NAME_PREFIX + tenancy + "-Executor-", true)
+                );
             }
         }
         return getOrCreateExecutorService();

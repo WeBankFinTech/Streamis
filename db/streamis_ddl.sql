@@ -132,9 +132,10 @@ CREATE TABLE `linkis_stream_job` (
   `create_time` datetime DEFAULT NULL,
   `label` varchar(200) DEFAULT NULL,
   `description` varchar(200) DEFAULT NULL,
-  `job_type` varchar(30) DEFAULT NULL COMMENT '目前只支持flink.sql、flink.jar',
+  `job_type` varchar(30) DEFAULT NULL COMMENT '目前只支持flink.sql、flink.jar、spark.jar',
   `submit_user` varchar(100) DEFAULT NULL,
   `workspace_name` varchar(50) DEFAULT NULL,
+  `current_version` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY(`project_name`, `name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='作业表';
@@ -149,6 +150,7 @@ CREATE TABLE `linkis_stream_job_version` (
   `version` varchar(20) DEFAULT NULL,
   `source` varchar(255) DEFAULT NULL COMMENT '这个版本的来源，比如：用户上传，由某个历史版本回退回来的',
   `job_content` text COMMENT '内容为meta.json',
+  `manage_mode` varchar(30) DEFAULT 'EngineConn' COMMENT 'Manage mode',
   `comment` varchar(255) DEFAULT NULL,
   `create_time` datetime DEFAULT NULL,
   `create_by` varchar(32) DEFAULT NULL,
@@ -199,6 +201,8 @@ CREATE TABLE `linkis_stream_project_files` (
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `create_by` varchar(32) DEFAULT NULL,
   `comment` varchar(255) DEFAULT NULL COMMENT '说明',
+  `update_time` datetime DEFAULT NULL,
+  `md5` varchar(100) DEFAULT NULL COMMENT '文件md5',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='项目表';
 

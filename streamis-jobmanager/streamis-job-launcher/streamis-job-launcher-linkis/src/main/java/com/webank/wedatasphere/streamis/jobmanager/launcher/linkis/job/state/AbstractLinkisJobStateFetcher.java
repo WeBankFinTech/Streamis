@@ -1,7 +1,7 @@
 
 /*
  * Copyright 2021 WeBank
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -19,7 +19,6 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateFetcher;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.FlinkJobStateFetchException;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.StreamisJobLaunchException;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.client.StateFileTree;
@@ -36,13 +35,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 
 /**
@@ -70,13 +67,13 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
     /**
      * Http Client
      */
-    Client client;
+    protected Client client;
 
     private final Class<T> stateClass;
 
     private final JobStateManager jobStateManager;
 
-    public AbstractLinkisJobStateFetcher(Class<T> stateClass, JobStateManager jobStateManager){
+    protected AbstractLinkisJobStateFetcher(Class<T> stateClass, JobStateManager jobStateManager){
         this.stateClass = stateClass;
         this.jobStateManager = jobStateManager;
     }
@@ -130,12 +127,12 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
      * @param resolved resolved
      * @return
      */
-    private StateFileTree traverseFileTreeToFind(JobInfo jobInfo, StateFileTree stateFileTree, Function<String, Boolean> matcher,
+    private StateFileTree traverseFileTreeToFind(JobInfo jobInfo, StateFileTree stateFileTree, Predicate<String> matcher,
                                                     boolean resolved){
         AtomicReference<StateFileTree> latestFileTree = new AtomicReference<>(new StateFileTree());
         if (Objects.nonNull(stateFileTree)){
             if (!resolved && stateFileTree.getIsLeaf()){
-                if (matcher.apply(stateFileTree.getPath()) && compareTime(stateFileTree, latestFileTree.get()) > 0){
+                if (matcher.test(stateFileTree.getPath()) && compareTime(stateFileTree, latestFileTree.get()) > 0){
                     latestFileTree.set(stateFileTree);
                 }
             } else if (!stateFileTree.getIsLeaf()){
@@ -145,7 +142,7 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
                                 Objects.nonNull(childStateFileTree.getChildren())? childStateFileTree : getDirFileTree(jobInfo, childStateFileTree.getPath()),
                                 matcher,
                                 true);
-                    if (compareTime(candidateFileTree, latestFileTree.get()) > 0 && matcher.apply(candidateFileTree.getPath())){
+                    if (compareTime(candidateFileTree, latestFileTree.get()) > 0 && matcher.test(candidateFileTree.getPath())){
                         latestFileTree.set(candidateFileTree);
                     }
                 }));
@@ -206,7 +203,8 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
      * @return size
      */
     private long compareTime(StateFileTree leftTree, StateFileTree rightTree){
-        long leftTime = 0L,rightTime = 0L;
+        long leftTime = 0L;
+        long rightTime = 0L;
         try {
             leftTime = Long.parseLong(Optional.ofNullable(leftTree.getProperties()).orElse(new HashMap<>()).getOrDefault(PROPS_MODIFY_TIME, "0"));
         } catch (NumberFormatException e){

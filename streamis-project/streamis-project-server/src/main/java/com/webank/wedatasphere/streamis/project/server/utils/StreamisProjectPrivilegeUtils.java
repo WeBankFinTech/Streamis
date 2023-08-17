@@ -7,6 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StreamisProjectPrivilegeUtils {
+
+
+    private StreamisProjectPrivilegeUtils(){}
+
+
     public static List<StreamisProjectPrivilege> createStreamisProjectPrivilege(Long projectId, List<String> users, int privilege){
         List<StreamisProjectPrivilege> retList = new ArrayList<>();
         if(CollectionUtils.isEmpty(users)){
