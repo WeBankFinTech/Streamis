@@ -38,7 +38,7 @@ class StreamisJobManagerReceiver(jobService: StreamJobService) extends Receiver 
 
 
   override def receive(message: Any, sender: Sender): Unit = {
-
+    //nothing
   }
 
   override def receiveAndReply(message: Any, sender: Sender): Any = receiveAndReply(message, Duration(timeout, "seconds"), sender)

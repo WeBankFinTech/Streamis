@@ -22,13 +22,15 @@ public class CookieUtils {
 
     private static final String COOKIE_WORKSPACE_ID = "workspaceId";
 
+    private CookieUtils(){}
+
     static String getCookieValue(HttpServletRequest request, String name) {
         Cookie c = getCookie(request, name);
         return c == null ? null : c.getValue();
     }
 
     static Cookie getCookie(HttpServletRequest request, String name) {
-        Cookie cookies[] = request.getCookies();
+        Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if (name.equals(cookie.getName())) {

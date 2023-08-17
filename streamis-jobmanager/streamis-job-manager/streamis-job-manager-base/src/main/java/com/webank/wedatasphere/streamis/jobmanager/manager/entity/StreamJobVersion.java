@@ -23,6 +23,10 @@ public class StreamJobVersion {
     private Long jobId;
     private String version;
     private String source;
+    /**
+     * Manage mode
+     */
+    private String manageMode;
     private String jobContent;
     private String comment;
     private Date createTime;
@@ -90,5 +94,28 @@ public class StreamJobVersion {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public String getManageMode() {
+        return manageMode;
+    }
+
+    public void setManageMode(String manageMode) {
+        this.manageMode = manageMode;
+    }
+
+    @Override
+    public String toString() {
+        return "StreamJobVersion{" +
+                "id=" + id +
+                ", jobId=" + jobId +
+                ", version='" + version + '\'' +
+                ", source='" + source + '\'' +
+                ", manageMode='" + manageMode + '\'' +
+                ", jobContent='" + jobContent + '\'' +
+                ", comment='" + comment + '\'' +
+                ", createTime=" + createTime +
+                ", createBy='" + createBy + '\'' +
+                '}';
     }
 }

@@ -27,7 +27,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.linkis.server.Message;
-import org.apache.linkis.server.security.SecurityFilter;
+import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
+import java.util.Objects;
 
 @RequestMapping(path = "/streamis/streamJobManager/job")
 @RestController
@@ -65,7 +68,7 @@ public class UploadRestfulApi {
                              @RequestParam(name = "projectName", required = false) String projectName,
                               @RequestParam(name = "file") List<MultipartFile> files) throws IOException, JobException {
 
-        String userName = SecurityFilter.getLoginUsername(request);
+        String userName = ModuleUserUtils.getOperationUser(request, "upload job zip file");
         if (files == null || files.size() <= 0) {
             throw JobExceptionManager.createException(30300, "uploaded files");
         }
@@ -80,23 +83,56 @@ public class UploadRestfulApi {
         }
         InputStream is = null;
         OutputStream os = null;
-        try{
-            String inputPath = IoUtils.generateIOPath(userName, "streamis", fileName);
-            File file = new File(inputPath);
-            if(file.getParentFile().exists()){
+        File file = null;
+        String inputPath = null;
+        try {
+            inputPath = IoUtils.generateIOPath(userName, "streamis", fileName);
+            file = new File(inputPath);
+            if (file.getParentFile().exists()) {
                 FileUtils.deleteDirectory(file.getParentFile());
             }
             is = p.getInputStream();
             os = IoUtils.generateExportOutputStream(inputPath);
             IOUtils.copy(is, os);
             StreamJobVersion job = streamJobService.uploadJob(projectName, userName, inputPath);
-            return Message.ok().data("jobId",job.getJobId());
-        } catch (Exception e){
+            return Message.ok().data("jobId", job.getJobId());
+        } catch (Exception e) {
             LOG.error("Failed to upload zip {} to project {} for user {}.", fileName, projectName, userName, e);
             return Message.error(ExceptionUtils.getRootCauseMessage(e));
-        } finally{
+        } finally {
             IOUtils.closeQuietly(os);
             IOUtils.closeQuietly(is);
+            //Delete the temporary file
+            if (Objects.nonNull(file) && file.exists()) {
+                Path path = Paths.get(inputPath.replace("/" + fileName, ""));
+                Files.walkFileTree(path,
+                        new SimpleFileVisitor<Path>() {
+                            // 先去遍历删除文件
+                            @Override
+                            public FileVisitResult visitFile(Path file,
+                                                             BasicFileAttributes attrs) throws IOException {
+                                try {
+                                    Files.delete(file);
+                                } catch (IOException e) {
+                                    LOG.warn("Fail to delete the input job file, please examine the local system environment");
+                                }
+                                return FileVisitResult.CONTINUE;
+                            }
+
+                            // 再去遍历删除目录
+                            @Override
+                            public FileVisitResult postVisitDirectory(Path dir,
+                                                                      IOException exc) throws IOException {
+                                try {
+                                    Files.delete(dir);
+                                } catch (IOException e) {
+                                    LOG.warn("Fail to delete the input job file, please examine the local system environment");
+                                }
+                                return FileVisitResult.CONTINUE;
+                            }
+                        }
+                );
+            }
         }
     }
 }

@@ -17,9 +17,10 @@ INSERT INTO `linkis_stream_job_config_def` VALUES (12,'wds.linkis.flink.alert.ru
 INSERT INTO `linkis_stream_job_config_def` VALUES (13,'wds.linkis.flink.alert.user','告警用户','NONE',0,'告警用户',NULL,NULL,'',1,1,NULL,NULL,'',NULL,0,0);
 INSERT INTO `linkis_stream_job_config_def` VALUES (14,'wds.linkis.flink.alert.level','告警级别','NONE',0,'告警级别','None',NULL,'',1,1,NULL,NULL,'',NULL,0,0);
 INSERT INTO `linkis_stream_job_config_def` VALUES (15,'wds.linkis.flink.alert.failure.level','失败时告警级别','NONE',0,'失败时告警级别','None',NULL,'',1,1,NULL,NULL,'',NULL,0,0);
-INSERT INTO `linkis_stream_job_config_def` VALUES (16,'wds.linkis.flink.alert.failure.user','失败时告警用户','NONE',0,'失败时告警用户','None',NULL,'',1,1,NULL,NULL,'',NULL,0,0);
+INSERT INTO `linkis_stream_job_config_def` VALUES (16,'wds.linkis.flink.alert.failure.user','失败时告警用户','INPUT',0,'失败时告警用户','None',NULL,'',1,1,NULL,NULL,'',NULL,0,0);
 INSERT INTO `linkis_stream_job_config_def` VALUES (32,'wds.linkis.flink.authority','权限设置','NONE',0,'权限设置','None',NULL,'',1,0,NULL,NULL,'',NULL,0,0);
 INSERT INTO `linkis_stream_job_config_def` VALUES (33,'wds.linkis.flink.authority.visible','可见人员','INPUT',0,'可见人员','None',NULL,'',1,1,NULL,NULL,'',32,0,0);
 INSERT INTO `linkis_stream_job_config_def` VALUES (34,'wds.linkis.rm.yarnqueue','使用Yarn队列','INPUT',0,'使用Yarn队列','None',NULL,'',1,1,NULL,NULL,'',1,0,0);
 INSERT INTO `linkis_stream_job_config_def` VALUES (35,'wds.linkis.flink.app.fail-restart.switch','作业失败自动拉起开关','SELECT',1,'作业失败自动拉起开关','None',NULL,'',1,1,NULL,'OFF','ON,OFF',8,0,0);
 INSERT INTO `linkis_stream_job_config_def` VALUES (36,'wds.linkis.flink.app.start-auto-restore.switch','作业启动状态自恢复','SELECT',2,'作业启动状态自恢复','None',NULL,'',1,1,NULL,'ON','ON,OFF',8,0,0);
+INSERT INTO `linkis_stream_job_config_def` VALUES (38, 'linkis.ec.app.manage.mode', '管理模式', 'SELECT', 3, 'EngineConn管理模式', 'None', NULL, '', 1, 1, NULL, 'attach', 'detach,attach', 8, 0, 0);

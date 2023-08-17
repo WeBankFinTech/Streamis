@@ -15,18 +15,31 @@ trait StreamJobService {
 
 
   def getJobById(jobId: Long): StreamJob
+
+  def getJobByName(jobName: String): util.List[StreamJob]
+
   /**
    * Page list query
+   *
    * @param projectName project name
-   * @param jobName job name
-   * @param jobStatus job status
-   * @param jobCreator job creator
+   * @param jobName     job name
+   * @param jobStatus   job status
+   * @param jobCreator  job creator
    * @return
    */
-  def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String): PageInfo[QueryJobListVo]
+  def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String, label: String): PageInfo[QueryJobListVo]
+
+  /**
+   * Page list query of version info
+   *
+   * @param jobId job id
+   * @return
+   */
+  def getVersionList(jobId: Long): PageInfo[VersionDetailVo]
 
   /**
    * Count core norm
+   *
    * @param projectName project name
    * @return
    */
@@ -34,37 +47,43 @@ trait StreamJobService {
 
   /**
    * Version detail information
-   * @param jobId job id
+   *
+   * @param jobId   job id
    * @param version version
    */
   def versionDetail(jobId: Long, version: String): VersionDetailVo
 
   /**
-   * Update version
+   * Rolling job version
+   *
    * @param preVersion version
    */
-  def updateVersion(preVersion: String): String
+  def rollingJobVersion(preVersion: String): String
 
   /**
    * Upload files
+   *
    * @param metaJsonInfo meta json
-   * @param version version
-   * @param path path
+   * @param version      version
+   * @param path         path
    */
   def uploadFiles(metaJsonInfo: MetaJsonInfo, version: StreamJobVersion, path: String): Unit
 
   /**
-   * Create stream job
-   * @param metaJsonInfo meta json
-   * @param userName username
+   * Deploy stream job
+   *
+   * @param metaJsonInfo  meta json
+   * @param userName      username
+   * @param updateVersion should update version
    * @return
    */
-  def createStreamJob(metaJsonInfo: MetaJsonInfo, userName: String): StreamJobVersion
+  def deployStreamJob(streamJob: StreamJob, metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean): StreamJobVersion
 
   /**
    * Upload job
-   * @param projectName project name
-   * @param userName username
+   *
+   * @param projectName  project name
+   * @param userName     username
    * @param inputZipPath input zip path
    * @return
    */
@@ -72,7 +91,8 @@ trait StreamJobService {
 
   /**
    * Create or update job with meta json
-   * @param userName username
+   *
+   * @param userName     username
    * @param metaJsonInfo meta json
    * @return
    */
@@ -80,7 +100,8 @@ trait StreamJobService {
 
   /**
    * Get job content
-   * @param jobId job id
+   *
+   * @param jobId   job id
    * @param version version
    * @return
    */
@@ -88,7 +109,8 @@ trait StreamJobService {
 
   /**
    * Has permission
-   * @param jobId job id
+   *
+   * @param jobId    job id
    * @param username username
    * @return
    */
@@ -98,6 +120,7 @@ trait StreamJobService {
 
   /**
    * Alert user
+   *
    * @param job stream job
    * @return
    */
@@ -105,6 +128,7 @@ trait StreamJobService {
 
   /**
    * Alert level
+   *
    * @param job stream job
    * @return
    */
@@ -112,7 +136,8 @@ trait StreamJobService {
 
   /**
    * Is creator
-   * @param jobId job id
+   *
+   * @param jobId    job id
    * @param username username
    * @return
    */
@@ -120,10 +145,15 @@ trait StreamJobService {
 
   /**
    * List alert message list
+   *
    * @param username username
-   * @param jobId job id
-   * @param version version
+   * @param jobId    job id
+   * @param version  version
    * @return
    */
   def getAlert(username: String, jobId: Long, version: String): util.List[StreamAlertRecord]
+
+  def updateLabel(streamJob: StreamJob): Unit
+
+  def getLinkisFlinkAlertLevel(job: StreamJob): AlertLevel
 }

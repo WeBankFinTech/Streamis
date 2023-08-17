@@ -18,21 +18,21 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 import java.util
 import java.util.Date
 import java.util.concurrent.{Future, TimeUnit}
-import com.google.common.collect.Sets
 import com.webank.wedatasphere.streamis.jobmanager.launcher.JobLauncherAutoConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.{FlinkJobInfo, LinkisJobInfo}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.{EngineConnJobInfo, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.{AlertLevel, Alerter}
-import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils
 
 import javax.annotation.{PostConstruct, PreDestroy, Resource}
 import org.apache.commons.lang.exception.ExceptionUtils
+import org.apache.commons.lang3.StringUtils
 import org.apache.linkis.common.exception.ErrorException
 import org.apache.linkis.common.utils.{Logging, RetryHandler, Utils}
 import org.springframework.beans.factory.annotation.Autowired
@@ -84,58 +84,63 @@ class TaskMonitorService extends Logging {
       return
     }
     streamTasks.filter(shouldMonitor).foreach { streamTask =>
-      streamTask.setLastUpdateTime(new Date)
-      streamTaskMapper.updateTask(streamTask)
       val job = streamJobMapper.getJobById(streamTask.getJobId)
-      info(s"Try to update status of StreamJob-${job.getName}.")
-      val retryHandler = new RetryHandler {}
-      retryHandler.setRetryNum(3)
-      retryHandler.setRetryMaxPeriod(2000)
-      retryHandler.addRetryException(classOf[ErrorException])
-      var jobInfo:JobInfo = null
-      Utils.tryCatch {
-        jobInfo = retryHandler.retry(refresh(streamTask, jobLaunchManager), s"Task-Monitor-${job.getName}")
-      } { ex => {
-        error(s"Fetch StreamJob-${job.getName} failed, maybe the Linkis cluster is wrong, please be noticed!", ex)
-        val errorMsg = ExceptionUtils.getRootCauseMessage(ex)
-        if (errorMsg != null && errorMsg.contains("Not exists EngineConn")) {
-          streamTask.setStatus(JobConf.FLINK_JOB_STATUS_FAILED.getValue)
-          streamTask.setErrDesc("Not exists EngineConn.")
-        } else {
-          // 连续三次还是出现异常，说明Linkis的Manager已经不能正常提供服务，告警并不再尝试获取状态，等待下次尝试
-          val users = getAlertUsers(job)
-          users.add(job.getCreateBy)
-          alert(jobService.getAlertLevel(job), s"请求LinkisManager失败，Linkis集群出现异常，请关注！影响任务[${job.getName}]", users, streamTask)
+      if(!JobConf.SUPPORTED_MANAGEMENT_JOB_TYPES.getValue.contains(job.getJobType)) {
+        val userList = getAlertUsers(job)
+        //user
+        val alertMsg = s"Spark Streaming应用[${job.getName}]已经超过 ${Utils.msDurationToString(System.currentTimeMillis - streamTask.getLastUpdateTime.getTime)} 没有更新状态, 请及时确认应用是否正常！"
+        alert(jobService.getAlertLevel(job), alertMsg, userList, streamTask)
+      } else {
+        streamTask.setLastUpdateTime(new Date)
+        streamTaskMapper.updateTask(streamTask)
+        info(s"Try to update status of StreamJob-${job.getName}.")
+        val retryHandler = new RetryHandler {}
+        retryHandler.setRetryNum(3)
+        retryHandler.setRetryMaxPeriod(2000)
+        retryHandler.addRetryException(classOf[ErrorException])
+        var jobInfo:JobInfo = null
+        Utils.tryCatch {
+          jobInfo = retryHandler.retry(refresh(streamTask, jobLaunchManager), s"Task-Monitor-${job.getName}")
+        } { ex =>
+          error(s"Fetch StreamJob-${job.getName} failed, maybe the Linkis cluster is wrong, please be noticed!", ex)
+          val errorMsg = ExceptionUtils.getRootCauseMessage(ex)
+          if (errorMsg != null && errorMsg.contains("Not exists EngineConn")) {
+            streamTask.setStatus(JobConf.FLINK_JOB_STATUS_FAILED.getValue)
+            streamTask.setErrDesc("Not exists EngineConn.")
+          } else {
+            // 连续三次还是出现异常，说明Linkis的Manager已经不能正常提供服务，告警并不再尝试获取状态，等待下次尝试
+            val users = getAdminAlertUsers()
+            alert(jobService.getLinkisFlinkAlertLevel(job), s"请求LinkisManager失败，Linkis集群出现异常，请关注！影响任务[${job.getName}]", users, streamTask)
+          }
         }
-      }
-      }
-      streamTaskMapper.updateTask(streamTask)
-      if(streamTask.getStatus == JobConf.FLINK_JOB_STATUS_FAILED.getValue) {
-        warn(s"StreamJob-${job.getName} is failed, please be noticed.")
-        var extraMessage = ""
-        Option(jobInfo) match {
-          case Some(flinkJobInfo: FlinkJobInfo) =>
-            extraMessage = s",${flinkJobInfo.getApplicationId}"
-          case _ =>
+        streamTaskMapper.updateTask(streamTask)
+        if(streamTask.getStatus == JobConf.FLINK_JOB_STATUS_FAILED.getValue) {
+          warn(s"StreamJob-${job.getName} is failed, please be noticed.")
+          var extraMessage = ""
+          Option(jobInfo) match {
+            case Some(flinkJobInfo: EngineConnJobInfo) =>
+              extraMessage = s",${flinkJobInfo.getApplicationId}"
+            case _ =>
+          }
+          // Need to add restart feature if user sets the restart parameters.
+          var alertMsg = s"Streamis 流式应用[${job.getName}${extraMessage}]已经失败, 请登陆Streamis查看应用日志."
+          this.streamJobConfMapper.getRawConfValue(job.getId, JobConfKeyConstants.FAIL_RESTART_SWITCH.getValue) match {
+            case "ON" =>
+              alertMsg = s"${alertMsg} 现将自动拉起该应用"
+              Utils.tryCatch{
+                info(s"Start to reLaunch the StreamisJob [${job.getName}], now to submit and schedule it...")
+                // Use submit user to start job
+                val startAutoRestoreSwitch = "ON".equals(this.streamJobConfMapper.getRawConfValue(job.getId, JobConfKeyConstants.START_AUTO_RESTORE_SWITCH.getValue))
+                val future: Future[String] = streamTaskService.asyncExecute(job.getId, 0L, job.getSubmitUser, startAutoRestoreSwitch)
+              }{
+                case e:Exception =>
+                  warn(s"Fail to reLaunch the StreamisJob [${job.getName}]", e)
+              }
+            case _ =>
+          }
+          val userList = getAlertUsers(job)
+          alert(jobService.getAlertLevel(job), alertMsg, userList, streamTask)
         }
-        // Need to add restart feature if user sets the restart parameters.
-        var alertMsg = s"Streamis 流式应用[${job.getName}${extraMessage}]已经失败, 请登陆Streamis查看应用日志."
-        this.streamJobConfMapper.getRawConfValue(job.getId, JobConfKeyConstants.FAIL_RESTART_SWITCH.getValue) match {
-          case "ON" =>
-            alertMsg = s"${alertMsg} 现将自动拉起该应用"
-            Utils.tryCatch{
-              info(s"Start to reLaunch the StreamisJob [${job.getName}], now to submit and schedule it...")
-              // Use submit user to start job
-              val future: Future[String] = streamTaskService.asyncExecute(job.getId, 0L, job.getSubmitUser, true)
-            }{
-              case e:Exception =>
-                warn(s"Fail to reLaunch the StreamisJob [${job.getName}]", e)
-            }
-          case _ =>
-        }
-        val userList = Sets.newHashSet(job.getSubmitUser, job.getCreateBy)
-        userList.addAll(getAlertUsers(job))
-        alert(jobService.getAlertLevel(job), alertMsg, new util.ArrayList[String](userList), streamTask)
       }
     }
     info("All StreamTasks status have updated.")
@@ -153,12 +158,30 @@ class TaskMonitorService extends Logging {
   }
 
   protected def getAlertUsers(job: StreamJob): util.List[String] = {
-    var users = jobService.getAlertUsers(job)
-    if (users == null) {
-      users = new util.ArrayList[String]()
+    val allUsers = new util.LinkedHashSet[String]()
+    val alertUsers = jobService.getAlertUsers(job)
+    var isValid = false
+    if (alertUsers!= null) {
+      alertUsers.foreach(user => {
+        if (StringUtils.isNotBlank(user) && !user.toLowerCase().contains("hduser")) {
+          isValid = true
+          allUsers.add(user)
+        }
+      })
     }
-    users.addAll(util.Arrays.asList(JobConf.STREAMIS_DEVELOPER.getValue.split(","):_*))
-    users
+    if (!isValid){
+      allUsers.add(job.getSubmitUser)
+      allUsers.add(job.getCreateBy)
+    }
+    new util.ArrayList[String](allUsers)
+  }
+
+  protected def getAdminAlertUsers(): util.List[String] = {
+    val allUsers = new util.LinkedHashSet[String]()
+    util.Arrays.asList(JobConf.STREAMIS_DEVELOPER.getHotValue().split(","):_*).foreach(user => {
+      allUsers.add(user)
+    })
+    new util.ArrayList[String](allUsers)
   }
 
   protected def alert(alertLevel: AlertLevel, alertMsg: String, users: util.List[String], streamTask:StreamTask): Unit = alerters.foreach{ alerter =>

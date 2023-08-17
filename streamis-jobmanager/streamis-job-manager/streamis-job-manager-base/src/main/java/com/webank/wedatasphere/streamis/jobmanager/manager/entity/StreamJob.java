@@ -29,6 +29,12 @@ public class StreamJob {
     private String description;
     private String submitUser;
     private Date createTime;
+    /**
+     * Current version tab in used
+     */
+    private String currentVersion;
+
+    private int status;
 
     public Long getWorkspaceName() {
         return workspaceName;
@@ -61,7 +67,6 @@ public class StreamJob {
     public void setId(Long id) {
         this.id = id;
     }
-
 
     public String getName() {
         return name;
@@ -111,4 +116,41 @@ public class StreamJob {
         this.jobType = jobType;
     }
 
+    public String getCurrentVersion() {
+        return currentVersion;
+    }
+
+    public void setCurrentVersion(String currentVersion) {
+        this.currentVersion = currentVersion;
+    }
+
+    public StreamJob() {
+        //parameterless construction
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return "StreamJob{" +
+                "id=" + id +
+                ", workspaceName=" + workspaceName +
+                ", name='" + name + '\'' +
+                ", projectName='" + projectName + '\'' +
+                ", jobType='" + jobType + '\'' +
+                ", createBy='" + createBy + '\'' +
+                ", label='" + label + '\'' +
+                ", description='" + description + '\'' +
+                ", submitUser='" + submitUser + '\'' +
+                ", createTime=" + createTime +
+                ", currentVersion='" + currentVersion + '\'' +
+                ", status=" + status +
+                '}';
+    }
 }

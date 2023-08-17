@@ -26,10 +26,13 @@ import java.util.List;
 public interface StreamJobMapper {
 
     List<QueryJobListVo> getJobLists(@Param("projectName") String projectName, @Param("userName") String userName, @Param("name") String name,
-                                     @Param("status") Integer status, @Param("createBy") String createBy);
+                                     @Param("status") Integer status, @Param("createBy") String createBy, @Param("label") String label, @Param("manageModeKey") String manageModeKey, @Param("jobNameList") List<String> jobNameList);
+
+    List<VersionDetailVo> getJobVersionDetails(@Param("jobId") Long jobId);
 
     StreamJob getJobById(@Param("jobId") Long jobId);
 
+    List<StreamJob> getJobByName(@Param("jobName") String jobName);
 
     List<StreamJobVersion> getJobVersions(@Param("jobId") Long jobId);
 

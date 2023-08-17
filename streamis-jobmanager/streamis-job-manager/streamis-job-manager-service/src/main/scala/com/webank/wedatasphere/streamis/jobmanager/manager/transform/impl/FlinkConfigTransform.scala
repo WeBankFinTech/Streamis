@@ -27,13 +27,13 @@ import java.util
  */
 abstract class FlinkConfigTransform extends ConfigTransform {
 
-  protected def transformConfig(getConfig: => util.Map[String, Any], job: LaunchJob): LaunchJob = {
-    val startupMap = new util.HashMap[String, Any]
+  protected def transformConfig(getConfig: => util.Map[String, AnyRef], job: LaunchJob): LaunchJob = {
+    val startupMap = new util.HashMap[String, AnyRef]
     Option(getConfig).foreach(configSeq => configSeq.foreach{
       case (key, value) => startupMap.put(key, value)
       case _ =>
     })
-    val params = if(job.getParams == null) new util.HashMap[String, Any] else job.getParams
+    val params = if(job.getParams == null) new util.HashMap[String, AnyRef] else job.getParams
     if(!startupMap.isEmpty) TaskUtils.addStartupMap(params, JobUtils.filterParameterSpec(startupMap))
     LaunchJob.builder().setLaunchJob(job).setParams(params).build()
   }
