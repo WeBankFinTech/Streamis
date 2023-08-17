@@ -30,7 +30,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{QueryJobLi
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.DefaultStreamJobService.JobDeployValidateResult
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent
-import com.webank.wedatasphere.streamis.jobmanager.manager.util.{JobUtils, ReaderUtils, ZipHelper}
+import com.webank.wedatasphere.streamis.jobmanager.manager.util.{JobUtils, JsonUtils, ReaderUtils, ZipHelper}
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.lang3.ObjectUtils
 import org.apache.linkis.common.exception.ErrorException
@@ -251,6 +251,15 @@ class DefaultStreamJobService extends StreamJobService with Logging {
       throw new JobFetchErrorException(30030, s"job has no versions.")
     jobContentParsers.find(_.canParse(job, jobVersion)).map(_.parseTo(job, jobVersion))
       .getOrElse(throw new JobFetchErrorException(30030, s"Cannot find a JobContentParser to parse jobContent."))
+  }
+
+  override def updateJobContent(jobId: Long, version: String,args: util.List[String]): StreamisTransformJobContent = {
+    val jobVersion =streamJobMapper.getJobVersionById(jobId, version)
+    val jobContent = jobVersion.getJobContent
+    val newJobContent = JsonUtils.manageJobContent(jobContent,args)
+    jobVersion.setJobContent(newJobContent)
+    streamJobMapper.updateJobContent(jobVersion)
+    getJobContent(jobId,version)
   }
 
 

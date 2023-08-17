@@ -73,6 +73,10 @@
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.linkis</groupId>
+            <artifactId>linkis-module</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

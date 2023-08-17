@@ -43,6 +43,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils
 import com.webank.wedatasphere.streamis.jobmanager.utils.RegularUtil;
 import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabel;
 import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabelRequest;
+import com.webank.wedatasphere.streamis.jobmanager.vo.UpdateContentRequest;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -621,6 +622,21 @@ public class JobRestfulApi {
             return Message.error("Have no permission to view job details of StreamJob [" + jobId + "]");
         }
         StreamisTransformJobContent jobContent = streamJobService.getJobContent(jobId, version);
+        return Message.ok().data("jobContent", jobContent);
+    }
+
+    @RequestMapping(path = "/updateContent", method = RequestMethod.POST)
+    public Message updateContent(HttpServletRequest req, @RequestBody UpdateContentRequest contentRequest) {
+        String username = ModuleUserUtils.getOperationUser(req, "update job content");
+        Long jobId = contentRequest.getJobId();
+        String version = contentRequest.getVersion();
+        List<String> args = contentRequest.getArgs();
+        StreamJob streamJob = this.streamJobService.getJobById(jobId);
+        if (!streamJobService.hasPermission(streamJob, username) &&
+                !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
+            return Message.error("Have no permission to update job details of StreamJob [" + jobId + "]");
+        }
+        StreamisTransformJobContent jobContent = streamJobService.updateJobContent(jobId, version,args);
         return Message.ok().data("jobContent", jobContent);
     }
 
