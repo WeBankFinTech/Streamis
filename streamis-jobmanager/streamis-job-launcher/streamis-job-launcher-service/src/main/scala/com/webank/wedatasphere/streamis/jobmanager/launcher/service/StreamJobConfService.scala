@@ -34,14 +34,14 @@ trait StreamJobConfService {
    * @param jobId job id
    * @param valueMap value map
    */
-  def saveJobConfig(jobId: Long, valueMap: util.Map[String, Any]): Unit
+  def saveJobConfig(jobId: Long, valueMap: util.Map[String, AnyRef]): Unit
 
   /**
    * Query the job configuration
    * @param jobId job id
    * @return
    */
-  def getJobConfig(jobId: Long): util.Map[String, Any]
+  def getJobConfig(jobId: Long): util.Map[String, AnyRef]
 
   /**
    * Query the job value

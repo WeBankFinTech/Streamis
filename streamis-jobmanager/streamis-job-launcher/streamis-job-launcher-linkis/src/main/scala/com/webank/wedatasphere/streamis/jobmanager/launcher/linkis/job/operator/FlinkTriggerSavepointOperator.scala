@@ -15,7 +15,8 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.operator
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.Savepoint
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.FlinkSavepoint
 import org.apache.linkis.computation.client.once.action.EngineConnOperateAction
 import org.apache.linkis.computation.client.once.result.EngineConnOperateResult
 import org.apache.linkis.computation.client.operator.OnceJobOperator
@@ -23,7 +24,7 @@ import org.apache.linkis.computation.client.operator.OnceJobOperator
 /**
  * Flink trigger savepoint operator
  */
-class FlinkTriggerSavepointOperator extends OnceJobOperator[Savepoint]{
+class FlinkTriggerSavepointOperator extends OnceJobOperator[FlinkSavepoint]{
 
   /**
    * Save point directory
@@ -35,6 +36,12 @@ class FlinkTriggerSavepointOperator extends OnceJobOperator[Savepoint]{
    */
   private var mode: String = _
 
+  /**
+   * ApplicationId
+   * @param savepointDir
+   */
+  private var appId: String = _
+
   def setSavepointDir(savepointDir: String): Unit ={
       this.savepointDir = savepointDir
   }
@@ -43,15 +50,20 @@ class FlinkTriggerSavepointOperator extends OnceJobOperator[Savepoint]{
     this.mode = mode
   }
 
+  def setApplicationId(appId: String): Unit = {
+    this.appId = appId
+  }
+
   override protected def addParameters(builder: EngineConnOperateAction.Builder): Unit = {
     builder.addParameter("savepointPath", savepointDir)
     builder.addParameter("mode", mode)
+    builder.addParameter(JobConstants.APPLICATION_ID_KEY, appId)
   }
 
-  override protected def resultToObject(result: EngineConnOperateResult): Savepoint = {
+  override protected def resultToObject(result: EngineConnOperateResult): FlinkSavepoint = {
       val savepointPath:String = result.getAs("writtenSavepoint")
       info(s"Get the savepoint store path: [$savepointPath] form ${FlinkTriggerSavepointOperator.OPERATOR_NAME} operation")
-      new Savepoint(savepointPath)
+      new FlinkSavepoint(savepointPath)
   }
 
   override def getName: String = FlinkTriggerSavepointOperator.OPERATOR_NAME

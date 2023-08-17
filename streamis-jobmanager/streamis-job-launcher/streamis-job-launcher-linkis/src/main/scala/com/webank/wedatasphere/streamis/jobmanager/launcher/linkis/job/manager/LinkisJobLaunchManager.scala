@@ -4,7 +4,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunc
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.LinkisJobInfo
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.LinkisJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.LinkisJobLaunchManager.LINKIS_JAR_VERSION_PATTERN
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang3.StringUtils
@@ -17,6 +17,7 @@ import scala.collection.JavaConverters._
 import scala.util.matching.Regex
 
 trait LinkisJobLaunchManager extends JobLaunchManager[LinkisJobInfo] with Logging{
+
   /**
    * This method is used to launch a new job.
    *
@@ -40,6 +41,7 @@ trait LinkisJobLaunchManager extends JobLaunchManager[LinkisJobInfo] with Loggin
         linkisVersion = version
       }
     }
+
      if (StringUtils.isNotBlank(linkisVersion)){
           val versionSplitter: Array[String] = linkisVersion.split("\\.")
           val major = Integer.valueOf(versionSplitter(0))
@@ -62,13 +64,13 @@ trait LinkisJobLaunchManager extends JobLaunchManager[LinkisJobInfo] with Loggin
      innerLaunch(job, jobState)
   }
 
-  private def changeUnitOfMemoryToG(params: util.Map[String, Any], name: String): Unit = {
+  private def changeUnitOfMemoryToG(params: util.Map[String, AnyRef], name: String): Unit = {
       params.get(name) match {
         case memory: String =>
           var actualMem = Integer.valueOf(memory) / 1024
           actualMem = if (actualMem <= 0) 1 else actualMem
           info(s"Change the unit of startup param: [${name}], value [${memory}] => [${actualMem}]")
-          params.put(name, actualMem)
+          params.put(name, actualMem.toString)
         case _ => // Ignores
       }
   }
@@ -78,7 +80,7 @@ trait LinkisJobLaunchManager extends JobLaunchManager[LinkisJobInfo] with Loggin
    * @param params params
    * @param prefix prefix
    */
-  private def avoidParamsPrefix(params: util.Map[String, Any], prefix: String): util.Map[String, Any] = {
+  private def avoidParamsPrefix(params: util.Map[String, AnyRef], prefix: String): util.Map[String, AnyRef] = {
       params.asScala.map{
         case (key, value) =>
           if (key.startsWith(prefix)){

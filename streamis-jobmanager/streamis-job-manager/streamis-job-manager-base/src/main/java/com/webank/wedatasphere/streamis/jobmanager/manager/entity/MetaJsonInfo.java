@@ -56,8 +56,12 @@ public class MetaJsonInfo {
     private String description;
 
 
-    private Map<String,Object> jobContent;
+    private Map<String, Object> jobContent;
 
+    /**
+     * Job configuration
+     */
+    private Map<String, Object> jobConfig;
     private String metaInfo;
 
     public String getMetaInfo() {
@@ -130,5 +134,13 @@ public class MetaJsonInfo {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public Map<String, Object> getJobConfig() {
+        return jobConfig;
+    }
+
+    public void setJobConfig(Map<String, Object> jobConfig) {
+        this.jobConfig = jobConfig;
     }
 }

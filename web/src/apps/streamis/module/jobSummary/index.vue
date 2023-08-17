@@ -7,6 +7,18 @@
       </div>
     </div>
     <div class="itemWrap">
+      <p>{{ $t('message.streamis.jobListTableColumns.launchMode') }}:</p>
+      <div>
+        {{ launchMode ? launchMode : '-' }}
+      </div>
+    </div>
+    <div class="itemWrap">
+      <p>{{ $t('message.streamis.jobListTableColumns.manageMode') }}:</p>
+      <div>
+        {{ manageMode ? manageMode : '-' }}
+      </div>
+    </div>
+    <div class="itemWrap">
       <p>{{ $t('message.streamis.jobSummary.realTimeTraffic') }}:</p>
       <div class="realTimeTraffic">
         <div
@@ -131,11 +143,12 @@ export default {
       loadCondition: [],
       dataNumber: [],
       realTimeTraffic: [],
-      jobType: this.$route.params.jobType
+      jobType: this.$route.params.jobType,
+      launchMode: this.$route.params.launchMode,
+      manageMode: this.$route.params.manageMode,
     }
   },
   mounted() {
-    console.log(this.$route.params)
     this.getDatas()
   },
   methods: {
@@ -148,7 +161,6 @@ export default {
           'get'
         )
         .then(res => {
-          console.log(res)
           if (res && res.details) {
             const conditions = res.details.loadCondition || []
             this.loadCondition = conditions.map(item => {

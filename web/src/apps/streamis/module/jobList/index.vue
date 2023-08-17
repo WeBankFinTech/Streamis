@@ -9,7 +9,7 @@
               <Button
                 type="primary"
                 :disabled="!selections.length"
-                @click="doRestart(true)"
+                @click="clickBatchRestart(true)"
                 style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.snapshotRestart')}}
@@ -19,7 +19,7 @@
               <Button
                 type="primary"
                 :disabled="!selections.length"
-                @click="doRestart(false)"
+                @click="clickBatchRestart(false)"
                 style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.directRestart')}}
@@ -35,7 +35,7 @@
               </Button>
             </FormItem>
           </Form>
-          <Form ref="queryForm" inline v-else>
+          <Form ref="queryForm" inline v-else @submit.native.prevent>
             <FormItem>
               <Input
                 search
@@ -130,6 +130,8 @@
                 <div class="version" @click="versionDetail(row)">
                   {{ row.version }}
                 </div>
+                <!-- 一般versionForwards字段大于零的情况，只发生在处于运行时状态的作业上，因为对运行时作业进行发布，作业的当前使用版本不会更新，所以已发布版本才会领先当前使用版本。 -->
+                <div class="versionForwards">{{row.versionForwards > 0 ? '(+' + row.versionForwards + ')' : ''}}</div>
               </div>
             </template>
             <template slot-scope="{ row, index }" slot="operation">
@@ -189,6 +191,7 @@
             </template>
           </Table>
           <Page
+            :current="pageData.current"
             :total="pageData.total"
             class="page"
             :page-size="pageData.pageSize"
@@ -202,10 +205,12 @@
       </div>
     </titleCard>
     <versionDetail
+      ref="versionDetail"
       :visible="modalVisible"
       :datas="versionDatas"
       :projectName="projectName"
       @modalCancel="modalCancel"
+      @versionDetailPageChange="versionDetailPageChange"
     />
     <uploadJobJar
       :visible="uploadVisible"
@@ -265,6 +270,24 @@
           </div>
         </div>
       </div>
+    </Modal>
+    <Modal
+      v-model="startHintVisible"
+      :title="$t('message.streamis.startHint.title')"
+      width="1000"
+      @on-cancel="cancelStartHint"
+      :mask-closable="false"
+    >
+      <div class="wrap">
+        <Table border :columns="checkColumns" :data="checkData"></Table>
+      </div>
+      <template slot="footer">
+        <div style="display: flex; width: 100%">
+          <div style="textAlign: left; width: 836px; position: relative; top: 3px">当前一共需要确认的作业数量：{{checkData.length}}个</div>
+          <Button type="primary" @click="confirmStarting">{{ $t('message.streamis.formItems.confirmBtn') }}</Button>
+          <Button type="primary" @click="cancelStartHint">{{ $t('message.streamis.formItems.cancel') }}</Button>
+        </div>
+      </template>
     </Modal>
   </div>
 </template>
@@ -385,7 +408,11 @@ export default {
           key: 'jobType',
           renderHeader: renderSpecialHeader
         },
-
+        {
+          title: this.$t('message.streamis.jobListTableColumns.manageMode'),
+          key: 'manageModeChinese',
+          renderHeader: renderSpecialHeader
+        },
         {
           title: this.$t('message.streamis.jobListTableColumns.label'),
           key: 'label',
@@ -408,7 +435,8 @@ export default {
         {
           title: this.$t('message.streamis.jobListTableColumns.version'),
           key: 'version',
-          slot: 'version'
+          slot: 'version',
+          width: '150px'
         },
         {
           title: this.$t('message.streamis.jobListTableColumns.lastRelease'),
@@ -451,13 +479,46 @@ export default {
       modalVisible: false,
       versionDatas: [],
       uploadVisible: false,
-      projectName: this.$route.query.projectName
+      projectName: this.$route.query.projectName,
+      // 作业启动弹框
+      startHintVisible: false,
+      isBatchRestart: false,
+      // 启动弹框的列和数据
+      checkColumns: [
+        {
+          title: '作业名',
+          key: 'jobName',
+          align: 'center',
+          width: 200,
+        },
+        {
+          title: '最新启动版本',
+          key: 'latestVersion',
+          width: 130,
+          align: 'center'
+        },
+        {
+          title: '上次启动版本',
+          key: 'lastVersion',
+          width: 130,
+          align: 'center'
+        },
+        {
+          title: '快照',
+          key: 'link',
+          align: 'center'
+        },
+      ],
+      checkData: [],
+      // 当前正在查看的data
+      currentViewData: {}
     }
   },
   mounted() {
     this.getJobList()
   },
   methods: {
+    // 获取任务列表
     getJobList() {
       if (this.loading) {
         return
@@ -467,6 +528,12 @@ export default {
       const params = {
         pageNow: current,
         pageSize,
+        // 本地开发dev环境用的
+        // projectName: 'stream_job',
+        // projectName: 'streamis025_checkpoint',
+        // 本地开发sit环境用的
+        // projectName: 'streamis025_version',
+        // 正式环境用的
         projectName: this.projectName
       }
       const { jobName, jobStatus } = this.query
@@ -485,7 +552,6 @@ export default {
       api
         .fetch('streamis/streamJobManager/job/list?' + queries, 'get')
         .then(res => {
-          console.log(res)
           if (res) {
             const datas = res.tasks || []
             datas.forEach(item => {
@@ -497,19 +563,23 @@ export default {
               }
             })
             datas.unshift({})
-            this.tableDatas = datas.map(r => ({...r, poptipVisible: false}))
+            this.tableDatas = datas.map(r => ({...r, poptipVisible: false, manageMode: r.manageMode && r.manageMode.toUpperCase() === 'DETACH' ? 'DETACH' : 'ATTACH', manageModeChinese: r.manageMode && r.manageMode.toUpperCase() === 'DETACH' ? '分离式' : '非分离式'}))
+            if (this.tableDatas[0]) {
+              delete this.tableDatas[0].manageMode
+              delete this.tableDatas[0].manageModeChinese
+            }
             // console.log(JSON.stringify(datas))
+            console.log('this.tableDatas: ', this.tableDatas);
             this.pageData.total = parseInt(res.totalPage)
             this.loading = false
           }
         })
-        .catch(e => {
-          console.log(e)
+        .catch((err) => {
+          console.log('getJobList err: ', err);
           this.loading = false
         })
     },
     handleNameQuery() {
-      console.log(this.query.jobName)
     },
     handleQuery() {
       this.pageData.current = 1
@@ -519,7 +589,6 @@ export default {
       this.uploadVisible = true
     },
     handleStop(data, type, index) {
-      console.log(data, type)
       const { id } = data
       const path = 'streamis/streamJobManager/job/stop'
       data.buttonLoading = true
@@ -529,7 +598,6 @@ export default {
       api
         .fetch(path, { jobId: id, snapshot: !!type }, 'get')
         .then(res => {
-          console.log(res)
           data.buttonLoading = false
           this.choosedRowId = ''
           if (res) {
@@ -538,47 +606,163 @@ export default {
             this.getJobList()
           }
         })
-        .catch(e => {
-          console.log(e.message)
+        .catch(() => {
           this.loading = false
           data.buttonLoading = false
           this.choosedRowId = ''
           this.getJobList()
         })
     },
-    handleAction(data, index) {
-      console.log(data)
-      const { id } = data
-      const path = 'streamis/streamJobManager/job/execute'
-      const second = { jobId: id }
-      data.buttonLoading = true
-      this.choosedRowId = id
-      this.$set(this.tableDatas, index, data)
-      api
-        .fetch(path, second)
-        .then(res => {
-          console.log(res)
-          data.buttonLoading = false
-          this.choosedRowId = ''
-          if (res) {
-            this.$emit('refreshCoreIndex')
-            this.loading = false
-            this.getJobList()
+
+
+    // 1、快照重启和直接重启只有调用接口时snapshot参数的区别
+    // 2、快照重启、直接重启、启动 都需要调用inspect接口
+    // 3、快照重启、直接重启调用inspect接口前，需要pause接口返回成功；启动 不需要调用pause接口
+    // 4、快照重启、直接重启、启动，不管inspections的数据如何，全都放到表格里供用户确认（除了作业名，有三个信息，最新启动版本、上次启动版本和快照，最新启动版本一定是有的，后面两个如果没有就显示为--）；对于没有需要确认信息的作业也显示在表格
+    // 5、在“作业启动确认”弹框里，用户点击确认，就启动所有弹框表格里的作业；用户点击取消，就全都不启动；对于没有inspectinos的作业也是一样处理而不是单独启动（上次版本是单独启动）
+    // 6、启动是调用/job/execute接口，批量快照重启、批量直接重启是调用/job/bulk/execution接口
+    
+    // 快照重启和直接重启
+    async clickBatchRestart(snapshot) {
+      // 3、快照重启、直接重启调用inspect接口前，需要pause接口返回成功
+      const bulk_sbj = this.selections.map(item => +item.id);
+      // 点击批量重启的按钮后，就应该弹出弹窗，pause结束后改变这个一体弹窗的进度，然后开始请求inspect，如果inspect都为空，一体弹窗直接进入下一步启动，如果不为空，上层遮罩再弹出inspect的弹窗需要确认
+      this.processModalVisable = true;
+      this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
+      this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
+
+      const pauseRes = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot });
+      console.log('pause pauseRes', pauseRes);
+      if (!pauseRes.result || !pauseRes.result.Success || !pauseRes.result.Failed) throw new Error('停止接口后台返回异常');
+      // this.modalLoading = false;
+      if (snapshot) {
+        this.snapPaths = pauseRes.result.Success.data.map(item => ({
+          taskId: item.jobId,
+          taskName: item.scheduleId,
+          info: item.snapshotPath,
+        }));
+      }
+      this.failTasks = pauseRes.result.Failed.data.map(item => ({
+        taskId: item.jobId,
+        taskName: item.scheduleId,
+        info: item.message,
+      }));
+      this.orderNum = this.selections.length - this.failTasks.length;
+      if (this.failTasks.length) {
+        this.isFinish = true;
+        this.modalTitle = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+        this.modalContent = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+        return;
+      }
+
+      // 1、快照重启和直接重启只有调用接口时snapshot参数的区别
+      this.handleAction(this.selections, 0, snapshot)
+    },
+    async handleAction(data, index, snapshot) {
+      console.log('handleAction snapshot: ', snapshot);
+      // snapshot有三种情况
+      // snapshot为true是 批量-快照重启
+      // snapshot为false是 批量-直接重启
+      // snapshot === undefined是 点击任务列表的某一项的“启动”
+      // snapshot不为undefined时，isBatchRestart就为true
+      this.isBatchRestart = snapshot !== undefined
+      console.log('handleAction this.isBatchRestart: ', this.isBatchRestart);
+
+      // 存下当前点击的data和index
+      this.tempData = data
+      this.tempIndex = index
+      this.tempSnapshot = snapshot
+      this.checkData = []
+
+      if (this.isBatchRestart) {
+        // 是批量重启，tempData是数组
+        this.tempData.forEach(async (item) => {
+          const { id, name } = item
+          const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
+          const inspectRes = await api.fetch(checkPath, {}, 'put')
+          console.log('inspectRes: ', inspectRes);
+          const tempData = {
+            id,
+            jobName: name,
+            link: inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--',
+            latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
+            lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
           }
+          this.checkData.push(tempData)
         })
-        .catch(e => {
-          console.log(e.message)
-          this.loading = false
-          data.buttonLoading = false
-          this.choosedRowId = ''
-          this.getJobList()
-        })
+        // 上面虽然是调用多个接口，但因为是await，所以这里的打开弹框的顺序可以按照同步的方式写
+        this.startHintVisible = true
+        console.log('打开弹框 this.startHintData: ', this.startHintData);
+      } else {
+        // 是单个重启，tempData是对象
+        const { id, name } = this.tempData
+        const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
+        const inspectRes = await api.fetch(checkPath, {}, 'put')
+        const tempData = {
+          id,
+          jobName: name,
+          link: inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--',
+          latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
+          lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
+        }
+        this.checkData.push(tempData)
+        this.startHintVisible = true
+        console.log('打开弹框 this.startHintData: ', this.startHintData);
+      }
     },
-    handleConfig(data) {
-      console.log(data)
+    cancelStartHint() {
+      this.startHintVisible = false
+      this.processModalVisable = false
+      this.checkData = []
+    },
+    // 检查弹框的确认按钮
+    async confirmStarting() {
+      this.startHintVisible = false
+      if (!this.isBatchRestart) {
+        // 如果是单个的启动，那么直接调用execute启动接口
+        const { id } = this.tempData
+        const second = { jobId: id }
+
+        const path = 'streamis/streamJobManager/job/execute'
+        this.tempData.buttonLoading = true
+        this.choosedRowId = id
+        this.$set(this.tableDatas, this.tempIndex, this.tempData)
+        api
+          .fetch(path, second)
+          .then(res => {
+            console.log('execute res: ', res);
+            this.tempData.buttonLoading = false
+            this.choosedRowId = ''
+            if (res) {
+              this.$emit('refreshCoreIndex')
+              this.loading = false
+              this.getJobList()
+            }
+          })
+          .catch(err => {
+            console.log('execute err: ', err);
+            this.loading = false
+            this.tempData.buttonLoading = false
+            this.choosedRowId = ''
+            this.getJobList()
+          })
+      } else {
+        // 批量启动
+        console.log('bulkExecution');
+        try {
+          const bulk_sbj = this.selections.map(item => +item.id);
+          const result = await api.fetch('streamis/streamJobManager/job/bulk/execution', { bulk_sbj });
+          console.log('start result', result);
+          this.queryProcess(bulk_sbj);
+        } catch (err) {
+          console.log('bulkExecution err: ', err);
+          this.modalContent = '停止任务失败，失败信息：' + err
+        }
+      }
+    },
+    handleConfig() {
     },
     stopSavepoint(data) {
-      console.log(data)
       this.loading = true
       api
         .fetch(
@@ -587,7 +771,7 @@ export default {
           'put'
         )
         .then(res => {
-          console.log(res)
+          console.log('stopSavepoint res: ', res);
           if (res) {
             this.loading = false
             this.snapModalVisable = true;
@@ -596,8 +780,8 @@ export default {
             this.getJobList();
           }
         })
-        .catch(e => {
-          console.log(e)
+        .catch(err => {
+          console.log('stopSavepoint err: ', err);
           this.loading = false
         })
     },
@@ -606,8 +790,6 @@ export default {
         this.stopSavepoint(rowData);
         return;
       }
-      console.log(rowData)
-      console.log(moduleName)
       const moduleMap = {
         paramsConfiguration: 'jobConfig',
         alertConfiguration: 'jobConfig',
@@ -625,44 +807,43 @@ export default {
           version: rowData.version,
           status: rowData.status,
           jobType: rowData.jobType,
+          manageMode: rowData.manageMode,
           projectName: rowData.projectName || this.projectName
         }
       })
     },
     handlePageChange(page) {
-      console.log(page)
+      console.log('handlePageChange page: ', page);
       this.pageData.current = page
       this.getJobList()
     },
     handlePageSizeChange(pageSize) {
-      console.log(pageSize)
       this.pageData.pageSize = pageSize
       this.pageData.current = 1
       this.getJobList()
     },
-    versionDetail(data) {
-      console.log(data)
+    versionDetailPageChange(page) {
+      this.versionDetail(this.currentViewData, page)
+    },
+    versionDetail(data, page) {
+      console.log('data: ', data);
+      console.log('data.versionForwards: ', data.versionForwards);
+      this.currentViewData = data
       this.loading = true
-      api
-        .fetch(
-          'streamis/streamJobManager/job/version?jobId=' +
-            data.id +
-            '&version=' +
-            data.version,
-          'get'
-        )
-        .then(res => {
-          console.log(res)
-          if (res) {
-            this.loading = false
-            this.modalVisible = true
-            this.versionDatas = [res.detail]
-          }
+      api.fetch(`streamis/streamJobManager/job/${data.id}/versions?pageNow=${page ? page : 1}&pageSize=5`, 'get').then(res => {
+        console.log('versionDetail versions res: ', res);
+        this.loading = false
+        this.modalVisible = true
+        this.$refs.versionDetail.pageData.total = res.totalPage
+        this.versionDatas = res.versions
+        this.versionDatas.forEach(item => {
+          item.versionStatus = '--'
+          if (item.version === data.version) item.versionStatus = this.$t('message.streamis.versionDetail.using')
         })
-        .catch(e => {
-          console.log(e)
-          this.loading = false
-        })
+      }).catch(err => {
+        console.log('versionDetail versions err: ', err);
+        this.loading = false
+      })
     },
     modalCancel() {
       this.modalVisible = false
@@ -681,8 +862,7 @@ export default {
         this.$Message.error(res.message)
       }
     },
-    showButtons(val) {
-      console.log('showButtons', val)
+    showButtons() {
       this.columns.unshift({
         type: 'selection',
         width: 60,
@@ -690,8 +870,7 @@ export default {
       });
       this.isBatching = true;
     },
-    hideButtons(val) {
-      console.log('hideButtons', val)
+    hideButtons() {
       this.$refs.list.selectAll(false);
       this.selections = [];
       this.columns = this.columns.filter(col => col.type !== 'selection');
@@ -699,51 +878,7 @@ export default {
     },
     selectionChange(val) {
       const selections = (val || []).filter(item => item.id);
-      console.log('selectionChange', selections);
       this.selections = selections;
-    },
-    async doRestart(snapshot) {
-      console.log('doRestart', snapshot);
-      this.processModalVisable = true;
-      this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
-      this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
-      this.restartTasks(snapshot);
-    },
-    async restartTasks(snapshot) {
-      console.log('restartTasks');
-      try {
-        // this.modalLoading = true;
-        const bulk_sbj = this.selections.map(item => +item.id);
-        const res = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot });
-        console.log('pause result', res);
-        if (!res.result || !res.result.Success || !res.result.Failed) throw new Error('后台返回异常');
-        // this.modalLoading = false;
-        if (snapshot) {
-          this.snapPaths = res.result.Success.data.map(item => ({
-            taskId: item.jobId,
-            taskName: item.scheduleId,
-            info: item.snapshotPath,
-          }));
-        }
-        this.failTasks = res.result.Failed.data.map(item => ({
-          taskId: item.jobId,
-          taskName: item.scheduleId,
-          info: item.message,
-        }));
-        this.orderNum = this.selections.length - this.failTasks.length;
-        if (this.failTasks.length) {
-          this.isFinish = true;
-          this.modalTitle = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
-          this.modalContent = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
-          return;
-        }
-        const result = await api.fetch('streamis/streamJobManager/job/bulk/execution', { bulk_sbj });
-        console.log('start result', result);
-        this.queryProcess(bulk_sbj);
-      } catch (error) {
-        console.warn(error);
-        // this.modalLoading = false
-      }
     },
     async queryProcess(id_list) {
       console.log('queryProcess');
@@ -782,6 +917,7 @@ export default {
     onClose(status) {
       if (status) return;
       this.processModalVisable = false;
+      this.snapPaths = []
       this.isFinish = false;
       clearTimeout(this.timer);
       this.failTasks = [];
@@ -813,6 +949,7 @@ export default {
   display: flex;
   justify-content: flex-start;
   align-items: center;
+  position: relative;
 }
 .version {
   background-color: #008000;
@@ -821,6 +958,18 @@ export default {
   font-size: 16px;
   cursor: pointer;
   padding: 0px 3px;
+}
+.versionForwards {
+  color: red;
+  font-size: 12px;
+  position: relative;
+  top: -5px;
+  // left: 5px;
+  margin-left: 5px;
+  // // z-index: 9999;
+  // position: absolute;
+  // left: 65px;
+  // top: -4px;
 }
 .btn-wrap {
   display: flex;

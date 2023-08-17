@@ -4,6 +4,8 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, JobInfo, LaunchJob}
 
 import java.util.concurrent.ConcurrentHashMap
+import java.util
+import scala.collection.JavaConverters._
 
 /**
   * Basic job manager interface for launching job
@@ -65,5 +67,12 @@ object JobLaunchManager{
 
   def getJobManager(name: String): JobLaunchManager[_ <: JobInfo] = {
     launchManagers.get(name)
+  }
+
+  def getJobManagers: util.List[JobLaunchManager[_ <: JobInfo]] = {
+    launchManagers.asScala.map{
+      case (_, manager) =>
+        manager
+    }.toList.asJava
   }
 }

@@ -42,6 +42,11 @@ public class ProjectFiles implements StreamisFile {
 
     private String createBy;
 
+
+    private Date updateTime;
+
+    private String MD5;
+
     public String getComment() {
         return comment;
     }
@@ -117,5 +122,21 @@ public class ProjectFiles implements StreamisFile {
 
     public void setCreateBy(String createBy) {
         this.createBy = createBy;
+    }
+
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
+
+    public String getMD5() {
+        return MD5;
+    }
+
+    public void setMD5(String MD5) {
+        this.MD5 = MD5;
     }
 }

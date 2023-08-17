@@ -7,6 +7,9 @@ import org.apache.linkis.common.conf.CommonVars;
  */
 public class Constraints {
 
+    private Constraints(){}
+
+
     // AppConn name
     public static final String STREAMIS_APPCONN_NAME = CommonVars.apply("wds.dss.appconn.streamis.name", "Streamis").getValue();
 

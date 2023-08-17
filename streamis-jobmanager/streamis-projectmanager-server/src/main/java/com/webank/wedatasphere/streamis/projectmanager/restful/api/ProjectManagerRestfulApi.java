@@ -30,7 +30,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.server.Message;
-import org.apache.linkis.server.security.SecurityFilter;
+import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,15 +67,14 @@ public class ProjectManagerRestfulApi {
                            @RequestParam(name = "comment", required = false) String comment,
                            @RequestParam(name = "updateWhenExists", required = false) boolean updateWhenExists,
                            @RequestParam(name = "file") List<MultipartFile> files) throws UnsupportedEncodingException, FileException {
-
-
-        String username = SecurityFilter.getLoginUsername(req);
+        String username = ModuleUserUtils.getOperationUser(req, "upload project files");
         if (StringUtils.isBlank(version)) {
             return Message.error("version is null");
         }
         if (StringUtils.isBlank(projectName)) {
             return Message.error("projectName is null");
         }
+        if (version.length()>=30) return Message.error("version character length is to long ,Please less than 30 （版本字符长度过长，请小于30）");
         if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
 
         //Only uses 1st file(只取第一个文件)
@@ -136,7 +135,6 @@ public class ProjectManagerRestfulApi {
                                 @RequestParam(value = "projectName",required = false) String projectName,
                                 @RequestParam(value = "pageNow",defaultValue = "1") Integer pageNow,
                                 @RequestParam(value = "pageSize",defaultValue = "20") Integer pageSize) {
-        String username = SecurityFilter.getLoginUsername(req);
         if (StringUtils.isBlank(projectName)) {
             return Message.error("projectName is null");
         }
@@ -159,7 +157,7 @@ public class ProjectManagerRestfulApi {
     @RequestMapping(path = "/files/delete", method = RequestMethod.GET)
     public Message delete( HttpServletRequest req, @RequestParam(value = "fileName",required = false) String fileName,
                            @RequestParam(value = "projectName",required = false) String projectName) {
-        String username = SecurityFilter.getLoginUsername(req);
+        String username = ModuleUserUtils.getOperationUser(req, "Delete file:" + fileName + " in project: " + projectName);
         if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
 
         return projectManagerService.delete(fileName, projectName, username) ? Message.ok()
@@ -168,7 +166,7 @@ public class ProjectManagerRestfulApi {
 
     @RequestMapping(path = "/files/version/delete", method = RequestMethod.GET)
     public Message deleteVersion(HttpServletRequest req, @RequestParam(value = "ids",required = false) String ids) {
-        String username = SecurityFilter.getLoginUsername(req);
+        String username = ModuleUserUtils.getOperationUser(req, "Delete file versions in project");
         List<Long> idList = new ArrayList<>();
         if (!StringUtils.isBlank(ids) && !ArrayUtils.isEmpty(ids.split(","))) {
             String[] split = ids.split(",");
@@ -176,8 +174,8 @@ public class ProjectManagerRestfulApi {
                 idList.add(Long.parseLong(s));
             }
         }
-        List<String> projectNames = projectManagerService.getProjectNames(idList);
-        if (!projectPrivilegeService.hasEditPrivilege(req,projectNames)) {
+        String projectName = projectManagerService.getProjectNameByFileId(Long.valueOf(ids));
+        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) {
             return Message.error("the current user has no operation permission");
         }
 
@@ -188,15 +186,15 @@ public class ProjectManagerRestfulApi {
     @RequestMapping(path = "/files/download", method = RequestMethod.GET)
     public Message download( HttpServletRequest req, HttpServletResponse response, @RequestParam(value = "id",required = false) Long id,
                              @RequestParam(value = "projectName",required = false)String projectName) {
+        if(StringUtils.isBlank(projectName)){
+            projectName = projectManagerService.getProjectNameByFileId(id);
+        }
         ProjectFiles projectFiles = projectManagerService.getFile(id, projectName);
         if (projectFiles == null) {
             return Message.error("no such file in this project");
         }
         if (StringUtils.isBlank(projectFiles.getStorePath())) {
             return Message.error("storePath is null");
-        }
-        if(StringUtils.isBlank(projectName)){
-            projectName = projectManagerService.getProjectNameById(id);
         }
         if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
 

@@ -19,8 +19,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class JobExceptionManager {
+
+    private JobExceptionManager(){}
     //30300-30599
-    private static Map<String, String> desc = new HashMap<String, String>(32);
+    private static Map<String, String> desc = new HashMap<>(32);
     static {
         desc.put("30300", "upload failure(上传失败)");
         desc.put("30301","%s cannot be empty!");

@@ -32,6 +32,14 @@ public class LinkisJobStateResult extends AbstractJobStateResult {
 
     private Map<String, Object> dirFileTrees = new HashMap<>();
 
+    public Map<String, Object> getDirFileTrees() {
+        return dirFileTrees;
+    }
+
+    public void setDirFileTrees(Map<String, Object> dirFileTrees) {
+        this.dirFileTrees = dirFileTrees;
+    }
+
     /**
      * Convert the result data to state file tree
      * @return state file tree

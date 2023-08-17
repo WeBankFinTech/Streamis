@@ -17,7 +17,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity
 
 import org.apache.linkis.manager.label.entity.engine.RunType._
 
-
+@Deprecated
 trait StreamisJobEngineConn {
 
   def getRunType: RunType

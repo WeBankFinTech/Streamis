@@ -27,11 +27,11 @@ import java.util
 trait ConfigTransform extends Transform {
 
   override def transform(streamisTransformJob: StreamisTransformJob, job: LaunchJob): LaunchJob = {
-    val config: util.Map[String, Any] = streamisTransformJob.getConfigMap
+    val config: util.Map[String, AnyRef] = streamisTransformJob.getConfigMap
     val group = configGroup()
     if (StringUtils.isNotBlank(group)){
       Option(config.get(group)) match {
-        case Some(valueSet: util.Map[String, Any]) =>
+        case Some(valueSet: util.Map[String, AnyRef]) =>
           transform(valueSet, job)
         case _ => job
       }
@@ -44,6 +44,6 @@ trait ConfigTransform extends Transform {
    */
   protected def configGroup(): String = null
 
-  protected def transform(valueSet: util.Map[String, Any], job: LaunchJob): LaunchJob
+  protected def transform(valueSet: util.Map[String, AnyRef], job: LaunchJob): LaunchJob
 
 }

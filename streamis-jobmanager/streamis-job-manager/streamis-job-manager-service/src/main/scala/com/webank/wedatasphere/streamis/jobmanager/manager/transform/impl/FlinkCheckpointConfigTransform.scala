@@ -21,8 +21,9 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConst
 import java.util
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.Checkpoint
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.FlinkCheckpoint
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl.FlinkCheckpointConfigTransform.CHECKPOINT_PATH_CONFIG_NAME
+import org.apache.linkis.common.conf.CommonVars
 import org.apache.linkis.common.utils.Logging
 
 import scala.collection.JavaConverters._
@@ -40,12 +41,12 @@ class FlinkCheckpointConfigTransform extends FlinkConfigTransform with Logging{
    */
   override protected def configGroup(): String = JobConfKeyConstants.GROUP_PRODUCE.getValue
 
-  override protected def transform(produceConfig: util.Map[String, Any], job: LaunchJob): LaunchJob = {
+  override protected def transform(produceConfig: util.Map[String, AnyRef], job: LaunchJob): LaunchJob = {
     produceConfig.get(JobConfKeyConstants.CHECKPOINT_SWITCH.getValue) match {
       case "ON" =>
-        val checkpointConfig: util.Map[String, Any] =  new util.HashMap[String, Any]()
+        val checkpointConfig: util.Map[String, AnyRef] =  new util.HashMap[String, AnyRef]()
         val jobLaunchManager = JobLaunchManager.getJobManager(JobLauncherAutoConfiguration.DEFAULT_JOB_LAUNCH_MANGER)
-        val checkpointPath = jobLaunchManager.getJobStateManager.getJobStateDir(classOf[Checkpoint], job.getJobName)
+        val checkpointPath = jobLaunchManager.getJobStateManager.getJobStateDir(classOf[FlinkCheckpoint], job.getJobName)
         checkpointConfig.put(FlinkConfigTransform.FLINK_CONFIG_PREFIX + CHECKPOINT_PATH_CONFIG_NAME, checkpointPath)
         info(s"Use the checkpoint dir, ${CHECKPOINT_PATH_CONFIG_NAME} => ${checkpointPath}")
         produceConfig.asScala.filter(_._1.startsWith(JobConfKeyConstants.CHECKPOINT.getValue))
@@ -62,5 +63,5 @@ class FlinkCheckpointConfigTransform extends FlinkConfigTransform with Logging{
 }
 
 object FlinkCheckpointConfigTransform{
-  val CHECKPOINT_PATH_CONFIG_NAME = "state.checkpoints.dir"
+  private val CHECKPOINT_PATH_CONFIG_NAME = CommonVars("wds.streamis.flink.config.name.checkpoint-path", "state.checkpoints.dir").getValue
 }

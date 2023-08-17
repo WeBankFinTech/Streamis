@@ -22,9 +22,9 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{Str
 
 class SqlStreamisJobContentTransform extends StreamisJobContentTransform {
 
-  override protected def transformJobContent(transformJob: StreamisTransformJobContent): util.HashMap[String, Any] = transformJob match {
+  override protected def transformJobContent(transformJob: StreamisTransformJobContent): util.HashMap[String, AnyRef] = transformJob match {
     case sqlTransformJob: StreamisSqlTransformJobContent =>
-      val jobContent = new util.HashMap[String, Any]
+      val jobContent = new util.HashMap[String, AnyRef]
       jobContent.put("code", sqlTransformJob.getSql)
       jobContent
     case _ => null

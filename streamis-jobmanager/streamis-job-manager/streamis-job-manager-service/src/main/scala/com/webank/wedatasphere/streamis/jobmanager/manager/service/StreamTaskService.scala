@@ -17,16 +17,19 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.FlinkJobInfo
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{ExecResultVo, JobProgressVo, JobStatusVo, PauseResultVo, StreamTaskListVo}
-
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{ExecResultVo, JobDetailsVo, JobProgressVo, JobStatusVo, PauseResultVo, StreamTaskListVo}
 import java.util
 import java.util.concurrent.Future
 /**
  * Include the method related by stream task (such as execute/pause)
  */
 trait StreamTaskService {
+
+
+  def getTaskById(Id: Long): StreamTask
+
 
   /**
    * Sync to execute job(task)
@@ -87,6 +90,8 @@ trait StreamTaskService {
    */
    def launch(taskId: Long, execUser: String): Unit
 
+   def getLatestTaskByJobId(jobId: Long): StreamTask
+
   /**
    * Create new task use the latest job version
    * @param jobId job id
@@ -94,6 +99,8 @@ trait StreamTaskService {
    * @param creator creator
    */
    def createTask(jobId: Long, status: Int, creator: String): StreamTask
+
+   def updateTask(streamTask: StreamTask): Unit
 
   /**
    * Update the task status
@@ -146,9 +153,13 @@ trait StreamTaskService {
    * @param version version
    * @return
    */
-   def getTask(jobId: Long, version: String): FlinkJobInfo
+   def getTaskJobInfo(jobId: Long, version: String): EngineConnJobInfo
 
 
    def getStateInfo(taskId: Long): JobState
+
+   def getStateInfo(streamTask: StreamTask): JobState
+
+  def getJobDetailsVO(streamJob: StreamJob, version: String): JobDetailsVo
 
 }

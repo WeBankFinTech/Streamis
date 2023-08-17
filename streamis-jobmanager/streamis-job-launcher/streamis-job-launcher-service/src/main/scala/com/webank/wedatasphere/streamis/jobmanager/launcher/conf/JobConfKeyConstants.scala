@@ -16,6 +16,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.conf
 
 import org.apache.linkis.common.conf.CommonVars
+import org.apache.linkis.governance.common.conf.GovernanceCommonConf
 
 
 /**
@@ -23,6 +24,10 @@ import org.apache.linkis.common.conf.CommonVars
  */
 object JobConfKeyConstants {
 
+  /**
+   * Config group for streamis internal configuration
+   */
+  val GROUP_INTERNAL: CommonVars[String] = CommonVars("wds.streamis.job.internal.config.group", "wds.streamis.internal.params")
   /**
    * Group: Flink extra
    */
@@ -85,4 +90,11 @@ object JobConfKeyConstants {
    * Alert level
    */
   val ALERT_LEVEL: CommonVars[String] = CommonVars("wds.streamis.job.config.key.alert.level", "wds.linkis.flink.alert.level")
+
+  /**
+   * Material model
+   */
+  val MATERIAL_MODEL: CommonVars[String] = CommonVars("wds.streamis.job.config.key.material.model", "wds.streamis.job.material.model")
+
+  val MANAGE_MODE_KEY: CommonVars[String] = CommonVars("wds.streamis.job.manage.mode.key", GovernanceCommonConf.EC_APP_MANAGE_MODE.key)
 }
