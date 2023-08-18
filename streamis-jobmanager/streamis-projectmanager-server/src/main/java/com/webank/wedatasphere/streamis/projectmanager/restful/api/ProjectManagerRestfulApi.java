@@ -42,6 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -98,6 +99,10 @@ public class ProjectManagerRestfulApi {
             os = IoUtils.generateExportOutputStream(inputPath);
             IOUtils.copy(is, os);
             projectManagerService.upload(username, fileName, version, projectName, inputPath,comment);
+            File file = new File(inputPath);
+            if (file.exists()) {
+                file.delete();
+            }
         } catch (Exception e) {
             LOG.error("failed to upload zip {} fo user {}", fileName, username, e);
             return Message.error(e.getMessage());
