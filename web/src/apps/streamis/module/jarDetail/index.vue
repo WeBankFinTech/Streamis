@@ -1,10 +1,20 @@
 <template>
   <div>
-    <div class="itemWrap" v-if="!isSql">
+    <div
+      class="itemWrap"
+      v-if="!isSql"
+    >
       <p>{{ $t('message.streamis.jobDetail.flinkJarPac') }}</p>
       <div>
-        <Table :columns="columns" :data="jarData.mainClassJar || []" border>
-          <template slot-scope="{ row }" slot="operation">
+        <Table
+          :columns="columns"
+          :data="jarData.mainClassJar || []"
+          border
+        >
+          <template
+            slot-scope="{ row }"
+            slot="operation"
+          >
             <div>
               <a
                 :href="
@@ -24,15 +34,53 @@
         </Table>
       </div>
     </div>
-    <div class="itemWrap" v-if="isSql">
+    <div
+      class="itemWrap"
+      v-if="isSql"
+    >
       <p>{{ $t('message.streamis.jobDetail.sqlContent') }}</p>
       <div class="sql">{{ jarData.sql }}</div>
     </div>
-    <div class="itemWrap" v-if="!isSql">
-      <p>Program Arguement</p>
-      <div class="programArguement">{{ jarData.args }}</div>
+    <div
+      class="itemWrap"
+      v-if="!isSql"
+    >
+      <p class="args-header">
+        Program Arguement
+        <span>
+          <Button
+            v-if="!editProgramArguement"
+            type="primary"
+            class="btn"
+            @click="toggleEditProgramArguement(true)"
+          >编辑</Button>
+          <Button
+            v-if="editProgramArguement"
+            type="primary"
+            @click="handleEditProgramArguement()"
+            class="btn"
+            style="margin-right: 8px;"
+          >确认</Button>
+          <Button
+            v-if="editProgramArguement"
+            type="primary"
+            class="btn"
+            @click="toggleEditProgramArguement(false)"
+          >取消</Button>
+        </span>
+      </p>
+      <!-- <div class="programArguement">{{ jarData.args }}</div> -->
+      <Input
+        :disabled="!editProgramArguement"
+        class="programArguementaaa"
+        type="textarea"
+        v-model="args"
+      />
     </div>
-    <div class="itemWrap" v-if="!isSql">
+    <div
+      class="itemWrap"
+      v-if="!isSql"
+    >
       <p>{{ $t('message.streamis.jobDetail.dependJarPac') }}</p>
       <div>
         <Table
@@ -40,7 +88,10 @@
           :data="jarData.dependencyJars || []"
           border
         >
-          <template slot-scope="{ row }" slot="operation">
+          <template
+            slot-scope="{ row }"
+            slot="operation"
+          >
             <div>
               <a
                 :href="
@@ -60,7 +111,10 @@
         </Table>
       </div>
     </div>
-    <div class="itemWrap" v-if="!isSql">
+    <div
+      class="itemWrap"
+      v-if="!isSql"
+    >
       <p>{{ $t('message.streamis.jobDetail.userResource') }}</p>
       <div>
         <Table
@@ -68,7 +122,10 @@
           :data="jarData.resources || []"
           border
         >
-          <template slot-scope="{ row }" slot="operation">
+          <template
+            slot-scope="{ row }"
+            slot="operation"
+          >
             <div>
               <a
                 :href="
@@ -91,9 +148,13 @@
   </div>
 </template>
 <script>
+import api from '@/common/service/api'
 export default {
   props: {
-    jarData: Object,
+    jarData: {
+      type: Object,
+      default: () => ({})
+    },
     isSql: Boolean
   },
   data() {
@@ -133,7 +194,47 @@ export default {
           slot: 'operation'
         }
       ],
-      projectName: this.$route.params.projectName
+      projectName: this.$route.params.projectName,
+      editProgramArguement: false,
+      args: JSON.stringify(this.jarData.args),
+      argsBak: JSON.stringify(this.jarData.args),
+    }
+  },
+  methods: {
+    toggleEditProgramArguement(value) {
+      this.editProgramArguement = value
+      if (!value) {
+        // 取消编辑
+        this.args = this.argsBak
+      }
+    },
+    async handleEditProgramArguement() {
+      try {
+        // 确认编辑
+        console.log('handleEditProgramArguement')
+        const { id, version } = this.$route.params
+        console.log(JSON.parse(this.args), id, version)
+        const res = await api.fetch('/streamis/streamJobManager/job/updateContent', {
+          jobId: id,
+          version: version,
+          args: JSON.parse(this.args)
+        }, 'post')
+        console.log(res)
+        this.editProgramArguement = false
+        this.argsBak = this.args
+      } catch (error) {
+        console.log(error)
+        this.$Message.error('请输入正确的Program Arguement')
+      }
+    }
+  },
+  watch: {
+    jarData: {
+      deep: true,
+      handler() {
+        this.args = JSON.stringify(this.jarData.args)
+        this.argsBak = JSON.stringify(this.jarData.args)
+      }
     }
   }
 }
@@ -141,21 +242,39 @@ export default {
 <style lang="scss" scoped>
 .itemWrap {
   padding: 10px;
-  & > p {
+
+  &>p {
     font-weight: 700;
     font-size: 16px;
   }
-  & > div {
-    margin-left: 20px;
-    margin-top: 10px;
+
+  &>div {
+    padding-left: 20px;
+    padding-top: 10px;
   }
 }
+
+.args-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .btn {
+    height: 22px;
+  }
+}
+
 .programArguement {
   background: rgba(94, 94, 94, 1);
   color: #fff;
   padding: 10px 20px;
+
+}
+
+.programArguementaaa {
   min-height: 64px;
 }
+
 .sql {
   background: #f8f8f9;
   padding: 10px 20px;
