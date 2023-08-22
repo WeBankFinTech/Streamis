@@ -257,8 +257,16 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     val jobVersion =streamJobMapper.getJobVersionById(jobId, version)
     val jobContent = jobVersion.getJobContent
     val newJobContent = JsonUtils.manageJobContent(jobContent,args)
-    jobVersion.setJobContent(newJobContent)
-    streamJobMapper.updateJobContent(jobVersion)
+    val streamJobVersion = new StreamJobVersion
+    streamJobVersion.setJobId(jobVersion.getJobId)
+    streamJobVersion.setCreateBy(jobVersion.getCreateBy)
+    streamJobVersion.setManageMode(jobVersion.getManageMode)
+    streamJobVersion.setSource(jobVersion.getSource)
+    streamJobVersion.setCreateTime(new Date())
+    streamJobVersion.setJobContent(newJobContent)
+    streamJobVersion.setVersion(rollingJobVersion(jobVersion.getVersion))
+    streamJobVersion.setComment("用户"+ jobVersion.getCreateBy + "修改jobContent")
+    streamJobMapper.insertJobVersion(jobVersion)
     getJobContent(jobId,version)
   }
 
