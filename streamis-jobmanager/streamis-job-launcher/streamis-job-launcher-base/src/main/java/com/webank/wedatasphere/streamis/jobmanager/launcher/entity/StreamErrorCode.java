@@ -1,7 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.entity;
 
 
-import java.util.regex.Pattern;
 
 public class StreamErrorCode {
     private Integer id;
