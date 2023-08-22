@@ -266,7 +266,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     streamJobVersion.setJobContent(newJobContent)
     streamJobVersion.setVersion(rollingJobVersion(jobVersion.getVersion))
     streamJobVersion.setComment("用户"+ jobVersion.getCreateBy + "修改jobContent")
-    streamJobMapper.insertJobVersion(jobVersion)
+    streamJobMapper.insertJobVersion(streamJobVersion)
     getJobContent(jobId,version)
   }
 
