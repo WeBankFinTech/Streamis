@@ -10,6 +10,8 @@ import org.apache.linkis.errorcode.client.synchronizer.LinkisErrorCodeSynchroniz
 import org.apache.linkis.errorcode.common.LinkisErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +22,7 @@ public class StreamisErrorCodeManager   {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamisErrorCodeManager.class);
 
-    @Resource
+    @Autowired
     private StreamErrorCodeMapper streamErrorCodeMapper;
 
 

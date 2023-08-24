@@ -811,27 +811,22 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
 
   override def  errorCodeMatching(jobId: Long, streamTask: StreamTask): Future[_] = {
     var errorMsg =""
-    var logs =""
     val taskId =streamTask.getId
     val user =streamTask.getSubmitUser
-    var index = 0
       Utils.defaultScheduler.submit(new Runnable {
       override def run(): Unit = {
-        while (index < JobConf.ERROR_CODE_MATCHING_YARN_TIME.getHotValue() || logs.isEmpty){
-          Utils.tryCatch{
-            breakable(
-              for(i<-0 to 10) {
-                logs = getLog(jobId, taskId, user, "yarn",i*100)
-                if (logs.isEmpty){break()}
-                errorMsg =exceptionAnalyze(errorMsg,logs)
-                if(errorMsg.nonEmpty){break()}
-              })
-          }{
-            case e: Exception =>
-              logger.error("errorCodeMatching failed. ", e)
-          }
-          index +=1
-          wait(3000)
+        Utils.tryCatch{
+          breakable(
+            for(i<-0 to 10) {
+              val logs = getLog(jobId, taskId, user, "yarn",i*100)
+              errorMsg =exceptionAnalyze(errorMsg,logs)
+              if(errorMsg.nonEmpty){
+                break()
+              }
+            })
+        }{
+          case e: Exception =>
+            logger.error("errorCodeMatching failed. ", e)
         }
         if (errorMsg.isEmpty){
           Utils.tryCatch{
