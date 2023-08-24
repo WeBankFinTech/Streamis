@@ -6,6 +6,7 @@
       footer-hide
       width="1200"
       @on-cancel="cancel"
+      :class="full ? 'full' : ''"
     >
       <div>
         <Form ref="queryForm" inline>
@@ -47,7 +48,7 @@
             </Button>
           </FormItem>
         </Form>
-        <div class="log-wrapper" :class="full ? 'full' : ''">
+        <div class="log-wrapper">
           <Input
             v-model="logs"
             type="textarea"
@@ -168,6 +169,7 @@ export default {
         logType: 'client'
       }
       this.$emit('modalCancel')
+      this.full = false
     },
     handleMore(type) {
       if (type === 'more') {
@@ -213,17 +215,19 @@ export default {
   }
 }
 .full {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 100;
-  /deep/textarea{
+  /deep/.ivu-modal{
     width: 100vw !important;
-    height: 100vh !important;
-    max-height: 100vw !important;
-    max-width: 100vw !important;
+    height: 100vh;
+    min-height: 430px;
+    top:0;
+    .ivu-modal-content{
+      height: 100%;
+    }
+  }
+  /deep/textarea{
+   height: calc(100vh - 200px) !important;
+   min-height: 200px;
+   max-height: calc(100vh - 200px) !important;
   }
 }
 </style>
