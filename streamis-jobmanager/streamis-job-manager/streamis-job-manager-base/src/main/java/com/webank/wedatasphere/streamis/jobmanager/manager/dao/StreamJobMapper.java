@@ -51,6 +51,8 @@ public interface StreamJobMapper {
 
     void updateJob(StreamJob streamJob);
 
+    void updateJobContent(StreamJobVersion streamJobVersion);
+
     List<StreamJob> getJobListsByProjectName(String projectName);
 
     VersionDetailVo getVersionDetail(@Param("jobId") Long jobId, @Param("version") String version);

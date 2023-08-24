@@ -108,6 +108,14 @@ trait StreamJobService {
   def getJobContent(jobId: Long, version: String): StreamisTransformJobContent
 
   /**
+   *
+   * @param jobId
+   * @param version
+   * @return
+   */
+  def updateJobContent(jobId: Long, version: String, args: util.List[String] ): StreamisTransformJobContent
+
+  /**
    * Has permission
    *
    * @param jobId    job id
