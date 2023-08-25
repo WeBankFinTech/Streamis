@@ -45,10 +45,10 @@
     </modules>
 
     <properties>
-        <linkis.version>1.1.13-wedatasphere</linkis.version>
+        <linkis.version>1.1.14-wedatasphere</linkis.version>
         <junit.version>4.12</junit.version>
-        <dss.version>1.1.0</dss.version>
-        <streamis.version>0.3.2-webank</streamis.version>
+        <dss.version>1.1.0.14-SNAPSHOT</dss.version>
+        <streamis.version>0.3.3-wedatasphere</streamis.version>
         <scala.version>2.11.12</scala.version>
         <jdk.compile.version>1.8</jdk.compile.version>
         <maven.version>3.3.3</maven.version>
