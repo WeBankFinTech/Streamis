@@ -633,7 +633,7 @@ public class JobRestfulApi {
         List<String> args = contentRequest.getArgs();
         StreamJob streamJob = this.streamJobService.getJobById(jobId);
         if (!streamJobService.hasPermission(streamJob, username) &&
-                !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
+                !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
             return Message.error("Have no permission to update job details of StreamJob [" + jobId + "]");
         }
         StreamisTransformJobContent jobContent = streamJobService.updateJobContent(jobId, version,args);
