@@ -631,6 +631,9 @@ public class JobRestfulApi {
         Long jobId = contentRequest.getJobId();
         String version = contentRequest.getVersion();
         List<String> args = contentRequest.getArgs();
+        if (args.toString().length() > 400){
+            return Message.error("args length is too long, please less than 400");
+        }
         StreamJob streamJob = this.streamJobService.getJobById(jobId);
         if (!streamJobService.hasPermission(streamJob, username) &&
                 !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
