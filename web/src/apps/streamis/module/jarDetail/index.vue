@@ -214,6 +214,10 @@ export default {
         console.log('handleEditProgramArguement')
         const { id, version } = this.$route.params
         console.log(JSON.parse(this.args), id, version)
+        if(this.args.length > 400){
+          this.$Message.error('Program Arguement长度不能超过400')
+          return
+        }
         const res = await api.fetch('/streamis/streamJobManager/job/updateContent', {
           jobId: id,
           version: version,
