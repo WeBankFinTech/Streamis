@@ -228,7 +228,9 @@ export default {
         this.argsBak = this.args
       } catch (error) {
         console.log(error)
-        this.$Message.error('请输入正确的Program Arguement')
+        if(error instanceof SyntaxError){       
+          this.$Message.error('请输入正确的Program Arguement')
+        }
       }
     }
   },
