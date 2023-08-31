@@ -116,6 +116,14 @@ public class JobRestfulApi {
         return Message.ok().data("tasks", pageInfo.getList()).data("totalPage", pageInfo.getTotal());
     }
 
+    @RequestMapping(path = "/jobInfo", method = RequestMethod.GET)
+    public Message getJobList(HttpServletRequest req,
+                              @RequestParam(value = "jobId", required = false) Integer jobId){
+        String username = ModuleUserUtils.getOperationUser(req, "jobInfo");
+        StreamJob streamJob = streamJobService.getJobById(jobId);
+        return Message.ok().data("jobInfo",streamJob);
+    }
+
     @RequestMapping(path = "/createOrUpdate", method = RequestMethod.POST)
     public Message createOrUpdate(HttpServletRequest req, @Validated @RequestBody MetaJsonInfo metaJsonInfo) {
         String username = ModuleUserUtils.getOperationUser(req, "create or update job");
@@ -631,9 +639,12 @@ public class JobRestfulApi {
         Long jobId = contentRequest.getJobId();
         String version = contentRequest.getVersion();
         List<String> args = contentRequest.getArgs();
+        if (args.toString().length() > 400){
+            return Message.error("args length is too long, please less than 400");
+        }
         StreamJob streamJob = this.streamJobService.getJobById(jobId);
         if (!streamJobService.hasPermission(streamJob, username) &&
-                !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())) {
+                !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
             return Message.error("Have no permission to update job details of StreamJob [" + jobId + "]");
         }
         StreamisTransformJobContent jobContent = streamJobService.updateJobContent(jobId, version,args);
