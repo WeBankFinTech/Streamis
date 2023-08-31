@@ -116,6 +116,14 @@ public class JobRestfulApi {
         return Message.ok().data("tasks", pageInfo.getList()).data("totalPage", pageInfo.getTotal());
     }
 
+    @RequestMapping(path = "/jobInfo", method = RequestMethod.GET)
+    public Message getJobList(HttpServletRequest req,
+                              @RequestParam(value = "jobId", required = false) Integer jobId){
+        String username = ModuleUserUtils.getOperationUser(req, "jobInfo");
+        StreamJob streamJob = streamJobService.getJobById(jobId);
+        return Message.ok().data("jobInfo",streamJob);
+    }
+
     @RequestMapping(path = "/createOrUpdate", method = RequestMethod.POST)
     public Message createOrUpdate(HttpServletRequest req, @Validated @RequestBody MetaJsonInfo metaJsonInfo) {
         String username = ModuleUserUtils.getOperationUser(req, "create or update job");
