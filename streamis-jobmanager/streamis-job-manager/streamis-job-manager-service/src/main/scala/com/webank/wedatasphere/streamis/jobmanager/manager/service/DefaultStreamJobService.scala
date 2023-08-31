@@ -268,8 +268,13 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     streamJobVersion.setVersion(rollingJobVersion(jobVersion.getVersion))
     streamJobVersion.setComment("用户"+ jobVersion.getCreateBy + "修改jobContent")
     streamJobMapper.insertJobVersion(streamJobVersion)
-    streamJob.setCurrentVersion(rollingJobVersion(jobVersion.getVersion))
-    streamJobMapper.updateJob(streamJob)
+    val task = streamTaskMapper.getLatestByJobId(streamJob.getId)
+    if (task != null && !JobConf.isCompleted(task.getStatus)) {
+      logger.warn(s"StreamJob-${streamJob.getName} is in status ${task.getStatus}, your deployment will not update the version in job")
+    } else {
+      streamJob.setCurrentVersion(rollingJobVersion(jobVersion.getVersion))
+      streamJobMapper.updateJob(streamJob)
+    }
     getJobContent(jobId,rollingJobVersion(jobVersion.getVersion))
   }
 
