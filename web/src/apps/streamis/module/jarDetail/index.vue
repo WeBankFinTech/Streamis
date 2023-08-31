@@ -198,6 +198,7 @@ export default {
       editProgramArguement: false,
       args: JSON.stringify(this.jarData.args),
       argsBak: JSON.stringify(this.jarData.args),
+      version: ''
     }
   },
   methods: {
@@ -214,17 +215,28 @@ export default {
         console.log('handleEditProgramArguement')
         const { id, version } = this.$route.params
         console.log(JSON.parse(this.args), id, version)
-        const res = await api.fetch('/streamis/streamJobManager/job/updateContent', {
+        if (this.args.length > 400) {
+          this.$Message.error('Program Arguement长度不能超过400')
+          return
+        }
+        if (!Array.isArray(JSON.parse(this.args))) {
+          this.$Message.error('请输入正确的Program Arguement')
+          return
+        }
+        await api.fetch('/streamis/streamJobManager/job/updateContent', {
           jobId: id,
-          version: version,
+          version: this.version || version,
           args: JSON.parse(this.args)
         }, 'post')
-        console.log(res)
+        const details = await api.fetch('/streamis/streamJobManager/job/jobInfo', { jobId: id, }, 'get')
+        this.version = details.jobInfo.currentVersion || ''
         this.editProgramArguement = false
         this.argsBak = this.args
       } catch (error) {
         console.log(error)
-        this.$Message.error('请输入正确的Program Arguement')
+        if (error instanceof SyntaxError) {
+          this.$Message.error('请输入正确的Program Arguement')
+        }
       }
     }
   },
