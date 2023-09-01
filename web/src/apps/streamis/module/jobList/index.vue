@@ -305,8 +305,8 @@
         <Table border :columns="checkColumns" :data="checkData">
           <template slot-scope="{row}" slot="yarn">
             <div v-for="(item, index) in row.yarn" :key="index">
-              <a v-if="item.applicationUrl && item.applicationUrl !== '无'" style="display: block" @click="goToNewTab(item.applicationUrl)">{{item.yarnAppType}}: {{item.applicationName}}</a>
-              <div v-else>无</div>
+              <a v-if="item.applicationUrl && item.applicationUrl !== '无' && item.applicationId" style="display: block" @click="goToNewTab(item.applicationUrl)">{{item.yarnAppType}}: {{item.applicationName}}</a>
+              <div v-else>{{ item.applicationUrl }}</div>
             </div>
           </template>
         </Table>
@@ -810,7 +810,7 @@ export default {
           }
           if (Array.isArray(tempData.yarn)) {
             for (let i = 0; i < tempData.yarn.length; i++) {
-              if (tempData.yarn[i].applicationUrl && tempData.yarn[i].applicationUrl !== '无') {
+              if (tempData.yarn[i].applicationId && tempData.yarn[i].applicationId !== '无') {
                 this.hasYarnCount++
                 break
               }
@@ -838,7 +838,7 @@ export default {
         }
         if (Array.isArray(tempData.yarn)) {
           for (let i = 0; i < tempData.yarn.length; i++) {
-            if (tempData.yarn[i].applicationUrl && tempData.yarn[i].applicationUrl !== '无') {
+            if (tempData.yarn[i].applicationId && tempData.yarn[i].applicationId !== '无') {
               this.hasYarnCount++
               break
             }
