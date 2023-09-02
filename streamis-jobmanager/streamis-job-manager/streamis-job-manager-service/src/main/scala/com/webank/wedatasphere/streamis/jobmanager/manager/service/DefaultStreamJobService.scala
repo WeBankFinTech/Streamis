@@ -255,6 +255,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
 
   override def updateJobContent(jobId: Long, version: String,args: util.List[String]): StreamisTransformJobContent = {
     val jobVersion =streamJobMapper.getJobVersionById(jobId, version)
+    val checkContent = getJobContent(jobId, jobVersion.getVersion)
     val streamJob = streamJobMapper.queryAndLockJobById(jobId)
     val jobContent = jobVersion.getJobContent
     val newJobContent = JsonUtils.manageJobContent(jobContent,args)
