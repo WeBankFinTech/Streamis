@@ -3,42 +3,26 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager;
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamErrorCodeMapper;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.StreamErrorCode;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration;
-import org.apache.linkis.common.utils.RetryHandler;
-import org.apache.linkis.errorcode.client.manager.LinkisErrorCodeManager;
-import org.apache.linkis.errorcode.client.synchronizer.LinkisErrorCodeSynchronizer;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager.cache.StreamisErrorCodeCache;
+import org.apache.linkis.common.utils.Utils;
 import org.apache.linkis.errorcode.common.LinkisErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.Resource;
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-public class StreamisErrorCodeManager   {
-    private static StreamisErrorCodeManager streamisErrorCodeManager;
+public class StreamisErrorCodeManager {
 
+    private final Object lock = new Object();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamisErrorCodeManager.class);
 
     @Autowired
     private StreamErrorCodeMapper streamErrorCodeMapper;
 
-
-
-    private StreamisErrorCodeManager() {}
-
-    public static StreamisErrorCodeManager getInstance() {
-        if (streamisErrorCodeManager == null) {
-            synchronized (LinkisErrorCodeManager.class) {
-                if (streamisErrorCodeManager == null) {
-                    streamisErrorCodeManager = new StreamisErrorCodeManager();
-                }
-            }
-        }
-        return streamisErrorCodeManager;
-    }
 
     public List<LinkisErrorCode> getLinkisErrorCodes() {
         LOGGER.info("加载linkis错误码");
@@ -52,7 +36,20 @@ public class StreamisErrorCodeManager   {
             errorCode.setErrorType(item.getErrorType());
             errorCodes.add(errorCode);
         }
-        LOGGER.info("加载完成，加载错误码个数为: {}",linkisErrorCodes.size());
+        LOGGER.info("加载完成，加载错误码个数为: {}", linkisErrorCodes.size());
         return errorCodes;
     }
+
+    @PostConstruct
+    private void init() {
+        Utils.defaultScheduler().scheduleAtFixedRate(() -> {
+            LOGGER.info("start to get errorcodes from linkis server");
+            synchronized (this.lock) {
+                StreamisErrorCodeCache.clear();
+                List<LinkisErrorCode> linkisErrorCodes = getLinkisErrorCodes();
+                StreamisErrorCodeCache.put("data", linkisErrorCodes);
+            }
+        }, 0L, 1L, TimeUnit.HOURS);
+    }
+
 }

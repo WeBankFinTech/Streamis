@@ -2,6 +2,7 @@ package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.handler;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager.StreamisErrorCodeManager;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager.cache.StreamisErrorCodeCache;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.linkis.common.utils.Utils;
@@ -25,7 +26,6 @@ public class StreamisErrorCodeHandler extends LinkisErrorCodeHandler {
 
     private static StreamisErrorCodeHandler streamisErrorCodeHandler;
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamisErrorCodeHandler.class);
-    private final StreamisErrorCodeManager streamisErrorCodeManager = StreamisErrorCodeManager.getInstance();
     private final long futureTimeOut = ClientConfiguration.FUTURE_TIME_OUT.getValue();
 
 
@@ -47,7 +47,7 @@ public class StreamisErrorCodeHandler extends LinkisErrorCodeHandler {
     @Override
     public List<ErrorCode> handle(String log) {
         Set<ErrorCode> errorCodeSet = new HashSet<>();
-        List<LinkisErrorCode> errorCodes = streamisErrorCodeManager.getLinkisErrorCodes();
+        List<LinkisErrorCode> errorCodes = StreamisErrorCodeCache.get("data");
         Runnable runnable =
                 () -> {
                     Arrays.stream(log.split("\n"))
