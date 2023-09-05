@@ -21,7 +21,7 @@ import com.github.pagehelper.PageInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobCreateErrorException, JobFetchErrorException}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobCreateErrorException, JobFetchErrorException, JobErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamAlertMapper, StreamJobMapper, StreamTaskMapper}
@@ -148,7 +148,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
 
 
   override def deployStreamJob(streamJob: StreamJob,
-                               metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean): StreamJobVersion = {
+                               metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean, source: String = null): StreamJobVersion = {
     if(StringUtils.isBlank(metaJsonInfo.getJobType))
       throw new JobCreateErrorException(30030, s"jobType is needed.")
     else if(!JobConf.SUPPORTED_JOB_TYPES.getValue.contains(metaJsonInfo.getJobType)) {
@@ -196,7 +196,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     jobVersion.setJobContent(metaJsonInfo.getMetaInfo)
     jobVersion.setCreateBy(userName)
     jobVersion.setCreateTime(new Date)
-    jobVersion.setSource("upload by user.")
+    jobVersion.setSource(source)
     if (StringUtils.isNotBlank(metaJsonInfo.getComment))
       jobVersion.setComment(metaJsonInfo.getComment)
     else jobVersion.setComment("upload by user.")
@@ -207,17 +207,23 @@ class DefaultStreamJobService extends StreamJobService with Logging {
 
   @throws(classOf[ErrorException])
   @Transactional(rollbackFor = Array(classOf[Exception]))
-  override def uploadJob(projectName: String, userName: String, inputZipPath: String): StreamJobVersion = {
+  override def uploadJob(projectName: String, userName: String, inputZipPath: String,source: String): StreamJobVersion = {
     val inputPath = ZipHelper.unzip(inputZipPath)
     val readerUtils = new ReaderUtils
     val metaJsonInfo = readerUtils.parseJson(inputPath)
+    //TODO:JobConf.PROJECT_NAME_STRICT_CHECK_SWITCH，
     if (StringUtils.isNotBlank(projectName) && !projectName.equals(metaJsonInfo.getProjectName)) {
+      if (JobConf.PROJECT_NAME_STRICT_CHECK_SWITCH.getHotValue && StringUtils.isNotBlank(metaJsonInfo.getProjectName)){
+        logger.error(s"The projectName [${projectName}] dose not match metaJson ProjectName [${metaJsonInfo.getProjectName}]")
+        throw new JobCreateErrorException(30030,s"The projectName [${projectName}] dose not match metaJson ProjectName [${metaJsonInfo.getProjectName}]")
+      }
       logger.warn(s"The projectName [${metaJsonInfo.getProjectName}] is not matching the project, will change it to [${projectName}] automatically")
       metaJsonInfo.setProjectName(projectName)
+
     }
     val validateResult = validateJobDeploy(metaJsonInfo.getProjectName, metaJsonInfo.getJobName, userName)
     //  生成StreamJob，根据StreamJob生成StreamJobVersion
-    val version = deployStreamJob(validateResult.streamJob, metaJsonInfo, userName, validateResult.updateVersion)
+    val version = deployStreamJob(validateResult.streamJob, metaJsonInfo, userName, validateResult.updateVersion, source)
     // Save the job configuration, lock the job again if exists
     if (null != metaJsonInfo.getJobConfig){
       this.streamJobConfService.saveJobConfig(version.getJobId, metaJsonInfo.getJobConfig.asInstanceOf[util.Map[String, AnyRef]])

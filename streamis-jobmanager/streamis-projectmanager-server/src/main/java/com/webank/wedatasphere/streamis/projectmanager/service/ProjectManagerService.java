@@ -27,7 +27,7 @@ import java.util.List;
  * Created by v_wbyynie on 2021/9/17.
  */
 public interface ProjectManagerService {
-    void upload(String username, String fileName, String version, String projectName, String file, String comment) throws IOException;
+    void upload(String username, String fileName, String version, String projectName, String file, String comment, String source) throws IOException;
 
     List<ProjectFiles> listFiles(String projectName, String username, String filename);
 

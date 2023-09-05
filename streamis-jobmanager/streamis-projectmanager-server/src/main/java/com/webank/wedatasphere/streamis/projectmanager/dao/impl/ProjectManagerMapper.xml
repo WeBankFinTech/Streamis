@@ -23,8 +23,8 @@
     <insert id="insertProjectFilesInfo"
             parameterType="com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles">
         INSERT INTO linkis_stream_project_files
-        (`file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_by`,`comment`,`md5`)
-        VALUES (#{fileName},#{version},#{storePath},#{storeType},#{projectName},#{createBy},#{comment},#{MD5})
+        (`file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_by`,`comment`,`md5`,`source`)
+        VALUES (#{fileName},#{version},#{storePath},#{storeType},#{projectName},#{createBy},#{comment},#{MD5},#{source})
     </insert>
 
     <update id="updateFileById" parameterType="com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles">
@@ -34,6 +34,9 @@
         </if>
         <if test="comment != null and comment !=''">
             ,comment = #{comment}
+        </if>
+        <if test="source != null and source !=''">
+            ,source = #{source}
         </if>
         where id = #{id}
     </update>

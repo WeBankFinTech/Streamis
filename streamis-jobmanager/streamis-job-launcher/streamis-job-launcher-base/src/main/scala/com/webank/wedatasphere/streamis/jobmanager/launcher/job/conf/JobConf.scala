@@ -90,4 +90,6 @@ object JobConf {
   val ERROR_CODE_MATCHING_YARN_TIME: CommonVars[Int] = CommonVars("wds.streamis.error.code.matching.yarn.time", 2)
 
   val DEFAULT_ERROR_MSG: CommonVars[String] = CommonVars("wds.streamis.default.error.msg", "正在分析日志，请稍后")
+
+  val PROJECT_NAME_STRICT_CHECK_SWITCH: CommonVars[Boolean] = CommonVars("wds.streamis.project.name.strict.check.enable", false)
 }

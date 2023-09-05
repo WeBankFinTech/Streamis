@@ -77,7 +77,7 @@ trait StreamJobService {
    * @param updateVersion should update version
    * @return
    */
-  def deployStreamJob(streamJob: StreamJob, metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean): StreamJobVersion
+  def deployStreamJob(streamJob: StreamJob, metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean, source: String = null): StreamJobVersion
 
   /**
    * Upload job
@@ -87,7 +87,7 @@ trait StreamJobService {
    * @param inputZipPath input zip path
    * @return
    */
-  def uploadJob(projectName: String, userName: String, inputZipPath: String): StreamJobVersion
+  def uploadJob(projectName: String, userName: String, inputZipPath: String, source: String): StreamJobVersion
 
   /**
    * Create or update job with meta json
