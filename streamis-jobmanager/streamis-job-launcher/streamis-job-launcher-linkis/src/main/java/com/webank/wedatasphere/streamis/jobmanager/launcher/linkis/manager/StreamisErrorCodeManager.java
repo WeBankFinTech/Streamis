@@ -9,11 +9,14 @@ import org.apache.linkis.errorcode.common.LinkisErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+@Component
 public class StreamisErrorCodeManager {
 
     private final Object lock = new Object();
@@ -43,7 +46,7 @@ public class StreamisErrorCodeManager {
     @PostConstruct
     private void init() {
         Utils.defaultScheduler().scheduleAtFixedRate(() -> {
-            LOGGER.info("start to get errorcodes from linkis server");
+            LOGGER.info("start to get errorCodes");
             synchronized (this.lock) {
                 StreamisErrorCodeCache.clear();
                 List<LinkisErrorCode> linkisErrorCodes = getLinkisErrorCodes();
