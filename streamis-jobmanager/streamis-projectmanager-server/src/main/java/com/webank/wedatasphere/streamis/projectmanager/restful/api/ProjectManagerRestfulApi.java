@@ -67,13 +67,17 @@ public class ProjectManagerRestfulApi {
                            @RequestParam(name = "projectName",required = false) String projectName,
                            @RequestParam(name = "comment", required = false) String comment,
                            @RequestParam(name = "updateWhenExists", required = false) boolean updateWhenExists,
-                           @RequestParam(name = "file") List<MultipartFile> files) throws UnsupportedEncodingException, FileException {
+                           @RequestParam(name = "file") List<MultipartFile> files,
+                           @RequestParam(name = "source",required = false) String source) throws UnsupportedEncodingException, FileException {
         String username = ModuleUserUtils.getOperationUser(req, "upload project files");
         if (StringUtils.isBlank(version)) {
             return Message.error("version is null");
         }
         if (StringUtils.isBlank(projectName)) {
             return Message.error("projectName is null");
+        }
+        if (StringUtils.isBlank(source)) {
+            LOG.info("source的值为空");
         }
         if (version.length()>=30) return Message.error("version character length is to long ,Please less than 30 （版本字符长度过长，请小于30）");
         if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
@@ -98,7 +102,7 @@ public class ProjectManagerRestfulApi {
             is = p.getInputStream();
             os = IoUtils.generateExportOutputStream(inputPath);
             IOUtils.copy(is, os);
-            projectManagerService.upload(username, fileName, version, projectName, inputPath,comment);
+            projectManagerService.upload(username, fileName, version, projectName, inputPath, comment, source);
             File file = new File(inputPath);
             if (file.exists()) {
                 file.delete();

@@ -66,7 +66,8 @@ public class UploadRestfulApi {
     @RequestMapping(path = "/upload", method = RequestMethod.POST)
     public Message uploadJar(HttpServletRequest request,
                              @RequestParam(name = "projectName", required = false) String projectName,
-                              @RequestParam(name = "file") List<MultipartFile> files) throws IOException, JobException {
+                             @RequestParam(name = "file") List<MultipartFile> files,
+                             @RequestParam(name = "source",required = false) String source) throws IOException, JobException {
 
         String userName = ModuleUserUtils.getOperationUser(request, "upload job zip file");
         if (files == null || files.size() <= 0) {
@@ -94,7 +95,7 @@ public class UploadRestfulApi {
             is = p.getInputStream();
             os = IoUtils.generateExportOutputStream(inputPath);
             IOUtils.copy(is, os);
-            StreamJobVersion job = streamJobService.uploadJob(projectName, userName, inputPath);
+            StreamJobVersion job = streamJobService.uploadJob(projectName, userName, inputPath, source);
             return Message.ok().data("jobId", job.getJobId());
         } catch (Exception e) {
             LOG.error("Failed to upload zip {} to project {} for user {}.", fileName, projectName, userName, e);

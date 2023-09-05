@@ -47,6 +47,16 @@ public class ProjectFiles implements StreamisFile {
 
     private String MD5;
 
+    private String source;
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
     public String getComment() {
         return comment;
     }
