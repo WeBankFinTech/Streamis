@@ -1,4 +1,4 @@
-package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager.cache;
+package com.webank.wedatasphere.streamis.errorcode.manager.cache;
 
 import org.apache.linkis.errorcode.common.LinkisErrorCode;
 

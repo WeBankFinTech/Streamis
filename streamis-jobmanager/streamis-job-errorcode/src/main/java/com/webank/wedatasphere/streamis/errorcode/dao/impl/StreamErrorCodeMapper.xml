@@ -17,9 +17,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 
-<mapper namespace="com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamErrorCodeMapper">
+<mapper namespace="com.webank.wedatasphere.streamis.errorcode.dao.StreamErrorCodeMapper">
 
-    <resultMap id="StreamErrorCodeMap" type="com.webank.wedatasphere.streamis.jobmanager.launcher.entity.StreamErrorCode">
+    <resultMap id="StreamErrorCodeMap" type="com.webank.wedatasphere.streamis.errorcode.entity.StreamErrorCode">
         <id column="id" property="id" jdbcType="BIGINT"/>
         <result column="error_code" property="errorCode" jdbcType="VARCHAR"/>
         <result column="error_desc" property="errorDesc" jdbcType="VARCHAR"/>
@@ -27,7 +27,7 @@
         <result column="error_type" property="errorType" jdbcType="INTEGER"/>
     </resultMap>
     <select id="getErrorCodeList"
-            resultType="com.webank.wedatasphere.streamis.jobmanager.launcher.entity.StreamErrorCode">
+            resultType="com.webank.wedatasphere.streamis.errorcode.entity.StreamErrorCode">
         select id , error_code,error_desc,error_regex,error_type from linkis_stream_error_code
     </select>
 

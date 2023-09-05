@@ -1,4 +1,4 @@
-package com.webank.wedatasphere.streamis.jobmanager.launcher.entity;
+package com.webank.wedatasphere.streamis.errorcode.entity;
 
 
 

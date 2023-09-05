@@ -1,9 +1,9 @@
-package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager;
+package com.webank.wedatasphere.streamis.errorcode.manager;
 
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamErrorCodeMapper;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.StreamErrorCode;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.manager.cache.StreamisErrorCodeCache;
+import com.webank.wedatasphere.streamis.errorcode.dao.StreamErrorCodeMapper;
+import com.webank.wedatasphere.streamis.errorcode.entity.StreamErrorCode;
+import com.webank.wedatasphere.streamis.errorcode.manager.cache.StreamisErrorCodeCache;
 import org.apache.linkis.common.utils.Utils;
 import org.apache.linkis.errorcode.common.LinkisErrorCode;
 import org.slf4j.Logger;

@@ -28,6 +28,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>streamis-jobmanager-common</module>
+        <module>streamis-job-errorcode</module>
         <module>streamis-job-launcher</module>
         <module>streamis-job-manager</module>
         <module>streamis-jobmanager-server</module>
