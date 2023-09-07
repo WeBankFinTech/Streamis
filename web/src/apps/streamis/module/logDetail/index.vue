@@ -144,7 +144,7 @@ export default {
         .then(res => {
           this.spinShow = false
           if (res && res.logs) {
-            if (res.logs.endLine <= this.fromLine) {
+            if (res.logs.endLine < (this.fromLine + 99)) {
               this.fromLine = res.logs.endLine;
               this.endLine = res.logs.endLine;
             }
