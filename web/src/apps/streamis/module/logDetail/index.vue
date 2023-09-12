@@ -148,7 +148,9 @@ export default {
               this.fromLine = res.logs.endLine;
               this.endLine = res.logs.endLine;
             }
-            this.logs = res.logs.logs.join('\n')
+            if (this.logs.logs.length > 0){ // 如果有数据，就替换
+              this.logs = res.logs.logs.join('\n')
+            }
           } else {
             this.logs = ''
           }
