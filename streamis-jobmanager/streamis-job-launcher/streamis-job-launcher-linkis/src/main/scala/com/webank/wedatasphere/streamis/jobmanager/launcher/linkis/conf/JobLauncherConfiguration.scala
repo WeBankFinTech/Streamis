@@ -75,4 +75,6 @@ object JobLauncherConfiguration {
   val LINKIS_EC_SUPPORT_PARALLEM = "wds.linkis.engineconn.support.parallelism"
 
   val LINKIS_LOG_Match: CommonVars[String] = CommonVars("linkis.log.match", "^(01|12|13|22|30|31|41|42|43|47|)\\d+")
+
+  val ENABLE_STATUS_ON_FETCH_METRICS: CommonVars[Boolean] = CommonVars("wds.streamis.job.create.metrics.status.enable", true)
 }
