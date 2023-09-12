@@ -25,6 +25,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateInfo;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService;
@@ -240,6 +241,11 @@ public class JobRestfulApi {
                 return Message.error("Have no permission to inspect the StreamJob [" + jobId + "]");
             }
 
+            String  managementMode = this.streamJobConfService.getJobConfValue(jobId, JobConfKeyConstants.MANAGE_MODE_KEY().getValue());
+            if (!Boolean.parseBoolean(JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE().getHotValue().toString()) &&
+                    managementMode.equals("detach")){
+                return Message.error("The system does not enable the detach feature ,detach job cannot start [" + jobId + "]");
+            }
             try {
                 HashMap<String, Object> jobConfig = new HashMap<>(this.streamJobConfService.getJobConfig(jobId));
                 HashMap<String, Object> flinkProduce = (HashMap<String, Object>) jobConfig.get(JobConfKeyConstants.GROUP_PRODUCE().getValue());
@@ -318,6 +324,11 @@ public class JobRestfulApi {
         if (!streamJobService.hasPermission(streamJob, userName) &&
                 !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
             return Message.error("Have no permission to execute StreamJob [" + jobId + "]");
+        }
+        String  managementMode = this.streamJobConfService.getJobConfValue(jobId, JobConfKeyConstants.MANAGE_MODE_KEY().getValue());
+        if (!Boolean.parseBoolean(JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE().getHotValue().toString()) &&
+                managementMode.equals("detach")){
+            return Message.error("The system does not enable the detach feature ,detach job cannot start [" + jobId + "]");
         }
         try {
             streamTaskService.execute(jobId, 0L, userName);
