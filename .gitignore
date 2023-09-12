@@ -28,3 +28,4 @@ streamis-appconn/target
 /streamis-jobmanager/streamis-job-log/job-log-collector/xspark-streamis-log-collector/target/
 /streamis-jobmanager/streamis-job-log/streamis-job-log-common/target/
 /streamis-jobmanager/streamis-job-log/streamis-job-log-server/target/
+/streamis-jobmanager/streamis-job-errorcode/target/

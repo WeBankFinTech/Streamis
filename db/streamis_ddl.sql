@@ -266,5 +266,5 @@ ALTER TABLE `linkis_stream_project` ADD create_time datetime DEFAULT NULL;
 ALTER TABLE `linkis_stream_project` ADD last_update_by varchar(50) DEFAULT NULL;
 ALTER TABLE `linkis_stream_project` ADD last_update_time datetime DEFAULT NULL;
 ALTER TABLE `linkis_stream_project` ADD is_deleted tinyint unsigned DEFAULT 0;
-
+ALTER TABLE `linkis_stream_project_files` ADD source varchar(255) NULL;
 SET FOREIGN_KEY_CHECKS = 1;

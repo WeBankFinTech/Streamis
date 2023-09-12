@@ -8,3 +8,5 @@ CREATE TABLE `linkis_stream_error_code` (
   `error_type` int(3) DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=143 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+ALTER TABLE `linkis_stream_project_files` ADD source varchar(255) NULL;

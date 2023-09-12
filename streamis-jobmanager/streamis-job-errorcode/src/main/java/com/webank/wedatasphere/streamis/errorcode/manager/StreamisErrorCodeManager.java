@@ -48,9 +48,11 @@ public class StreamisErrorCodeManager {
         Utils.defaultScheduler().scheduleAtFixedRate(() -> {
             LOGGER.info("start to get errorCodes");
             synchronized (this.lock) {
-                StreamisErrorCodeCache.clear();
                 List<LinkisErrorCode> linkisErrorCodes = getLinkisErrorCodes();
-                StreamisErrorCodeCache.put("data", linkisErrorCodes);
+                if (!linkisErrorCodes.isEmpty()){
+                    StreamisErrorCodeCache.clear();
+                    StreamisErrorCodeCache.put("data", linkisErrorCodes);
+                }
             }
         }, 0L, 1L, TimeUnit.HOURS);
     }
