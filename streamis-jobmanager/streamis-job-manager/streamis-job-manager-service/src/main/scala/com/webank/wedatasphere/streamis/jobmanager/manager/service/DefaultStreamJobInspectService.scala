@@ -111,7 +111,7 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
   private def listInspect(job: StreamJob): JobListInspectVo = {
     // 如果分离式特性开关开启，就获取分离式client，发送list请求
     val listVo = new JobListInspectVo
-    if (JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE.getValue && JobLauncherConfiguration.ENABLE_FLINK_LIST_INSPECT.getHotValue) {
+    if (JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE.getHotValue() && JobLauncherConfiguration.ENABLE_FLINK_LIST_INSPECT.getHotValue) {
       val appName = s"${job.getProjectName}.${job.getName}"
       Utils.tryCatch {
         val appType = if (job.getJobType.toLowerCase().contains("flink")) {

@@ -351,7 +351,7 @@ object LinkisFlinkManagerClient extends Logging {
 
 
   def initScheduledTask(): Unit = {
-    if (!JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE.getValue) {
+    if (!JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE.getHotValue()) {
       logger.info("Flink manager ec refresh task was disabled. Will skip the scheduled refreshing task.")
       return
     }
