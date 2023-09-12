@@ -451,3 +451,9 @@ VALUES('43049', 'topic没有权限', 'Not authorized to access topics', 0);
 INSERT INTO linkis_stream_error_code
 (error_code, error_desc, error_regex, error_type)
 VALUES('43050', '请尝试同步一下物料', '应用不存在，请检查输入的appId', 0);
+INSERT INTO linkis_stream_error_code
+(error_code, error_desc, error_regex, error_type)
+VALUES('43051', '文件没有权限: %s', 'FileNotFoundException: (\\S+) \\(Permission denied\\)', 0);
+INSERT INTO linkis_stream_error_code
+(error_code, error_desc, error_regex, error_type)
+VALUES('43052', '队列 %s 不存在', 'Queue:(\\S+) does not exist in YARN', 0);
