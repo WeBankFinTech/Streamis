@@ -1,6 +1,6 @@
 {
     "name": "streamis",
-    "version": "0.3.3-wedatasphere",
+    "version": "0.3.4-wedatasphere",
     "private": true,
     "scripts": {
         "serve": "vue-cli-service serve",
