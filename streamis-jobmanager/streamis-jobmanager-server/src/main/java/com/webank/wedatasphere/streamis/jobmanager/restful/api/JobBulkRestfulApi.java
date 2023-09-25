@@ -1,5 +1,8 @@
 package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.ExecResultVo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.PauseResultVo;
@@ -17,6 +20,7 @@ import org.apache.linkis.server.Message;
 import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -46,6 +50,9 @@ public class JobBulkRestfulApi {
     @Resource
     private StreamJobService streamjobService;
 
+    @Autowired
+    private StreamJobConfService streamJobConfService;
+
     /**
      * Bulk execution
      * @param execBulkRequest bulk request
@@ -71,6 +78,11 @@ public class JobBulkRestfulApi {
                  if (!streamjobService.hasPermission(streamJob, username) &&
                         !this.privilegeService.hasEditPrivilege(request, streamJob.getProjectName())){
                      throw new JobExecuteErrorException(-1, "Have no permission to execute StreamJob [" + jobId + "]");
+                 }
+                 String  managementMode = this.streamJobConfService.getJobConfValue(Long.parseLong(jobId.toString()), JobConfKeyConstants.MANAGE_MODE_KEY().getValue());
+                 if (!Boolean.parseBoolean(JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE().getHotValue().toString()) &&
+                         managementMode.equals("detach")){
+                     return Message.error("The system does not enable the detach feature ,detach job cannot start [" + jobId + "]");
                  }
              }
              // TODO Enable to accept 'restore' parameter from request

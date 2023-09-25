@@ -518,7 +518,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   @Transactional(rollbackFor = Array(classOf[Exception]))
   override def transitionTaskStatus(jobId: Long, taskId: Long, status: Int): Long = {
     trace(s"Query and lock the StreamJob in [$jobId] before updating status of StreamTask")
-    Option(streamJobMapper.queryAndLockJobById(jobId)) match {
+    Option(streamJobMapper.queryJobById(jobId)) match {
       case None => throw new JobTaskErrorException(-1, s"Unable to update status of StreamTask, the StreamJob [$jobId] is not exists.")
       case Some(job) =>
         val streamTask = if(taskId > 0) streamTaskMapper.getTaskById(taskId)
@@ -553,7 +553,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   @Transactional(rollbackFor = Array(classOf[Exception]))
   override def createTask(jobId: Long, status: Int, creator: String): StreamTask = {
     logger.trace(s"Query and lock the StreamJob in [$jobId] before creating StreamTask")
-    Option(streamJobMapper.queryAndLockJobById(jobId)) match {
+    Option(streamJobMapper.queryJobById(jobId)) match {
       case None => throw new JobTaskErrorException(-1, s"Unable to create StreamTask, the StreamJob [$jobId] is not exists.")
       case Some(job) =>
         // Then to fetch latest job version

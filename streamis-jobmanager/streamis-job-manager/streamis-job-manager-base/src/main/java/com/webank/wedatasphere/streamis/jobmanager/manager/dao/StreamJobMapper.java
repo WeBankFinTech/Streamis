@@ -76,5 +76,5 @@ public interface StreamJobMapper {
      * @param jobId job id
      * @return stream job
      */
-    StreamJob queryAndLockJobById(@Param("jobId")Long jobId);
+    StreamJob queryJobById(@Param("jobId")Long jobId);
 }

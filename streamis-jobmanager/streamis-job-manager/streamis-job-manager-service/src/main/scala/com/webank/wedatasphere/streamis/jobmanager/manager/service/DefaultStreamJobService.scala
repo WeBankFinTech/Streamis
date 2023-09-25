@@ -259,10 +259,10 @@ class DefaultStreamJobService extends StreamJobService with Logging {
       .getOrElse(throw new JobFetchErrorException(30030, s"Cannot find a JobContentParser to parse jobContent."))
   }
 
-  override def updateJobContent(jobId: Long, version: String,args: util.List[String]): StreamisTransformJobContent = {
+  override def updateArgs(jobId: Long, version: String,args: util.List[String]): StreamisTransformJobContent = {
     val jobVersion =streamJobMapper.getLatestJobVersion(jobId)
     val checkContent = getJobContent(jobId, jobVersion.getVersion)
-    val streamJob = streamJobMapper.queryAndLockJobById(jobId)
+    val streamJob = streamJobMapper.queryJobById(jobId)
     val jobContent = jobVersion.getJobContent
     val newJobContent = JsonUtils.manageJobContent(jobContent,args)
     val streamJobVersion = new StreamJobVersion
@@ -273,7 +273,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     streamJobVersion.setCreateTime(new Date())
     streamJobVersion.setJobContent(newJobContent)
     streamJobVersion.setVersion(rollingJobVersion(jobVersion.getVersion))
-    streamJobVersion.setComment("用户"+ jobVersion.getCreateBy + "修改jobContent")
+    streamJobVersion.setComment("用户"+ jobVersion.getCreateBy + "修改args")
     streamJobMapper.insertJobVersion(streamJobVersion)
     val task = streamTaskMapper.getLatestByJobId(streamJob.getId)
     if (task != null && !JobConf.isCompleted(task.getStatus)) {
@@ -282,7 +282,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
       streamJob.setCurrentVersion(rollingJobVersion(jobVersion.getVersion))
       streamJobMapper.updateJob(streamJob)
     }
-    getJobContent(jobId,rollingJobVersion(jobVersion.getVersion))
+    getJobContent(jobId,streamJobVersion.getVersion)
   }
 
 

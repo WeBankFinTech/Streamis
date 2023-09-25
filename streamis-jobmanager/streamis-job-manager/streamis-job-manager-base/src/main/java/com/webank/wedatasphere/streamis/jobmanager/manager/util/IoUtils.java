@@ -36,7 +36,12 @@ public class IoUtils {
 
     public static String generateIOPath(String userName, String projectName, String subDir) {
         String baseIOUrl = ioUrl;
-        String file = subDir.substring(0,subDir.lastIndexOf("."));
+        String file;
+        if (!subDir.contains(".")) {
+            file =subDir;
+        } else {
+            file = subDir.substring(0,subDir.lastIndexOf("."));
+        }
         String dayStr = new SimpleDateFormat(dateFormatDay).format(new Date());
         String timeStr = new SimpleDateFormat(dateFormatTime).format(new Date());
         return addFileSeparator(baseIOUrl, projectName, dayStr, userName, file + "_" + timeStr, subDir);

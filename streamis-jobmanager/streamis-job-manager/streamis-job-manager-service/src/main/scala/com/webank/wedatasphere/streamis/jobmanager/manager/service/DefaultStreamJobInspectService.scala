@@ -46,7 +46,7 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
   override def inspect(jobId: Long, types: Array[JobInspectVo.Types]): util.List[JobInspectVo] = {
      val inspectVos: util.List[JobInspectVo] = new util.ArrayList[JobInspectVo]
      // Lock the stream job
-     Option(this.streamJobMapper.queryAndLockJobById(jobId)) match {
+     Option(this.streamJobMapper.queryJobById(jobId)) match {
        case Some(streamJob) =>
          types.foreach {
            case JobInspectVo.Types.VERSION =>

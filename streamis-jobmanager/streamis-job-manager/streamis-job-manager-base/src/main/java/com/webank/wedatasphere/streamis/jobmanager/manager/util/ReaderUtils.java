@@ -68,11 +68,15 @@ public class ReaderUtils {
     }
 
     public boolean checkName(String fileName) {
-        String name = fileName.substring(0, fileName.lastIndexOf("."));
-        if (fileName.endsWith(".jar")) {
-            return name.matches(jarRegex);
+        if (!fileName.contains(".")) {
+            return fileName.matches(regex);
+        } else {
+            String name = fileName.substring(0, fileName.lastIndexOf("."));
+            if (fileName.endsWith(".jar")) {
+                return name.matches(jarRegex);
+            }
+            return name.matches(regex);
         }
-        return name.matches(regex);
     }
 
     public List<String> listFiles(String path) throws FileException {

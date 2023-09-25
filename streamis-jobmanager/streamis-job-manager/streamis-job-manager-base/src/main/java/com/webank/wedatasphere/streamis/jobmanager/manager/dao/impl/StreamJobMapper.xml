@@ -198,7 +198,7 @@
         linkis_stream_job WHERE project_name = #{projectName} AND `name` = #{jobName} FOR UPDATE;
     </select>
 
-    <select id="queryAndLockJobById" resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
+    <select id="queryJobById" resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
         SELECT <include refid="Job_Column"/> FROM
         linkis_stream_job WHERE id = #{jobId};
     </select>

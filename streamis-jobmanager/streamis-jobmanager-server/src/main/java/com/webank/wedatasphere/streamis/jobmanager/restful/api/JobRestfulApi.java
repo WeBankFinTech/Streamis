@@ -658,7 +658,7 @@ public class JobRestfulApi {
                 !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
             return Message.error("Have no permission to update job details of StreamJob [" + jobId + "]");
         }
-        StreamisTransformJobContent jobContent = streamJobService.updateJobContent(jobId, version,args);
+        StreamisTransformJobContent jobContent = streamJobService.updateArgs(jobId, version,args);
         return Message.ok().data("jobContent", jobContent);
     }
 

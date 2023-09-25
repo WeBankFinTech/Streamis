@@ -97,20 +97,20 @@ class DefaultStreamJobConfService extends StreamJobConfService with Logging{
    * @param valueSet value set
    */
   override def saveJobConfValueSet(valueSet: JobConfValueSet): Unit = {
-     val configValues: util.List[JobConfValue] = new util.ArrayList[JobConfValue]()
-     val definitions = this.streamJobConfMapper.loadAllDefinitions()
-     val definitionMap: util.Map[String, JobConfDefinition] = definitions
-        .asScala.map(definition => (definition.getKey, definition)).toMap.asJava
-     configValues.addAll(convertToConfigValue(
-       valueSet.getResourceConfig, definitionMap, Option(definitionMap.get(JobConfKeyConstants.GROUP_RESOURCE.getValue)) match {
-         case Some(definition) => definition.getId
-         case _ => 0
-       }))
-     configValues.addAll(convertToConfigValue(
-       valueSet.getParameterConfig, definitionMap, Option(definitionMap.get(JobConfKeyConstants.GROUP_FLINK_EXTRA.getValue)) match {
-         case Some(definition) => definition.getId
-         case _ => 0
-       }))
+    val configValues: util.List[JobConfValue] = new util.ArrayList[JobConfValue]()
+    val definitions = this.streamJobConfMapper.loadAllDefinitions()
+    val definitionMap: util.Map[String, JobConfDefinition] = definitions
+      .asScala.map(definition => (definition.getKey, definition)).toMap.asJava
+    configValues.addAll(convertToConfigValue(
+      valueSet.getResourceConfig, definitionMap, Option(definitionMap.get(JobConfKeyConstants.GROUP_RESOURCE.getValue)) match {
+        case Some(definition) => definition.getId
+        case _ => 0
+      }))
+    configValues.addAll(convertToConfigValue(
+      valueSet.getParameterConfig, definitionMap, Option(definitionMap.get(JobConfKeyConstants.GROUP_FLINK_EXTRA.getValue)) match {
+        case Some(definition) => definition.getId
+        case _ => 0
+      }))
     configValues.addAll(convertToConfigValue(
       valueSet.getProduceConfig, definitionMap, Option(definitionMap.get(JobConfKeyConstants.GROUP_PRODUCE.getValue)) match {
         case Some(definition) => definition.getId
@@ -147,7 +147,7 @@ class DefaultStreamJobConfService extends StreamJobConfService with Logging{
 
   private def saveJobConfig(jobId: Long, configValues: util.List[JobConfValue]): Unit = {
     trace(s"Query and lock the StreamJob in [$jobId] before saving/update configuration")
-    Option(streamJobMapper.queryAndLockJobById(jobId)) match {
+    Option(streamJobMapper.queryJobById(jobId)) match {
       case None => throw new ConfigurationException(s"Unable to saving/update configuration, the StreamJob [$jobId] is not exists.")
       case Some(job: StreamJob) =>
         // Delete all configuration
@@ -179,7 +179,7 @@ class DefaultStreamJobConfService extends StreamJobConfService with Logging{
           val configValue = new JobConfValue(definition.getKey, definition.getDefaultValue, definition.getId)
           configValues.add(configValue)
       }
-    )
+      )
   }
   /**
    * Resolve to config value view object
@@ -188,30 +188,30 @@ class DefaultStreamJobConfService extends StreamJobConfService with Logging{
    * @param definitionMap (key => definition)
    */
   private def resolveConfigValueVo(group: String, jobConfig: util.Map[String, AnyRef],
-                                 definitionMap: util.Map[String, JobConfDefinition]): util.List[JobConfValueVo] = {
-     Option(jobConfig.get(group)) match {
-       case Some(configMap: util.Map[String, AnyRef]) =>
-         configMap.asScala.map{
-           case (key, value) =>
-             val configValue = new JobConfValueVo(key, String.valueOf(value))
-             Option(definitionMap.get(key)) match {
-               case Some(definition) =>
-                 configValue.setConfigkeyId(definition.getId)
-                 configValue.setName(definition.getName)
-                 val refValues = definition.getRefValues
-                 if (StringUtils.isNotBlank(refValues)){
-                    val valueList = new util.ArrayList[ValueList]()
-                    refValues.split(",").foreach(refValue =>{
-                      valueList.add(new ValueList(refValue, refValue.equals(value)))
-                    })
-                   configValue.setValueLists(valueList)
-                 }
-               case _ =>
-             }
-             configValue
-         }.toList.asJava
-       case None => new util.ArrayList[JobConfValueVo]()
-     }
+                                   definitionMap: util.Map[String, JobConfDefinition]): util.List[JobConfValueVo] = {
+    Option(jobConfig.get(group)) match {
+      case Some(configMap: util.Map[String, AnyRef]) =>
+        configMap.asScala.map{
+          case (key, value) =>
+            val configValue = new JobConfValueVo(key, String.valueOf(value))
+            Option(definitionMap.get(key)) match {
+              case Some(definition) =>
+                configValue.setConfigkeyId(definition.getId)
+                configValue.setName(definition.getName)
+                val refValues = definition.getRefValues
+                if (StringUtils.isNotBlank(refValues)){
+                  val valueList = new util.ArrayList[ValueList]()
+                  refValues.split(",").foreach(refValue =>{
+                    valueList.add(new ValueList(refValue, refValue.equals(value)))
+                  })
+                  configValue.setValueLists(valueList)
+                }
+              case _ =>
+            }
+            configValue
+        }.toList.asJava
+      case None => new util.ArrayList[JobConfValueVo]()
+    }
   }
 
   /**

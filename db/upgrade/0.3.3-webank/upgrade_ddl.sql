@@ -9,4 +9,4 @@ CREATE TABLE `linkis_stream_error_code` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=143 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
-ALTER TABLE `linkis_stream_project_files` ADD source varchar(255) NULL;
+ALTER TABLE linkis_stream_project_files ADD source varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL;
