@@ -26,7 +26,8 @@ public class StreamisJarTransformJobContent implements StreamisTransformJobConte
     private StreamisFile mainClassJar;
     private String mainClass;
     private List<String> args;
-
+    private Boolean isHighAvailable;
+    private String highAvailableMessage;
     private List<StreamisFile> dependencyJars;
     private List<String> hdfsJars;
     private List<StreamisFile> resources;
@@ -77,5 +78,21 @@ public class StreamisJarTransformJobContent implements StreamisTransformJobConte
 
     public void setResources(List<StreamisFile> resources) {
         this.resources = resources;
+    }
+
+    public Boolean getHighAvailable() {
+        return isHighAvailable;
+    }
+
+    public void setHighAvailable(Boolean highAvailable) {
+        isHighAvailable = highAvailable;
+    }
+
+    public String getHighAvailableMessage() {
+        return highAvailableMessage;
+    }
+
+    public void setHighAvailableMessage(String highAvailableMessage) {
+        this.highAvailableMessage = highAvailableMessage;
     }
 }

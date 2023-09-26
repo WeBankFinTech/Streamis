@@ -113,7 +113,7 @@ trait StreamJobService {
    * @param version
    * @return
    */
-  def updateArgs(jobId: Long, version: String, args: util.List[String] ): StreamisTransformJobContent
+  def updateArgs(jobId: Long, version: String, args: util.List[String] = null, isHighAvailable: Boolean, highAvailableMessage: String): StreamisTransformJobContent
 
   /**
    * Has permission
