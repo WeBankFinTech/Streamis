@@ -7,9 +7,10 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobCr
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.LinkisFlinkManagerJobClient
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion}
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobInspectVo, JobListInspectVo, JobSnapshotInspectVo, JobVersionInspectVo}
-import org.apache.commons.lang3.StringUtils
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion, StreamJobVersionFiles}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobHighAvailableVo, JobInspectVo, JobListInspectVo, JobSnapshotInspectVo, JobVersionInspectVo}
+import com.webank.wedatasphere.streamis.jobmanager.manager.utils.SourceUtils
+import org.apache.commons.lang.StringUtils
 import org.apache.linkis.common.exception.ErrorException
 import org.apache.linkis.common.utils.{JsonUtils, Logging, Utils}
 import org.springframework.beans.factory.annotation.Autowired
@@ -55,6 +56,8 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
              Option(snapshotInspect(streamJob)).foreach(inspectVos.add(_))
            case JobInspectVo.Types.LIST =>
              Option(listInspect(streamJob)).foreach(inspectVos.add(_))
+           case JobInspectVo.Types.HIGHAVAILABLE =>
+             Option(highAvailableInspect(streamJob)).foreach(inspectVos.add(_))
            case _ => null
            // Do nothing
          }
@@ -155,6 +158,23 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
       listVo.addOneUrl(null, "管理员未开启检查运行中同名yarn应用特性", null)
     }
     listVo
+  }
+
+  private def highAvailableInspect(job: StreamJob): JobHighAvailableVo = {
+    var inspectVo = new JobHighAvailableVo
+    val jobId = job.getId
+    val version = job.getCurrentVersion
+    val jobVersion = if(StringUtils.isBlank(version)) {
+      streamJobMapper.getJobVersions(jobId).get(0)
+    } else streamJobMapper.getJobVersionById(jobId, version)
+      val sourceOption: Option[String] = Option(jobVersion.getSource)
+      sourceOption match {
+        case Some(source) =>
+         inspectVo = SourceUtils.manageJobProjectFile(source)
+        case None =>
+        logger.warn("this job source is null")
+      }
+    inspectVo
   }
 
 }

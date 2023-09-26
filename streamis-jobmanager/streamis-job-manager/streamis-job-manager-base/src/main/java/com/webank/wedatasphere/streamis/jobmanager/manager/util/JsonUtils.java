@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.util;
 
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.JobHighAvailableVo;
 import org.apache.linkis.server.BDPJettyServerHelper;
 
 import java.util.List;
