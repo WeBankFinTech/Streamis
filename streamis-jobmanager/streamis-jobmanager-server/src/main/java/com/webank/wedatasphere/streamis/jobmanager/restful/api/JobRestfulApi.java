@@ -241,7 +241,8 @@ public class JobRestfulApi {
                 return Message.error("Have no permission to inspect the StreamJob [" + jobId + "]");
             }
 
-            String  managementMode = this.streamJobConfService.getJobConfValue(jobId, JobConfKeyConstants.MANAGE_MODE_KEY().getValue());
+            String managementMode = Optional.ofNullable(this.streamJobConfService.getJobConfValue(jobId, JobConfKeyConstants.MANAGE_MODE_KEY().getValue()))
+                    .orElse("defaultManagementMode");
             if (!Boolean.parseBoolean(JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE().getHotValue().toString()) &&
                     managementMode.equals("detach")){
                 return Message.error("The system does not enable the detach feature ,detach job cannot start [" + jobId + "]");
@@ -325,7 +326,8 @@ public class JobRestfulApi {
                 !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
             return Message.error("Have no permission to execute StreamJob [" + jobId + "]");
         }
-        String  managementMode = this.streamJobConfService.getJobConfValue(jobId, JobConfKeyConstants.MANAGE_MODE_KEY().getValue());
+        String managementMode = Optional.ofNullable(this.streamJobConfService.getJobConfValue(jobId, JobConfKeyConstants.MANAGE_MODE_KEY().getValue()))
+                    .orElse("defaultManagementMode");
         if (!Boolean.parseBoolean(JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE().getHotValue().toString()) &&
                 managementMode.equals("detach")){
             return Message.error("The system does not enable the detach feature ,detach job cannot start [" + jobId + "]");
