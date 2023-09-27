@@ -68,19 +68,19 @@
     </select>
 
     <select id="listFileVersions" resultType="com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles">
-        select `id`,`file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_time`,`create_by`,`comment`,`update_time`,`md5` from
+        select `id`,`file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_time`,`create_by`,`comment`,`update_time`,`md5`,`source` from
         linkis_stream_project_files
         where project_name = #{projectName} and file_name = #{fileName} ORDER BY version desc
     </select>
 
     <select id="selectFile" resultType="com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles">
-        select `id`, `file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_time`,`create_by`,`update_time`,`md5`  from
+        select `id`, `file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_time`,`create_by`,`update_time`,`md5`,`source`  from
         linkis_stream_project_files where project_name = #{projectName} and version = #{version} and file_name =
         #{fileName}
     </select>
 
     <select id="getById" resultType="com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles">
-        select `id`,`file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_time`,`create_by`,`update_time`,`md5`  from
+        select `id`,`file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_time`,`create_by`,`update_time`,`md5`,`source`  from
         linkis_stream_project_files where id = #{id}
     </select>
 
@@ -89,14 +89,14 @@
     </select>
 
     <select id="getJobFile" resultType="com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles">
-        SELECT `id`,`file_name`,`version`,`store_path`,`store_type`,`create_time`,`create_by` FROM
+        SELECT `id`,`file_name`,`version`,`store_path`,`store_type`,`create_time`,`create_by`,`update_time`,`md5`,`source` FROM
         linkis_stream_job_version_files WHERE
         id = #{id}
     </select>
 
     <select id="getProjectFile"
             resultType="com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles">
-        select `id`,`file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_time`,`create_by`,`update_time`,`md5` from
+        select `id`,`file_name`,`version`,`store_path`,`store_type`,`project_name`,`create_time`,`create_by`,`update_time`,`md5`,`source` from
         linkis_stream_project_files where id = #{id}
     </select>
 
