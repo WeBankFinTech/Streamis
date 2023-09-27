@@ -259,28 +259,34 @@ class DefaultStreamJobService extends StreamJobService with Logging {
       .getOrElse(throw new JobFetchErrorException(30030, s"Cannot find a JobContentParser to parse jobContent."))
   }
 
-  override def updateArgs(jobId: Long, version: String,args: util.List[String]): StreamisTransformJobContent = {
+  override def updateArgs(jobId: Long, version: String,args: util.List[String],isHighAvailable: Boolean, highAvailableMessage: String): StreamisTransformJobContent = {
     val jobVersion =streamJobMapper.getLatestJobVersion(jobId)
     val checkContent = getJobContent(jobId, jobVersion.getVersion)
     val streamJob = streamJobMapper.queryJobById(jobId)
     val jobContent = jobVersion.getJobContent
-    val newJobContent = JsonUtils.manageJobContent(jobContent,args)
+    val newJobContent = JsonUtils.manageArgs(jobContent,args)
+    val source = JsonUtils.manageSource(jobVersion.getSource,isHighAvailable, highAvailableMessage)
     val streamJobVersion = new StreamJobVersion
-    streamJobVersion.setJobId(jobVersion.getJobId)
-    streamJobVersion.setCreateBy(jobVersion.getCreateBy)
-    streamJobVersion.setManageMode(jobVersion.getManageMode)
-    streamJobVersion.setSource(jobVersion.getSource)
-    streamJobVersion.setCreateTime(new Date())
-    streamJobVersion.setJobContent(newJobContent)
-    streamJobVersion.setVersion(rollingJobVersion(jobVersion.getVersion))
-    streamJobVersion.setComment("用户"+ jobVersion.getCreateBy + "修改args")
-    streamJobMapper.insertJobVersion(streamJobVersion)
-    val task = streamTaskMapper.getLatestByJobId(streamJob.getId)
-    if (task != null && !JobConf.isCompleted(task.getStatus)) {
-      logger.warn(s"StreamJob-${streamJob.getName} is in status ${task.getStatus}, your deployment will not update the version in job")
+    if (!args.isEmpty){
+      streamJobVersion.setJobId(jobVersion.getJobId)
+      streamJobVersion.setCreateBy(jobVersion.getCreateBy)
+      streamJobVersion.setManageMode(jobVersion.getManageMode)
+      streamJobVersion.setCreateTime(new Date())
+      streamJobVersion.setJobContent(newJobContent)
+      streamJobVersion.setSource(jobVersion.getSource)
+      streamJobVersion.setVersion(rollingJobVersion(jobVersion.getVersion))
+      streamJobVersion.setComment("用户"+ jobVersion.getCreateBy + "修改args")
+      streamJobMapper.insertJobVersion(streamJobVersion)
+      val task = streamTaskMapper.getLatestByJobId(streamJob.getId)
+      if (task != null && !JobConf.isCompleted(task.getStatus)) {
+        logger.warn(s"StreamJob-${streamJob.getName} is in status ${task.getStatus}, your deployment will not update the version in job")
+      } else {
+        streamJob.setCurrentVersion(rollingJobVersion(jobVersion.getVersion))
+        streamJobMapper.updateJob(streamJob)
+      }
     } else {
-      streamJob.setCurrentVersion(rollingJobVersion(jobVersion.getVersion))
-      streamJobMapper.updateJob(streamJob)
+      jobVersion.setSource(source)
+      streamJobMapper.updateJobContent(jobVersion)
     }
     getJobContent(jobId,streamJobVersion.getVersion)
   }
