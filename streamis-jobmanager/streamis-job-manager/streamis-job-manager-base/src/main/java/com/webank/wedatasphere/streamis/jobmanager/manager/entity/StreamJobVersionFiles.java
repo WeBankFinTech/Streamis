@@ -41,6 +41,16 @@ public class StreamJobVersionFiles implements StreamisFile {
     private Date createTime;
     private String createBy;
 
+    private String source;
+
+    @Override
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
 
     public Long getId() {
         return id;

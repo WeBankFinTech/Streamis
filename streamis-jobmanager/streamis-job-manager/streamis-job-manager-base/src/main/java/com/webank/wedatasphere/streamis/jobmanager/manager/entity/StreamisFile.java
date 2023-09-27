@@ -32,4 +32,6 @@ public interface StreamisFile {
 
     String getCreateBy();
 
+    String getSource();
+
 }
