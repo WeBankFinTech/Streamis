@@ -32,6 +32,8 @@ public class StreamisJarTransformJobContent implements StreamisTransformJobConte
     private List<String> hdfsJars;
     private List<StreamisFile> resources;
 
+    private String source;
+
     public StreamisFile getMainClassJar() {
         return mainClassJar;
     }
@@ -94,5 +96,13 @@ public class StreamisJarTransformJobContent implements StreamisTransformJobConte
 
     public void setHighAvailableMessage(String highAvailableMessage) {
         this.highAvailableMessage = highAvailableMessage;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 }
