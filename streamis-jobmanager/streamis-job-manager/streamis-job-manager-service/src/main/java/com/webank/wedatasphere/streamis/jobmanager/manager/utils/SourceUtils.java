@@ -14,27 +14,41 @@ public class SourceUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(SourceUtils.class);
 
-    public static JobHighAvailableVo manageJobProjectFile(String source) {
+    public static JobHighAvailableVo manageJobProjectFile(String highAvailablePolicy,String source) {
 
         JobHighAvailableVo highAvailableVo = new JobHighAvailableVo();
         try {
+
             if (!Boolean.parseBoolean(JobConf.HIGHAVAILABLE_ENABLE().getValue().toString())) {
                 highAvailableVo.setHighAvailable(true);
-                highAvailableVo.setMsg("未开启高可用,请检查配置");
+                highAvailableVo.setMsg("管理员未开启高可用配置");
                 return highAvailableVo;
             } else {
-                Map map = BDPJettyServerHelper.gson().fromJson(source, Map.class);
-                if (map.containsKey("source")) {
-                    String sourceValue = map.get("source").toString();
-                    if (sourceValue.equals(JobConf.HIGHAVAILABLE_SOURCE().getValue())) {
-                        if (map.containsKey("isHighAvailable")) {
-                            highAvailableVo.setHighAvailable((Boolean) map.get("isHighAvailable"));
+                //查job conf  wds.streamis.app.highavailable.policy  值
+                if (highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY().getValue())){
+                    Map map = BDPJettyServerHelper.gson().fromJson(source, Map.class);
+                    if (map.containsKey("source")) {
+                        String sourceValue = map.get("source").toString();
+                        if (sourceValue.equals(JobConf.HIGHAVAILABLE_SOURCE().getValue())) {
+                            if (map.containsKey("isHighAvailable")) {
+                                highAvailableVo.setHighAvailable((Boolean) map.get("isHighAvailable"));
+                            }
+                            highAvailableVo.setMsg(map.getOrDefault("highAvailableMessage","高可用信息为空，请联系管理员").toString());
+                            return highAvailableVo;
+                        }  else {
+                            highAvailableVo.setHighAvailable(true);
+                            highAvailableVo.setMsg("非标准来源,不检测高可用");
+                            return highAvailableVo;
                         }
-                        if (map.containsKey("highAvailableMessage")) {
-                            highAvailableVo.setMsg(map.get("highAvailableMessage").toString());
-                        }
+                    }   else {
+                        highAvailableVo.setHighAvailable(true);
+                        highAvailableVo.setMsg("非标准来源,不检测高可用");
                         return highAvailableVo;
                     }
+                } else {
+                    highAvailableVo.setHighAvailable(true);
+                    highAvailableVo.setMsg("任务未开启高可用");
+                    return highAvailableVo;
                 }
             }
         } catch (JsonSyntaxException e) {
