@@ -21,7 +21,7 @@ import com.github.pagehelper.PageInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobCreateErrorException, JobFetchErrorException, JobErrorException}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobCreateErrorException, JobErrorException, JobFetchErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamAlertMapper, StreamJobMapper, StreamTaskMapper}
@@ -31,6 +31,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.service.DefaultStream
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.{JobUtils, JsonUtils, ReaderUtils, ZipHelper}
+import com.webank.wedatasphere.streamis.jobmanager.manager.utils.SourceUtils
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.lang3.ObjectUtils
 import org.apache.linkis.common.exception.ErrorException
@@ -255,6 +256,9 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     } else streamJobMapper.getJobVersionById(jobId, version)
     if(jobVersion == null)
       throw new JobFetchErrorException(30030, s"job has no versions.")
+    val highAvailablePolicy = streamJobConfService.getJobConfValue(jobId, "wds.streamis.app.highavailable.policy")
+    val highAvailableVo = SourceUtils.manageJobProjectFile(highAvailablePolicy, jobVersion.getSource)
+    jobVersion.setSource(highAvailableVo.toString)
     jobContentParsers.find(_.canParse(job, jobVersion)).map(_.parseTo(job, jobVersion))
       .getOrElse(throw new JobFetchErrorException(30030, s"Cannot find a JobContentParser to parse jobContent."))
   }

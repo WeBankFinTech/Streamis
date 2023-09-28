@@ -167,10 +167,11 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
     val jobVersion = if(StringUtils.isBlank(version)) {
       streamJobMapper.getJobVersions(jobId).get(0)
     } else streamJobMapper.getJobVersionById(jobId, version)
+    val highAvailablePolicy = streamJobConfMapper.getRawConfValue(jobId, "wds.streamis.app.highavailable.policy")
       val sourceOption: Option[String] = Option(jobVersion.getSource)
       sourceOption match {
         case Some(source) =>
-         inspectVo = SourceUtils.manageJobProjectFile(source)
+         inspectVo = SourceUtils.manageJobProjectFile(highAvailablePolicy,source)
         case None =>
         logger.warn("this job source is null")
       }
