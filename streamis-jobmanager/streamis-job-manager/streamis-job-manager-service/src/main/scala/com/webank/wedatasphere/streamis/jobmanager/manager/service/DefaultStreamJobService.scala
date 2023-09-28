@@ -264,10 +264,9 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     val checkContent = getJobContent(jobId, jobVersion.getVersion)
     val streamJob = streamJobMapper.queryJobById(jobId)
     val jobContent = jobVersion.getJobContent
-    val newJobContent = JsonUtils.manageArgs(jobContent,args)
-    val source = JsonUtils.manageSource(jobVersion.getSource,isHighAvailable, highAvailableMessage)
-    val streamJobVersion = new StreamJobVersion
-    if (!args.isEmpty){
+    if (args != null){
+      val newJobContent = JsonUtils.manageArgs(jobContent,args)
+      val streamJobVersion = new StreamJobVersion
       streamJobVersion.setJobId(jobVersion.getJobId)
       streamJobVersion.setCreateBy(jobVersion.getCreateBy)
       streamJobVersion.setManageMode(jobVersion.getManageMode)
@@ -284,11 +283,14 @@ class DefaultStreamJobService extends StreamJobService with Logging {
         streamJob.setCurrentVersion(rollingJobVersion(jobVersion.getVersion))
         streamJobMapper.updateJob(streamJob)
       }
+      getJobContent(jobId,streamJobVersion.getVersion)
     } else {
+      val source = JsonUtils.manageSource(jobVersion.getSource,isHighAvailable, highAvailableMessage)
       jobVersion.setSource(source)
-      streamJobMapper.updateJobContent(jobVersion)
+      streamJobMapper.updateSource(jobVersion)
+      getJobContent(jobId,jobVersion.getVersion)
     }
-    getJobContent(jobId,streamJobVersion.getVersion)
+
   }
 
 

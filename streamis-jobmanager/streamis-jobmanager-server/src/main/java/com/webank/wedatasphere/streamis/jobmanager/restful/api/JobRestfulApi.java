@@ -651,19 +651,24 @@ public class JobRestfulApi {
         String username = ModuleUserUtils.getOperationUser(req, "update job content");
         Long jobId = contentRequest.getJobId();
         String version = contentRequest.getVersion();
-        List<String> args = contentRequest.getArgs();
-        Boolean isHighAvailable = contentRequest.getHighAvailable();
-        String highAvailableMessage = contentRequest.getHighAvailableMessage();
-        if (args.toString().length() > 400){
-            return Message.error("args length is too long, please less than 400");
-        }
         StreamJob streamJob = this.streamJobService.getJobById(jobId);
         if (!streamJobService.hasPermission(streamJob, username) &&
                 !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
             return Message.error("Have no permission to update job details of StreamJob [" + jobId + "]");
         }
-        StreamisTransformJobContent jobContent = streamJobService.updateArgs(jobId, version,args,isHighAvailable,highAvailableMessage);
-        return Message.ok().data("jobContent", jobContent);
+        List<String> args = contentRequest.getArgs();
+        if (args == null){
+            boolean isHighAvailable = contentRequest.isHighAvailable();
+            String highAvailableMessage = contentRequest.getHighAvailableMessage();
+            StreamisTransformJobContent jobContent = streamJobService.updateArgs(jobId, version,null,isHighAvailable,highAvailableMessage);
+            return Message.ok().data("jobContent", jobContent);
+        } else {
+            if (args.toString().length() > 400){
+                return Message.error("args length is too long, please less than 400");
+            }
+            StreamisTransformJobContent jobContent = streamJobService.updateArgs(jobId, version,args,false,null);
+            return Message.ok().data("jobContent", jobContent);
+        }
     }
 
     @RequestMapping(path = "/alert", method = RequestMethod.GET)
