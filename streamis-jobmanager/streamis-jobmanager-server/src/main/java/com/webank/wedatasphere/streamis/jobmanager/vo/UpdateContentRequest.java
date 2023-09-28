@@ -9,7 +9,7 @@ public class UpdateContentRequest {
 
     private  List<String> args;
 
-    private Boolean isHighAvailable;
+    private boolean highAvailable;
 
     private String highAvailableMessage;
 
@@ -37,12 +37,12 @@ public class UpdateContentRequest {
         this.args = args;
     }
 
-    public Boolean getHighAvailable() {
-        return isHighAvailable;
+    public boolean isHighAvailable() {
+        return highAvailable;
     }
 
-    public void setHighAvailable(Boolean highAvailable) {
-        isHighAvailable = highAvailable;
+    public void setHighAvailable(boolean highAvailable) {
+        this.highAvailable = highAvailable;
     }
 
     public String getHighAvailableMessage() {

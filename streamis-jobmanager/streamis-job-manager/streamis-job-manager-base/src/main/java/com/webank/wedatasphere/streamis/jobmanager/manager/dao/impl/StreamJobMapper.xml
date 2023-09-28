@@ -252,4 +252,14 @@
         WHERE job_id=#{jobId} and version=#{version}
     </update>
 
+    <update id="updateSource" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion">
+        UPDATE linkis_stream_job_version
+        <trim prefix="set" suffixOverrides=",">
+            <if test="source != null">
+                source=#{source},
+            </if>
+        </trim>
+        WHERE job_id=#{jobId} and version=#{version}
+    </update>
+
 </mapper>
