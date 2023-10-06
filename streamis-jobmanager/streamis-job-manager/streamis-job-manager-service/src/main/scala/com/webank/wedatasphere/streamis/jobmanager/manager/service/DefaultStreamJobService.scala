@@ -62,6 +62,9 @@ class DefaultStreamJobService extends StreamJobService with Logging {
   override def getJobById(jobId: Long): StreamJob = {
     this.streamJobMapper.getJobById(jobId)
   }
+  override def getLatestJobVersion(jobId: Long): StreamJobVersion = {
+    this.streamJobMapper.getLatestJobVersion(jobId)
+  }
 
   override def getJobByName(jobName: String): util.List[StreamJob] = streamJobMapper.getJobByName(jobName)
 
@@ -212,7 +215,6 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     val inputPath = ZipHelper.unzip(inputZipPath)
     val readerUtils = new ReaderUtils
     val metaJsonInfo = readerUtils.parseJson(inputPath)
-    //TODO:JobConf.PROJECT_NAME_STRICT_CHECK_SWITCH，
     if (StringUtils.isNotBlank(projectName) && !projectName.equals(metaJsonInfo.getProjectName)) {
       if (JobConf.PROJECT_NAME_STRICT_CHECK_SWITCH.getHotValue && StringUtils.isNotBlank(metaJsonInfo.getProjectName)){
         logger.error(s"The projectName [${projectName}] dose not match metaJson ProjectName [${metaJsonInfo.getProjectName}]")
@@ -256,9 +258,9 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     } else streamJobMapper.getJobVersionById(jobId, version)
     if(jobVersion == null)
       throw new JobFetchErrorException(30030, s"job has no versions.")
-    val highAvailablePolicy = streamJobConfService.getJobConfValue(jobId, "wds.streamis.app.highavailable.policy")
-    val highAvailableVo = SourceUtils.manageJobProjectFile(highAvailablePolicy, jobVersion.getSource)
-    jobVersion.setSource(highAvailableVo.toString)
+//    val highAvailablePolicy = streamJobConfService.getJobConfValue(jobId, "wds.streamis.app.highavailable.policy")
+//    val highAvailableVo = SourceUtils.manageJobProjectFile(highAvailablePolicy, jobVersion.getSource)
+//    jobVersion.setSource(highAvailableVo.toString)
     jobContentParsers.find(_.canParse(job, jobVersion)).map(_.parseTo(job, jobVersion))
       .getOrElse(throw new JobFetchErrorException(30030, s"Cannot find a JobContentParser to parse jobContent."))
   }

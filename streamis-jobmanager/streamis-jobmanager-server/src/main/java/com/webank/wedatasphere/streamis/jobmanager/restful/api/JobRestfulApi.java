@@ -35,6 +35,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersi
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.*;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.DefaultStreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobInspectService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamTaskService;
@@ -49,6 +50,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.linkis.httpclient.dws.DWSHttpClient;
+import org.apache.linkis.server.BDPJettyServerHelper;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
@@ -80,6 +82,9 @@ public class JobRestfulApi {
 
     @Autowired
     private StreamJobInspectService streamJobInspectService;
+
+    @Autowired
+    private DefaultStreamJobService defaultStreamJobService;
 
     @Resource
     private JobLaunchManager<? extends JobInfo> jobLaunchManager;
@@ -331,6 +336,15 @@ public class JobRestfulApi {
         if (!Boolean.parseBoolean(JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE().getHotValue().toString()) &&
                 managementMode.equals("detach")){
             return Message.error("The system does not enable the detach feature ,detach job cannot start [" + jobId + "]");
+        }
+        StreamJobVersion jobVersion = this.defaultStreamJobService.getLatestJobVersion(jobId);
+        String source = jobVersion.getSource();
+        HashMap<Object, Object> sourceMap = new HashMap<>();
+        sourceMap = BDPJettyServerHelper.gson().fromJson(source, HashMap.class);
+        if (sourceMap.containsKey("isHighAvailable")) {
+            if(!((Boolean) sourceMap.get("isHighAvailable"))){
+                return Message.error("The master and backup cluster materials do not match, please check the material");
+            }
         }
         try {
             streamTaskService.execute(jobId, 0L, userName);

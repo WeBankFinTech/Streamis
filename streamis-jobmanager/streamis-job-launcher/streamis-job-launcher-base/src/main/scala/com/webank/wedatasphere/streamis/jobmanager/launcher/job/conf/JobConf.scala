@@ -93,11 +93,11 @@ object JobConf {
 
   val PROJECT_NAME_STRICT_CHECK_SWITCH: CommonVars[Boolean] = CommonVars("wds.streamis.project.name.strict.check.enable", false)
 
-  val HIGHAVAILABLE_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.app.highavailable.enable", false)
+  val HIGHAVAILABLE_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.app.highavailable.enable", true)
 
   val HIGHAVAILABLE_SOURCE: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.source", "aomp")
 
-  val HIGHAVAILABLE_POLICY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy", "doubule")
+  val HIGHAVAILABLE_POLICY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy", "double")
 
   val HIGHAVAILABLE_POLICY_KEY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.key", "wds.streamis.app.highavailable.policy")
 }

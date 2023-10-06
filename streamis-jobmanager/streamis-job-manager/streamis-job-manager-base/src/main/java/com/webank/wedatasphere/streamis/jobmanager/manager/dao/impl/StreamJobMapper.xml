@@ -223,7 +223,11 @@
     </insert>
 
     <select id="getStreamJobVersionFiles" resultMap="StreamJobVersionFilesMap">
-        SELECT * from linkis_stream_job_version_files where job_id = #{jobId} and job_version_id = #{jobVersionId}
+<!--        SELECT * from linkis_stream_job_version_files where job_id = #{jobId} and job_version_id = #{jobVersionId}-->
+        SELECT f.*,j.source
+        FROM linkis_stream_job_version_files f
+        INNER JOIN linkis_stream_job_version j ON f.job_id = j.job_id AND f.version = j.version
+        WHERE f.job_id = #{jobId} AND f.job_version_id = #{jobVersionId}
     </select>
 
     <update id="updateJob" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">

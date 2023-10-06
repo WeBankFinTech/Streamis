@@ -16,6 +16,8 @@ trait StreamJobService {
 
   def getJobById(jobId: Long): StreamJob
 
+  def getLatestJobVersion(jobId :Long): StreamJobVersion
+
   def getJobByName(jobName: String): util.List[StreamJob]
 
   /**
