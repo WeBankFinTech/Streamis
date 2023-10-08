@@ -173,7 +173,9 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
         case Some(source) =>
          inspectVo = SourceUtils.manageJobProjectFile(highAvailablePolicy,source)
         case None =>
-        logger.warn("this job source is null")
+          logger.warn("this job source is null")
+          inspectVo.setHighAvailable(true)
+          inspectVo.setMsg("用户直接从页面上传，job的source为空，跳过高可用检查")
       }
     inspectVo
   }

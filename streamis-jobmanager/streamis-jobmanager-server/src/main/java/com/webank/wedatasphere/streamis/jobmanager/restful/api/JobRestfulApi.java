@@ -21,6 +21,7 @@ import com.github.pagehelper.PageInfo;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager;
@@ -41,6 +42,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobServ
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamTaskService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.RealtimeLogEntity;
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent;
+import com.webank.wedatasphere.streamis.jobmanager.manager.utils.SourceUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils;
 import com.webank.wedatasphere.streamis.jobmanager.utils.RegularUtil;
 import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabel;
@@ -86,6 +88,8 @@ public class JobRestfulApi {
     @Autowired
     private DefaultStreamJobService defaultStreamJobService;
 
+    @Autowired
+    private StreamJobConfMapper streamJobConfMapper;
     @Resource
     private JobLaunchManager<? extends JobInfo> jobLaunchManager;
 
@@ -290,6 +294,7 @@ public class JobRestfulApi {
                 inspections = inspectResult.stream().map(JobInspectVo::getInspectName)
                         .collect(Collectors.toList());
             } catch (Exception e){
+                LOG.warn(e.getMessage());
                 return Message.error("Fail to inspect job " + jobId + " of the execution(任务执行前检查失败), message: " + e.getMessage());
             }
 
@@ -338,13 +343,19 @@ public class JobRestfulApi {
             return Message.error("The system does not enable the detach feature ,detach job cannot start [" + jobId + "]");
         }
         StreamJobVersion jobVersion = this.defaultStreamJobService.getLatestJobVersion(jobId);
-        String source = jobVersion.getSource();
-        HashMap<Object, Object> sourceMap = new HashMap<>();
-        sourceMap = BDPJettyServerHelper.gson().fromJson(source, HashMap.class);
-        if (sourceMap.containsKey("isHighAvailable")) {
-            if(!((Boolean) sourceMap.get("isHighAvailable"))){
-                return Message.error("The master and backup cluster materials do not match, please check the material");
-            }
+        String highAvailablePolicy = streamJobConfMapper.getRawConfValue(jobId, "wds.streamis.app.highavailable.policy");
+        JobHighAvailableVo inspectVo = new JobHighAvailableVo();
+        Optional<String> sourceOption = Optional.ofNullable(jobVersion.getSource());
+        if(sourceOption.isPresent()) {
+            String source = sourceOption.get();
+            inspectVo = SourceUtils.manageJobProjectFile(highAvailablePolicy, source);
+        } else {
+            LOG.warn("this job source is null");
+            inspectVo.setHighAvailable(true);
+            inspectVo.setMsg("用户直接从页面上传，job的source为空，跳过高可用检查");
+        }
+        if (!inspectVo.isHighAvailable()){
+            return Message.error("The master and backup cluster materials do not match, please check the material");
         }
         try {
             streamTaskService.execute(jobId, 0L, userName);
