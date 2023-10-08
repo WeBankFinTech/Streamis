@@ -45,7 +45,7 @@
     </modules>
 
     <properties>
-        <linkis.version>1.1.14-wedatasphere</linkis.version>
+        <linkis.version>1.1.14-wds</linkis.version>
         <junit.version>4.12</junit.version>
         <dss.version>1.1.0.14-SNAPSHOT</dss.version>
         <streamis.version>0.3.4-wedatasphere-SNAPSHOT</streamis.version>
