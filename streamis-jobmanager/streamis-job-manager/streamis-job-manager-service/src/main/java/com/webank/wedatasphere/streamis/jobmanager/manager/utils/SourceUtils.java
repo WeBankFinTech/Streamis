@@ -31,7 +31,7 @@ public class SourceUtils {
                         String sourceValue = map.get("source").toString();
                         if (sourceValue.equals(JobConf.HIGHAVAILABLE_SOURCE().getValue())) {
                             if (map.containsKey("isHighAvailable")) {
-                                highAvailableVo.setHighAvailable((Boolean) map.get("isHighAvailable"));
+                                highAvailableVo.setHighAvailable(Boolean.parseBoolean(map.get("isHighAvailable").toString()) );
                             }
                             highAvailableVo.setMsg(map.getOrDefault("highAvailableMessage","高可用信息为空，请联系管理员").toString());
                             return highAvailableVo;
