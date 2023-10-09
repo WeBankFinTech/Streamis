@@ -568,10 +568,10 @@ export default {
           width: 200,
         },
         {
-          title: '主备物料一致',
+          title: '主备一致性检查',
           key: 'consistency',
           align: 'center',
-          width: 130,
+          width: 140,
         },
         {
           title: '快照',
@@ -813,7 +813,7 @@ export default {
             latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
             lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
             yarn: inspectRes.list && inspectRes.list.list ? inspectRes.list.list : [],
-            consistency: inspectRes.highavailable && inspectRes.highavailable.highAvailable ? '是' : (inspectRes.highavailable ? inspectRes.highavailable.msg : '--')
+            consistency: inspectRes.highavailable && inspectRes.highavailable.highAvailable ? '通过：检查通过' : (inspectRes.highavailable.msg ? '不通过：' + inspectRes.highavailable.msg + '不一致' : '--')
           }
           if (Array.isArray(tempData.yarn)) {
             for (let i = 0; i < tempData.yarn.length; i++) {
@@ -842,7 +842,7 @@ export default {
           latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
           lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
           yarn: inspectRes.list && inspectRes.list.list ? inspectRes.list.list : [],
-          consistency: inspectRes.highavailable && inspectRes.highavailable.highAvailable ? '是' : (inspectRes.highavailable ? inspectRes.highavailable.msg : '--')
+          consistency: inspectRes.highavailable && inspectRes.highavailable.highAvailable ? '通过：检查通过' : (inspectRes.highavailable.msg ? '不通过：' + inspectRes.highavailable.msg + '不一致' : '--')
         }
         if (Array.isArray(tempData.yarn)) {
           for (let i = 0; i < tempData.yarn.length; i++) {
