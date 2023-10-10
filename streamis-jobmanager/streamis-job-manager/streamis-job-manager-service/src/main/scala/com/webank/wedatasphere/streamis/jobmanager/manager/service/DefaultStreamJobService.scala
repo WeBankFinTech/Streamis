@@ -291,7 +291,14 @@ class DefaultStreamJobService extends StreamJobService with Logging {
       }
       getJobContent(jobId,streamJobVersion.getVersion)
     } else {
-      val source = JsonUtils.manageSource(jobVersion.getSource,isHighAvailable, highAvailableMessage)
+      val defaultJson = """{"deployUser": "default","createTime": "default","pkgName": "default","highAvailableMessage": "default","isHighAvailable": false,"source": "aomp"}"""
+      var source = jobVersion.getSource
+      if (source == null){
+        source = JsonUtils.manageSource(defaultJson, isHighAvailable, highAvailableMessage)
+      }
+      else {
+        source = JsonUtils.manageSource(jobVersion.getSource, isHighAvailable, highAvailableMessage)
+      }
       jobVersion.setSource(source)
       streamJobMapper.updateSource(jobVersion)
       getJobContent(jobId,jobVersion.getVersion)

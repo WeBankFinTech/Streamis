@@ -1,15 +1,20 @@
 package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.ExecResultVo;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.JobHighAvailableVo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.PauseResultVo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobExecuteErrorException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.DefaultStreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamTaskService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.utils.SourceUtils;
 import com.webank.wedatasphere.streamis.jobmanager.vo.BaseBulkRequest;
 import com.webank.wedatasphere.streamis.jobmanager.vo.BulkResponse;
 import com.webank.wedatasphere.streamis.jobmanager.vo.JobBulkPauseRequest;
@@ -31,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @RequestMapping(path = "/streamis/streamJobManager/job/bulk")
 @RestController
@@ -53,6 +59,11 @@ public class JobBulkRestfulApi {
     @Autowired
     private StreamJobConfService streamJobConfService;
 
+    @Autowired
+    private DefaultStreamJobService defaultStreamJobService;
+
+    @Autowired
+    private StreamJobConfMapper streamJobConfMapper;
     /**
      * Bulk execution
      * @param execBulkRequest bulk request
@@ -83,6 +94,21 @@ public class JobBulkRestfulApi {
                  if (!Boolean.parseBoolean(JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE().getHotValue().toString()) &&
                          managementMode.equals("detach")){
                      return Message.error("The system does not enable the detach feature ,detach job cannot start [" + jobId + "]");
+                 }
+                 StreamJobVersion jobVersion = this.defaultStreamJobService.getLatestJobVersion(Long.parseLong(jobId.toString()));
+                 String highAvailablePolicy = streamJobConfMapper.getRawConfValue(Long.parseLong(jobId.toString()), "wds.streamis.app.highavailable.policy");
+                 JobHighAvailableVo inspectVo = new JobHighAvailableVo();
+                 Optional<String> sourceOption = Optional.ofNullable(jobVersion.getSource());
+                 if(sourceOption.isPresent()) {
+                     String source = sourceOption.get();
+                     inspectVo = SourceUtils.manageJobProjectFile(highAvailablePolicy, source);
+                 } else {
+                     LOG.warn("this job source is null");
+                     inspectVo.setHighAvailable(true);
+                     inspectVo.setMsg("用户直接从页面上传，job的source为空，跳过高可用检查");
+                 }
+                 if (!inspectVo.isHighAvailable()){
+                     return Message.error("The master and backup cluster materials do not match, please check the material");
                  }
              }
              // TODO Enable to accept 'restore' parameter from request
