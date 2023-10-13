@@ -24,6 +24,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobCon
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobCreateErrorException, JobErrorException, JobFetchErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
+import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamAlertMapper, StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity._
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{QueryJobListVo, TaskCoreNumVo, VersionDetailVo}
@@ -303,10 +304,9 @@ class DefaultStreamJobService extends StreamJobService with Logging {
       }
       getJobContent(jobId,streamJobVersion.getVersion)
     } else {
-      val defaultJson = """{"deployUser": "default","createTime": "default","pkgName": "default","highAvailableMessage": "default","isHighAvailable": false,"source": "aomp"}"""
       var source = jobVersion.getSource
       if (source == null){
-        source = JsonUtils.manageSource(defaultJson, isHighAvailable, highAvailableMessage)
+        source = JsonUtils.manageSource(JobConstrants.DEFAULT_JSON, isHighAvailable, highAvailableMessage)
       }
       else {
         source = JsonUtils.manageSource(jobVersion.getSource, isHighAvailable, highAvailableMessage)
