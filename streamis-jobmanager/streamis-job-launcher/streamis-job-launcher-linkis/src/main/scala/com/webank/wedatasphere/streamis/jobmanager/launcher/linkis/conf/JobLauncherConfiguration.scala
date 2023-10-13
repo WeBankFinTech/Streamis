@@ -77,4 +77,6 @@ object JobLauncherConfiguration {
   val LINKIS_LOG_Match: CommonVars[String] = CommonVars("linkis.log.match", "^(01|12|13|22|30|31|41|42|43|47|)\\d+")
 
   val ENABLE_STATUS_ON_FETCH_METRICS: CommonVars[Boolean] = CommonVars("wds.streamis.job.create.metrics.status.enable", true)
+
+  val LINKIS_FLINK_LOG4J_CHECK_KEYWORDS = CommonVars("linkis.flink.log4j.check.keywords", "MainAppender,StreamRpcLog")
 }
