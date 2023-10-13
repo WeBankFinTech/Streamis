@@ -17,8 +17,14 @@ object JsonUtil extends Logging {
         strictGsonAdapter.fromJson(s)
         flag = true
       } {
-        case e: JsonSyntaxException | IOException =>
-          logger.error(s"\"${s}\" is invalid json.")
+        case e: JsonSyntaxException =>
+          logger.error(s"${s} is invalid json.")
+          flag = false
+        case e1: IOException =>
+          logger.error(s"${s} is invalid json.")
+          flag = false
+        case e2: Exception =>
+          logger.error(s"${s} is invalid json. ${e2.getMessage}")
           flag = false
       }
     }
