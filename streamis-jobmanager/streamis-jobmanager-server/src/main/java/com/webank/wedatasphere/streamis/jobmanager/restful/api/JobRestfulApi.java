@@ -44,6 +44,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.Real
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent;
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.SourceUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils;
+import com.webank.wedatasphere.streamis.jobmanager.utils.JsonUtil;
 import com.webank.wedatasphere.streamis.jobmanager.utils.RegularUtil;
 import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabel;
 import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabelRequest;
@@ -346,13 +347,13 @@ public class JobRestfulApi {
         String highAvailablePolicy = streamJobConfMapper.getRawConfValue(jobId, "wds.streamis.app.highavailable.policy");
         JobHighAvailableVo inspectVo = new JobHighAvailableVo();
         Optional<String> sourceOption = Optional.ofNullable(jobVersion.getSource());
-        if(sourceOption.isPresent()) {
+        if(sourceOption.isPresent() && JsonUtil.isJson(sourceOption.get())) {
             String source = sourceOption.get();
             inspectVo = SourceUtils.manageJobProjectFile(highAvailablePolicy, source);
         } else {
             LOG.warn("this job source is null");
             inspectVo.setHighAvailable(true);
-            inspectVo.setMsg("用户直接从页面上传，job的source为空，跳过高可用检查");
+            inspectVo.setMsg("User changed params of job not by deploy, will skip to check its highavailable(用户未走发布单独修改了job信息，跳过高可用检查)");
         }
         if (!inspectVo.isHighAvailable()){
             return Message.error("The master and backup cluster materials do not match, please check the material");
