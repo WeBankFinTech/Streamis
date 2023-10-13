@@ -18,10 +18,10 @@ object JsonUtil extends Logging {
         flag = true
       } {
         case e: JsonSyntaxException =>
-          logger.error(s"${s} is invalid json.")
+          logger.error(s"${s} is invalid json. ${e.getMessage}")
           flag = false
         case e1: IOException =>
-          logger.error(s"${s} is invalid json.")
+          logger.error(s"${s} is invalid json. ${e1.getMessage}")
           flag = false
         case e2: Exception =>
           logger.error(s"${s} is invalid json. ${e2.getMessage}")
