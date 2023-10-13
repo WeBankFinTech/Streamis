@@ -278,10 +278,22 @@ class DefaultStreamJobService extends StreamJobService with Logging {
       streamJobVersion.setManageMode(jobVersion.getManageMode)
       streamJobVersion.setCreateTime(new Date())
       streamJobVersion.setJobContent(newJobContent)
-      streamJobVersion.setSource(jobVersion.getSource)
+      streamJobVersion.setSource("update args")
       streamJobVersion.setVersion(rollingJobVersion(jobVersion.getVersion))
       streamJobVersion.setComment("用户"+ jobVersion.getCreateBy + "修改args")
       streamJobMapper.insertJobVersion(streamJobVersion)
+      val oldVersionFiles: util.List[StreamJobVersionFiles] = streamJobMapper.getStreamJobVersionFiles(jobId, jobVersion.getId)
+      oldVersionFiles.asScala.foreach { version =>
+        val jobVersionFiles = new StreamJobVersionFiles
+        jobVersionFiles.setJobId(version.getJobId)
+        jobVersionFiles.setJobVersionId(streamJobVersion.getId)
+        jobVersionFiles.setCreateBy(version.getCreateBy)
+        jobVersionFiles.setVersion(streamJobVersion.getVersion)
+        jobVersionFiles.setFileName(version.getFileName)
+        jobVersionFiles.setCreateTime(new Date(System.currentTimeMillis()))
+        jobVersionFiles.setStorePath(version.getStorePath)
+        streamJobMapper.insertJobVersionFiles(jobVersionFiles)
+      }
       val task = streamTaskMapper.getLatestByJobId(streamJob.getId)
       if (task != null && !JobConf.isCompleted(task.getStatus)) {
         logger.warn(s"StreamJob-${streamJob.getName} is in status ${task.getStatus}, your deployment will not update the version in job")
@@ -303,7 +315,6 @@ class DefaultStreamJobService extends StreamJobService with Logging {
       streamJobMapper.updateSource(jobVersion)
       getJobContent(jobId,jobVersion.getVersion)
     }
-
   }
 
 
