@@ -873,7 +873,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     if (null != log) {
       val errorCodes = errorCodeHandler.handle(log)
       if (errorCodes != null && errorCodes.size() > 0) {
-        errorCodes.asScala.map(e => e.getErrorDesc).mkString("。")
+        errorCodes.asScala.map(e => e.getErrorDesc).mkString(",")
       } else {
         errorMsg
       }
