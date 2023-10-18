@@ -18,6 +18,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.PublishRequestVo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
@@ -28,6 +29,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ReaderUtils {
     private static final String metaFileName = "meta.txt";
@@ -77,6 +80,15 @@ public class ReaderUtils {
             }
             return name.matches(regex);
         }
+    }
+
+    public static boolean isValidFileFormat(String fileName) {
+        String fileFormats = JobConf.STREAMIS_CHECK_FILE_FORMAT().getHotValue();
+        String regexPattern = ".*\\.(" + fileFormats + ")$";
+        Pattern pattern = Pattern.compile(regexPattern, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(fileName);
+
+        return matcher.matches();
     }
 
     public List<String> listFiles(String path) throws FileException {
