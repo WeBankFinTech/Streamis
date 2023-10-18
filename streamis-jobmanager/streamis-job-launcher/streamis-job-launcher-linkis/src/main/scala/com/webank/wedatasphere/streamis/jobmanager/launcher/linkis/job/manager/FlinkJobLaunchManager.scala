@@ -164,7 +164,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
     if (null != t) {
       val errorCodes = StreamisErrorCodeHandler.getInstance().handle(t.getMessage)
       if (errorCodes != null && errorCodes.size() > 0) {
-        errorCodes.asScala.map(e => e.getErrorDesc).mkString("。")
+        errorCodes.asScala.map(e => e.getErrorDesc).mkString(",")
       } else {
         errorMsg
       }
