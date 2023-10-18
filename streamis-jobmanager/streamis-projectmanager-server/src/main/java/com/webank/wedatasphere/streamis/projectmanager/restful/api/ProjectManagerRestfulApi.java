@@ -89,6 +89,10 @@ public class ProjectManagerRestfulApi {
         if (!readerUtils.checkName(fileName)) {
             throw FileExceptionManager.createException(30601, fileName);
         }
+
+        if (!ReaderUtils.isValidFileFormat(fileName)){
+            throw FileExceptionManager.createException(30601, fileName);
+        }
         if (!updateWhenExists) {
             ProjectFiles projectFiles = projectManagerService.selectFile(fileName, version, projectName);
             if (projectFiles != null) {
