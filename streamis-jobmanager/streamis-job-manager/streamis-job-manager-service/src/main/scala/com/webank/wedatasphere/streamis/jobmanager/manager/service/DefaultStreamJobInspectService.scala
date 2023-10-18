@@ -1,6 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.errorcode.JobLaunchErrorCode
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobCreateErrorException, JobErrorException, JobFetchErrorException}
@@ -161,23 +162,25 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
   }
 
   private def highAvailableInspect(job: StreamJob): JobHighAvailableVo = {
-    var inspectVo = new JobHighAvailableVo
-    val jobId = job.getId
-    val version = job.getCurrentVersion
-    val jobVersion = if(StringUtils.isBlank(version)) {
-      streamJobMapper.getJobVersions(jobId).get(0)
-    } else streamJobMapper.getJobVersionById(jobId, version)
-    val highAvailablePolicy = streamJobConfMapper.getRawConfValue(jobId, "wds.streamis.app.highavailable.policy")
+    Utils.tryAndError {
+      var inspectVo = new JobHighAvailableVo
+      val jobId = job.getId
+      val version = job.getCurrentVersion
+      val jobVersion = if(StringUtils.isBlank(version)) {
+        streamJobMapper.getJobVersions(jobId).get(0)
+      } else streamJobMapper.getJobVersionById(jobId, version)
+      val highAvailablePolicy = streamJobConfMapper.getRawConfValue(jobId, JobConf.HIGHAVAILABLE_POLICY.key)
       val sourceOption: Option[String] = Option(jobVersion.getSource)
       sourceOption match {
         case Some(source) =>
-         inspectVo = SourceUtils.manageJobProjectFile(highAvailablePolicy,source)
+          inspectVo = SourceUtils.manageJobProjectFile(highAvailablePolicy,source)
         case None =>
           logger.warn("this job source is null")
           inspectVo.setHighAvailable(true)
           inspectVo.setMsg("用户直接从页面上传，job的source为空，跳过高可用检查")
       }
-    inspectVo
+      inspectVo
+    }
   }
 
 }
