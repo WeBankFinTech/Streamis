@@ -9,16 +9,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class SourceUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(SourceUtils.class);
 
     public static JobHighAvailableVo manageJobProjectFile(String highAvailablePolicy,String source) {
-
+        highAvailablePolicy = Optional.ofNullable(highAvailablePolicy).orElse("single");
         JobHighAvailableVo highAvailableVo = new JobHighAvailableVo();
         try {
-
             if (!Boolean.parseBoolean(JobConf.HIGHAVAILABLE_ENABLE().getValue().toString())) {
                 highAvailableVo.setHighAvailable(true);
                 highAvailableVo.setMsg("管理员未开启高可用配置");
