@@ -16,7 +16,7 @@ public class SourceUtils {
     private static final Logger LOG = LoggerFactory.getLogger(SourceUtils.class);
 
     public static JobHighAvailableVo manageJobProjectFile(String highAvailablePolicy,String source) {
-        highAvailablePolicy = Optional.ofNullable(highAvailablePolicy).orElse("single");
+        highAvailablePolicy = Optional.ofNullable(highAvailablePolicy).orElse(JobConf.HIGHAVAILABLE_DEFAULT_POLICY().getHotValue());
         JobHighAvailableVo highAvailableVo = new JobHighAvailableVo();
         try {
             if (!Boolean.parseBoolean(JobConf.HIGHAVAILABLE_ENABLE().getValue().toString())) {
