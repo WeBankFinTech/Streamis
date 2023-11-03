@@ -302,21 +302,29 @@
       :mask-closable="false"
     >
       <div class="wrap">
-        <Table border :columns="checkColumns" :data="checkData">
+        <Table border :row-class-name="rowClassName" :columns="checkColumns" :data="checkData">
           <template slot-scope="{row}" slot="yarn">
             <div v-for="(item, index) in row.yarn" :key="index">
-              <a v-if="item.applicationUrl && item.applicationUrl !== '无' && item.applicationId" style="display: block" @click="goToNewTab(item.applicationUrl)">{{item.yarnAppType}}: {{item.applicationName}}</a>
+              <a class="red-color" v-if="item.applicationUrl && item.applicationUrl !== '无' && item.applicationId" style="display: block" @click="goToNewTab(item.applicationUrl)">{{item.yarnAppType}}: {{item.applicationName}}</a>
               <div v-else>{{ item.applicationUrl }}</div>
             </div>
+          </template>
+          <template #consistency="{row}">
+            <div v-if="row.consistency.includes('不通过')" class="red-color">{{ row.consistency }}</div>
+            <div v-else>{{ row.consistency }}</div>
           </template>
         </Table>
       </div>
       <template slot="footer">
-        <div style="display: flex; width: 100%">
-          <div style="marginRight: 16px; position: relative; top: 3px; width: 225px">当前一共需要确认的作业数量：{{checkData.length}}个</div>
-          <div style="position: relative; top: 3px; textAlign: left; width: 600px" :class="hasYarnCount ? 'red-color' : ''">共计有{{hasYarnCount}}个作业含有同名运行中的yarn任务，请检查无误后再启动</div>
-          <Button type="primary" @click="confirmStarting">{{ $t('message.streamis.formItems.confirmBtn') }}</Button>
-          <Button type="primary" @click="cancelStartHint">{{ $t('message.streamis.formItems.cancel') }}</Button>
+        <div class="modal-footer-wrapper">
+          <div class="modal-footer-descs">
+            <div style="marginRight: 16px;">以上 {{checkData.length}} 个作业</div>
+            <div v-if="hasWarningCount" class="warning-color">检查到 {{hasWarningCount}} 个作业存在异常，可能导致启动失败，请检查</div>
+          </div>
+          <div class="modal-footer-btns">
+            <Button type="primary" @click="confirmStarting">{{ $t('message.streamis.formItems.confirmBtn') }}</Button>
+            <Button type="primary" @click="cancelStartHint">{{ $t('message.streamis.formItems.cancel') }}</Button>
+          </div>
         </div>
       </template>
     </Modal>
@@ -569,7 +577,7 @@ export default {
         },
         {
           title: '主备一致性检查',
-          key: 'consistency',
+          slot: 'consistency',
           align: 'center',
           width: 140,
         },
@@ -579,7 +587,7 @@ export default {
           align: 'center',
         },
       ],
-      hasYarnCount: 0,
+      hasWarningCount: 0,
       checkData: [],
       // 当前正在查看的data
       currentViewData: {},
@@ -736,6 +744,9 @@ export default {
     },
 
 
+    rowClassName(row){
+      return row.warningRow ? 'warning-row' : ''
+    },
     // 1、快照重启和直接重启只有调用接口时snapshot参数的区别
     // 2、快照重启、直接重启、启动 都需要调用inspect接口
     // 3、快照重启、直接重启调用inspect接口前，需要pause接口返回成功；启动 不需要调用pause接口
@@ -801,7 +812,7 @@ export default {
 
       if (this.isBatchRestart) {
         // 是批量重启，tempData是数组
-        this.hasYarnCount = 0;
+        this.hasWarningCount = 0;
         const inspectRes = await Promise.all( this.tempData.map(async (item) => {
           const { id, name } = item
           const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
@@ -813,12 +824,18 @@ export default {
             latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
             lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
             yarn: inspectRes.list && inspectRes.list.list ? inspectRes.list.list : [],
-            consistency: inspectRes.highavailable && inspectRes.highavailable.highAvailable ? '通过：检查通过' : (inspectRes.highavailable.msg ? '不通过：' + inspectRes.highavailable.msg + '不一致' : '--')
+            consistency: inspectRes.highavailable && inspectRes.highavailable.highAvailable ? '通过：检查通过' : (inspectRes.highavailable.msg ? '不通过：' + inspectRes.highavailable.msg + '不一致' : '--'),
+            warningRow: false
+          }
+          if(tempData.consistency.includes('不通过')){
+            tempData.warningRow = true
+            this.hasWarningCount++
           }
           if (Array.isArray(tempData.yarn)) {
             for (let i = 0; i < tempData.yarn.length; i++) {
               if (tempData.yarn[i].applicationId && tempData.yarn[i].applicationId !== '无') {
-                this.hasYarnCount++
+                tempData.warningRow = true
+                this.hasWarningCount++
                 break
               }
             }
@@ -831,7 +848,7 @@ export default {
         console.log('打开弹框 this.startHintData: ', this.startHintData);
       } else {
         // 是单个重启，tempData是对象
-        this.hasYarnCount = 0;
+        this.hasWarningCount = 0;
         const { id, name } = this.tempData
         const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
         const inspectRes = await api.fetch(checkPath, {}, 'put')
@@ -842,12 +859,18 @@ export default {
           latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
           lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
           yarn: inspectRes.list && inspectRes.list.list ? inspectRes.list.list : [],
-          consistency: inspectRes.highavailable && inspectRes.highavailable.highAvailable ? '通过：检查通过' : (inspectRes.highavailable.msg ? '不通过：' + inspectRes.highavailable.msg + '不一致' : '--')
+          consistency: inspectRes.highavailable && inspectRes.highavailable.highAvailable ? '通过：检查通过' : (inspectRes.highavailable.msg ? '不通过：' + inspectRes.highavailable.msg + '不一致' : '--'),
+          warningRow: false
+        }
+        if(tempData.consistency.includes('不通过')){
+          tempData.warningRow = true
+          this.hasWarningCount++
         }
         if (Array.isArray(tempData.yarn)) {
           for (let i = 0; i < tempData.yarn.length; i++) {
             if (tempData.yarn[i].applicationId && tempData.yarn[i].applicationId !== '无') {
-              this.hasYarnCount++
+              tempData.warningRow = true
+              this.hasWarningCount++
               break
             }
           }
@@ -1173,6 +1196,30 @@ export default {
 }
 .red-color {
   color: red;
+}
+.warning-color{
+  color: #ff9900;
+}
+
+/deep/.ivu-table .warning-row td{
+  background-color: #ff9900;
+  border-right: none;
+}
+.modal-footer-wrapper{
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  .modal-footer-descs{
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  .modal-footer-btns{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
 }
 </style>
 
