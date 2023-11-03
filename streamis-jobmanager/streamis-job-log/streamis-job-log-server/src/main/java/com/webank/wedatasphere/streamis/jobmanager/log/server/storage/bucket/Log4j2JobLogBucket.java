@@ -309,7 +309,7 @@ public class Log4j2JobLogBucket implements JobLogBucket{
         if (fileHoldDay > 0){
             // Create the actions to delete old file
             builder.withCustomActions(new Action[]{
-                            DeleteAction.createDeleteAction(new File(fileName).getParent(), false, 2, false, null,
+                            DeleteAction.createDeleteAction(new File(FilenameUtils.normalize(fileName)).getParent(), false, 2, false, null,
                                     new PathCondition[]{
                                             IfFileName.createNameCondition(null, ".*"),
                                             IfLastModified.createAgeCondition(Duration.parse(fileHoldDay + "d"))
