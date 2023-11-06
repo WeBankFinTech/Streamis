@@ -67,6 +67,13 @@
                 </Option>
               </Select>
             </FormItem>
+            <FormItem label="作业类型">
+              <Input
+                v-model="query.jobType"
+                placeholder="作业类型"
+              >
+              </Input>
+            </FormItem>
             <FormItem prop="label" :label="$t('message.streamis.formItems.tag')" style="width: 400px">
               <Input
                 v-model="query.label"
@@ -81,6 +88,16 @@
                 style="width:100px;height:30px;background:rgba(22, 155, 213, 1);"
               >
                 {{ $t('message.streamis.formItems.queryBtn') }}
+              </Button>
+            </FormItem>
+
+            <FormItem class="button-item">
+              <Button
+                type="primary"
+                @click="resetQuery()"
+                style="width:100px;height:30px;background:rgba(22, 155, 213, 1);"
+              >
+                重置
               </Button>
             </FormItem>
 
@@ -387,6 +404,7 @@ export default {
       query: {
         jobName: '',
         jobStatus: 'all',
+        jobType: '',
         label: '',
       },
       jobStatus: ['all'].concat(allJobStatuses.map(item => item.name)),
@@ -596,12 +614,25 @@ export default {
       failureReasonShow: false,
     }
   },
-  mounted() {
-    this.getJobList()
+  async mounted() {
+    await this.$nextTick()
+    const { jobName, jobStatus, label, jobType, pageNow, pageSize } = this.$route.query
+    const hitStatus = allJobStatuses.find(item => item.code === parseInt(jobStatus))
+    Object.assign(this.query, {
+      jobName,
+      label,
+      jobType,
+      jobStatus: hitStatus ? hitStatus.name : 'all'
+    })
+    Object.assign(this.pageData, {
+      pageNow: parseInt(pageNow) || 1,
+      pageSize: parseInt(pageSize) || 10,
+    })
+    this.getJobList(false)
   },
   methods: {
     // 获取任务列表
-    getJobList() {
+    getJobList(shouldPush = true) {
       if (this.loading) {
         return
       }
@@ -618,18 +649,27 @@ export default {
         // 正式环境用的
         projectName: this.projectName
       }
-      const { jobName, jobStatus, label } = this.query
-      if (jobName) {
-        params.jobName = jobName
-      }
-      if (label) {
-        params.label = label
-      }
+      const { jobName, jobStatus, label, jobType } = this.query
+      params.jobName = jobName || ''
+      params.jobType = jobType || ''
+      params.label = label || ''
       if (jobStatus !== 'all') {
         const hitStatus = allJobStatuses.find(item => item.name === jobStatus)
         params.jobStatus = hitStatus.code
+      } else {
+        params.jobStatus=''
       }
 
+      const toQuery = {
+        ...this.$route.query,
+        ...params
+      }
+      if (shouldPush) {
+        this.$router.push({
+          path: this.$route.path, 
+          query: toQuery
+        })
+      }
       const queries = Object.entries(params)
         .filter(item => !!item[1] || item[1] === 0)
         .map(item => item.join('='))
@@ -676,6 +716,19 @@ export default {
         }
       })
 
+    },
+    resetQuery() {
+      Object.assign(this.query, {
+        jobName: '',
+        jobStatus: 'all',
+        jobType: '',
+        label: '',
+      })
+      Object.assign(this.pageData, {
+        pageNow: 1,
+        pageSize: 10,
+      })
+      this.handleQuery()
     },
     handleUpload() {
       this.uploadVisible = true
