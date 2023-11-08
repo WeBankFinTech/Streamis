@@ -35,6 +35,7 @@
         <module>streamis-projectmanager-server</module>
         <module>streamis-job-log</module>
         <module>streamis-job-entrypoint</module>
+        <module>streamis-job-audit-log</module>
     </modules>
 
 
