@@ -7,6 +7,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobServ
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,8 +33,8 @@ public class AuditLogRestfulApi {
                                    @RequestParam(value = "apiName", required = false) String apiName,
                                    @RequestParam(value = "user", required = false) String user,
                                    @RequestParam(value = "proxyUser", required = false) String proxyUser,
-                                   @RequestParam(value = "startDate", required = false) Date startDate,
-                                   @RequestParam(value = "endDate", required = false) Date endDate,
+                                   @RequestParam(value = "startDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startDate,
+                                   @RequestParam(value = "endDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endDate,
                                    @RequestParam(value = "projectName",required = false) String projectName
                                    ) {
         String userName = ModuleUserUtils.getOperationUser(req, "Query job audit log");

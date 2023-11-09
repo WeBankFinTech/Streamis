@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
@@ -26,8 +28,10 @@ public class AuditLogAspect {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuditLogAspect.class);
 
-    @Around("execution(* com.webank.wedatasphere.streamis.jobmanager.restful.api..*.*(..)) && args(req) || execution(* com.webank.wedatasphere.streamis.projectmanager.restful.api..*.*(..)) && args(req)")
-    public Object captureAndLogAuditLog(ProceedingJoinPoint joinPoint, HttpServletRequest req) throws Throwable {
+    @Around("execution(* com.webank.wedatasphere.streamis.jobmanager.restful.api..*.*(..)) || execution(* com.webank.wedatasphere.streamis.projectmanager.restful.api..*.*(..))")
+    public Object captureAndLogAuditLog(ProceedingJoinPoint joinPoint) throws Throwable {
+        HttpServletRequest req = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        String method = req.getMethod();
         ProxyUserEntity proxyUserEntity = ModuleUserUtils.getProxyUserEntity(req, "record audit log");
         String proxyUser = proxyUserEntity.getProxyUser();
         String userName = proxyUserEntity.getUsername();
@@ -40,18 +44,18 @@ public class AuditLogAspect {
         } catch (Exception e) {
             LOG.error("Error executing method: " + joinPoint.getSignature().toShortString());
         }
-        logAuditInformationAsync(methodName, methodArgs, result, proxyUser,userName);
+        logAuditInformationAsync(methodName, methodArgs, result, proxyUser,userName,method);
 
         return result;
     }
 
     @Async
-    public void logAuditInformationAsync(String methodName, Object[] methodArgs, Object result, String proxyUser,String userName){
-        logAuditInformation(methodName, methodArgs, result, proxyUser,userName);
+    public void logAuditInformationAsync(String methodName, Object[] methodArgs, Object result, String proxyUser,String userName,String method){
+        logAuditInformation(methodName, methodArgs, result, proxyUser,userName,method);
     }
 
 
-    private void logAuditInformation(String methodName, Object[] methodArgs, Object result, String proxyUser,String userName) {
+    private void logAuditInformation(String methodName, Object[] methodArgs, Object result, String proxyUser,String userName,String method) {
         // Create and save audit log using AuditLogService
         StreamAuditLog auditLog = new StreamAuditLog();
         auditLog.setApiName(methodName);
@@ -60,6 +64,7 @@ public class AuditLogAspect {
         auditLog.setProxyUser(proxyUser);
         auditLog.setUser(userName);
         auditLog.setOperateTime(new Date());
+        auditLog.setApiType(method);
         auditLogService.saveAuditLog(auditLog);
     }
 

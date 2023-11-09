@@ -21,14 +21,14 @@
 
     <select id="searchAuditLogs" resultType="com.webank.wedatasphere.streamis.audit.log.entity.StreamAuditLog">
         SELECT * FROM linkis_stream_audit_log
-        WHERE
-        <if test="apiName != null">
-            api_name LIKE #{apiName}
+        WHERE  1=1
+        <if test="apiName != null and apiName !=''">
+            AND api_name LIKE #{apiName}
         </if>
-        <if test="user != null">
+        <if test="user != null and user !='' ">
             AND user LIKE #{user}
         </if>
-        <if test="proxyUser != null">
+        <if test="proxyUser != null and proxyUser !='' ">
             AND proxy_user LIKE #{proxyUser}
         </if>
         <if test="startDate != null">
@@ -40,7 +40,7 @@
     </select>
 
     <insert id="saveAuditLog" parameterType="com.webank.wedatasphere.streamis.audit.log.entity.StreamAuditLog">
-        INSERT INTO linkis_stream_audit_log (user,api_name, input_parameters, output_parameters, proxy_user, operate_time)
-        VALUES (#{user}, #{apiName}, #{inputParameters}, #{outputParameters}, #{proxyUser}, #{operateTime})
+        INSERT INTO linkis_stream_audit_log (user,api_name,api_type,input_parameters, output_parameters, proxy_user, operate_time)
+        VALUES (#{user}, #{apiName},#{apiType},#{inputParameters}, #{outputParameters}, #{proxyUser}, #{operateTime})
     </insert>
 </mapper>
