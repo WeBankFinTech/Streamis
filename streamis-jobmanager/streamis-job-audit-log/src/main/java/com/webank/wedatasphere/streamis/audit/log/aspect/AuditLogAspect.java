@@ -32,6 +32,7 @@ public class AuditLogAspect {
     public Object captureAndLogAuditLog(ProceedingJoinPoint joinPoint) throws Throwable {
         HttpServletRequest req = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
         String method = req.getMethod();
+        String requestURI = req.getRequestURI();
         ProxyUserEntity proxyUserEntity = ModuleUserUtils.getProxyUserEntity(req, "record audit log");
         String proxyUser = proxyUserEntity.getProxyUser();
         String userName = proxyUserEntity.getUsername();
@@ -44,21 +45,22 @@ public class AuditLogAspect {
         } catch (Exception e) {
             LOG.error("Error executing method: " + joinPoint.getSignature().toShortString());
         }
-        logAuditInformationAsync(methodName, methodArgs, result, proxyUser,userName,method);
+        logAuditInformationAsync(requestURI, methodArgs, result, proxyUser,userName,method);
 
         return result;
     }
 
     @Async
-    public void logAuditInformationAsync(String methodName, Object[] methodArgs, Object result, String proxyUser,String userName,String method){
-        logAuditInformation(methodName, methodArgs, result, proxyUser,userName,method);
+    public void logAuditInformationAsync(String requestURI, Object[] methodArgs, Object result, String proxyUser,String userName,String method){
+        logAuditInformation(requestURI, methodArgs, result, proxyUser,userName,method);
     }
 
 
-    private void logAuditInformation(String methodName, Object[] methodArgs, Object result, String proxyUser,String userName,String method) {
-        // Create and save audit log using AuditLogService
+    private void logAuditInformation(String requestURI, Object[] methodArgs, Object result, String proxyUser,String userName,String method) {
+        String apiDesc = InterfaceDescriptionEnum.getUrlDescriptionMap().get(requestURI);
         StreamAuditLog auditLog = new StreamAuditLog();
-        auditLog.setApiName(methodName);
+        auditLog.setApiName(requestURI);
+        auditLog.setApiDesc(apiDesc);
         auditLog.setInputParameters(Arrays.toString(methodArgs));
         auditLog.setOutputParameters(result.toString());
         auditLog.setProxyUser(proxyUser);
