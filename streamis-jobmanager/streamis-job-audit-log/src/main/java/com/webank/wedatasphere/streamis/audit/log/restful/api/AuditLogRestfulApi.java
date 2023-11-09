@@ -24,9 +24,6 @@ public class AuditLogRestfulApi {
     @Autowired
     private AuditLogService auditLogService;
 
-    @Autowired
-    private StreamJobService streamJobService;
-
     @Resource
     private ProjectPrivilegeService privilegeService;
 

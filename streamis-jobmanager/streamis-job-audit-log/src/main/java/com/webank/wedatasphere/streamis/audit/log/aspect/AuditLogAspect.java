@@ -26,7 +26,7 @@ public class AuditLogAspect {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuditLogAspect.class);
 
-    @Around("execution(* com.webank.wedatasphere.streamis.jobmanager.restful.api..*.*(..)) || execution(* com.webank.wedatasphere.streamis.projectmanager.restful.api..*.*(..))")
+    @Around("execution(* com.webank.wedatasphere.streamis.jobmanager.restful.api..*.*(..)) && args(req) || execution(* com.webank.wedatasphere.streamis.projectmanager.restful.api..*.*(..)) && args(req)")
     public Object captureAndLogAuditLog(ProceedingJoinPoint joinPoint, HttpServletRequest req) throws Throwable {
         ProxyUserEntity proxyUserEntity = ModuleUserUtils.getProxyUserEntity(req, "record audit log");
         String proxyUser = proxyUserEntity.getProxyUser();
@@ -44,6 +44,7 @@ public class AuditLogAspect {
 
         return result;
     }
+
     @Async
     public void logAuditInformationAsync(String methodName, Object[] methodArgs, Object result, String proxyUser,String userName){
         logAuditInformation(methodName, methodArgs, result, proxyUser,userName);

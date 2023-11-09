@@ -29,13 +29,13 @@
     <modules>
         <module>streamis-jobmanager-common</module>
         <module>streamis-job-errorcode</module>
+        <module>streamis-job-audit-log</module>
         <module>streamis-job-launcher</module>
         <module>streamis-job-manager</module>
         <module>streamis-jobmanager-server</module>
         <module>streamis-projectmanager-server</module>
         <module>streamis-job-log</module>
         <module>streamis-job-entrypoint</module>
-        <module>streamis-job-audit-log</module>
     </modules>
 
 
