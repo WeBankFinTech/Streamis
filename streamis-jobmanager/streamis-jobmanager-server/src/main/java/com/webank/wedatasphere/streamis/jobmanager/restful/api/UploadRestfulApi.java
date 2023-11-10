@@ -24,6 +24,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobServ
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.ZipHelper;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.linkis.server.Message;
@@ -47,6 +48,8 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RequestMapping(path = "/streamis/streamJobManager/job")
 @RestController
@@ -87,6 +90,7 @@ public class UploadRestfulApi {
         File file = null;
         String inputPath = null;
         try {
+            IoUtils.validateFileName(fileName);
             inputPath = IoUtils.generateIOPath(userName, "streamis", fileName);
             file = new File(inputPath);
             if (file.getParentFile().exists()) {

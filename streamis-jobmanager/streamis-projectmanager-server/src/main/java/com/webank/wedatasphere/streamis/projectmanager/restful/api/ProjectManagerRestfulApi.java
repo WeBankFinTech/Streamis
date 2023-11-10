@@ -102,6 +102,7 @@ public class ProjectManagerRestfulApi {
         InputStream is = null;
         OutputStream os = null;
         try {
+            IoUtils.validateFileName(fileName);
             String inputPath = IoUtils.generateIOPath(username, "streamis", fileName);
             is = p.getInputStream();
             os = IoUtils.generateExportOutputStream(inputPath);
