@@ -70,6 +70,11 @@ object JobConf {
     case _ => false
   }
 
+  def isFinished(status: Int): Boolean = status match {
+    case 0 | 1 | 6 | 7 => true
+    case _ => false
+  }
+
   def linkisStatusToStreamisStatus(status: String): Int = status.toLowerCase match {
     case "starting" | "unlock" | "locked" | "idle" | "busy" | "running" => FLINK_JOB_STATUS_RUNNING.getValue
     case "success" => FLINK_JOB_STATUS_COMPLETED.getValue
