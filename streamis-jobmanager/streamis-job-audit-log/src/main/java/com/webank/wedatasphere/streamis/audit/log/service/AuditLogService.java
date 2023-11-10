@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.audit.log.service;
 
+import com.github.pagehelper.PageInfo;
 import com.webank.wedatasphere.streamis.audit.log.entity.StreamAuditLog;
 
 
@@ -8,7 +9,7 @@ import java.util.List;
 
 public interface AuditLogService {
 
-    List<StreamAuditLog> searchAuditLogs(String apiName, String user, String proxyUser, Date startDate, Date endDate);
+    PageInfo<StreamAuditLog> searchAuditLogs(String apiName, String user, String proxyUser, Date startDate, Date endDate);
 
     void  saveAuditLog(StreamAuditLog auditLog);
 }

@@ -37,6 +37,7 @@
         <if test="endDate != null">
             AND operate_time &lt;= #{endDate}
         </if>
+        order by operate_time desc
     </select>
 
     <insert id="saveAuditLog" parameterType="com.webank.wedatasphere.streamis.audit.log.entity.StreamAuditLog">
