@@ -29,7 +29,7 @@
         <result column="description" property="description" jdbcType="VARCHAR"/>
         <result column="submit_user" property="submitUser" jdbcType="VARCHAR"/>
         <result column="job_type" property="jobType" jdbcType="VARCHAR"/>
-        <result column="enable" property="enable" jdbcType="tinyint(1)"/>
+        <result column="enable" property="enable" jdbcType="TINYINT"/>
     </resultMap>
 
     <resultMap id="StreamJobVOMap" type="com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.QueryJobListVo">
@@ -48,7 +48,7 @@
         <result column="last_version" property="lastVersion" jdbcType="VARCHAR"/>
         <result column="lastVersionTime" property="lastVersionTime" jdbcType="TIMESTAMP"/>
         <result column="version_forward" property="versionForwards" jdbcType="INTEGER"/>
-        <result column="enable" property="enable" jdbcType="tinyint(1)"/>
+        <result column="enable" property="enable" jdbcType="TINYINT"/>
     </resultMap>
 
     <resultMap id="StreamJobVersionMap"
