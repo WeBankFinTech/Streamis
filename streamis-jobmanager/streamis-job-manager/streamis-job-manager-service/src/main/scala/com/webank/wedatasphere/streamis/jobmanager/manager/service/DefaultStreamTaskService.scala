@@ -92,7 +92,15 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     this.streamTaskMapper.getTaskById(Id)
   }
 
-
+  override def getTaskStatusById(jobId: Long): JobStatusVo = {
+    val streamTask = this.streamTaskMapper.getLatestByJobId(jobId)
+    val statusVo = new JobStatusVo()
+    statusVo.setStatusCode(streamTask.getStatus)
+    statusVo.setStatus(JobConf.getStatusString(streamTask.getStatus))
+    statusVo.setJobId(streamTask.getJobId)
+    statusVo.setMessage(streamTask.getErrDesc)
+    statusVo
+  }
   /**
    * Sync to execute job(task)
    * 1) create a new task
