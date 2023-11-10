@@ -110,7 +110,7 @@ public class JobRestfulApi {
             pageSize = 20;
         }
         if (Objects.isNull(enable)) {
-            enable = true;
+            enable = null;
         }
         PageInfo<QueryJobListVo> pageInfo;
         PageHelper.startPage(pageNow, pageSize);
@@ -524,7 +524,7 @@ public class JobRestfulApi {
         } else if(StringUtils.isBlank(jobName)) {
             return Message.error("jobName cannot be empty!");
         }
-        List<QueryJobListVo> streamJobs = streamJobService.getByProList(projectName, username, jobName, null, null,null,true).getList();
+        List<QueryJobListVo> streamJobs = streamJobService.getByProList(projectName, username, jobName, null, null,null, null).getList();
         if(CollectionUtils.isEmpty(streamJobs)) {
             return Message.error("Not exits Streamis job " + jobName);
         } else if(streamJobs.size() > 1) {
@@ -563,7 +563,7 @@ public class JobRestfulApi {
             if(streamTask == null || StringUtils.isBlank(streamTask.getLinkisJobInfo())) {
                 // 这里取个巧，从该工程该用户有权限的Job中找到一个Flink的历史作业，作为这个Spark Streaming作业的jobId和jobInfo
                 // 替换掉JobInfo中的 yarn 信息，这样我们前端就可以在不修改任何逻辑的情况下正常展示Spark Streaming作业了
-                PageInfo<QueryJobListVo> jobList = streamJobService.getByProList(streamJob.getProjectName(), username, null, null, null,null,true);
+                PageInfo<QueryJobListVo> jobList = streamJobService.getByProList(streamJob.getProjectName(), username, null, null, null,null,null);
                 List<QueryJobListVo> copyJobs = jobList.getList().stream().filter(job -> !job.getJobType().startsWith("spark."))
                         .collect(Collectors.toList());
                 if(copyJobs.isEmpty()) {

@@ -29,7 +29,7 @@ trait StreamJobService {
    * @param jobCreator  job creator
    * @return
    */
-  def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String, label: String, enable: Boolean): PageInfo[QueryJobListVo]
+  def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String, label: String, enable: java.lang.Boolean = null): PageInfo[QueryJobListVo]
 
   /**
    * Page list query of version info
