@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.server.restful;
 
+import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisLogEvent;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.config.StreamJobLogConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.entities.StreamisLogEvents;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.exception.StreamJobLogException;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 
 @RestController
 @RequestMapping(path = "/streamis/streamJobManager/log")
@@ -52,6 +54,13 @@ public class JobLogRestfulApi {
                     throw new StreamJobLogException(-1, "The request should has token user");
                 }
             }
+            String xForwardedForHeader = request.getHeader("X-Forwarded-For");
+            if (xForwardedForHeader == null || xForwardedForHeader.isEmpty() || "unknown".equalsIgnoreCase(xForwardedForHeader)) {
+                xForwardedForHeader =  request.getRemoteAddr();
+            }
+            String eventIp = xForwardedForHeader.split(",")[0].trim();
+            Arrays.stream(events.getEvents())
+                    .forEach(event -> event.setContent("ip:" +eventIp + event.getContent()));
             this.streamisJobLogService.store(userName, events);
             result = Message.ok();
         }catch (Exception e){
