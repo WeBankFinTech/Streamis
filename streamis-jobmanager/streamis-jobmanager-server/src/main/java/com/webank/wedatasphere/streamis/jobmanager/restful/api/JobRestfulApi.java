@@ -159,6 +159,9 @@ public class JobRestfulApi {
                     !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
                 return Message.error("Have no permission to save StreamJob [" + jobId + "] configuration");
             }
+            if (!streamJobService.getEnableStatus(jobId)){
+                return Message.error("current Job " + streamJob.getName() + "has been banned, cannot updateLable,please enable job" );
+            }
             String label = bulkUpdateLabel.getLabel();
             if (!RegularUtil.matches(label))
                 return Message.error("Fail to save StreamJob label(保存/更新标签失败), message: " + "仅支持大小写字母、数字、下划线、小数点、逗号且长度小于64位  [" + jobId + "] ");
@@ -331,6 +334,9 @@ public class JobRestfulApi {
                     managementMode.equals("detach")){
                 return Message.error("The system does not enable the detach feature ,detach job cannot start [" + jobId + "]");
             }
+            if (!streamJobService.getEnableStatus(jobId)){
+                return Message.error("current Job " + streamJob.getName() + "has been banned, cannot start,please enable job" );
+            }
             try {
                 HashMap<String, Object> jobConfig = new HashMap<>(this.streamJobConfService.getJobConfig(jobId));
                 HashMap<String, Object> flinkProduce = (HashMap<String, Object>) jobConfig.get(JobConfKeyConstants.GROUP_PRODUCE().getValue());
@@ -419,7 +425,10 @@ public class JobRestfulApi {
         }
         JobHighAvailableVo inspectVo = highAvailableService.getJobHighAvailableVo(jobId);
         if (!inspectVo.isHighAvailable()){
-            return Message.error("The master and backup cluster materials do not match, please check the material");
+            return Message.error("The master and backup cluster materials for" + "Job " + streamJob.getName() + "do not match, please check the material");
+        }
+        if (!streamJobService.getEnableStatus(jobId)){
+            return Message.error("current Job " + streamJob.getName() + "has been banned, cannot start,please enable job" );
         }
         try {
             streamTaskService.execute(jobId, 0L, userName);
@@ -447,6 +456,9 @@ public class JobRestfulApi {
         if (!streamJobService.hasPermission(streamJob, userName) &&
                 !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
             return Message.error("Have no permission to kill/stop StreamJob [" + jobId + "]");
+        }
+        if (!streamJobService.getEnableStatus(jobId)){
+            return Message.error("current Job " + streamJob.getName() + "has been banned, cannot stop,please enable job" );
         }
         if(JobConf.SUPPORTED_MANAGEMENT_JOB_TYPES().getValue().contains(streamJob.getJobType())) {
             try {
@@ -744,6 +756,9 @@ public class JobRestfulApi {
         if (!streamJobService.hasPermission(streamJob, username) &&
                 !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
             return Message.error("Have no permission to update job details of StreamJob [" + jobId + "]");
+        }
+        if (!streamJobService.getEnableStatus(jobId)){
+            return Message.error("current Job " + streamJob.getName() + "has been banned, cannot update,please enable job" );
         }
         List<String> args = contentRequest.getArgs();
         if (args == null){

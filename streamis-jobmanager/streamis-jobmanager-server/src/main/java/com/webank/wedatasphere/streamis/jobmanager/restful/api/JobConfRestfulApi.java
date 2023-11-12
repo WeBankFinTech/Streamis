@@ -105,7 +105,9 @@ public class JobConfRestfulApi {
         try {
             String userName = ModuleUserUtils.getOperationUser(request, "query job config json");
             StreamJob streamJob = this.streamJobService.getJobById(jobId);
-
+            if (!streamJobService.getEnableStatus(jobId)){
+                return Message.error("current Job " + streamJob.getName() + "has been banned, please enable job" );
+            }
             if (!streamJobService.hasPermission(streamJob, userName)
                     && !this.privilegeService.hasAccessPrivilege(request, streamJob.getProjectName())) {
                 return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");

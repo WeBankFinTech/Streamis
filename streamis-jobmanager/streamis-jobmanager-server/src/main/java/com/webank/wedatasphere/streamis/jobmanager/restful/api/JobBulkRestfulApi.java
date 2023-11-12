@@ -93,6 +93,9 @@ public class JobBulkRestfulApi {
                  if (!inspectVo.isHighAvailable()){
                      return Message.error("The master and backup cluster materials do not match, please check the material");
                  }
+                 if (!streamjobService.getEnableStatus(Long.parseLong(jobId.toString()))){
+                     return Message.error("current Job " + streamJob.getName() + "has been banned, cannot start,please enable job" );
+                 }
              }
              // TODO Enable to accept 'restore' parameter from request
               execResults = streamTaskService.bulkExecute(new ArrayList<>(execBulkRequest.getBulkSubject()), Collections.emptyList(), username);
@@ -146,6 +149,9 @@ public class JobBulkRestfulApi {
                     if (!streamjobService.hasPermission(streamJob, username) &&
                             !this.privilegeService.hasEditPrivilege(request, streamJob.getProjectName())){
                         throw new JobExecuteErrorException(-1, "Have no permission to execute StreamJob [" + jobId + "]");
+                    }
+                    if (!streamjobService.getEnableStatus(Long.parseLong(jobId.toString()))){
+                        return Message.error("current Job " + streamJob.getName() + "has been banned, cannot stop,please enable job" );
                     }
                 }
                 pauseResults = streamTaskService.bulkPause(new ArrayList<>(pauseRequest.getBulkSubject()),

@@ -174,4 +174,6 @@ trait StreamJobService {
   def canbeActivated(jobId: Long): Boolean
 
   def activateJob(streamJob: StreamJob): Unit
+
+  def getEnableStatus(jobId: Long): Boolean
 }

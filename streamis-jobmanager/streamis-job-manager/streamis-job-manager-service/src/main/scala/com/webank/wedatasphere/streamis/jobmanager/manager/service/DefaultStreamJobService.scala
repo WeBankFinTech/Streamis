@@ -392,22 +392,28 @@ class DefaultStreamJobService extends StreamJobService with Logging {
   override def updateLabel(streamJob: StreamJob): Unit = streamJobMapper.updateJob(streamJob)
 
   override def canBeDisabled(jobId: Long): Boolean = {
-    val streamTask = this.streamTaskMapper.getLatestByJobId(jobId)
-    val jobStatusVo = new JobStatusVo()
-    jobStatusVo.setStatusCode(streamTask.getStatus)
-    jobStatusVo.setStatus(JobConf.getStatusString(streamTask.getStatus))
-    jobStatusVo.setJobId(streamTask.getJobId)
-    jobStatusVo.setMessage(streamTask.getErrDesc)
-    if (!JobConf.isFinished(jobStatusVo.getStatusCode)) {
-      logger.warn(s"StreamJob-${jobStatusVo.getJobId} is in status ${jobStatusVo.getStatus}, the job has not completed, can not be disabled")
-      false
-    } else if (!streamJobMapper.getJobById(jobId).getEnable) {
-      logger.warn(s"StreamJob-${jobStatusVo.getJobId} has been disabled, could not be disabled again")
+    val streamJob = streamJobMapper.getJobById(jobId);
+    //处理job是首次上传且未被启动的情况
+    if (!JobConf.isCompleted(streamJob.getStatus)){
+      val streamTask = this.streamTaskMapper.getLatestByJobId(jobId)
+      val jobStatusVo = new JobStatusVo()
+      jobStatusVo.setStatusCode(streamTask.getStatus)
+      jobStatusVo.setStatus(JobConf.getStatusString(streamTask.getStatus))
+      jobStatusVo.setJobId(streamTask.getJobId)
+      jobStatusVo.setMessage(streamTask.getErrDesc)
+      if (!JobConf.isFinished(jobStatusVo.getStatusCode)) {
+        logger.warn(s"StreamJob-${jobId} is in status ${jobStatusVo.getStatus}, the job has not completed, can not be disabled")
+        return false
+      }
+    }
+    if (!streamJob.getEnable) {
+      logger.warn(s"StreamJob-${jobId} has been disabled, could not be disabled again")
       false
     } else {
       true
     }
   }
+
 
   override def disableJob(streamJob: StreamJob): Unit = {
     streamJob.setEnable(false)
@@ -428,6 +434,14 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     streamJobMapper.updateJobEnable(streamJob)
   }
 
+  override def getEnableStatus(jobId: Long): Boolean = {
+    val streamJob = streamJobMapper.getJobById(jobId)
+    if (streamJob.getEnable) {
+      true
+    } else {
+      false
+    }
+  }
 
 }
 
