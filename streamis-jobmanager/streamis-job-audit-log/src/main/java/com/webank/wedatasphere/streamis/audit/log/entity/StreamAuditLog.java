@@ -13,6 +13,16 @@ public class StreamAuditLog {
     private String inputParameters;
     private String outputParameters;
 
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    private String projectName;
+
     public Long getId() {
         return id;
     }
