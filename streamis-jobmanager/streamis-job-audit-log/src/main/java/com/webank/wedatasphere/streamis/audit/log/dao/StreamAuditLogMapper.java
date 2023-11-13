@@ -13,7 +13,10 @@ public interface StreamAuditLogMapper {
             @Param("user") String user,
             @Param("proxyUser") String proxyUser,
             @Param("startDate") Date startDate,
-            @Param("endDate") Date endDate);
+            @Param("endDate") Date endDate,
+            @Param("projectName") String projectName);
 
     void saveAuditLog(StreamAuditLog auditLog);
+
+    String getProjectNameById(@Param("jobId")  Long jobId);
 }

@@ -60,7 +60,7 @@ public class AuditLogRestfulApi {
         PageInfo<StreamAuditLog> pageInfo;
         PageHelper.startPage(pageNow, pageSize);
         try {
-            pageInfo = auditLogService.searchAuditLogs(apiName, user, proxyUser, startDate, endDate);
+            pageInfo = auditLogService.searchAuditLogs(apiName, user, proxyUser, startDate, endDate,projectName);
         } finally {
             PageHelper.clearPage();
         }

@@ -15,14 +15,19 @@ public class AuditLogServiceImpl implements AuditLogService {
     @Autowired
     private StreamAuditLogMapper auditLogMapper;
 
-    public PageInfo<StreamAuditLog> searchAuditLogs(String apiName, String user, String proxyUser, Date startDate, Date endDate) {
-        List<StreamAuditLog> streamAuditLogs = auditLogMapper.searchAuditLogs(apiName, user, proxyUser, startDate, endDate);
+    public PageInfo<StreamAuditLog> searchAuditLogs(String apiName, String user, String proxyUser, Date startDate, Date endDate,String projectName) {
+        List<StreamAuditLog> streamAuditLogs = auditLogMapper.searchAuditLogs(apiName, user, proxyUser, startDate, endDate,projectName);
         return new PageInfo<>(streamAuditLogs);
     }
 
     @Override
     public void saveAuditLog(StreamAuditLog auditLog) {
         auditLogMapper.saveAuditLog(auditLog);
+    }
+
+    @Override
+    public String getProjectNameById(Long jobId) {
+        return auditLogMapper.getProjectNameById(jobId);
     }
 
 }
