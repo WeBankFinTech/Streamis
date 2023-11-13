@@ -113,7 +113,9 @@
         "alertConfiguration": "告警配置",
         "runningHistory": "运行历史",
         "runningLogs": "运行日志",
-        "savepoint": "快照【savepoint】"
+        "savepoint": "快照【savepoint】",
+        "enable": "启用",
+        "disable": "禁用"
       },
       "jobSummary": {
         "resourceUse": "资源使用",

@@ -115,7 +115,9 @@
         "alertConfiguration": "Alert configuration",
         "runningHistory": "Running history",
         "runningLogs": "Running logs",
-        "savepoint": "Snapshot Savepoint"
+        "savepoint": "Snapshot Savepoint",
+        "enable": "Enable",
+        "disable": "Disable"
       },
       "jobSummary": {
         "resourceUse": "Resource use",

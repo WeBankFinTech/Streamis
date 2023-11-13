@@ -33,6 +33,10 @@
       <Icon type="md-folder-open" size="18" />
       <p>{{ $t('message.streamis.routerName.projectResourceFiles') }}</p>
     </div>
+    <div class="auditLogs" @click="gotoAuditLogs()">
+      <Icon type="md-paper" size="18" />
+      <p>查看操作日志</p>
+    </div>
   </div>
 </template>
 <script>
@@ -76,6 +80,14 @@ export default {
           projectName: this.$route.query.projectName
         }
       })
+    },
+    gotoAuditLogs() {
+      this.$router.push({
+        name: 'AuditLogs',
+        params: {
+          projectName: this.$route.query.projectName
+        }
+      })
     }
   }
 }
@@ -87,6 +99,17 @@ export default {
 .projectFile {
   position: absolute;
   top: 16px;
+  right: 25px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 12px;
+  color: #2d8cf0;
+  cursor: pointer;
+}
+.auditLogs {
+  position: absolute;
+  top: 40px;
   right: 25px;
   display: flex;
   justify-content: flex-end;
