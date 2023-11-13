@@ -90,7 +90,7 @@ public class UploadRestfulApi {
         File file = null;
         String inputPath = null;
         try {
-//            IoUtils.validateFileName(fileName);
+            IoUtils.validateFileName(fileName);
             inputPath = IoUtils.generateIOPath(userName, "streamis", fileName);
             file = new File(inputPath);
             if (file.getParentFile().exists()) {

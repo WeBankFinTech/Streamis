@@ -104,6 +104,10 @@ object JobConf {
 
   val HIGHAVAILABLE_POLICY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy", "double")
 
+  val HIGHAVAILABLE_POLICY_DOUBLE_BAK: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy", "doubleWithBak")
+
+  val HIGHAVAILABLE_POLICY_SINGLE_BAK: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy", "singleWithBak")
+
   val HIGHAVAILABLE_DEFAULT_POLICY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.default.policy", "single")
 
   val HIGHAVAILABLE_POLICY_KEY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.key", "wds.streamis.app.highavailable.policy")
