@@ -34,8 +34,7 @@ public class IoUtils {
     private static final String dateFormatDay = "yyyyMMdd";
     private static final String dateFormatTime = "HHmmss";
     private static final String ioUrl = CommonVars.apply("wds.streamis.zip.dir", "/tmp").getValue();
-
-    private static final String FILE_NAME_REGEX = "^[a-zA-Z0-9]+$";
+    private static final String FILE_NAME_REGEX = "^[a-zA-Z0-9._-]+$";
 
     private IoUtils(){}
 
