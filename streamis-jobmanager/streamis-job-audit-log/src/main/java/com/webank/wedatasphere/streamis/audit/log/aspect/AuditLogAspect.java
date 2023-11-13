@@ -57,7 +57,7 @@ public class AuditLogAspect {
 
 
     private void logAuditInformation(String requestURI, Object[] methodArgs, Object result, String proxyUser,String userName,String method) {
-        String apiDesc = InterfaceDescriptionEnum.getUrlDescriptionMap().get(requestURI);
+        String apiDesc = InterfaceDescriptionEnum.getDescriptionByUrl(requestURI);
         StreamAuditLog auditLog = new StreamAuditLog();
         auditLog.setApiName(requestURI);
         auditLog.setApiDesc(apiDesc);
