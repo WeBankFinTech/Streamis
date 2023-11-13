@@ -105,7 +105,6 @@ public class JobConfRestfulApi {
         try {
             String userName = ModuleUserUtils.getOperationUser(request, "query job config json");
             StreamJob streamJob = this.streamJobService.getJobById(jobId);
-
             if (!streamJobService.hasPermission(streamJob, userName)
                     && !this.privilegeService.hasAccessPrivilege(request, streamJob.getProjectName())) {
                 return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
@@ -139,6 +138,9 @@ public class JobConfRestfulApi {
                     !JobConf.STREAMIS_DEVELOPER().getValue().contains(userName) &&
                     !this.privilegeService.hasEditPrivilege(request, streamJob.getProjectName())) {
                 throw new JobErrorException(-1, "Have no permission to save StreamJob [" + jobId + "] configuration");
+            }
+            if (!streamJobService.getEnableStatus(jobId)){
+                return Message.error("current Job " + streamJob.getName() + " has been banned, please enable job" );
             }
             this.streamJobConfService.saveJobConfig(jobId, configContent);
         } catch (Exception e) {
@@ -182,6 +184,9 @@ public class JobConfRestfulApi {
             if (!streamJobService.isCreator(fullTrees.getJobId(), userName) &&
                     !JobConf.STREAMIS_DEVELOPER().getValue().contains(userName)) {
                 return Message.error("you con not modify the config ,the job is not belong to you");
+            }
+            if (!streamJobService.getEnableStatus(fullTrees.getJobId())){
+                return Message.error("current Job " +  this.streamJobService.getJobById(fullTrees.getJobId()).getName() + "has been banned, please enable job" );
             }
             streamJobConfService.saveJobConfValueSet(fullTrees);
         } catch (Exception e) {

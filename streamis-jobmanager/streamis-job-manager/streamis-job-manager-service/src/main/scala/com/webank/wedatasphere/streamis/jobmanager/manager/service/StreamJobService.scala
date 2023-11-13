@@ -3,7 +3,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 import com.github.pagehelper.PageInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{MetaJsonInfo, StreamAlertRecord, StreamJob, StreamJobVersion}
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{QueryJobListVo, TaskCoreNumVo, VersionDetailVo}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobStatusVo, QueryJobListVo, TaskCoreNumVo, VersionDetailVo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent
 
 import java.util
@@ -29,7 +29,7 @@ trait StreamJobService {
    * @param jobCreator  job creator
    * @return
    */
-  def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String, label: String): PageInfo[QueryJobListVo]
+  def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String, label: String, enable: java.lang.Boolean = null): PageInfo[QueryJobListVo]
 
   /**
    * Page list query of version info
@@ -166,4 +166,14 @@ trait StreamJobService {
   def updateLabel(streamJob: StreamJob): Unit
 
   def getLinkisFlinkAlertLevel(job: StreamJob): AlertLevel
+
+  def canBeDisabled(jobId: Long): Boolean
+
+  def disableJob(streamJob: StreamJob): Unit
+
+  def canbeActivated(jobId: Long): Boolean
+
+  def activateJob(streamJob: StreamJob): Unit
+
+  def getEnableStatus(jobId: Long): Boolean
 }

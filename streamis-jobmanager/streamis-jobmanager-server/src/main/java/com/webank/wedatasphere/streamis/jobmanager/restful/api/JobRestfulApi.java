@@ -21,7 +21,6 @@ import com.github.pagehelper.PageInfo;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager;
@@ -36,24 +35,19 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersi
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.*;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
-import com.webank.wedatasphere.streamis.jobmanager.manager.service.DefaultStreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobInspectService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamTaskService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.RealtimeLogEntity;
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent;
-import com.webank.wedatasphere.streamis.jobmanager.manager.utils.SourceUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils;
-import com.webank.wedatasphere.streamis.jobmanager.utils.JsonUtil;
+import com.webank.wedatasphere.streamis.jobmanager.service.HighAvailableService;
 import com.webank.wedatasphere.streamis.jobmanager.utils.RegularUtil;
-import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabel;
-import com.webank.wedatasphere.streamis.jobmanager.vo.BulkUpdateLabelRequest;
-import com.webank.wedatasphere.streamis.jobmanager.vo.UpdateContentRequest;
+import com.webank.wedatasphere.streamis.jobmanager.vo.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.linkis.httpclient.dws.DWSHttpClient;
-import org.apache.linkis.server.BDPJettyServerHelper;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
@@ -87,10 +81,8 @@ public class JobRestfulApi {
     private StreamJobInspectService streamJobInspectService;
 
     @Autowired
-    private DefaultStreamJobService defaultStreamJobService;
+    private HighAvailableService highAvailableService;
 
-    @Autowired
-    private StreamJobConfMapper streamJobConfMapper;
     @Resource
     private JobLaunchManager<? extends JobInfo> jobLaunchManager;
 
@@ -105,7 +97,8 @@ public class JobRestfulApi {
                               @RequestParam(value = "jobName", required = false) String jobName,
                               @RequestParam(value = "jobStatus", required = false) Integer jobStatus,
                               @RequestParam(value = "jobCreator", required = false) String jobCreator,
-                              @RequestParam(value = "label", required = false) String label) {
+                              @RequestParam(value = "label", required = false) String label,
+                              @RequestParam(value = "enable", required = false) Boolean enable) {
         String username = ModuleUserUtils.getOperationUser(req, "list jobs");
         if(StringUtils.isBlank(projectName)){
             return Message.error("Project name cannot be empty(项目名不能为空，请指定)");
@@ -119,7 +112,7 @@ public class JobRestfulApi {
         PageInfo<QueryJobListVo> pageInfo;
         PageHelper.startPage(pageNow, pageSize);
         try {
-            pageInfo = streamJobService.getByProList(projectName, username, jobName, jobStatus, jobCreator,label);
+            pageInfo = streamJobService.getByProList(projectName, username, jobName, jobStatus, jobCreator, label, enable);
         } finally {
             PageHelper.clearPage();
         }
@@ -162,6 +155,9 @@ public class JobRestfulApi {
             if (!streamJobService.isCreator(jobId, userName) &&
                     !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
                 return Message.error("Have no permission to save StreamJob [" + jobId + "] configuration");
+            }
+            if (!streamJobService.getEnableStatus(jobId)){
+                return Message.error("current Job " + streamJob.getName() + "has been banned, cannot updateLable,please enable job" );
             }
             String label = bulkUpdateLabel.getLabel();
             if (!RegularUtil.matches(label))
@@ -231,6 +227,84 @@ public class JobRestfulApi {
         return Message.ok().data("detail", versionDetailVO);
     }
 
+    @RequestMapping(path = "/ban", method = RequestMethod.POST)
+    public Message banJob(HttpServletRequest req, @RequestBody List<Long> jobIdList) {
+        String userName = ModuleUserUtils.getOperationUser(req, "ban job");
+        Message result = Message.ok("success");
+
+        HashMap<Long,StreamJob> jobMap = new HashMap<>();
+        if (jobIdList.size() > 100){
+            return Message.error("The number of the jobs has exceeded 100, please check!");
+        }
+        if (jobIdList.isEmpty()){
+            return Message.error("there is no job to be banned, please check");
+        }
+        try {
+            for (Long jobId : jobIdList) {
+                LOG.info("{} try to ban job {}.",userName,jobId);
+                StreamJob streamJob = this.streamJobService.getJobById(jobId);
+                jobMap.put(jobId,streamJob);
+                if (streamJob == null) {
+                    return Message.error("not exists job " + jobId);
+                }
+                if (!streamJobService.isCreator(jobId, userName) &&
+                        !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
+                    return Message.error("Have no permission to ban StreamJob [" + jobId + "] configuration");
+                }
+                if (!streamJobService.canBeDisabled(jobId)){
+                    return Message.error("current job [" + jobId + "] can not be banned, please check");
+                }
+            }
+            for (Long jobId : jobIdList) {
+                streamJobService.disableJob(jobMap.get(jobId));
+            }
+        } catch(Exception e) {
+            String message = "Fail to ban StreamJob, message: " + e.getMessage();
+            LOG.warn(message, e);
+            result = Message.error(message);
+        }
+        return result;
+    }
+
+    @RequestMapping(path = "/enable", method = RequestMethod.POST)
+    public Message enableJob(HttpServletRequest req, @RequestBody List<Long> jobIdList) {
+        String userName = ModuleUserUtils.getOperationUser(req, "ban job");
+        Message result = Message.ok("success");
+
+        HashMap<Long,StreamJob> jobMap = new HashMap<>();
+        if (jobIdList.size() > 100){
+            return Message.error("The number of the jobs has exceeded 100, please check!");
+        }
+        if (jobIdList.isEmpty()){
+            return Message.error("there is no job to be activated, please check");
+        }
+
+        try {
+            for (Long jobId : jobIdList) {
+                LOG.info("{} try to activate job {}.",userName,jobId);
+                StreamJob streamJob = this.streamJobService.getJobById(jobId);
+                jobMap.put(jobId,streamJob);
+                if (streamJob == null) {
+                    return Message.error("not exists job " + jobId);
+                }
+                if (!streamJobService.isCreator(jobId, userName) &&
+                        !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
+                    return Message.error("Have no permission to ban StreamJob [" + jobId + "] configuration");
+                }
+                if (!streamJobService.canbeActivated(jobId)){
+                    return Message.error("current job [" + jobId + "] can not be activated, please check");
+                }
+            }
+            for (Long jobId : jobIdList) {
+                streamJobService.activateJob(jobMap.get(jobId));
+            }
+        } catch (Exception e) {
+            String message = "Fail to activate StreamJob, message: " + e.getMessage();
+            LOG.warn(message, e);
+            result = Message.error(message);
+        }
+        return result;
+    }
     /**
      * Inspect the execution
      * @param req request
@@ -256,6 +330,9 @@ public class JobRestfulApi {
             if (!Boolean.parseBoolean(JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE().getHotValue().toString()) &&
                     managementMode.equals("detach")){
                 return Message.error("The system does not enable the detach feature ,detach job cannot start [" + jobId + "]");
+            }
+            if (!streamJobService.getEnableStatus(jobId)){
+                return Message.error("current Job " + streamJob.getName() + "has been banned, cannot start,please enable job" );
             }
             try {
                 HashMap<String, Object> jobConfig = new HashMap<>(this.streamJobConfService.getJobConfig(jobId));
@@ -343,20 +420,12 @@ public class JobRestfulApi {
                 managementMode.equals("detach")){
             return Message.error("The system does not enable the detach feature ,detach job cannot start [" + jobId + "]");
         }
-        StreamJobVersion jobVersion = this.defaultStreamJobService.getLatestJobVersion(jobId);
-        String highAvailablePolicy = streamJobConfMapper.getRawConfValue(jobId, "wds.streamis.app.highavailable.policy");
-        JobHighAvailableVo inspectVo = new JobHighAvailableVo();
-        Optional<String> sourceOption = Optional.ofNullable(jobVersion.getSource());
-        if(sourceOption.isPresent() && JsonUtil.isJson(sourceOption.get())) {
-            String source = sourceOption.get();
-            inspectVo = SourceUtils.manageJobProjectFile(highAvailablePolicy, source);
-        } else {
-            LOG.warn("this job source is null");
-            inspectVo.setHighAvailable(true);
-            inspectVo.setMsg("User changed params of job not by deploy, will skip to check its highavailable(用户未走发布单独修改了job信息，跳过高可用检查)");
-        }
+        JobHighAvailableVo inspectVo = highAvailableService.getJobHighAvailableVo(jobId);
         if (!inspectVo.isHighAvailable()){
-            return Message.error("The master and backup cluster materials do not match, please check the material");
+            return Message.error("The master and backup cluster materials for" + "Job " + streamJob.getName() + "do not match, please check the material");
+        }
+        if (!streamJobService.getEnableStatus(jobId)){
+            return Message.error("current Job " + streamJob.getName() + "has been banned, cannot start,please enable job" );
         }
         try {
             streamTaskService.execute(jobId, 0L, userName);
@@ -384,6 +453,9 @@ public class JobRestfulApi {
         if (!streamJobService.hasPermission(streamJob, userName) &&
                 !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
             return Message.error("Have no permission to kill/stop StreamJob [" + jobId + "]");
+        }
+        if (!streamJobService.getEnableStatus(jobId)){
+            return Message.error("current Job " + streamJob.getName() + "has been banned, cannot stop,please enable job" );
         }
         if(JobConf.SUPPORTED_MANAGEMENT_JOB_TYPES().getValue().contains(streamJob.getJobType())) {
             try {
@@ -461,7 +533,7 @@ public class JobRestfulApi {
         } else if(StringUtils.isBlank(jobName)) {
             return Message.error("jobName cannot be empty!");
         }
-        List<QueryJobListVo> streamJobs = streamJobService.getByProList(projectName, username, jobName, null, null,null).getList();
+        List<QueryJobListVo> streamJobs = streamJobService.getByProList(projectName, username, jobName, null, null,null, null).getList();
         if(CollectionUtils.isEmpty(streamJobs)) {
             return Message.error("Not exits Streamis job " + jobName);
         } else if(streamJobs.size() > 1) {
@@ -500,7 +572,7 @@ public class JobRestfulApi {
             if(streamTask == null || StringUtils.isBlank(streamTask.getLinkisJobInfo())) {
                 // 这里取个巧，从该工程该用户有权限的Job中找到一个Flink的历史作业，作为这个Spark Streaming作业的jobId和jobInfo
                 // 替换掉JobInfo中的 yarn 信息，这样我们前端就可以在不修改任何逻辑的情况下正常展示Spark Streaming作业了
-                PageInfo<QueryJobListVo> jobList = streamJobService.getByProList(streamJob.getProjectName(), username, null, null, null,null);
+                PageInfo<QueryJobListVo> jobList = streamJobService.getByProList(streamJob.getProjectName(), username, null, null, null,null,null);
                 List<QueryJobListVo> copyJobs = jobList.getList().stream().filter(job -> !job.getJobType().startsWith("spark."))
                         .collect(Collectors.toList());
                 if(copyJobs.isEmpty()) {
@@ -681,6 +753,9 @@ public class JobRestfulApi {
         if (!streamJobService.hasPermission(streamJob, username) &&
                 !this.privilegeService.hasEditPrivilege(req, streamJob.getProjectName())) {
             return Message.error("Have no permission to update job details of StreamJob [" + jobId + "]");
+        }
+        if (!streamJobService.getEnableStatus(jobId)){
+            return Message.error("current Job " + streamJob.getName() + "has been banned, cannot update,please enable job" );
         }
         List<String> args = contentRequest.getArgs();
         if (args == null){

@@ -33,7 +33,7 @@ trait StreamTaskService {
 
   def getTaskById(Id: Long): StreamTask
 
-
+  def getTaskStatusById(jobId: Long): JobStatusVo
   /**
    * Sync to execute job(task)
    * 1) create a new task

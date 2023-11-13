@@ -70,6 +70,11 @@ object JobConf {
     case _ => false
   }
 
+  def isFinished(status: Int): Boolean = status match {
+    case 0 | 1 | 6 | 7 => true
+    case _ => false
+  }
+
   def linkisStatusToStreamisStatus(status: String): Int = status.toLowerCase match {
     case "starting" | "unlock" | "locked" | "idle" | "busy" | "running" => FLINK_JOB_STATUS_RUNNING.getValue
     case "success" => FLINK_JOB_STATUS_COMPLETED.getValue
@@ -98,6 +103,10 @@ object JobConf {
   val HIGHAVAILABLE_SOURCE: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.source", "aomp")
 
   val HIGHAVAILABLE_POLICY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy", "double")
+
+  val HIGHAVAILABLE_POLICY_DOUBLE_BAK: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy", "doubleWithBak")
+
+  val HIGHAVAILABLE_POLICY_SINGLE_BAK: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy", "singleWithBak")
 
   val HIGHAVAILABLE_DEFAULT_POLICY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.default.policy", "single")
 

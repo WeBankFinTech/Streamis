@@ -29,6 +29,7 @@
         <result column="description" property="description" jdbcType="VARCHAR"/>
         <result column="submit_user" property="submitUser" jdbcType="VARCHAR"/>
         <result column="job_type" property="jobType" jdbcType="VARCHAR"/>
+        <result column="enable" property="enable" jdbcType="TINYINT"/>
     </resultMap>
 
     <resultMap id="StreamJobVOMap" type="com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.QueryJobListVo">
@@ -47,6 +48,7 @@
         <result column="last_version" property="lastVersion" jdbcType="VARCHAR"/>
         <result column="lastVersionTime" property="lastVersionTime" jdbcType="TIMESTAMP"/>
         <result column="version_forward" property="versionForwards" jdbcType="INTEGER"/>
+        <result column="enable" property="enable" jdbcType="TINYINT"/>
     </resultMap>
 
     <resultMap id="StreamJobVersionMap"
@@ -76,7 +78,7 @@
     </resultMap>
 
     <sql id="Job_Column">
-        `id`,`project_name`, `workspace_name`,`name`,`create_by`, `create_time`,`label`,`description`,`submit_user`,`job_type`, `current_version`, `status`
+        `id`,`project_name`, `workspace_name`,`name`,`create_by`, `create_time`,`label`,`description`,`submit_user`,`job_type`, `current_version`, `status`, `enable`
     </sql>
 
     <sql id="JobVersion_Column">
@@ -104,7 +106,7 @@
         select *, (SELECT jc.value FROM linkis_stream_job_config jc WHERE jc.job_id = aa.id and jc.key = #{manageModeKey} limit 1) AS manage_mode,
         (SELECT COUNT(1) FROM linkis_stream_job_version v WHERE v.job_id = aa.id AND v.id > aa.version_id) AS version_forward,
         (SELECT v.version FROM linkis_stream_job_version v WHERE v.job_id = aa.id ORDER BY v.id DESC LIMIT 1) AS last_version from (
-        SELECT j.`id`,j.`project_name`, j.`workspace_name`,j.`name`,j.`create_by`, j.`create_time`,j.`label`,j.`description`,
+        SELECT j.`id`,j.`project_name`, j.`workspace_name`,j.`name`,j.`create_by`, j.`create_time`,j.`label`,j.`description`,j.`enable`,
         j.`job_type`, (CASE WHEN t.`status` IS NULL THEN 0 ELSE t.status END)  AS status, j.`current_version` AS version, v.id as version_id,
         v.create_time AS lastVersionTime, t.start_time, lsp.id AS project_id FROM
         linkis_stream_job j
@@ -129,6 +131,9 @@
             </if>
             <if test="status != null">
                 AND aa.`status`=#{status}
+            </if>
+            <if test="enable != null">
+                AND aa.`enable`=#{enable}
             </if>
             <if test="createBy != null and createBy != ''">
                 AND aa.`create_by` = #{createBy}
@@ -180,14 +185,14 @@
     </select>
     <select id="getJobListsByProjectName" resultMap="StreamJobMap">
         SELECT
-        j.`id`,j.`project_name`,j.`name`,j.`job_type`,j.`label`,j.`description`,j.`submit_user`,j.`submit_user` as create_by, j.`current_version`
+        j.`id`,j.`project_name`,j.`name`,j.`job_type`,j.`label`,j.`description`,j.`submit_user`,j.`submit_user` as create_by, j.`current_version`, j.`enable`
         FROM `linkis_stream_job` j LEFT JOIN `linkis_stream_job_version` l ON j.`id`= l.job_id AND j.project_name = #{projectName}
     </select>
 
     <select id="getCurrentJob" parameterType="java.lang.String"
             resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
         SELECT
-        j.`id`,j.`project_name`,j.`name`,j.`job_type`,j.`label`,j.`description`,j.`submit_user`,j.`current_version`
+        j.`id`,j.`project_name`,j.`name`,j.`job_type`,j.`label`,j.`description`,j.`submit_user`,j.`current_version`, j.`enable`
         FROM `linkis_stream_job` j JOIN `linkis_stream_job_version` l ON j.`id`=l.job_id AND j.project_name = #{projectName} AND j.`current_version` = l.version
         AND j.name = #{jobName}
     </select>
@@ -205,8 +210,8 @@
 
     <insert id="insertJob" useGeneratedKeys="true" keyProperty="id"
             parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
-        INSERT INTO linkis_stream_job(`project_name`,`name`,`create_by`,`label`,`description`,`job_type`,`submit_user`, `current_version`, `create_time`)
-        VALUES(#{projectName},#{name},#{createBy},#{label},#{description},#{jobType},#{submitUser},#{currentVersion, jdbcType=VARCHAR},#{createTime})
+        INSERT INTO linkis_stream_job(`project_name`,`name`,`create_by`,`label`,`description`,`job_type`,`submit_user`, `current_version`, `create_time`, `enable`)
+        VALUES(#{projectName},#{name},#{createBy},#{label},#{description},#{jobType},#{submitUser},#{currentVersion, jdbcType=VARCHAR},#{createTime},#{enable})
     </insert>
 
     <insert id="insertJobVersion" useGeneratedKeys="true" keyProperty="id"
@@ -264,6 +269,16 @@
             </if>
         </trim>
         WHERE job_id=#{jobId} and version=#{version}
+    </update>
+
+    <update id="updateJobEnable" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
+        UPDATE linkis_stream_job
+        <trim prefix="set" suffixOverrides=",">
+            <if test="enable != null">
+                enable=#{enable},
+            </if>
+        </trim>
+        WHERE id=#{id}
     </update>
 
 </mapper>

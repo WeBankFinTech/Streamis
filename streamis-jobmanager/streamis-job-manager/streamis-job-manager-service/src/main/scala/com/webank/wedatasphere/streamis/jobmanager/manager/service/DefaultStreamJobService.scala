@@ -27,7 +27,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
 import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamAlertMapper, StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity._
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{QueryJobListVo, TaskCoreNumVo, VersionDetailVo}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobStatusVo, QueryJobListVo, TaskCoreNumVo, VersionDetailVo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.DefaultStreamJobService.JobDeployValidateResult
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent
@@ -69,14 +69,14 @@ class DefaultStreamJobService extends StreamJobService with Logging {
 
   override def getJobByName(jobName: String): util.List[StreamJob] = streamJobMapper.getJobByName(jobName)
 
-  override def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String, label: String): PageInfo[QueryJobListVo] = {
+  override def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String, label: String, enable: java.lang.Boolean = null): PageInfo[QueryJobListVo] = {
     var streamJobList: util.List[QueryJobListVo] = null
     if (StringUtils.isNotBlank(jobName) && jobName.contains(JobConstants.JOB_NAME_DELIMITER)) {
       val jobNameList = new util.ArrayList[String]()
       jobName.split(JobConstants.JOB_NAME_DELIMITER).filter(StringUtils.isNotBlank(_)).foreach(jobNameList.add)
-      streamJobList = streamJobMapper.getJobLists(projectName, userName, null, jobStatus, jobCreator, JobUtils.escapeChar(label), JobConfKeyConstants.MANAGE_MODE_KEY.getValue, jobNameList)
+      streamJobList = streamJobMapper.getJobLists(projectName, userName, null, jobStatus, jobCreator, JobUtils.escapeChar(label), JobConfKeyConstants.MANAGE_MODE_KEY.getValue, jobNameList, enable)
     } else {
-      streamJobList = streamJobMapper.getJobLists(projectName, userName, JobUtils.escapeChar(jobName), jobStatus, jobCreator, JobUtils.escapeChar(label), JobConfKeyConstants.MANAGE_MODE_KEY.getValue, null)
+      streamJobList = streamJobMapper.getJobLists(projectName, userName, JobUtils.escapeChar(jobName), jobStatus, jobCreator, JobUtils.escapeChar(label), JobConfKeyConstants.MANAGE_MODE_KEY.getValue, null, enable)
     }
     if (streamJobList != null && !streamJobList.isEmpty) {
       val pageInfo = new PageInfo[QueryJobListVo](streamJobList)
@@ -102,7 +102,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
    * COre indicator(核心指标)
    */
   override def countByCores(projectName: String, userName: String): TaskCoreNumVo = {
-    val jobs = streamJobMapper.getJobLists(projectName, userName, null, null, null, null, JobConfKeyConstants.MANAGE_MODE_KEY.getValue, null)
+    val jobs = streamJobMapper.getJobLists(projectName, userName, null, null, null, null, JobConfKeyConstants.MANAGE_MODE_KEY.getValue, null,null)
     val taskNum = new TaskCoreNumVo()
     taskNum.setProjectName(projectName)
     if (jobs != null && !jobs.isEmpty) {
@@ -175,6 +175,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
       newStreamJob.setLabel(metaJsonInfo.getTags)
       newStreamJob.setName(metaJsonInfo.getJobName)
       newStreamJob.setProjectName(metaJsonInfo.getProjectName)
+      newStreamJob.setEnable(true)
       streamJobMapper.insertJob(newStreamJob)
     } else {
       val jobVersions = streamJobMapper.getJobVersions(streamJob.getId)
@@ -389,6 +390,58 @@ class DefaultStreamJobService extends StreamJobService with Logging {
   @throws(classOf[ErrorException])
   @Transactional(rollbackFor = Array(classOf[Exception]))
   override def updateLabel(streamJob: StreamJob): Unit = streamJobMapper.updateJob(streamJob)
+
+  override def canBeDisabled(jobId: Long): Boolean = {
+    val streamJob = streamJobMapper.getJobById(jobId);
+    //处理job是首次上传且未被启动的情况
+    if (!JobConf.isCompleted(streamJob.getStatus)){
+      val streamTask = this.streamTaskMapper.getLatestByJobId(jobId)
+      val jobStatusVo = new JobStatusVo()
+      jobStatusVo.setStatusCode(streamTask.getStatus)
+      jobStatusVo.setStatus(JobConf.getStatusString(streamTask.getStatus))
+      jobStatusVo.setJobId(streamTask.getJobId)
+      jobStatusVo.setMessage(streamTask.getErrDesc)
+      if (!JobConf.isFinished(jobStatusVo.getStatusCode)) {
+        logger.warn(s"StreamJob-${jobId} is in status ${jobStatusVo.getStatus}, the job has not completed, can not be disabled")
+        return false
+      }
+    }
+    if (!streamJob.getEnable) {
+      logger.warn(s"StreamJob-${jobId} has been disabled, could not be disabled again")
+      false
+    } else {
+      true
+    }
+  }
+
+
+  override def disableJob(streamJob: StreamJob): Unit = {
+    streamJob.setEnable(false)
+    streamJobMapper.updateJobEnable(streamJob)
+  }
+
+  override def canbeActivated(jobId: Long): Boolean = {
+    val streamJob = streamJobMapper.getJobById(jobId)
+    if (streamJob.getEnable){
+      false
+    } else {
+      true
+    }
+  }
+
+  override def activateJob(streamJob: StreamJob): Unit = {
+    streamJob.setEnable(true)
+    streamJobMapper.updateJobEnable(streamJob)
+  }
+
+  override def getEnableStatus(jobId: Long): Boolean = {
+    val streamJob = streamJobMapper.getJobById(jobId)
+    if (streamJob.getEnable) {
+      true
+    } else {
+      false
+    }
+  }
 
 }
 
