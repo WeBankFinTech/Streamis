@@ -1,0 +1,143 @@
+@import '@/style/varible.less';
+*{
+    box-sizing: border-box;
+}
+html{
+    height: 100%;
+}
+body{
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    color: #0F1222;
+    font-size: 14px;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    text-decoration: none;
+    color: @blue-color;
+}
+
+ul{
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+#app{
+    height: 100%;
+}
+
+.wd-page{
+    height: 100%;
+    background: #f7f8fa;
+    .wd-side-menus {
+        flex: 0 0 220px;
+    }
+}
+
+.wd-content{
+    flex: 1;
+    padding: 16px 16px 32px;
+    overflow-y: auto;
+    .wd-content-title{
+        margin-bottom: 16px;
+        font-size: 24px;
+        line-height: 32px;
+    }
+    .wd-content-body{
+        position: relative;
+        padding: 24px;
+        margin-bottom: 16px;
+        background: #FFFFFF;
+        border-radius: 4px;
+        .wd-body-title{
+            margin-bottom: 24px;
+            font-size: 16px;
+            line-height: 24px;
+            color: #0F1222;
+            .upstream-switch{
+                margin-left: 222px;
+                font-size: 14px;
+                font-weight: normal;
+                color: #646670;
+            }
+        }
+        .wd-table-list{
+            .wd-table-row{
+                display: flex;
+                margin-bottom: 16px;
+                font-weight: 400;
+                .wd-table-header{
+                    width: 72px;
+                    color: #646670;
+                }
+                .wd-table-detail{
+                    .wd-table-input{
+                        width: 300px;
+                    }
+                }
+            }
+        }
+        .wd-body-menus{
+            position: absolute;
+            display: flex;
+            top: 24px;
+            right: 24px;
+            z-index: 10;
+            .wd-body-menu-item{
+                display: flex;
+                align-items: center;
+                color: @blue-color;
+                line-height: 22px;
+                padding-left: 16px;
+                cursor: pointer;
+                user-select: none;
+                &::after{
+                    content: '';
+                    display: block;
+                    margin-left: 16px;
+                    width: 1px;
+                    height: 14px;
+                    background: #CFD0D3;
+                }
+                &:last-child{
+                    &::after{
+                        display: none;
+                    }
+                }
+            }
+        }
+    }
+    .wd-project-header {
+        display: flex;
+        align-items: center;
+        padding-bottom: 16px;
+        .back, .edit {
+            color: #93949B;
+            height: 24px;
+            width: 24px;
+            transform: scale(1.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .name-ctn{
+            // flex: 1;
+            // //通过设置宽度为0让整个name容器的宽度由flex自己分配控制
+            // width: 0;
+            min-width: 0;
+        }
+        .name {
+            font-size: 24px;
+            color: #0F1222;
+            margin: 0 12px;
+            // width: 600px;
+        }
+    }
+}
