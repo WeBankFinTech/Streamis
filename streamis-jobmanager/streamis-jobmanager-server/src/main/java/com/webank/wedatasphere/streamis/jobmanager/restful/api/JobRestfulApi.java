@@ -109,9 +109,6 @@ public class JobRestfulApi {
         if (Objects.isNull(pageSize)) {
             pageSize = 20;
         }
-        if (Objects.isNull(enable)) {
-            enable = null;
-        }
         PageInfo<QueryJobListVo> pageInfo;
         PageHelper.startPage(pageNow, pageSize);
         try {
