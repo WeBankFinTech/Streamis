@@ -38,7 +38,7 @@
             <FormItem>
               <Button
                 type="primary"
-                :disabled="!selections.length"
+                :disabled="!selections.length || query.enable === 'all'"
                 @click="clickBatchDisable"
                 style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 16px;display: flex;align-items: center;justify-content: center;"
               >
@@ -219,8 +219,8 @@
               <div v-show="index !== 0">
                 <Button
                   type="primary"
-                  v-show="row.status !== 5"
-                  :loading="row.buttonLoading"
+                  v-show="row.status !== 5 && row.status !== 9"
+                  :loading="row.buttonLoading || row.status === 8"
                   style="height:22px;background:#008000;margin-right: 5px; font-size:10px;"
                   :disabled="!row.enable"
                   @click="handleAction(row, index)"
@@ -230,9 +230,9 @@
                 <Poptip placement="top" v-model="row.poptipVisible" :disabled="row.buttonLoading">
                   <Button
                     type="primary"
-                    v-show="row.status === 5"
+                    v-show="row.status === 5 || row.status === 9"
                     :disabled="row.buttonLoading"
-                    :loading="row.buttonLoading"
+                    :loading="row.buttonLoading || row.status === 9"
                     style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
                   >
                     {{ $t('message.streamis.formItems.stopBtn') }}
@@ -1170,7 +1170,8 @@ export default {
           status: rowData.status,
           jobType: rowData.jobType,
           manageMode: rowData.manageMode,
-          projectName: rowData.projectName || this.projectName
+          projectName: rowData.projectName || this.projectName,
+          enable: rowData.enable,
         }
       })
     },
