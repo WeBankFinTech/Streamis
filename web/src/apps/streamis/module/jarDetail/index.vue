@@ -52,6 +52,7 @@
             v-if="!editProgramArguement"
             type="primary"
             class="btn"
+            :disabled="!enable"
             @click="toggleEditProgramArguement(true)"
           >编辑</Button>
           <Button
@@ -198,7 +199,8 @@ export default {
       editProgramArguement: false,
       args: JSON.stringify(this.jarData.args),
       argsBak: JSON.stringify(this.jarData.args),
-      version: ''
+      version: '',
+      enable: this.$route.params.enable, // 任务是否启用
     }
   },
   methods: {
