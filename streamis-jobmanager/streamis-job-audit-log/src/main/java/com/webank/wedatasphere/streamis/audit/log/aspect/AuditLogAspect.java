@@ -25,6 +25,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Aspect
@@ -53,13 +55,20 @@ public class AuditLogAspect {
             LOG.error("Error executing method: " + joinPoint.getSignature().toShortString());
         }
         logAuditInformationAsync(req,requestURI, methodArgs, result, proxyUser,userName,method);
-        return result;
+        return Optional.ofNullable(result).orElse("不存在出参");
     }
 
     @Async
     public void logAuditInformationAsync(HttpServletRequest req ,String requestURI, Object[] methodArgs, Object result, String proxyUser, String userName, String method){
-        String projectName = getProjectNameFromRequest(req, method);
-        logAuditInformation(requestURI, methodArgs, result, proxyUser,userName,method,projectName);
+        try {
+           String projectName = getProjectNameFromReferer(req.getHeader("Referer"));
+           if (projectName ==null || projectName.isEmpty()){
+               projectName = getProjectNameFromRequest(req, method);
+           }
+           logAuditInformation(requestURI, methodArgs, result, proxyUser,userName,method,projectName);
+        } catch (Exception e){
+            LOG.error("审计日志处理失败");
+        }
     }
 
 
@@ -69,27 +78,45 @@ public class AuditLogAspect {
         auditLog.setApiName(requestURI);
         auditLog.setApiDesc(apiDesc);
         auditLog.setInputParameters(Arrays.toString(methodArgs));
-        auditLog.setOutputParameters(result.toString());
+        auditLog.setOutputParameters(String.valueOf(Optional.ofNullable(result).orElse("不存在出参")));
         auditLog.setProxyUser(proxyUser);
         auditLog.setUser(userName);
         auditLog.setOperateTime(new Date());
         auditLog.setApiType(method);
+        auditLog.setProjectName(projectName);
         auditLogService.saveAuditLog(auditLog);
     }
+
+
+    private static String getProjectNameFromReferer(String referer) {
+        String projectName = " ";
+        Pattern PROJECT_NAME_PATTERN = Pattern.compile("[?&]projectName=([^&]+)");
+        if (referer != null) {
+            Matcher matcher = PROJECT_NAME_PATTERN.matcher(referer);
+            if (matcher.find()) {
+                projectName = matcher.group(1);
+            }
+        }
+        return projectName;
+    }
+
     private String getProjectNameFromRequest(HttpServletRequest req, String method) {
         if ("GET".equalsIgnoreCase(method)) {
             return getProjectNameFromGetRequest(req);
         } else if ("PUT".equalsIgnoreCase(method)) {
             return getProjectNameFromPutRequest(req);
-        } else if ("POST".equalsIgnoreCase(method)) {
-            String projectName = getProjectNameFromPostRequest(req);
-
-            return projectName;
+        }
+        else if ("POST".equalsIgnoreCase(method)) {
+            return getProjectNameFromPostRequest(req);
         }
         return "";
     }
 
     private String getProjectNameFromGetRequest(HttpServletRequest req) {
+        if (req.getRequestURI().equals(InterfaceDescriptionEnum.CONFIG_GET_WORKSPACE_USERS.getUrl())
+             ||req.getRequestURI().equals(InterfaceDescriptionEnum.CONFIG_DEFINITIONS.getUrl())){
+            return  "";
+        }
         String projectName = req.getParameter("projectName");
         if (projectName == null || projectName.isEmpty()) {
             Long jobId = Long.valueOf(req.getParameter("jobId"));
@@ -144,6 +171,12 @@ public class AuditLogAspect {
             List<Long> bulkSbjList = (List<Long>) resultMap.get("bulk_sbj");
             Long jobId = bulkSbjList.get(0);
             projectName =auditLogService.getProjectNameById(Long.valueOf(jobId));
+        } else if (req.getRequestURI().equals(InterfaceDescriptionEnum.PROJECT_FILES_UPLOAD.getUrl())
+            || req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_UPLOAD.getUrl())){
+            projectName =req.getParameter("projectName");
+        }else if (req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_ENABLE.getUrl())
+                || req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_BAN.getUrl())){
+            projectName =req.getParameter("projectName");
         } else {
              projectName = resultMap.get("projectName").toString();
         }
