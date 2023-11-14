@@ -1170,7 +1170,8 @@ export default {
           status: rowData.status,
           jobType: rowData.jobType,
           manageMode: rowData.manageMode,
-          projectName: rowData.projectName || this.projectName
+          projectName: rowData.projectName || this.projectName,
+          enable: rowData.enable,
         }
       })
     },

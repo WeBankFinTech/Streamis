@@ -76,6 +76,7 @@
       <Button
         type="primary"
         @click="handleSaveConfig()"
+        :disabled="!enable"
         :loading="saveLoading"
         style="width:100px;height:40px;background:rgba(22, 155, 213, 1);"
       >
@@ -95,6 +96,7 @@ export default {
       diyMap: {},
       saveLoading: false,
       rule: {},
+      enable: this.$route.params.enable, // 任务是否启用
     }
   },
   mounted() {
