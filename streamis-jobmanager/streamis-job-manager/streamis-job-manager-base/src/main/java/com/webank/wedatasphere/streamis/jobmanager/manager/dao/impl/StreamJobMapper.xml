@@ -135,6 +135,9 @@
             <if test="enable != null">
                 AND aa.`enable`=#{enable}
             </if>
+            <if test="jobType != null">
+                AND aa.`job_type`=#{jobType}
+            </if>
             <if test="createBy != null and createBy != ''">
                 AND aa.`create_by` = #{createBy}
             </if>

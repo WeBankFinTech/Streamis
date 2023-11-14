@@ -27,7 +27,7 @@ public interface StreamJobMapper {
 
     List<QueryJobListVo> getJobLists(@Param("projectName") String projectName, @Param("userName") String userName, @Param("name") String name,
                                      @Param("status") Integer status, @Param("createBy") String createBy, @Param("label") String label, @Param("manageModeKey") String manageModeKey,
-                                     @Param("jobNameList") List<String> jobNameList, @Param("enable") Boolean enable);
+                                     @Param("jobNameList") List<String> jobNameList, @Param("enable") Boolean enable, @Param("jobType")String jobType);
 
     List<VersionDetailVo> getJobVersionDetails(@Param("jobId") Long jobId);
 

@@ -69,14 +69,14 @@ class DefaultStreamJobService extends StreamJobService with Logging {
 
   override def getJobByName(jobName: String): util.List[StreamJob] = streamJobMapper.getJobByName(jobName)
 
-  override def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String, label: String, enable: java.lang.Boolean = null): PageInfo[QueryJobListVo] = {
+  override def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String, label: String, enable: java.lang.Boolean = null,jobType :String): PageInfo[QueryJobListVo] = {
     var streamJobList: util.List[QueryJobListVo] = null
     if (StringUtils.isNotBlank(jobName) && jobName.contains(JobConstants.JOB_NAME_DELIMITER)) {
       val jobNameList = new util.ArrayList[String]()
       jobName.split(JobConstants.JOB_NAME_DELIMITER).filter(StringUtils.isNotBlank(_)).foreach(jobNameList.add)
-      streamJobList = streamJobMapper.getJobLists(projectName, userName, null, jobStatus, jobCreator, JobUtils.escapeChar(label), JobConfKeyConstants.MANAGE_MODE_KEY.getValue, jobNameList, enable)
+      streamJobList = streamJobMapper.getJobLists(projectName, userName, null, jobStatus, jobCreator, JobUtils.escapeChar(label), JobConfKeyConstants.MANAGE_MODE_KEY.getValue, jobNameList, enable,jobType)
     } else {
-      streamJobList = streamJobMapper.getJobLists(projectName, userName, JobUtils.escapeChar(jobName), jobStatus, jobCreator, JobUtils.escapeChar(label), JobConfKeyConstants.MANAGE_MODE_KEY.getValue, null, enable)
+      streamJobList = streamJobMapper.getJobLists(projectName, userName, JobUtils.escapeChar(jobName), jobStatus, jobCreator, JobUtils.escapeChar(label), JobConfKeyConstants.MANAGE_MODE_KEY.getValue, null, enable,jobType)
     }
     if (streamJobList != null && !streamJobList.isEmpty) {
       val pageInfo = new PageInfo[QueryJobListVo](streamJobList)
@@ -102,7 +102,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
    * COre indicator(核心指标)
    */
   override def countByCores(projectName: String, userName: String): TaskCoreNumVo = {
-    val jobs = streamJobMapper.getJobLists(projectName, userName, null, null, null, null, JobConfKeyConstants.MANAGE_MODE_KEY.getValue, null,null)
+    val jobs = streamJobMapper.getJobLists(projectName, userName, null, null, null, null, JobConfKeyConstants.MANAGE_MODE_KEY.getValue, null,null,null)
     val taskNum = new TaskCoreNumVo()
     taskNum.setProjectName(projectName)
     if (jobs != null && !jobs.isEmpty) {
@@ -393,17 +393,20 @@ class DefaultStreamJobService extends StreamJobService with Logging {
 
   override def canBeDisabled(jobId: Long): Boolean = {
     val streamJob = streamJobMapper.getJobById(jobId);
+    if(streamJob == null) throw new JobFetchErrorException(30030, s"job does not exist.")
     //处理job是首次上传且未被启动的情况
-    if (!JobConf.isCompleted(streamJob.getStatus)){
+    if (streamJob.getStatus == 0){
       val streamTask = this.streamTaskMapper.getLatestByJobId(jobId)
-      val jobStatusVo = new JobStatusVo()
-      jobStatusVo.setStatusCode(streamTask.getStatus)
-      jobStatusVo.setStatus(JobConf.getStatusString(streamTask.getStatus))
-      jobStatusVo.setJobId(streamTask.getJobId)
-      jobStatusVo.setMessage(streamTask.getErrDesc)
-      if (!JobConf.isFinished(jobStatusVo.getStatusCode)) {
-        logger.warn(s"StreamJob-${jobId} is in status ${jobStatusVo.getStatus}, the job has not completed, can not be disabled")
-        return false
+      if (streamTask != null) {
+        val jobStatusVo = new JobStatusVo()
+        jobStatusVo.setStatusCode(streamTask.getStatus)
+        jobStatusVo.setStatus(JobConf.getStatusString(streamTask.getStatus))
+        jobStatusVo.setJobId(streamTask.getJobId)
+        jobStatusVo.setMessage(streamTask.getErrDesc)
+        if (!JobConf.isFinished(jobStatusVo.getStatusCode)) {
+          logger.warn(s"StreamJob-${jobId} is in status ${jobStatusVo.getStatus}, the job has not completed, can not be disabled")
+          return false
+        }
       }
     }
     if (!streamJob.getEnable) {
@@ -416,12 +419,14 @@ class DefaultStreamJobService extends StreamJobService with Logging {
 
 
   override def disableJob(streamJob: StreamJob): Unit = {
+    if(streamJob == null) throw new JobFetchErrorException(30030, s"job does not exist.")
     streamJob.setEnable(false)
     streamJobMapper.updateJobEnable(streamJob)
   }
 
   override def canbeActivated(jobId: Long): Boolean = {
     val streamJob = streamJobMapper.getJobById(jobId)
+    if(streamJob == null) throw new JobFetchErrorException(30030, s"job does not exist.")
     if (streamJob.getEnable){
       false
     } else {
