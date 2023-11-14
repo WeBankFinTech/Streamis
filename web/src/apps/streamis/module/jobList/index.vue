@@ -126,7 +126,7 @@
             <FormItem class="button-item">
               <Button
                 type="primary"
-                :disabled="!query.enable"
+                :disabled="query.enable !== 1"
                 @click="showButtons"
                 style="width:100px;height:30px;background:rgba(22, 155, 213, 1);"
               >
