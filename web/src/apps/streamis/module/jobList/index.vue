@@ -302,6 +302,8 @@
     <Modal
       v-model="processModalVisable"
       :title="modalTitle"
+      :closable="false"
+      :mask-closable="false"
       width="800"
       footer-hide
       @on-visible-change="onClose"
