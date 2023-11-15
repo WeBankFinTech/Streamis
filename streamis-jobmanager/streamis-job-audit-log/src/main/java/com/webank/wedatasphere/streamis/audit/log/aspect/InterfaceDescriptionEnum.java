@@ -45,8 +45,9 @@ public enum InterfaceDescriptionEnum {
     JOB_LOGS("/api/rest_j/v1/streamis/streamJobManager/job/logs","查询Job日志"),
     JOB_STATUS("/api/rest_j/v1/streamis/streamJobManager/job/status","获得任务状态"),
     JOB_SNAPSHOT("/api/rest_j/v1/streamis/streamJobManager/job/snapshot/{jobId:\\w+}","生成Job快照"),
-    JOB_UPLOAD("/api/rest_j/v1/streamis/streamJobManager/job/upload","上传Job");
-
+    JOB_UPLOAD("/api/rest_j/v1/streamis/streamJobManager/job/upload","上传Job"),
+    JOB_ENABLE("/api/rest_j/v1/streamis/streamJobManager/job/enable","开启Job"),
+    JOB_BAN("/api/rest_j/v1/streamis/streamJobManager/job/ban","禁用Job");
     private String url;
     private String description;
 
