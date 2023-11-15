@@ -178,7 +178,7 @@
                   <DropdownMenu slot="list">
                     <DropdownItem
                       v-for="(item, index) in jobMoudleRouter.concat(!row.enable ? 'enable' : 'disable')"
-                      :disabled="!row.enable && item !== 'enable'"
+                      :disabled="(!row.enable && item !== 'enable') || (item === 'disable' && [5,8,9].includes(row.status))"
                       :name="item"
                       :key="index"
                     >
@@ -1112,10 +1112,15 @@ export default {
       console.log(ids)
       return resArray.includes(false) ? false : true // 存在禁用的任务，批量操作任务预检查失败，不能执行批量操作
     },
-    // 判断任务的运行状态情况
-    checkTaskStatus(ids){
-      const resArray = this.tableDatas.filter(item=> ids.includes(item.id)).map(item=>item.status)
-      return resArray.includes(8) || resArray.includes(9) ? false : true // 存在启动中或停止中的任务，不允许执行启动、停止
+    // 判断任务的运行状态情况, 默认用于是否允许批量启动、停止
+    checkTaskStatus(ids, type = "startOrStop") {
+      const resArray = this.tableDatas.filter(item => ids.includes(item.id)).map(item => item.status)
+      if (type === "startOrStop") {
+        return resArray.includes(8) || resArray.includes(9) ? false : true // 存在启动中或停止中的任务，不允许执行启动、停止
+      }
+      if (type === "disableCheck") { // 用于是否允许批量禁止
+        return (resArray.includes(8) || resArray.includes(9) || resArray.includes(5)) ? false : true // 存在启动中或停止中的任务，不允许执行启动、停止
+      }
     },
     enableTask(ids){
       this.loading = true
@@ -1267,8 +1272,8 @@ export default {
       const selections = (val || []).filter(item => item.id);
       this.selections = selections;
     },
-    onEnableStatusChange(val){
-      if(val === 0){
+    onEnableStatusChange(val) {
+      if (val === 0) {
         this.columns.unshift({
           type: 'selection',
           width: 60,
@@ -1280,16 +1285,20 @@ export default {
       this.pageData.current = 1
       this.getJobList()
     },
-    clickBatchEnable(){
-      this.enableTask(this.selections.map(item=>item.id))
+    clickBatchEnable() {
+      this.enableTask(this.selections.map(item => item.id))
     },
-    clickBatchDisable(){
+    clickBatchDisable() {
       const bulk_sbj = this.selections.map(item => +item.id);
-      if(!this.checkTask(bulk_sbj)){
+      if (!this.checkTask(bulk_sbj)) {
         this.$Message.error('存在已禁用的任务，请取消勾选已禁用的任务再执行该操作!')
         return
       }
-      this.disableTask(this.selections.map(item=>item.id))
+      if (!this.checkTaskStatus(bulk_sbj, 'disableCheck')) {
+        this.$Message.error('存在启动中、停止中、运行中的任务，请取消勾选此类任务再执行该操作!')
+        return
+      }
+      this.disableTask(this.selections.map(item => item.id))
     },
     async queryProcess(id_list) {
       console.log('queryProcess');
