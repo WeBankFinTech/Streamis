@@ -13,6 +13,18 @@ public class StreamAuditLog {
     private String inputParameters;
     private String outputParameters;
 
+    private String projectName;
+
+    private String clientIp;
+
+    public String getClientIp() {
+        return clientIp;
+    }
+
+    public void setClientIp(String clientIp) {
+        this.clientIp = clientIp;
+    }
+
     public String getProjectName() {
         return projectName;
     }
@@ -21,7 +33,7 @@ public class StreamAuditLog {
         this.projectName = projectName;
     }
 
-    private String projectName;
+
 
     public Long getId() {
         return id;

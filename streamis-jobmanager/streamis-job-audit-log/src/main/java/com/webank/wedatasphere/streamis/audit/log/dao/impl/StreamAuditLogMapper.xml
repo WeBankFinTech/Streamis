@@ -42,8 +42,8 @@
     </select>
 
     <insert id="saveAuditLog" parameterType="com.webank.wedatasphere.streamis.audit.log.entity.StreamAuditLog">
-        INSERT INTO linkis_stream_audit_log (user,api_name,api_type,api_desc,input_parameters, output_parameters, proxy_user, operate_time,project_name)
-        VALUES (#{user}, #{apiName},#{apiType},#{apiDesc},#{inputParameters}, #{outputParameters}, #{proxyUser}, #{operateTime},#{projectName})
+        INSERT INTO linkis_stream_audit_log (user,api_name,api_type,api_desc,input_parameters, output_parameters, proxy_user, operate_time,project_name,client_ip)
+        VALUES (#{user}, #{apiName},#{apiType},#{apiDesc},#{inputParameters}, #{outputParameters}, #{proxyUser}, #{operateTime},#{projectName},#{clientIp})
     </insert>
 
     <select id="getProjectNameById" resultType="java.lang.String">
