@@ -890,6 +890,10 @@ export default {
         this.$Message.error('存在已禁用的任务，请取消勾选已禁用的任务再执行该操作!')
         return
       }
+      if(!this.checkTaskStatus(bulk_sbj)){
+        this.$Message.error('存在启动中、停止中的任务，请取消勾选此类任务再执行该操作!')
+        return
+      }
       // 点击批量重启的按钮后，就应该弹出弹窗，pause结束后改变这个一体弹窗的进度，然后开始请求inspect，如果inspect都为空，一体弹窗直接进入下一步启动，如果不为空，上层遮罩再弹出inspect的弹窗需要确认
       this.processModalVisable = true;
       this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
@@ -1102,10 +1106,16 @@ export default {
           this.loading = false
         })
     },
+    // 判断任务的启用禁用情况
     checkTask(ids){
       const resArray = this.tableDatas.filter(item=> ids.includes(item.id)).map(item=>item.enable)
       console.log(ids)
       return resArray.includes(false) ? false : true // 存在禁用的任务，批量操作任务预检查失败，不能执行批量操作
+    },
+    // 判断任务的运行状态情况
+    checkTaskStatus(ids){
+      const resArray = this.tableDatas.filter(item=> ids.includes(item.id)).map(item=>item.status)
+      return resArray.includes(8) || resArray.includes(9) ? false : true // 存在启动中或停止中的任务，不允许执行启动、停止
     },
     enableTask(ids){
       this.loading = true
