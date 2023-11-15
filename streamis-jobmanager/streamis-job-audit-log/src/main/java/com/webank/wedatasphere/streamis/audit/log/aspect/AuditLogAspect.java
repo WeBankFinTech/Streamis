@@ -58,27 +58,27 @@ public class AuditLogAspect {
             LOG.error("Error executing method: " + joinPoint.getSignature().toShortString());
         }
         result = Optional.ofNullable(result).orElse("不存在出参");
-        logAuditInformationAsync(req,requestURI, gson.toJson(requestParams), gson.toJson(result), proxyUser,userName,method);
+        logAuditInformationAsync(req, requestURI, gson.toJson(requestParams), gson.toJson(result), proxyUser, userName, method);
         return result;
     }
 
     @Async
-    public void logAuditInformationAsync(HttpServletRequest req ,String requestURI, String requestParams, String result, String proxyUser, String userName, String method){
+    public void logAuditInformationAsync(HttpServletRequest req, String requestURI, String requestParams, String result, String proxyUser, String userName, String method) {
         try {
-           String projectName = getProjectNameFromReferer(req.getHeader("Referer"));
-           if (projectName ==null || projectName.isEmpty()){
-               projectName = getProjectNameFromRequest(req, method);
-           }
-           logAuditInformation(requestURI, requestParams, result, proxyUser,userName,method,projectName);
-        } catch (Exception e){
+            String projectName = getProjectNameFromReferer(req.getHeader("Referer"));
+            if (projectName == null || projectName.isEmpty()) {
+                projectName = getProjectNameFromRequest(req, method);
+            }
+            logAuditInformation(requestURI, requestParams, result, proxyUser, userName, method, projectName);
+        } catch (Exception e) {
             LOG.error("审计日志处理失败");
         }
     }
 
 
-    private void logAuditInformation(String requestURI, String requestParams, String result, String proxyUser,String userName,String method,String projectName) {
+    private void logAuditInformation(String requestURI, String requestParams, String result, String proxyUser, String userName, String method, String projectName) {
         String apiDesc = InterfaceDescriptionEnum.getDescriptionByUrl(requestURI);
-        String clientIp  = getClientIp();
+        String clientIp = getClientIp();
         StreamAuditLog auditLog = new StreamAuditLog();
         auditLog.setApiName(requestURI);
         auditLog.setApiDesc(apiDesc);
@@ -95,18 +95,19 @@ public class AuditLogAspect {
 
     /**
      * 获取入参
-     * @param proceedingJoinPoint
      *
+     * @param proceedingJoinPoint
      * @return
-     * */
+     */
     private Map<String, Object> getRequestParamsByProceedingJoinPoint(ProceedingJoinPoint proceedingJoinPoint) {
         //参数名
-        String[] paramNames = ((MethodSignature)proceedingJoinPoint.getSignature()).getParameterNames();
+        String[] paramNames = ((MethodSignature) proceedingJoinPoint.getSignature()).getParameterNames();
         //参数值
         Object[] paramValues = proceedingJoinPoint.getArgs();
 
         return buildRequestParam(paramNames, paramValues);
     }
+
     private Map<String, Object> buildRequestParam(String[] paramNames, Object[] paramValues) {
         Map<String, Object> requestParams = new HashMap<>();
         for (int i = 0; i < paramNames.length; i++) {
@@ -120,7 +121,7 @@ public class AuditLogAspect {
             if (value instanceof List) {
                 try {
                     List<MultipartFile> multipartFiles = castList(value, MultipartFile.class);
-                    if (multipartFiles!= null) {
+                    if (multipartFiles != null) {
                         List<String> fileNames = new ArrayList<>();
                         for (MultipartFile file : multipartFiles) {
                             fileNames.add(file.getOriginalFilename());
@@ -138,6 +139,7 @@ public class AuditLogAspect {
 
         return requestParams;
     }
+
     private static <T> List<T> castList(Object obj, Class<T> clazz) {
         List<T> result = new ArrayList<T>();
         if (obj instanceof List<?>) {
@@ -151,6 +153,7 @@ public class AuditLogAspect {
 
     /**
      * 获取ip
+     *
      * @return
      */
     private String getClientIp() {
@@ -171,7 +174,6 @@ public class AuditLogAspect {
     }
 
 
-
     private static String getProjectNameFromReferer(String referer) {
         String projectName = " ";
         Pattern PROJECT_NAME_PATTERN = Pattern.compile("[?&]projectName=([^&]+)");
@@ -189,8 +191,7 @@ public class AuditLogAspect {
             return getProjectNameFromGetRequest(req);
         } else if ("PUT".equalsIgnoreCase(method)) {
             return getProjectNameFromPutRequest(req);
-        }
-        else if ("POST".equalsIgnoreCase(method)) {
+        } else if ("POST".equalsIgnoreCase(method)) {
             return getProjectNameFromPostRequest(req);
         }
         return "";
@@ -198,8 +199,8 @@ public class AuditLogAspect {
 
     private String getProjectNameFromGetRequest(HttpServletRequest req) {
         if (req.getRequestURI().equals(InterfaceDescriptionEnum.CONFIG_GET_WORKSPACE_USERS.getUrl())
-             ||req.getRequestURI().equals(InterfaceDescriptionEnum.CONFIG_DEFINITIONS.getUrl())){
-            return  "";
+                || req.getRequestURI().equals(InterfaceDescriptionEnum.CONFIG_DEFINITIONS.getUrl())) {
+            return "";
         }
         String projectName = req.getParameter("projectName");
         if (projectName == null || projectName.isEmpty()) {
@@ -211,21 +212,21 @@ public class AuditLogAspect {
     }
 
     private String getProjectNameFromPutRequest(HttpServletRequest req) {
-        String projectName ="";
-        if (req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_EXECUTE_INSPECT.getUrl())){
+        String projectName = "";
+        if (req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_EXECUTE_INSPECT.getUrl())) {
             String[] jobIdArray = req.getParameterValues("jobId");
             List<Integer> jobIdList = Arrays.stream(jobIdArray)
                     .map(Integer::valueOf)
                     .collect(Collectors.toList());
             Integer jobId = jobIdList.get(0);
             projectName = auditLogService.getProjectNameById(Long.valueOf(jobId));
-        } else if (req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_STATUS.getUrl())){
+        } else if (req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_STATUS.getUrl())) {
             String rawJson = extractRawJsonFromRequest(req);
             Map<String, Object> resultMap = parseJsonToMap(rawJson);
             try {
                 List<Long> jobIds = (List<Long>) resultMap.get("id_list");
                 projectName = auditLogService.getProjectNameById(Long.valueOf(jobIds.get(0)));
-            } catch (Exception e){
+            } catch (Exception e) {
 
             }
         } else {
@@ -241,56 +242,46 @@ public class AuditLogAspect {
         Gson gson = BDPJettyServerHelper.gson();
         String rawJson = extractRawJsonFromRequest(req);
         Map<String, Object> resultMap = parseJsonToMap(rawJson);
-        if (req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_UPDATE_LABEL.getUrl())){
+        if (req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_UPDATE_LABEL.getUrl())) {
             Object tasks = resultMap.get("tasks");
-            List<Map<String, Object>> list = new Gson().fromJson(gson.toJson(tasks), new TypeToken<List<Map<String, Object>>>(){}.getType());
+            List<Map<String, Object>> list = new Gson().fromJson(gson.toJson(tasks), new TypeToken<List<Map<String, Object>>>() {
+            }.getType());
             String jobId = list.get(0).get("id").toString();
-            projectName =auditLogService.getProjectNameById(Long.valueOf(jobId));
+            projectName = auditLogService.getProjectNameById(Long.valueOf(jobId));
         } else if (req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_EXECUTE.getUrl())
-            || req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_UPDATE_CONTENT.getUrl()) ){
+                || req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_UPDATE_CONTENT.getUrl())) {
             String jobId = resultMap.get("jobId").toString();
-            projectName =auditLogService.getProjectNameById(Long.valueOf(jobId));
+            projectName = auditLogService.getProjectNameById(Long.valueOf(jobId));
         } else if (req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_BULK_EXECUTION.getUrl())
                 || req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_BULK_PAUSE.getUrl())) {
             List<Long> bulkSbjList = (List<Long>) resultMap.get("bulk_sbj");
             Long jobId = bulkSbjList.get(0);
-            projectName =auditLogService.getProjectNameById(Long.valueOf(jobId));
+            projectName = auditLogService.getProjectNameById(Long.valueOf(jobId));
         } else if (req.getRequestURI().equals(InterfaceDescriptionEnum.PROJECT_FILES_UPLOAD.getUrl())
-            || req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_UPLOAD.getUrl())){
-            projectName =req.getParameter("projectName");
-        }else if (req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_ENABLE.getUrl())
-                || req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_BAN.getUrl())){
-            projectName =req.getParameter("projectName");
+                || req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_UPLOAD.getUrl())) {
+            projectName = req.getParameter("projectName");
+        } else if (req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_ENABLE.getUrl())
+                || req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_BAN.getUrl())) {
+            projectName = req.getParameter("projectName");
         } else {
-             projectName = resultMap.get("projectName").toString();
+            projectName = resultMap.get("projectName").toString();
         }
         return projectName;
     }
 
-    private String extractRawJsonFromRequest(HttpServletRequest request) {
-        StringBuilder stringBuilder = new StringBuilder();
-        BufferedReader bufferedReader = null;
+    private String extractRawJsonFromRequest(HttpServletRequest req) {
+        StringBuffer data = new StringBuffer();
+        String line = null;
+        BufferedReader reader = null;
         try {
-            InputStream inputStream = request.getInputStream();
-            bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                stringBuilder.append(line);
+            reader = req.getReader();
+            while (null != (line = reader.readLine())) {
+                data.append(line);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            // 关闭 BufferedReader
-            if (bufferedReader != null) {
-                try {
-                    bufferedReader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+        } catch (Exception e) {
 
-        return stringBuilder.toString();
+        }
+        return data.toString();
     }
 
     private Map<String, Object> parseJsonToMap(String json) {
