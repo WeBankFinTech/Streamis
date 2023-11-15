@@ -4,6 +4,7 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.webank.wedatasphere.streamis.audit.log.entity.StreamAuditLog;
 import com.webank.wedatasphere.streamis.audit.log.service.AuditLogService;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.linkis.proxy.ProxyUserEntity;
 import org.apache.linkis.server.BDPJettyServerHelper;
 import org.apache.linkis.server.utils.ModuleUserUtils;
@@ -42,7 +43,6 @@ public class AuditLogAspect {
 
     @Around("execution(* com.webank.wedatasphere.streamis.jobmanager.restful.api..*.*(..)) || execution(* com.webank.wedatasphere.streamis.projectmanager.restful.api..*.*(..))")
     public Object captureAndLogAuditLog(ProceedingJoinPoint joinPoint) throws Throwable {
-        Gson gson = BDPJettyServerHelper.gson();
         HttpServletRequest req = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
         String method = req.getMethod();
         String requestURI = req.getRequestURI();
@@ -58,7 +58,7 @@ public class AuditLogAspect {
             LOG.error("Error executing method: " + joinPoint.getSignature().toShortString());
         }
         result = Optional.ofNullable(result).orElse("不存在出参");
-        logAuditInformationAsync(req, requestURI, gson.toJson(requestParams), gson.toJson(result), proxyUser, userName, method);
+        logAuditInformationAsync(req, requestURI, parseObjectToString(requestParams), parseObjectToString(result), proxyUser, userName, method);
         return result;
     }
 
@@ -134,9 +134,10 @@ public class AuditLogAspect {
 
                 }
             }
-            requestParams.put(paramNames[i], value);
+            if (!paramNames[i].equalsIgnoreCase("req")){
+                requestParams.put(paramNames[i], value);
+            }
         }
-
         return requestParams;
     }
 
@@ -291,6 +292,19 @@ public class AuditLogAspect {
             e.printStackTrace();
             return Collections.emptyMap();
         }
+    }
+
+    private String  parseObjectToString(Object json) {
+        try {
+            if (ObjectUtils.isEmpty(json)){
+                return "--";
+            } else {
+                return BDPJettyServerHelper.gson().toJson(json);
+            }
+        } catch (Exception e) {
+           LOG.error("failed parse map to string ");
+        }
+        return "--";
     }
 }
 
