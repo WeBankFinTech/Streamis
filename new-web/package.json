@@ -8,7 +8,6 @@
     "analyze": "ANALYZE=1 fes build",
     "dev": "fes dev",
     "test:unit": "fes test:unit",
-    "prepare": "husky install",
     "commit": "git-cz"
   },
   "keywords": [
@@ -50,7 +49,6 @@
     "@webank/eslint-config-webank": "0.4.2",
     "commitlint": "15.0.0",
     "cz-conventional-changelog": "3.3.0",
-    "husky": "7.0.4",
     "lint-staged": "12.1.2"
   },
   "dependencies": {
