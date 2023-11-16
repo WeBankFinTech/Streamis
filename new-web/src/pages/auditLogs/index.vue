@@ -146,8 +146,8 @@
     >
         <FScrollbar height="50vh">
             <pre v-if="isJson">
-                            {{paramsModalContent}}
-                        </pre>
+                {{paramsModalContent}}
+            </pre>
             <div v-else>
                 {{paramsModalContent}}
             </div>
@@ -160,13 +160,16 @@ import {
     FInput, FButton, FTable, FPagination, FSelect, FScrollbar,
 } from '@fesjs/fes-design';
 import {
-    onMounted, ref, reactive,
+    onMounted, ref, reactive, computed,
 } from 'vue';
 import { PlusOutlined, MoreCircleOutlined } from '@fesjs/fes-design/icon';
 import SpecialEllipsis from '@/components/SpecialEllipsis.vue';
 import dayjs from 'dayjs';
+import { useRoute } from '@fesjs/fes';
 import { fetchAuditLog } from './api';
 
+const route = useRoute();
+const projectName = computed(() => route.query.projectName);
 const pagination = reactive({
     current: 1,
     size: 10,
@@ -190,7 +193,7 @@ const fetchTableData = async () => {
             pageSize: pagination.size,
             startDate: searchForm.value.timeRange.length > 1 ? dayjs(searchForm.value.timeRange[0]).format('YYYY-MM-DD HH:mm:ss') : '',
             endDate: searchForm.value.timeRange.length > 1 ? dayjs(searchForm.value.timeRange[1]).format('YYYY-MM-DD HH:mm:ss') : '',
-            projectName: 'testStreamis5',
+            projectName: projectName.value,
         };
         isLoading.value = true;
         actionType.value = 'loading';
@@ -201,11 +204,12 @@ const fetchTableData = async () => {
             ...item,
             operateTime: item.operateTime ? dayjs(item.operateTime).format('YYYY-MM-DD HH:mm:ss') : '',
         }));
-        pagination.total = res.total || 100;
+        pagination.total = res.totalPage;
         if (pagination.total === 0) {
             actionType.value = 'emptyQueryResult';
         }
     } catch (error) {
+        isLoading.value = false;
         console.log('fetchTableData error', error);
     }
 };
