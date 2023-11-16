@@ -34,15 +34,15 @@ import './style/base.less';
 export const beforeRender = {
     loading: <PageLoading />,
     action: async () => {
-        let username = '';
-        let roles = [];
-        try {
-            const res = await FRequest('api/v1/projector/role', {}, { method: 'GET' });
-            username = res.username;
-            roles = res.roles;
-        } catch (error) {
-            console.error(error);
-        }
+        const username = '';
+        const roles = [];
+        // try {
+        //     const res = await FRequest('api/v1/projector/role', {}, { method: 'GET' });
+        //     username = res.username;
+        //     roles = res.roles;
+        // } catch (error) {
+        //     console.error(error);
+        // }
 
         if (Array.isArray(roles) && roles.length > 0) {
             access.setRole(roles[0].toLowerCase());

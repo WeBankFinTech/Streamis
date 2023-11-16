@@ -754,8 +754,8 @@ export default {
             this.tableDatas = datas.map(r => ({
               ...r,
               poptipVisible: false,
-              manageMode: r.manageMode && r.manageMode.toUpperCase() === 'DETACH' ? 'DETACH' : 'ATTACH',
-              manageModeChinese: r.manageMode && r.manageMode.toUpperCase() === 'DETACH' ? '分离式' : '非分离式',
+              manageMode: r.manageMode && r.manageMode.toUpperCase() === 'ATTACH' ? 'ATTACH' : 'DETACH',
+              manageModeChinese: r.manageMode && r.manageMode.toUpperCase() === 'ATTACH' ? '非分离式' : '分离式',
               statusObj: allJobStatuses.find(item => item.code === r.status),
             }))
             if (this.tableDatas[0]) {
