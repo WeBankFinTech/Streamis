@@ -79,6 +79,13 @@
                     ellipsis
                 />
                 <f-table-column
+                    prop="clientIp"
+                    label="IP"
+                    :width="100"
+                    :formatter="formatterEmptyValue"
+                    ellipsis
+                />
+                <f-table-column
                     prop="apiType"
                     label="操作类型"
                     :width="88"
@@ -145,11 +152,12 @@
         :footer="false"
     >
         <FScrollbar height="50vh">
-            <pre v-if="isJson">
-                {{paramsModalContent}}
-            </pre>
-            <div v-else>
-                {{paramsModalContent}}
+            <pre v-if="isJson">{{ JSON.stringify(JSON.parse(paramsModalContent), null, 2) }}</pre>
+            <div
+                v-else
+                style="word-break: break-all;"
+            >
+                {{ paramsModalContent }}
             </div>
         </FScrollbar>
     </FModal>
