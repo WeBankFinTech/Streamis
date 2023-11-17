@@ -1,4 +1,5 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.service
+
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.JobConfValueVo.ValueList
@@ -6,6 +7,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.{JobConfVa
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.{JobConfDefinition, JobConfValue}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.exception.ConfigurationException
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.tools.JobConfValueUtils
+import com.webank.wedatasphere.streamis.jobmanager.launcher.utils.{JobConfUtil}
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob
 import org.apache.commons.lang3.StringUtils
@@ -47,6 +49,7 @@ class DefaultStreamJobConfService extends StreamJobConfService with Logging{
     // Can deserialize the value map at first
     val configValues = JobConfValueUtils.deserialize(valueMap, definitions)
     suppleDefaultConfValue(configValues, definitions)
+    JobConfUtil.valuesHandler(configValues)
     saveJobConfig(jobId, configValues)
   }
 
