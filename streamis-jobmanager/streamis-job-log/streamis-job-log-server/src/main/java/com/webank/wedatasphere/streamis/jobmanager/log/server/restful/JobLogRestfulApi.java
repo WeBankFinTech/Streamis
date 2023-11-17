@@ -60,7 +60,7 @@ public class JobLogRestfulApi {
             }
             String eventIp = xForwardedForHeader.split(",")[0].trim();
             Arrays.stream(events.getEvents())
-                    .forEach(event -> event.setContent("ip:" +eventIp + event.getContent()));
+                    .forEach(event -> event.setContent("ip: " +eventIp + event.getContent()));
             this.streamisJobLogService.store(userName, events);
             result = Message.ok();
         }catch (Exception e){
