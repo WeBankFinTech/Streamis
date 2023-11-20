@@ -42,7 +42,7 @@ Vue.use(iView, {
 
 Vue.config.productionTip = false
 Vue.prototype.$Message.config({
-  duration: 3
+  duration: 5
 })
 
 // 全局变量
