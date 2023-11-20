@@ -266,7 +266,11 @@ const action = function(url, data, option) {
       return response;
     })
     .catch(function(error) {
-      error.message && Message.error(error.message);
+      error.message && Message.error({
+        content: error.message,
+        closable: true,
+        duration: 5,
+      });
       throw error;
     });
 };
