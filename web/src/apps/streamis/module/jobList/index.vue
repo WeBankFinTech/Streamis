@@ -957,7 +957,7 @@ export default {
       if (this.isBatchRestart) {
         // 是批量重启，tempData是数组
         this.hasWarningCount = 0;
-        const inspectRes = await Promise.all( this.tempData.map(async (item) => {
+        const inspectRes = await Promise.all(this.tempData.map(async (item) => {
           const { id, name } = item
           const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
           const inspectRes = await api.fetch(checkPath, {}, 'put')
@@ -971,18 +971,19 @@ export default {
             consistency: inspectRes.highavailable && inspectRes.highavailable.highAvailable ? '通过：检查通过' : (inspectRes.highavailable.msg ? '不通过：' + inspectRes.highavailable.msg + '不一致' : '--'),
             warningRow: false
           }
-          if(tempData.consistency.includes('不通过')){
+          if (tempData.consistency.includes('不通过')) {
             tempData.warningRow = true
-            this.hasWarningCount++
           }
           if (Array.isArray(tempData.yarn)) {
             for (let i = 0; i < tempData.yarn.length; i++) {
               if (tempData.yarn[i].applicationId && tempData.yarn[i].applicationId !== '无') {
                 tempData.warningRow = true
-                this.hasWarningCount++
                 break
               }
             }
+          }
+          if (tempData.warningRow === true) {
+            this.hasWarningCount++
           }
           this.checkData.push(tempData)
         }))
@@ -1006,18 +1007,19 @@ export default {
           consistency: inspectRes.highavailable && inspectRes.highavailable.highAvailable ? '通过：检查通过' : (inspectRes.highavailable.msg ? '不通过：' + inspectRes.highavailable.msg + '不一致' : '--'),
           warningRow: false
         }
-        if(tempData.consistency.includes('不通过')){
+        if (tempData.consistency.includes('不通过')) {
           tempData.warningRow = true
-          this.hasWarningCount++
         }
         if (Array.isArray(tempData.yarn)) {
           for (let i = 0; i < tempData.yarn.length; i++) {
             if (tempData.yarn[i].applicationId && tempData.yarn[i].applicationId !== '无') {
               tempData.warningRow = true
-              this.hasWarningCount++
               break
             }
           }
+        }
+        if (tempData.warningRow === true) {
+          this.hasWarningCount++
         }
         this.checkData.push(tempData)
         console.log('this.checkData: ', this.checkData);
