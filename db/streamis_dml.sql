@@ -23,7 +23,7 @@ INSERT INTO `linkis_stream_job_config_def` VALUES (33,'wds.linkis.flink.authorit
 INSERT INTO `linkis_stream_job_config_def` VALUES (34,'wds.linkis.rm.yarnqueue','使用Yarn队列','INPUT',0,'使用Yarn队列','None',NULL,'',1,1,NULL,NULL,'',1,0,0);
 INSERT INTO `linkis_stream_job_config_def` VALUES (35,'wds.linkis.flink.app.fail-restart.switch','作业失败自动拉起开关','SELECT',1,'作业失败自动拉起开关','None',NULL,'',1,1,NULL,'OFF','ON,OFF',8,0,0);
 INSERT INTO `linkis_stream_job_config_def` VALUES (36,'wds.linkis.flink.app.start-auto-restore.switch','作业启动状态自恢复','SELECT',2,'作业启动状态自恢复','None',NULL,'',1,1,NULL,'ON','ON,OFF',8,0,0);
-INSERT INTO `linkis_stream_job_config_def` VALUES (38, 'linkis.ec.app.manage.mode', '管理模式', 'SELECT', 3, 'EngineConn管理模式', 'None', NULL, '', 1, 1, NULL, 'attach', 'detach,attach', 8, 0, 0);
+INSERT INTO `linkis_stream_job_config_def` VALUES (38, 'linkis.ec.app.manage.mode', '管理模式', 'SELECT', 3, 'EngineConn管理模式', 'None', NULL, '', 1, 1, NULL, 'detach', 'detach,attach', 8, 0, 0);
 
 INSERT INTO linkis_stream_error_code
 (error_code, error_desc, error_regex, error_type)
@@ -460,3 +460,12 @@ VALUES('43052', '队列 %s 不存在', 'Queue:(\\S+) does not exist in YARN', 0)
 INSERT INTO linkis_stream_error_code
 (error_code, error_desc, error_regex, error_type)
 VALUES('43053', '用户jar包没有排除flink runtime 等包', 'NoSuchFieldError: AUTH_USER', 0);
+INSERT INTO  linkis_stream_error_code
+(error_code, error_desc, error_regex, error_type)
+VALUES('43054', '用户程序代码错误，原因：用户Jar包启动异常，联系Jar包开发排查', '创建用户自定义方法失败', 0);
+INSERT INTO  linkis_stream_error_code
+(error_code, error_desc, error_regex, error_type)
+VALUES('43055', ' RCS环境应用不存在', '应用不存在，请检查输入的appId', 0);
+INSERT INTO  linkis_stream_error_code
+(error_code, error_desc, error_regex, error_type)
+VALUES('43056', '数据源RMB topic %S 不存在', 'RMBIllegalAccessException: Topic (\\S+) not exist  ', 0);

@@ -430,6 +430,6 @@ VALUES('43051', '文件没有权限: %s', 'FileNotFoundException: (\\S+) \\(Perm
 INSERT INTO linkis_stream_error_code
 (error_code, error_desc, error_regex, error_type)
 VALUES('43052', '队列 %s 不存在', 'Queue:(\\S+) does not exist in YARN', 0);
-INSERT INTO dss_streamis_rcs_main_uat_01.linkis_stream_error_code
+INSERT INTO linkis_stream_error_code
 (error_code, error_desc, error_regex, error_type)
 VALUES('43053', '用户jar包没有排除flink runtime 等包', 'NoSuchFieldError: AUTH_USER', 0);
