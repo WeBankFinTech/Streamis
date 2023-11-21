@@ -617,6 +617,7 @@ export default {
       uploadVisible: false,
       projectName: this.$route.query.projectName,
       // 作业启动弹框
+      waitSingleStartCheck: false,
       startHintVisible: false,
       isBatchRestart: false,
       // 启动弹框的列和数据
@@ -992,39 +993,48 @@ export default {
         this.startHintVisible = true
         console.log('打开弹框 this.startHintData: ', this.startHintData);
       } else {
-        // 是单个重启，tempData是对象
-        this.hasWarningCount = 0;
-        const { id, name } = this.tempData
-        const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
-        const inspectRes = await api.fetch(checkPath, {}, 'put')
-        const tempData = {
-          id,
-          jobName: name,
-          link: inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--',
-          latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
-          lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
-          yarn: inspectRes.list && inspectRes.list.list ? inspectRes.list.list : [],
-          consistency: inspectRes.highavailable && inspectRes.highavailable.highAvailable ? '通过：检查通过' : (inspectRes.highavailable.msg ? '不通过：' + inspectRes.highavailable.msg + '不一致' : '--'),
-          warningRow: false
-        }
-        if (tempData.consistency.includes('不通过')) {
-          tempData.warningRow = true
-        }
-        if (Array.isArray(tempData.yarn)) {
-          for (let i = 0; i < tempData.yarn.length; i++) {
-            if (tempData.yarn[i].applicationId && tempData.yarn[i].applicationId !== '无') {
-              tempData.warningRow = true
-              break
+        try {
+          if (this.waitSingleStartCheck) {
+            return
+          }
+          // 是单个重启，tempData是对象
+          this.hasWarningCount = 0;
+          const { id, name } = this.tempData
+          const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
+          this.waitSingleStartCheck = true;
+          const inspectRes = await api.fetch(checkPath, {}, 'put')
+          this.waitSingleStartCheck = false;
+          const tempData = {
+            id,
+            jobName: name,
+            link: inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--',
+            latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
+            lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
+            yarn: inspectRes.list && inspectRes.list.list ? inspectRes.list.list : [],
+            consistency: inspectRes.highavailable && inspectRes.highavailable.highAvailable ? '通过：检查通过' : (inspectRes.highavailable.msg ? '不通过：' + inspectRes.highavailable.msg + '不一致' : '--'),
+            warningRow: false
+          }
+          if (tempData.consistency.includes('不通过')) {
+            tempData.warningRow = true
+          }
+          if (Array.isArray(tempData.yarn)) {
+            for (let i = 0; i < tempData.yarn.length; i++) {
+              if (tempData.yarn[i].applicationId && tempData.yarn[i].applicationId !== '无') {
+                tempData.warningRow = true
+                break
+              }
             }
           }
+          if (tempData.warningRow === true) {
+            this.hasWarningCount++
+          }
+          this.checkData.push(tempData)
+          console.log('this.checkData: ', this.checkData);
+          this.startHintVisible = true
+          console.log('打开弹框 this.startHintData: ', this.startHintData);
+        } catch (error) {
+          this.waitSingleStartCheck = false;
         }
-        if (tempData.warningRow === true) {
-          this.hasWarningCount++
-        }
-        this.checkData.push(tempData)
-        console.log('this.checkData: ', this.checkData);
-        this.startHintVisible = true
-        console.log('打开弹框 this.startHintData: ', this.startHintData);
       }
     },
     cancelStartHint() {
