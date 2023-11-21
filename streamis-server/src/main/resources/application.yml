@@ -27,3 +27,7 @@ management:
         include: refresh,info
 logging:
   config: classpath:log4j2.xml
+
+# 切面开启配置参数
+feature:
+  enabled: true
