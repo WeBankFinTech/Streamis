@@ -15,6 +15,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 
 @Aspect
 @Component
+@ConditionalOnProperty(name = "feature.enabled", havingValue = "true", matchIfMissing = true)
 public class AuditLogAspect {
 
     @Autowired
