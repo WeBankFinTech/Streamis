@@ -18,6 +18,11 @@ public class SourceUtils {
     public static JobHighAvailableVo manageJobProjectFile(String highAvailablePolicy,String source) {
         highAvailablePolicy = Optional.ofNullable(highAvailablePolicy).orElse(JobConf.HIGHAVAILABLE_DEFAULT_POLICY().getHotValue());
         JobHighAvailableVo highAvailableVo = new JobHighAvailableVo();
+        if (source.equalsIgnoreCase("update args")) {
+            highAvailableVo.setHighAvailable(true);
+            highAvailableVo.setMsg("用户在页面手动修改args,任务不再支持高可用");
+            return highAvailableVo;
+        }
         try {
             if (!Boolean.parseBoolean(JobConf.HIGHAVAILABLE_ENABLE().getValue().toString())) {
                 highAvailableVo.setHighAvailable(true);
@@ -52,7 +57,8 @@ public class SourceUtils {
                 }
             }
         } catch (JsonSyntaxException e) {
-            // 转换失败，处理异常情况
+            highAvailableVo.setHighAvailable(true);
+            highAvailableVo.setMsg("任务未开启高可用");
             LOG.error("Failed to source parse JSON");
         }
         return highAvailableVo;
