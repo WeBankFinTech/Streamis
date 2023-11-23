@@ -140,6 +140,19 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
     if (StringUtils.isBlank(jobStateInfo.getLocation)) {
       jobStateInfo.setLocation("No location")
     }
+    // wait for task to change status to stopped
+    val MAX_WAIT_TIME = JobLauncherConfiguration.MAX_WAIT_NUM_AFTER_KILL.getHotValue()
+    val WAIT_MILLS = 1000
+    var retryNum = 0
+    while (retryNum < MAX_WAIT_TIME && StringUtils.isNotBlank(jobInfo.getStatus) && !JobConf.isCompleted(JobConf.linkisStatusToStreamisStatus(jobInfo.getStatus))) {
+      retryNum += 1
+      jobInfo.setStatus(getJobStatusWithRetry(appId))
+      Thread.sleep(WAIT_MILLS)
+    }
+    if (retryNum >= MAX_WAIT_TIME) {
+      val times = MAX_WAIT_TIME * WAIT_MILLS / 1000.0
+      logger.warn(s"waiting for ${times}s after app : ${appId} was killed, but the task is not completed , status : ${jobInfo.getStatus}")
+    }
     jobStateInfo
   }
 
