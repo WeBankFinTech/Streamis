@@ -87,11 +87,11 @@ public class ProjectManagerRestfulApi {
         String fileName = new String(p.getOriginalFilename().getBytes("ISO8859-1"), StandardCharsets.UTF_8);
         ReaderUtils readerUtils = new ReaderUtils();
         if (!readerUtils.checkName(fileName)) {
-            throw FileExceptionManager.createException(30601, fileName);
+            return Message.warn("fileName should only contains numeric/English characters and '-_'(仅允许包含数字，英文,中划线,下划线)");
         }
 
         if (!ReaderUtils.isValidFileFormat(fileName)){
-            throw FileExceptionManager.createException(30601, fileName);
+            return Message.warn("file should only yaml|text|jar|properties|txt (仅允许yaml|text|jar|properties|txt格式)");
         }
         if (!updateWhenExists) {
             ProjectFiles projectFiles = projectManagerService.selectFile(fileName, version, projectName);
