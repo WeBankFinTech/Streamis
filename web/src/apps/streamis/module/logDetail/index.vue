@@ -73,7 +73,7 @@
           </Button>
           <Button
             type="primary"
-            :disabled="endLine === fromLine"
+            :disabled="toEnd"
             @click="handleMore('next')"
             style="margin-left: 30px;"
           >
@@ -117,14 +117,15 @@ export default {
         value: 'yarn'
       }],
       fromLine: 1,
-      endLine: 0,
+      endLine: 100,
+      toEnd: false,
       logs: '',
       spinShow: false,
       full: false,
     }
   },
   methods: {
-    getDatas(taskId) {
+    getDatas(type, taskId) {
       // const logs = new Array(1000).fill(
       //   'pps/pps/streamis/module/versionDetailtreamis/module/versionDetailpps/streamis/module/versionDetailpps/streamis/module/versionDetailpps/streamis/module/versionDetailpps/streamis/module/versionDetail'
       // )
@@ -144,11 +145,17 @@ export default {
         .then(res => {
           this.spinShow = false
           if (res && res.logs) {
+            console.log(this.fromLine, this.endLine)
             if (res.logs.endLine < (this.fromLine + 99)) {
-              this.fromLine = res.logs.endLine;
-              this.endLine = res.logs.endLine;
+              this.toEnd = true;
+            }else{
+              this.toEnd = false;
             }
-            if (res.logs.logs.length > 0){ // 如果有数据，就替换
+            this.endLine = res.logs.endLine;
+            if (res.logs.logs.length > 0) { // 如果有数据，就替换
+              this.logs = res.logs.logs.join('\n')
+            }
+            if (type === 'query') { // 如果是查询时请求该接口，则不管是否有数据都替换内容
               this.logs = res.logs.logs.join('\n')
             }
           } else {
@@ -163,8 +170,9 @@ export default {
     },
     cancel() {
       this.fromLine = 1
-      this.endLine = 0
+      this.endLine = 100
       this.spinShow = false
+      this.toEnd = false;
       this.query = {
         ignoreKeywords: '',
         onlyKeywords: '',
@@ -186,12 +194,13 @@ export default {
       } else {
         this.fromLine = this.fromLine > 100 ? this.fromLine - 100 : 1
       }
-      this.getDatas()
+      this.getDatas('more')
     },
     handleQuery() {
       this.fromLine = 1
-      this.endLine = 0
-      this.getDatas()
+      this.endLine = 100
+      this.toEnd = false;
+      this.getDatas('query')
     },
     fullToggle(){
       this.full = !this.full
