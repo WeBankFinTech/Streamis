@@ -900,27 +900,38 @@ export default {
       this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
       this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
 
-      const pauseRes = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot });
-      console.log('pause pauseRes', pauseRes);
-      if (!pauseRes.result || !pauseRes.result.Success || !pauseRes.result.Failed) throw new Error('停止接口后台返回异常');
-      // this.modalLoading = false;
-      if (snapshot) {
-        this.snapPaths = pauseRes.result.Success.data.map(item => ({
+      try {
+        const pauseRes = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot });
+        console.log('pause pauseRes', pauseRes);
+        if (!pauseRes.result || !pauseRes.result.Success || !pauseRes.result.Failed) {
+          this.isFinish = true;
+          this.modalContent = "停止接口后台返回异常"
+          return
+        }
+        // this.modalLoading = false;
+        if (snapshot) {
+          this.snapPaths = pauseRes.result.Success.data.map(item => ({
+            taskId: item.jobId,
+            taskName: item.scheduleId,
+            info: item.snapshotPath,
+          }));
+        }
+        this.failTasks = pauseRes.result.Failed.data.map(item => ({
           taskId: item.jobId,
           taskName: item.scheduleId,
-          info: item.snapshotPath,
+          info: item.message,
         }));
-      }
-      this.failTasks = pauseRes.result.Failed.data.map(item => ({
-        taskId: item.jobId,
-        taskName: item.scheduleId,
-        info: item.message,
-      }));
-      this.orderNum = this.selections.length - this.failTasks.length;
-      if (this.failTasks.length) {
-        this.isFinish = true;
-        this.modalTitle = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
-        this.modalContent = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+        this.orderNum = this.selections.length - this.failTasks.length;
+        if (this.failTasks.length) {
+          this.isFinish = true;
+          this.modalTitle = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+          this.modalContent = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+          return;
+        }
+      } catch (error) {
+        console.log('clickBatchRestart err: ', error);
+        this.isFinish = true
+        this.modalContent = '停止任务失败，失败信息：' + error
         return;
       }
 
@@ -1089,7 +1100,8 @@ export default {
           this.queryProcess(bulk_sbj);
         } catch (err) {
           console.log('bulkExecution err: ', err);
-          this.modalContent = '停止任务失败，失败信息：' + err
+          this.isFinish = true;
+          this.modalContent = '批量启动任务失败，失败信息：' + err;
         }
       }
     },
