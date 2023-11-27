@@ -892,7 +892,7 @@ export default {
         return
       }
       if(!this.checkTaskStatus(bulk_sbj)){
-        this.$Message.error('存在启动中、停止中的任务，请取消勾选此类任务再执行该操作!')
+        this.$Message.error('存在未启动、启动中、停止中的任务，请取消勾选此类任务再执行该操作!')
         return
       }
       // 点击批量重启的按钮后，就应该弹出弹窗，pause结束后改变这个一体弹窗的进度，然后开始请求inspect，如果inspect都为空，一体弹窗直接进入下一步启动，如果不为空，上层遮罩再弹出inspect的弹窗需要确认
@@ -1140,10 +1140,10 @@ export default {
     checkTaskStatus(ids, type = "startOrStop") {
       const resArray = this.tableDatas.filter(item => ids.includes(item.id)).map(item => item.status)
       if (type === "startOrStop") {
-        return resArray.includes(8) || resArray.includes(9) ? false : true // 存在启动中或停止中的任务，不允许执行启动、停止
+        return (resArray.includes(0) || resArray.includes(8) || resArray.includes(9)) ? false : true // 存在未启动、启动中或停止中的任务，不允许执行启动、停止
       }
       if (type === "disableCheck") { // 用于是否允许批量禁止
-        return (resArray.includes(8) || resArray.includes(9) || resArray.includes(5)) ? false : true // 存在启动中或停止中的任务，不允许执行启动、停止
+        return (resArray.includes(8) || resArray.includes(9) || resArray.includes(5)) ? false : true // 存在运行中、启动中或停止中的任务，不允许执行禁止
       }
     },
     enableTask(ids){
