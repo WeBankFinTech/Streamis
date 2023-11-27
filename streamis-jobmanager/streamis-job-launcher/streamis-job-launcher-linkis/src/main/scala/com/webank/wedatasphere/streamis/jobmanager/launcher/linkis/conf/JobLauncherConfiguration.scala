@@ -79,4 +79,6 @@ object JobLauncherConfiguration {
   val ENABLE_STATUS_ON_FETCH_METRICS: CommonVars[Boolean] = CommonVars("wds.streamis.job.create.metrics.status.enable", true)
 
   val LINKIS_FLINK_LOG4J_CHECK_KEYWORDS = CommonVars("linkis.flink.log4j.check.keywords", "MainAppender,StreamRpcLog")
+
+  val MAX_WAIT_NUM_AFTER_KILL = CommonVars("wds.streamis.job.kill.wait.num", 10)
 }
