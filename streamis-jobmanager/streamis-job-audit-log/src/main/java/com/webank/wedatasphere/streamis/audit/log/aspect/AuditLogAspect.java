@@ -58,6 +58,7 @@ public class AuditLogAspect {
             result = joinPoint.proceed();
         } catch (Exception e) {
             LOG.error("Error executing method: " + joinPoint.getSignature().toShortString());
+            throw e;
         }
         result = Optional.ofNullable(result).orElse("--");
         logAuditInformationAsync(req, requestURI, requestParams, parseObjectToString(result), proxyUser, userName, method);

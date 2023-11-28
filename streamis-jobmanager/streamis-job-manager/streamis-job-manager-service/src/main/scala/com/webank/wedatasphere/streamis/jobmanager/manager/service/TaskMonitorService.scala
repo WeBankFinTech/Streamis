@@ -172,6 +172,9 @@ class TaskMonitorService extends Logging {
           allUsers.add(user)
         }
       })
+      if (!allUsers.contains(job.getSubmitUser)) {
+        allUsers.add(job.getSubmitUser)
+      }
     }
     if (!isValid){
       allUsers.add(job.getSubmitUser)
