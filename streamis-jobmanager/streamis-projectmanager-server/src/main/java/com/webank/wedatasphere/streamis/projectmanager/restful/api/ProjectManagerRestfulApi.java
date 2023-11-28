@@ -18,6 +18,7 @@ package com.webank.wedatasphere.streamis.projectmanager.restful.api;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileExceptionManager;
@@ -96,7 +97,7 @@ public class ProjectManagerRestfulApi {
         }
 
         if (!ReaderUtils.isValidFileFormat(fileName)){
-            return Message.warn("file should only yaml|text|jar|properties|txt (仅允许yaml|text|jar|properties|txt格式)");
+            return Message.warn("file should only "+ JobConf.STREAMIS_CHECK_FILE_FORMAT().getHotValue() +"(仅允许 " +JobConf.STREAMIS_CHECK_FILE_FORMAT().getHotValue()+"格式)");
         }
         if (!updateWhenExists) {
             ProjectFiles projectFiles = projectManagerService.selectFile(fileName, version, projectName);
