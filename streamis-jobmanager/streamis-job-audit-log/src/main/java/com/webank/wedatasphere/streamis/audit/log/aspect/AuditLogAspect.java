@@ -43,6 +43,9 @@ public class AuditLogAspect {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuditLogAspect.class);
 
+    private static final Pattern PROJECT_NAME_PATTERN = Pattern.compile("[?&]projectName=([^&]+)");
+
+
     @Around("execution(* com.webank.wedatasphere.streamis.jobmanager.restful.api..*.*(..)) || execution(* com.webank.wedatasphere.streamis.projectmanager.restful.api..*.*(..))")
     public Object captureAndLogAuditLog(ProceedingJoinPoint joinPoint) throws Throwable {
         HttpServletRequest req = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
@@ -187,7 +190,6 @@ public class AuditLogAspect {
     private static String getProjectNameFromReferer(String referer) {
         String projectName = " ";
         if (referer != null) {
-            Pattern PROJECT_NAME_PATTERN = Pattern.compile("[?&]projectName=([^&]+)");
             Matcher matcher = PROJECT_NAME_PATTERN.matcher(referer);
             if (matcher.find()) {
                 projectName = matcher.group(1);

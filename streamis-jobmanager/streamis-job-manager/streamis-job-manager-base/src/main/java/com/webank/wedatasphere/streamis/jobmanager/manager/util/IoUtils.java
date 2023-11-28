@@ -36,6 +36,10 @@ public class IoUtils {
     private static final String ioUrl = CommonVars.apply("wds.streamis.zip.dir", "/tmp").getValue();
     private static final String FILE_NAME_REGEX = "^[a-zA-Z0-9._-]+$";
 
+    private static final Pattern generateExportOutputStreamPattern = Pattern.compile(FILE_NAME_REGEX);
+
+    private static final Pattern validateFileNamePattern = Pattern.compile(FILE_NAME_REGEX);
+
     private IoUtils(){}
 
     public static String generateIOPath(String userName, String projectName, String subDir) {
@@ -59,8 +63,7 @@ public class IoUtils {
         String fileName = FilenameUtils.getName(path);
         fileName = fileName.replace("..", "");
         File file = new File(path);
-        Pattern pattern = Pattern.compile(FILE_NAME_REGEX);
-        Matcher matcher = pattern.matcher(fileName);
+        Matcher matcher = generateExportOutputStreamPattern.matcher(fileName);
         if (!matcher.matches()) {
             file.delete();
         }
@@ -88,8 +91,7 @@ public class IoUtils {
         if (fileName.contains("../")) {
             throw new IllegalArgumentException("File name cannot contain directory traversal (\"../\")");
         }
-        Pattern pattern = Pattern.compile(FILE_NAME_REGEX);
-        Matcher matcher = pattern.matcher(fileName);
+        Matcher matcher = validateFileNamePattern.matcher(fileName);
         if (!matcher.matches()) {
             throw new IllegalArgumentException("Invalid characters in file name: " + fileName);
         }

@@ -33,6 +33,8 @@ public class ZipHelper {
     private static final String UN_ZIP_CMD = "unzip";
     private static final String ZIP_TYPE = ".zip";
 
+    private static final Pattern pattern = Pattern.compile("[;|&><`!]");
+
     private ZipHelper(){}
 
     public static String unzip(String dirPath)throws Exception {
@@ -97,7 +99,6 @@ public class ZipHelper {
     }
 
     private static boolean isValidDirPath(String dirPath) {
-        Pattern pattern = Pattern.compile("[;|&><`!]");
         return StringUtils.isNotBlank(dirPath) && !pattern.matcher(dirPath).find();
     }
 }
