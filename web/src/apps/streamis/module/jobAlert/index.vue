@@ -48,10 +48,10 @@ export default {
           title: this.$t('message.streamis.jobConfig.formItems.alertLevel'),
           key: 'alertLevel'
         },
-        {
-          title: this.$t('message.streamis.jobConfig.formItems.alertUser'),
-          key: 'alertUser'
-        },
+        // {
+        //   title: this.$t('message.streamis.jobConfig.formItems.alertUser'),
+        //   key: 'alertUser'
+        // },
         {
           title: this.$t('message.streamis.jobAlert.alertMsg'),
           key: 'alertMsg'
