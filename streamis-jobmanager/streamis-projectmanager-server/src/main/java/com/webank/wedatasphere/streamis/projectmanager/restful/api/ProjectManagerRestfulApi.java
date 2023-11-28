@@ -61,6 +61,8 @@ public class ProjectManagerRestfulApi {
     @Autowired
     private ProjectPrivilegeService projectPrivilegeService;
 
+    private static final String NO_OPERATION_PERMISSION_MESSAGE = "the current user has no operation permission";
+
     @RequestMapping(path = "/files/upload", method = RequestMethod.POST)
     public Message upload(HttpServletRequest req,
                            @RequestParam(name = "version",required = false) String version,
@@ -79,9 +81,12 @@ public class ProjectManagerRestfulApi {
         if (StringUtils.isBlank(source)) {
             LOG.info("source的值为空");
         }
-        if (version.length()>=30) return Message.error("version character length is to long ,Please less than 30 （版本字符长度过长，请小于30）");
-        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
-
+        if (version.length()>=30){
+            return Message.error("version character length is to long ,Please less than 30 （版本字符长度过长，请小于30）");
+        }
+        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) {
+            return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
+        }
         //Only uses 1st file(只取第一个文件)
         MultipartFile p = files.get(0);
         String fileName = new String(p.getOriginalFilename().getBytes("ISO8859-1"), StandardCharsets.UTF_8);
@@ -132,7 +137,7 @@ public class ProjectManagerRestfulApi {
         if (StringUtils.isBlank(projectName)) {
             return Message.error("projectName is null");
         }
-        if (!projectPrivilegeService.hasAccessPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
+        if (!projectPrivilegeService.hasAccessPrivilege(req,projectName)) return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
         PageHelper.startPage(pageNow, pageSize);
         List<ProjectFiles> fileList;
         try {
@@ -155,7 +160,7 @@ public class ProjectManagerRestfulApi {
         if (StringUtils.isBlank(fileName)) {
             return Message.error("fileName is null");
         }
-        if (!projectPrivilegeService.hasAccessPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
+        if (!projectPrivilegeService.hasAccessPrivilege(req,projectName)) return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
         PageHelper.startPage(pageNow, pageSize);
         List<? extends StreamisFile> fileList;
         try {
@@ -172,7 +177,7 @@ public class ProjectManagerRestfulApi {
     public Message delete( HttpServletRequest req, @RequestParam(value = "fileName",required = false) String fileName,
                            @RequestParam(value = "projectName",required = false) String projectName) {
         String username = ModuleUserUtils.getOperationUser(req, "Delete file:" + fileName + " in project: " + projectName);
-        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
+        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
 
         return projectManagerService.delete(fileName, projectName, username) ? Message.ok()
                 : Message.warn("you have no permission delete some files not belong to you");
@@ -190,7 +195,7 @@ public class ProjectManagerRestfulApi {
         }
         String projectName = projectManagerService.getProjectNameByFileId(Long.valueOf(ids));
         if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) {
-            return Message.error("the current user has no operation permission");
+            return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
         }
 
         return projectManagerService.deleteFiles(ids, username) ? Message.ok()
@@ -210,7 +215,7 @@ public class ProjectManagerRestfulApi {
         if (StringUtils.isBlank(projectFiles.getStorePath())) {
             return Message.error("storePath is null");
         }
-        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
+        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
 
         response.setContentType("application/x-download");
         response.setHeader("content-Disposition", "attachment;filename=" + projectFiles.getFileName());

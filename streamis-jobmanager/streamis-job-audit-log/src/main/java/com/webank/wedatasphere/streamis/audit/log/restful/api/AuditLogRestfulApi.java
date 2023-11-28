@@ -33,6 +33,9 @@ public class AuditLogRestfulApi {
     @Resource
     private ProjectPrivilegeService privilegeService;
 
+
+    private static final String NO_OPERATION_PERMISSION_MESSAGE = "the current user has no operation permission";
+
     @GetMapping("/logs")
     public Message searchAuditLogs(HttpServletRequest req,
                                    @RequestParam(value = "pageNow", required = false) Integer pageNow,
@@ -49,7 +52,7 @@ public class AuditLogRestfulApi {
             return Message.error("Project name cannot be empty(项目名不能为空，请指定)");
         }
         if (!privilegeService.hasAccessPrivilege(req,projectName)) {
-            return Message.error("the current user has no operation permission");
+            return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
         }
         if (Objects.isNull(pageNow)) {
             pageNow = 1;

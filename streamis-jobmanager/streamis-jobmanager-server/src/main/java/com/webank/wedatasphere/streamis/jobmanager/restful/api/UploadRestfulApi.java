@@ -66,6 +66,8 @@ public class UploadRestfulApi {
     @Autowired
     private ProjectPrivilegeService projectPrivilegeService;
 
+    private static final String NO_OPERATION_PERMISSION_MESSAGE = "the current user has no operation permission";
+
     @RequestMapping(path = "/upload", method = RequestMethod.POST)
     public Message uploadJar(HttpServletRequest request,
                              @RequestParam(name = "projectName", required = false) String projectName,
@@ -76,8 +78,9 @@ public class UploadRestfulApi {
         if (files == null || files.size() <= 0) {
             throw JobExceptionManager.createException(30300, "uploaded files");
         }
-        if (!projectPrivilegeService.hasEditPrivilege(request, projectName)) return Message.error("the current user has no operation permission");
-
+        if (!projectPrivilegeService.hasEditPrivilege(request, projectName)) {
+            return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
+        }
         //Only uses 1st file(只取第一个文件)
         MultipartFile p = files.get(0);
         String fileName = new String(p.getOriginalFilename().getBytes("ISO8859-1"), StandardCharsets.UTF_8);
