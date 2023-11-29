@@ -102,11 +102,17 @@ object JobConf {
 
   val HIGHAVAILABLE_SOURCE: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.source", "aomp")
 
-  val HIGHAVAILABLE_POLICY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy", "double")
+//  val HIGHAVAILABLE_POLICY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.double", "double")
 
-  val HIGHAVAILABLE_POLICY_DOUBLE_BAK: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy", "doubleWithBak")
+  val HIGHAVAILABLE_POLICY_DOUBLE: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.double", "double")
 
-  val HIGHAVAILABLE_POLICY_SINGLE_BAK: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy", "singleWithBak")
+  val HIGHAVAILABLE_POLICY_DOUBLE_BAK: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.doubleWithBak", "doubleWithBak")
+
+  val HIGHAVAILABLE_POLICY_SINGLE_BAK: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.singleWithBak", "singleWithBak")
+
+  val HIGHAVAILABLE_POLICY_MANAGERSLAVE: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.managerSlave", "managerSlave")
+
+  val HIGHAVAILABLE_POLICY_MANAGERSLAVE_BAK: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.managerSlaveWithBak", "managerSlaveWithBak")
 
   val HIGHAVAILABLE_DEFAULT_POLICY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.default.policy", "single")
 

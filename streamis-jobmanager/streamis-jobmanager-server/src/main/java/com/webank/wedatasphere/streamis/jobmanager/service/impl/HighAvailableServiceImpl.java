@@ -29,7 +29,7 @@ public class HighAvailableServiceImpl implements HighAvailableService {
     @Override
     public JobHighAvailableVo getJobHighAvailableVo(long jobId){
         StreamJobVersion jobVersion = this.defaultStreamJobService.getLatestJobVersion(jobId);
-        String highAvailablePolicy = this.streamJobConfService.getJobConfValue(jobId, JobConf.HIGHAVAILABLE_POLICY().key());
+        String highAvailablePolicy = this.streamJobConfService.getJobConfValue(jobId, JobConf.HIGHAVAILABLE_POLICY_KEY().getValue());
         JobHighAvailableVo inspectVo = new JobHighAvailableVo();
         Optional<String> sourceOption = Optional.ofNullable(jobVersion.getSource());
         if(sourceOption.isPresent() && JsonUtil.isJson(sourceOption.get())) {

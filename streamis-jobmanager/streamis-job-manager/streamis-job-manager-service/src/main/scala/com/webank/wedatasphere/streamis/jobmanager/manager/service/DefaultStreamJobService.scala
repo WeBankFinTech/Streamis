@@ -398,13 +398,10 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     if (streamJob.getStatus == 0){
       val streamTask = this.streamTaskMapper.getLatestByJobId(jobId)
       if (streamTask != null) {
-        val jobStatusVo = new JobStatusVo()
-        jobStatusVo.setStatusCode(streamTask.getStatus)
-        jobStatusVo.setStatus(JobConf.getStatusString(streamTask.getStatus))
-        jobStatusVo.setJobId(streamTask.getJobId)
-        jobStatusVo.setMessage(streamTask.getErrDesc)
-        if (!JobConf.isFinished(jobStatusVo.getStatusCode)) {
-          logger.warn(s"StreamJob-${jobId} is in status ${jobStatusVo.getStatus}, the job has not completed, can not be disabled")
+        val statusCode = streamTask.getStatus
+        val status = JobConf.getStatusString(statusCode)
+        if (!JobConf.isFinished(statusCode)) {
+          logger.warn(s"StreamJob-${jobId} is in status ${status}, the job has not completed, can not be disabled")
           return false
         }
       }
