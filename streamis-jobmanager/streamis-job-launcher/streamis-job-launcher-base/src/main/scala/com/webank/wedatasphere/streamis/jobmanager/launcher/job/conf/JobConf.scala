@@ -119,4 +119,6 @@ object JobConf {
   val HIGHAVAILABLE_POLICY_KEY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.key", "wds.streamis.app.highavailable.policy")
 
   val STREAMIS_CHECK_FILE_FORMAT: CommonVars[String] = CommonVars("wds.streamis.check.file.format", "yaml|text|jar|properties|txt|pem")
+
+  val DEFAULT_ARGS_LENGTH: CommonVars[Int] = CommonVars("wds.streamis.default.args.length", 2000)
 }

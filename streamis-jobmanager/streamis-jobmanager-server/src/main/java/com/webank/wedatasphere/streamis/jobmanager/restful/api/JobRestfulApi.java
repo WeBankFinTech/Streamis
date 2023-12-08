@@ -765,8 +765,9 @@ public class JobRestfulApi {
             StreamisTransformJobContent jobContent = streamJobService.updateArgs(jobId, version,null,isHighAvailable,highAvailableMessage);
             return Message.ok().data("jobContent", jobContent);
         } else {
-            if (args.toString().length() > 400){
-                return Message.error("args length is too long, please less than 400");
+            int hotValue =  Integer.parseInt(JobConf.DEFAULT_ARGS_LENGTH().getHotValue().toString());
+            if (args.toString().length() > hotValue ){
+                return Message.error("args length is too long, please less than "+ hotValue);
             }
             StreamisTransformJobContent jobContent = streamJobService.updateArgs(jobId, version,args,false,null);
             return Message.ok().data("jobContent", jobContent);
