@@ -281,10 +281,10 @@ public class AuditLogAspect {
             projectName = auditLogService.getProjectNameById(jobId);
         } else if (req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_CREATE_OR_UPDATE.getUrl())) {
             Map metaJsonInfo = gson.fromJson(gson.toJson(requestParams.get("metaJsonInfo")), Map.class);
-            projectName = metaJsonInfo.get(projectName).toString();
+            projectName = metaJsonInfo.get("projectName").toString();
         } else if (req.getRequestURI().equals(InterfaceDescriptionEnum.JOB_UPDATE_TASK.getUrl())) {
             Map json = gson.fromJson(gson.toJson(requestParams.get("json")), Map.class);
-            projectName = json.get(projectName).toString();
+            projectName = json.get("projectName").toString();
         } else {
             projectName = requestParams.get("projectName").toString();
         }
