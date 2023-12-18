@@ -45,9 +45,9 @@
     </modules>
 
     <properties>
-        <linkis.version>1.1.14-wds</linkis.version>
+        <linkis.version>1.1.18-wds-SNAPSHOT</linkis.version>
         <junit.version>4.12</junit.version>
-        <dss.version>1.1.0.14-SNAPSHOT</dss.version>
+        <dss.version>1.1.0.18-SNAPSHOT</dss.version>
         <streamis.version>0.3.6-wedatasphere-SNAPSHOT</streamis.version>
         <scala.version>2.11.12</scala.version>
         <jdk.compile.version>1.8</jdk.compile.version>
