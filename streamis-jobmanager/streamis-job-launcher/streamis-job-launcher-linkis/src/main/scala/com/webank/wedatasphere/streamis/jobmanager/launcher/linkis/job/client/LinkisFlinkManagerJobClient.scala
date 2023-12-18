@@ -24,6 +24,7 @@ import org.apache.linkis.computation.client.once.simple.SimpleOnceJob
 import org.apache.linkis.governance.common.constant.ec.ECConstants
 import org.apache.linkis.ujes.client.exception.UJESJobException
 
+import java.io.IOException
 import java.util
 import scala.collection.JavaConverters.asScalaBufferConverter
 
@@ -92,6 +93,7 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
     retryHandler.addRetryException(classOf[UJESJobException])
     retryHandler.addRetryException(classOf[LinkisRetryException])
     retryHandler.addRetryException(classOf[FlinkJobStateFetchException])
+    retryHandler.addRetryException(classOf[IOException])
     retryHandler.retry(
       {
     val statusAction = new FlinkStatusAction(appId, null)
