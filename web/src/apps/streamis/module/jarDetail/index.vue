@@ -217,8 +217,8 @@ export default {
         console.log('handleEditProgramArguement')
         const { id, version } = this.$route.params
         console.log(JSON.parse(this.args), id, version)
-        if (this.args.length > 400) {
-          this.$Message.error('Program Arguement长度不能超过400')
+        if (this.args.length > 100000) {
+          this.$Message.error('Program Arguement长度不能超过100000')
           return
         }
         if (!Array.isArray(JSON.parse(this.args))) {
