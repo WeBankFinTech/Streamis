@@ -71,6 +71,8 @@
         "batchConfirm": "Confirm all the jobs"
       },
       "jobListTableColumns":{
+        "instance": "Client Instance",
+        "appId": "APP ID",
         "jobName": "Job name",
         "jobType": "Job type",
         "launchMode": "Launch Mode",

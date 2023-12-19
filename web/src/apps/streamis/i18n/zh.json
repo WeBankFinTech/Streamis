@@ -70,6 +70,8 @@
         "batchConfirm": "确认所有批量作业"
       },
       "jobListTableColumns":{
+        "instance": "客户端实例",
+        "appId": "APP ID",
         "jobName": "作业名称",
         "jobType": "作业类型",
         "launchMode": "运行模式",
