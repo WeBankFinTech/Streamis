@@ -76,7 +76,8 @@ export default {
         },
         {
           title: this.$t('message.streamis.jobHistoryColumns.stopCause'),
-          key: 'stopCause'
+          key: 'stopCause',
+          tooltip: true
         },
         {
           title: this.$t('message.streamis.jobHistoryColumns.operation'),
