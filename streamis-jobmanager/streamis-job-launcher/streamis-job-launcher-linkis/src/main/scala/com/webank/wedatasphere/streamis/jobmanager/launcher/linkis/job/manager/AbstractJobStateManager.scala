@@ -66,6 +66,12 @@ abstract class AbstractJobStateManager extends JobStateManager {
     case _ => null.asInstanceOf[T]
   }
 
+
+  override def getJobState[T <: JobState](clazz: Class[_], jobInfo: JobInfo, highAvailablePolicy: String): T = Option(getOrCreateJobStateFetcher[T](clazz)) match {
+    case Some(jobStateFetcher: JobStateFetcher[T]) =>jobStateFetcher.getState(jobInfo,highAvailablePolicy)
+    case _ => null.asInstanceOf[T]
+  }
+
   /**
    * Register job state fetcher
    *
@@ -77,14 +83,15 @@ abstract class AbstractJobStateManager extends JobStateManager {
     stateFetcherLoaders.put(clazz.getCanonicalName, builder)
   }
 
-  override def getJobStateDir[T <: JobState](clazz: Class[_], scheme: String, relativePath: String): URI = {
-    getJobStateDir(clazz, scheme, null, relativePath)
+  override def getJobStateDir[T <: JobState](clazz: Class[_], relativePath: String, highAvailablePolicy: String): URI = {
+    getJobStateDir(clazz, JobLauncherConfiguration.FLINK_STATE_DEFAULT_SCHEME.getValue,
+      JobLauncherConfiguration.FLINK_STATE_DEFAULT_AUTHORITY.getValue, relativePath,highAvailablePolicy)
   }
 
 
   override def getJobStateDir[T <: JobState](clazz: Class[_], relativePath: String): URI = {
     getJobStateDir(clazz, JobLauncherConfiguration.FLINK_STATE_DEFAULT_SCHEME.getValue,
-      JobLauncherConfiguration.FLINK_STATE_DEFAULT_AUTHORITY.getValue, relativePath)
+      JobLauncherConfiguration.FLINK_STATE_DEFAULT_AUTHORITY.getValue, relativePath,null)
   }
 
   /**
@@ -97,9 +104,9 @@ abstract class AbstractJobStateManager extends JobStateManager {
    * @tparam T
    * @return
    */
-  override def getJobStateDir[T <: JobState](clazz: Class[_], scheme: String, authority: String, relativePath: String): URI = {
+  override def getJobStateDir[T <: JobState](clazz: Class[_], scheme: String, authority: String, relativePath: String,highAvailablePolicy: String): URI = {
     // To Support all schema
-    new URI(scheme, authority, normalizePath(getJobStateRootPath(clazz, scheme) + "/" + relativePath), null, null)
+    new URI(scheme, authority, normalizePath(highAvailablePolicy +"/"+getJobStateRootPath(clazz, scheme) + "/" + relativePath), null, null)
   }
 
   private def normalizePath(input: String): String = {
