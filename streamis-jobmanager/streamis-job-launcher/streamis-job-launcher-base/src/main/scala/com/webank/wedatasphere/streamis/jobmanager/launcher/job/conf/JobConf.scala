@@ -121,4 +121,6 @@ object JobConf {
   val STREAMIS_CHECK_FILE_FORMAT: CommonVars[String] = CommonVars("wds.streamis.check.file.format", "yaml|text|jar|properties|txt|pem")
 
   val DEFAULT_ARGS_LENGTH: CommonVars[Int] = CommonVars("wds.streamis.default.args.length", 2000)
+
+  val AUTO_RESTART_JOB: CommonVars[Boolean] = CommonVars("wds.streamis.app.highavailable.auto.restart.job", true)
 }

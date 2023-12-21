@@ -428,6 +428,9 @@ public class JobRestfulApi {
         if (!streamJobService.getEnableStatus(jobId)){
             return Message.error("current Job " + streamJob.getName() + "has been banned, cannot start,please enable job" );
         }
+        if(!highAvailableService.canBeStarted(jobId)){
+            return Message.error("current Job " + streamJob.getName() + " is in managerSlave mode,please check whether it runs on manager cluster" );
+        }
         try {
             streamTaskService.execute(jobId, 0L, userName);
         } catch (Exception e) {

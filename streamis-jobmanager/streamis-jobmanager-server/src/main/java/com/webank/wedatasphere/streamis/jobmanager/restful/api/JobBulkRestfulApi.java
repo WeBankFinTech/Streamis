@@ -96,6 +96,9 @@ public class JobBulkRestfulApi {
                  if (!streamjobService.getEnableStatus(Long.parseLong(jobId.toString()))){
                      return Message.error("current Job " + streamJob.getName() + "has been banned, cannot start,please enable job" );
                  }
+                 if(!highAvailableService.canBeStarted(Long.parseLong(jobId.toString()))){
+                     return Message.error("current Job " + streamJob.getName() + " is in managerSlave mode,please check whether it runs on manager cluster" );
+                 }
              }
              // TODO Enable to accept 'restore' parameter from request
               execResults = streamTaskService.bulkExecute(new ArrayList<>(execBulkRequest.getBulkSubject()), Collections.emptyList(), username);

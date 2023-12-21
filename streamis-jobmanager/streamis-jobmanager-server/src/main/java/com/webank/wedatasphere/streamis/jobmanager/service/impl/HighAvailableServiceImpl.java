@@ -1,6 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.service.impl;
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.StreamJobLauncherConf;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.JobHighAvailableVo;
@@ -9,11 +10,13 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.utils.SourceUtils;
 import com.webank.wedatasphere.streamis.jobmanager.restful.api.JobRestfulApi;
 import com.webank.wedatasphere.streamis.jobmanager.service.HighAvailableService;
 import com.webank.wedatasphere.streamis.jobmanager.utils.JsonUtil;
+import com.webank.wedatasphere.streamis.jobmanager.vo.HighAvailableMsg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.validation.executable.ValidateOnExecution;
 import java.util.Optional;
 
 @Service
@@ -41,5 +44,28 @@ public class HighAvailableServiceImpl implements HighAvailableService {
             inspectVo.setMsg("User changed params of job not by deploy, will skip to check its highavailable(用户未走发布单独修改了job信息，跳过高可用检查)");
         }
         return inspectVo;
+    }
+
+    @Override
+    public HighAvailableMsg getHighAvailableMsg(){
+        HighAvailableMsg msg = new HighAvailableMsg();
+        msg.setClusterName(StreamJobLauncherConf.HIGHAVAILABLE_CLUSTER_NAME().getHotValue());
+        msg.setWhetherManager(Boolean.parseBoolean(StreamJobLauncherConf.WHETHER_MANAGER_CLUSTER().getHotValue().toString()));
+        msg.setClusterIp(StreamJobLauncherConf.HIGHAVAILABLE_CLUSTER_IP().getHotValue());
+        return msg;
+    }
+
+    @Override
+    public Boolean canBeStarted(Long jobId){
+        String highAvailablePolicy = this.streamJobConfService.getJobConfValue(jobId, JobConf.HIGHAVAILABLE_POLICY_KEY().getValue());
+        highAvailablePolicy = Optional.ofNullable(highAvailablePolicy).orElse(JobConf.HIGHAVAILABLE_DEFAULT_POLICY().getHotValue());
+        HighAvailableMsg msg = this.getHighAvailableMsg();
+        if(highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY_MANAGERSLAVE().getValue()) || highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY_MANAGERSLAVE_BAK().getValue())){
+            if (msg.getWhetherManager()){
+                return true;
+            }
+            else return false;
+        }
+        return true;
     }
 }

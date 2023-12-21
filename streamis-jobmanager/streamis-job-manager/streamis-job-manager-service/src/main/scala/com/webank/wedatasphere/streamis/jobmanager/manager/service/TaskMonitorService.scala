@@ -16,7 +16,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import java.util
-import java.util.{Date, function}
+import java.util.{Date, Optional, function}
 import java.util.concurrent.{CompletableFuture, ExecutorService, Future, TimeUnit}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.JobLauncherAutoConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
@@ -30,6 +30,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper,
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils
 import com.webank.wedatasphere.streamis.errorcode.handler.StreamisErrorCodeHandler
+
 import javax.annotation.{PostConstruct, PreDestroy, Resource}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.commons.lang3.StringUtils
@@ -37,6 +38,7 @@ import org.apache.linkis.common.exception.ErrorException
 import org.apache.linkis.common.utils.{Logging, RetryHandler, Utils}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+
 import scala.collection.convert.WrapAsScala._
 
 
@@ -128,19 +130,19 @@ class TaskMonitorService extends Logging {
           streamTask.setErrDesc("原因分析中，请稍后重试"+streamTask.getErrDesc)
           streamTaskMapper.updateTask(streamTask)
           val result: Future[_] = streamTaskService.errorCodeMatching(job.getId,streamTask)
+          var highAvailablePolicy = this.streamJobConfMapper.getRawConfValue(job.getId, JobConf.HIGHAVAILABLE_POLICY_KEY.getValue)
+          highAvailablePolicy = Optional.ofNullable(highAvailablePolicy).orElse(JobConf.HIGHAVAILABLE_DEFAULT_POLICY.getHotValue)
           this.streamJobConfMapper.getRawConfValue(job.getId, JobConfKeyConstants.FAIL_RESTART_SWITCH.getValue) match {
             case "ON" =>
               alertMsg = s"${alertMsg} 现将自动拉起该应用"
-              Utils.tryCatch{
-                info(s"Start to reLaunch the StreamisJob [${job.getName}], now to submit and schedule it...")
-                // Use submit user to start job
-                val startAutoRestoreSwitch = "ON".equals(this.streamJobConfMapper.getRawConfValue(job.getId, JobConfKeyConstants.START_AUTO_RESTORE_SWITCH.getValue))
-                val future = streamTaskService.asyncExecute(job.getId, 0L, job.getSubmitUser, startAutoRestoreSwitch)
-              }{
-                case e:Exception =>
-                  warn(s"Fail to reLaunch the StreamisJob [${job.getName}]", e)
-              }
+              restartJob(job)
             case _ =>
+              if (JobConf.AUTO_RESTART_JOB.getHotValue()) {
+                if (!highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY_SINGLE_BAK.getValue) && !highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_DEFAULT_POLICY.getValue)) {
+                  alertMsg = s"${alertMsg} 现将自动拉起该应用"
+                  restartJob(job)
+                }
+              }
           }
           val userList = getAlertUsers(job)
           alert(jobService.getAlertLevel(job), alertMsg, userList, streamTask)
@@ -150,6 +152,17 @@ class TaskMonitorService extends Logging {
     info("All StreamTasks status have updated.")
   }
 
+  protected def restartJob(job: StreamJob): Unit = {
+    Utils.tryCatch {
+      info(s"Start to reLaunch the StreamisJob [${job.getName}], now to submit and schedule it...")
+      // Use submit user to start job
+      val startAutoRestoreSwitch = "ON".equals(this.streamJobConfMapper.getRawConfValue(job.getId, JobConfKeyConstants.START_AUTO_RESTORE_SWITCH.getValue))
+      val future = streamTaskService.asyncExecute(job.getId, 0L, job.getSubmitUser, startAutoRestoreSwitch)
+    } {
+      case e: Exception =>
+        warn(s"Fail to reLaunch the StreamisJob [${job.getName}]", e)
+    }
+  }
   /**
    * Refresh streamis task
    * @param streamTask stream task
