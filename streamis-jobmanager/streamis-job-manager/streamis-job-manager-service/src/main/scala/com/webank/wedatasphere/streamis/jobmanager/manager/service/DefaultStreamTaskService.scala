@@ -728,13 +728,14 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
               val jobInfo = jobClient.getJobInfo
               // Get the JobStateManager
               val jobStateManager = jobLaunchManager.getJobStateManager
+              val highAvailablePolicy = this.streamJobConfMapper.getRawConfValue(task.getJobId, JobConf.HIGHAVAILABLE_POLICY_KEY.getValue)
               // First to fetch the latest Savepoint information
-              Option(jobStateManager.getJobState[FlinkSavepoint](classOf[FlinkSavepoint], jobInfo)).foreach(savepoint => stateList.add(savepoint))
+              Option(jobStateManager.getJobState[FlinkSavepoint](classOf[FlinkSavepoint], jobInfo,highAvailablePolicy)).foreach(savepoint => stateList.add(savepoint))
               // Determinate if need the checkpoint information
               this.streamJobConfMapper.getRawConfValue(task.getJobId, JobConfKeyConstants.CHECKPOINT_SWITCH.getValue) match {
                 case "ON" =>
                   // Then to fetch the latest Checkpoint information
-                  Option(jobStateManager.getJobState[FlinkCheckpoint](classOf[FlinkCheckpoint], jobInfo)).foreach(checkpoint => stateList.add(checkpoint))
+                  Option(jobStateManager.getJobState[FlinkCheckpoint](classOf[FlinkCheckpoint], jobInfo,highAvailablePolicy)).foreach(checkpoint => stateList.add(checkpoint))
                 case _ =>
               }
               // At last fetch the state information from storage

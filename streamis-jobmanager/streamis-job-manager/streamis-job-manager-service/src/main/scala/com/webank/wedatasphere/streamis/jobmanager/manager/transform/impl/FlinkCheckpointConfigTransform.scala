@@ -47,7 +47,7 @@ class FlinkCheckpointConfigTransform extends FlinkConfigTransform with Logging{
       case "ON" =>
         val checkpointConfig: util.Map[String, AnyRef] =  new util.HashMap[String, AnyRef]()
         val jobLaunchManager = JobLaunchManager.getJobManager(JobLauncherAutoConfiguration.DEFAULT_JOB_LAUNCH_MANGER)
-        val checkpointPath = jobLaunchManager.getJobStateManager.getJobStateDir(classOf[FlinkCheckpoint], job.getJobName ,job.getLaunchConfigs.get(JobConf.HIGHAVAILABLE_POLICY_KEY.getHotValue()).toString)
+        val checkpointPath = jobLaunchManager.getJobStateManager.getJobStateDir(classOf[FlinkCheckpoint], job.getJobName ,produceConfig.getOrDefault(JobConf.HIGHAVAILABLE_POLICY_KEY.getHotValue(),JobConf.HIGHAVAILABLE_DEFAULT_POLICY.getHotValue()).toString)
         checkpointConfig.put(FlinkConfigTransform.FLINK_CONFIG_PREFIX + CHECKPOINT_PATH_CONFIG_NAME, checkpointPath)
         info(s"Use the checkpoint dir, ${CHECKPOINT_PATH_CONFIG_NAME} => ${checkpointPath}")
         produceConfig.asScala.filter(_._1.startsWith(JobConfKeyConstants.CHECKPOINT.getValue))

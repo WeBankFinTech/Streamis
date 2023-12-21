@@ -68,6 +68,10 @@ abstract class AbstractJobStateManager extends JobStateManager {
   }
 
 
+  override def getJobState[T <: JobState](clazz: Class[_], jobInfo: JobInfo, highAvailablePolicy: String): T = Option(getOrCreateJobStateFetcher[T](clazz)) match {
+    case Some(jobStateFetcher: JobStateFetcher[T]) =>jobStateFetcher.getState(jobInfo,highAvailablePolicy)
+    case _ => null.asInstanceOf[T]
+  }
 
   /**
    * Register job state fetcher
@@ -103,7 +107,7 @@ abstract class AbstractJobStateManager extends JobStateManager {
    */
   override def getJobStateDir[T <: JobState](clazz: Class[_], scheme: String, authority: String, relativePath: String,highAvailablePolicy: String): URI = {
     val jobSchema = matchJobSchema(highAvailablePolicy)
-    new URI(scheme, authority, normalizePath(jobSchema +"/"+getJobStateRootPath(clazz, scheme) + "/" + relativePath), null, null)
+    new URI(scheme, authority, normalizePath(getJobStateRootPath(clazz, scheme) + "/" + jobSchema + "/" + relativePath), null, null)
   }
 
   private def matchJobSchema(highAvailablePolicy: String): String = highAvailablePolicy match {

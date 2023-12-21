@@ -110,6 +110,21 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
 
 
     @Override
+    public T getState(JobInfo jobInfo,String highAvailablePolicy ) {
+        String treeDir = this.jobStateManager.getJobStateDir(stateClass, jobInfo.getName(),highAvailablePolicy).toString();
+        StateFileTree stateFileTree =  traverseFileTreeToFind(jobInfo, getDirFileTree(jobInfo, treeDir), this::isMatch, false);
+        if (Objects.nonNull(stateFileTree) && StringUtils.isNotBlank(stateFileTree.getPath())){
+            JobStateFileInfo stateFileInfo = new JobStateFileInfo(stateFileTree.getName(),
+                    stateFileTree.getPath(), stateFileTree.getParentPath(),
+                    Long.parseLong(stateFileTree.getProperties().getOrDefault(PROPS_SIZE, "0")),
+                    Long.parseLong(stateFileTree.getProperties().getOrDefault(PROPS_MODIFY_TIME, "0")));
+            return getState(stateFileInfo);
+        }
+        return null;
+    }
+
+
+    @Override
     public void destroy() {
         try {
             client.close();

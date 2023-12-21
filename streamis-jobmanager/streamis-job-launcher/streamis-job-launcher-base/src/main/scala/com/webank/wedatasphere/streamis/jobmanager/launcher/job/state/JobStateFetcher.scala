@@ -32,6 +32,7 @@ trait JobStateFetcher[T <: JobState] {
   def getState(jobInfo: JobInfo): T
 
 
+  def getState(jobInfo: JobInfo,highAvailablePolicy: String): T
 
   /**
    * Destroy method
