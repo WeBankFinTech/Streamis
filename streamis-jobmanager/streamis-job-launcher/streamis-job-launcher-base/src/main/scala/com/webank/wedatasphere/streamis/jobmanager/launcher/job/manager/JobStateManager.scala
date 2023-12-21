@@ -57,8 +57,6 @@ trait JobStateManager {
    */
   def getJobState[T <: JobState](clazz: Class[_], jobInfo: JobInfo): T
 
-  def getJobState[T <: JobState](clazz: Class[_], jobInfo: JobInfo,highAvailablePolicy: String): T
-
 
   def getJobStateDir[T <: JobState](clazz: Class[_], relativePath: String,highAvailablePolicy : String): URI
 

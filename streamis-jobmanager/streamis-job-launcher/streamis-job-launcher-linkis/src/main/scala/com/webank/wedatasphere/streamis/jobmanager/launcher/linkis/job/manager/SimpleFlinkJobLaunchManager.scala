@@ -16,6 +16,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.enums.JobClientType
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.errorcode.JobLaunchErrorCode
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState, JobStateInfo}
@@ -67,6 +68,7 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
     jobInfo.setName(StringEscapeUtils.escapeJava(job.getJobName))
     jobInfo.setId(onceJob.getId)
     jobInfo.setUser(job.getSubmitUser)
+    jobInfo.setHighAvailablePolicy(job.getLaunchConfigs.get(JobConf.HIGHAVAILABLE_POLICY_KEY.getHotValue()).toString)
     onceJob match {
       case submittableSimpleOnceJob: SubmittableSimpleOnceJob =>
         jobInfo.setEcInstance(submittableSimpleOnceJob.getEcServiceInstance)

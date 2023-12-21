@@ -109,7 +109,7 @@ abstract class AbstractJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManage
    */
   def triggerSavepoint(): FlinkSavepoint = {
     getJobInfo(true)
-    val savepointURI = this.stateManager.getJobStateDir(classOf[FlinkSavepoint], jobInfo.getName)
+    val savepointURI = this.stateManager.getJobStateDir(classOf[FlinkSavepoint], jobInfo.getName,jobInfo.getHighAvailablePolicy)
     triggerSavepoint(savepointURI.toString, JobLauncherConfiguration.FLINK_TRIGGER_SAVEPOINT_MODE.getValue)
   }
 
