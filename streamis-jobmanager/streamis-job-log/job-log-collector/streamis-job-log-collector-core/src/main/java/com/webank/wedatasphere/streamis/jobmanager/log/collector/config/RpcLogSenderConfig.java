@@ -57,13 +57,15 @@ public class RpcLogSenderConfig {
      */
     private SendBufferConfig bufferConfig = new SendBufferConfig();
 
+    private RpcHeartbeatConfig heartbeatConfig =new RpcHeartbeatConfig();
+
     public RpcLogSenderConfig(){
 
     }
 
     public RpcLogSenderConfig(String address, int sendRetryCnt, int connectionTimeout, int socketTimeout,
                               int serverRecoveryTimeInSec, int maxDelayTimeInSec,
-                              RpcAuthConfig authConfig, SendLogCacheConfig cacheConfig, SendBufferConfig bufferConfig){
+                              RpcAuthConfig authConfig, SendLogCacheConfig cacheConfig, SendBufferConfig bufferConfig,RpcHeartbeatConfig heartbeatConfig){
         this.address = address;
         this.sendRetryCnt = sendRetryCnt;
         this.connectionTimeout = connectionTimeout;
@@ -79,6 +81,17 @@ public class RpcLogSenderConfig {
         if (Objects.nonNull(bufferConfig)){
             this.bufferConfig = bufferConfig;
         }
+        if (Objects.nonNull(heartbeatConfig)){
+            this.heartbeatConfig = heartbeatConfig;
+        }
+    }
+
+    public RpcHeartbeatConfig getHeartbeatConfig() {
+        return heartbeatConfig;
+    }
+
+    public void setHeartbeatConfig(RpcHeartbeatConfig heartbeatConfig) {
+        this.heartbeatConfig = heartbeatConfig;
     }
 
     public RpcAuthConfig getAuthConfig() {
@@ -173,6 +186,7 @@ public class RpcLogSenderConfig {
                 ", authConfig=" + authConfig +
                 ", cacheConfig=" + cacheConfig +
                 ", bufferConfig=" + bufferConfig +
+                ", heartbeatConfig=" + heartbeatConfig +
                 ", debug=" + debugMode +
                 '}';
     }

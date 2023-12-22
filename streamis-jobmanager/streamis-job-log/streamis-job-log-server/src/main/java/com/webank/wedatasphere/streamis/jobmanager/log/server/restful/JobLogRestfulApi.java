@@ -5,6 +5,7 @@ import com.webank.wedatasphere.streamis.jobmanager.log.server.config.StreamJobLo
 import com.webank.wedatasphere.streamis.jobmanager.log.server.entities.StreamisLogEvents;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.exception.StreamJobLogException;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.service.StreamisJobLogService;
+import javafx.scene.control.Alert;
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
@@ -68,6 +69,12 @@ public class JobLogRestfulApi {
             result = Message.error(message);
         }
         return result;
+    }
+
+    @RequestMapping(value = "/heartbeat ", method = RequestMethod.POST)
+    public Message logHeartbeat(@RequestBody StreamisLogEvents events, HttpServletRequest request){
+
+        return Message.ok();
     }
 
 }
