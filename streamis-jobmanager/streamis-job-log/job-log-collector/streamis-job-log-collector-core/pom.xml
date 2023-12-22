@@ -25,6 +25,10 @@
             <artifactId>streamis-job-log-common</artifactId>
             <version>${streamis.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.linkis</groupId>
+            <artifactId>linkis-common</artifactId>
+        </dependency>
         <!--http client module-->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -35,6 +39,10 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpmime</artifactId>
             <version>${httpmine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.linkis</groupId>
+            <artifactId>linkis-module</artifactId>
         </dependency>
     </dependencies>
 </project>
