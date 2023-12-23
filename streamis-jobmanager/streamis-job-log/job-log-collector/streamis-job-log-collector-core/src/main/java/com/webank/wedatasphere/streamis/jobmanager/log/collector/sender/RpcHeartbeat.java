@@ -4,6 +4,7 @@ import java.io.IOException;
 import com.google.gson.Gson;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcAuthConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.StreamisLogAppenderConfig;
+import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisHeartbeat;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -30,10 +31,11 @@ public class RpcHeartbeat {
         String applicationName = logAppenderConfig.getApplicationName();
         String originalString = "streamisRegister";
         String encodedString = Base64.getEncoder().encodeToString(originalString.getBytes());
-        HashMap<String,String> registerMap =new HashMap<>();
-        registerMap.put("register",encodedString);
-        registerMap.put("applicationName",applicationName);
-        String registerData = gson.toJson(registerMap);
+        StreamisHeartbeat streamisHeartbeat = new StreamisHeartbeat();
+        streamisHeartbeat.setApplicationName(applicationName);
+        streamisHeartbeat.setPasswordOrHeartbeat(encodedString);
+        streamisHeartbeat.setSign("register");
+        String registerData = gson.toJson(streamisHeartbeat);
         try {
             StringEntity params = new StringEntity(registerData);
             httpPost(params);
@@ -41,10 +43,9 @@ public class RpcHeartbeat {
 
         }
         int interval = logAppenderConfig.getSenderConfig().getHeartbeatConfig().getHeartbeatInterval();
-        HashMap<String,String> heartbeatMap =new HashMap<>();
-        registerMap.put("heartbeat","heartbeatData");
-        registerMap.put("applicationName",applicationName);
-        String heartbeatData = gson.toJson(heartbeatMap);
+        streamisHeartbeat.setPasswordOrHeartbeat("heartbeatData");
+        streamisHeartbeat.setSign("heartbeat");
+        String heartbeatData = gson.toJson(streamisHeartbeat);
         Utils.defaultScheduler().scheduleAtFixedRate(() -> {
             try {
                 StringEntity params = new StringEntity(heartbeatData);
