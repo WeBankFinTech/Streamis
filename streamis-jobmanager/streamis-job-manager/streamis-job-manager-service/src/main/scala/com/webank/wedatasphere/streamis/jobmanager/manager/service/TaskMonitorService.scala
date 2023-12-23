@@ -94,15 +94,17 @@ class TaskMonitorService extends Logging {
         val alertMsg = s"Spark Streaming应用[${job.getName}]已经超过 ${Utils.msDurationToString(System.currentTimeMillis - streamTask.getLastUpdateTime.getTime)} 没有更新状态, 请及时确认应用是否正常！"
         alert(jobService.getAlertLevel(job), alertMsg, userList, streamTask)
       } else {
-        val streamJob = streamJobMapper.getJobById(streamTask.getJobId)
-        val appName = streamJob.getProjectName +"."+streamJob.getName
-        val streamRegister = streamRegisterMapper.getInfoByApplicationName(appName)
-        if (streamRegister == null || streamTasks.isEmpty){
-          val userList = getAlertUsers(job)
-          val alertMsg =s"Flink应用[${job.getName}] 回调日志没有注册, 请及时确认应用是否正常！"
-          info(alertMsg)
-          if (JobConf.LOGS_HEARTBEAT_ALARMS_ENABLE.getHotValue()){
-            alert(jobService.getAlertLevel(job), alertMsg, userList, streamTask)
+        if (streamTask.getStatus == JobConf.FLINK_JOB_STATUS_RUNNING.getValue){
+          val streamJob = streamJobMapper.getJobById(streamTask.getJobId)
+          val appName = streamJob.getProjectName +"."+streamJob.getName
+          val streamRegister = streamRegisterMapper.getInfoByApplicationName(appName)
+          if (streamRegister == null || streamTasks.isEmpty){
+            val userList = getAlertUsers(job)
+            val alertMsg =s"Flink应用[${job.getName}] 回调日志没有注册, 请及时确认应用是否正常！"
+            info(alertMsg)
+            if (JobConf.LOGS_HEARTBEAT_ALARMS_ENABLE.getHotValue()){
+              alert(jobService.getAlertLevel(job), alertMsg, userList, streamTask)
+            }
           }
         }
         streamTask.setLastUpdateTime(new Date)
