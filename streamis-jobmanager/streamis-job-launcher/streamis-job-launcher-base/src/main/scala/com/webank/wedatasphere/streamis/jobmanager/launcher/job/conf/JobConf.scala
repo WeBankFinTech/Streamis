@@ -121,4 +121,10 @@ object JobConf {
   val STREAMIS_CHECK_FILE_FORMAT: CommonVars[String] = CommonVars("wds.streamis.check.file.format", "yaml|text|jar|properties|txt|pem")
 
   val DEFAULT_ARGS_LENGTH: CommonVars[Int] = CommonVars("wds.streamis.default.args.length", 2000)
+
+  val LOGS_HEARTBEAT_ALARMS_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.logs.heartbeat.alarms", false)
+
+  val LOGS_HEARTBEAT_CHECK_INTERVAL: CommonVars[Int] = CommonVars("wds.streamis.logs.check.heartbeat.interval", 10)
+
+  val LOGS_HEARTBEAT_INTERVAL_TIMEOUT: CommonVars[Int] = CommonVars("wds.streamis.logs.check.heartbeat.interval", 30 * 60 * 1000)
 }

@@ -26,10 +26,11 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.{EngineConnJobInfo, LinkisJobInfo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.{AlertLevel, Alerter}
-import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
+import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamRegisterMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils
 import com.webank.wedatasphere.streamis.errorcode.handler.StreamisErrorCodeHandler
+
 import javax.annotation.{PostConstruct, PreDestroy, Resource}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.commons.lang3.StringUtils
@@ -37,6 +38,7 @@ import org.apache.linkis.common.exception.ErrorException
 import org.apache.linkis.common.utils.{Logging, RetryHandler, Utils}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+
 import scala.collection.convert.WrapAsScala._
 
 
@@ -46,7 +48,7 @@ class TaskMonitorService extends Logging {
   @Autowired private var streamTaskMapper:StreamTaskMapper=_
   @Autowired private var streamJobMapper:StreamJobMapper=_
   @Autowired private var jobService: StreamJobService =_
-
+  @Autowired private var streamRegisterMapper:StreamRegisterMapper =_
   @Autowired private var alerters:Array[Alerter] = _
 
   @Resource
@@ -92,6 +94,17 @@ class TaskMonitorService extends Logging {
         val alertMsg = s"Spark Streaming应用[${job.getName}]已经超过 ${Utils.msDurationToString(System.currentTimeMillis - streamTask.getLastUpdateTime.getTime)} 没有更新状态, 请及时确认应用是否正常！"
         alert(jobService.getAlertLevel(job), alertMsg, userList, streamTask)
       } else {
+        val streamJob = streamJobMapper.getJobById(streamTask.getJobId)
+        val appName = streamJob.getProjectName +"."+streamJob.getName
+        val streamRegister = streamRegisterMapper.getInfoByApplicationName(appName)
+        if (streamRegister == null || streamTasks.isEmpty){
+          val userList = getAlertUsers(job)
+          val alertMsg =s"Flink应用[${job.getName}] 回调日志没有注册, 请及时确认应用是否正常！"
+          info(alertMsg)
+          if (JobConf.LOGS_HEARTBEAT_ALARMS_ENABLE.getHotValue()){
+            alert(jobService.getAlertLevel(job), alertMsg, userList, streamTask)
+          }
+        }
         streamTask.setLastUpdateTime(new Date)
         streamTaskMapper.updateTask(streamTask)
         info(s"Try to update status of StreamJob-${job.getName}.")
@@ -116,6 +129,7 @@ class TaskMonitorService extends Logging {
         }
         streamTaskMapper.updateTask(streamTask)
         if(streamTask.getStatus == JobConf.FLINK_JOB_STATUS_FAILED.getValue) {
+
           warn(s"StreamJob-${job.getName} is failed, please be noticed.")
           var extraMessage = ""
           Option(jobInfo) match {

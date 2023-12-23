@@ -79,7 +79,6 @@ public class JobLogRestfulApi {
 
     @RequestMapping(value = "/heartbeat ", method = RequestMethod.POST)
     public Message logHeartbeat(@RequestBody StreamisHeartbeat streamisHeartbeat, HttpServletRequest request){
-        ConcurrentLinkedDeque<String> registerDeque = new ConcurrentLinkedDeque<>();
         String applicationName = streamisHeartbeat.getApplicationName();
         if (streamisHeartbeat.getSign().equals("register")){
             String password =streamisHeartbeat.getPasswordOrHeartbeat();

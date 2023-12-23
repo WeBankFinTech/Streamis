@@ -41,7 +41,7 @@
     </select>
     <select id="getInfoByApplicationName"
             resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamRegister">
-        SELECT * FROM stream_register WHERE application_name = #{applicationName}
+        SELECT * FROM linkis_stream_register_info WHERE application_name = #{applicationName}
         ORDER BY register_time
         DESC LIMIT 1
     </select>
