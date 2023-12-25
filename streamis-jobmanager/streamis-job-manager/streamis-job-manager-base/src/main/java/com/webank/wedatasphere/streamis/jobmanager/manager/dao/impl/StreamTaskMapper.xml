@@ -29,6 +29,7 @@
         <result column="submit_user" property="submitUser" jdbcType="VARCHAR"/>
         <result column="linkis_job_id" property="linkisJobId" jdbcType="VARCHAR"/>
         <result column="version" property="version" jdbcType="VARCHAR"/>
+        <result column="server_instance" property="version" jdbcType="VARCHAR"/>
         <result column="linkis_job_info" property="linkisJobInfo" jdbcType="LONGVARCHAR"/>
     </resultMap>
 
@@ -40,13 +41,13 @@
         <result column="err_desc" property="errDesc" jdbcType="VARCHAR"/>
     </resultMap>
     <sql id="StreamTask_Column">
-        `id`,`job_version_id`,`job_id`,`status`,`start_time`,`last_update_time`,`err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`
+        `id`,`job_version_id`,`job_id`,`status`,`start_time`,`last_update_time`,`err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`, `server_instance`
     </sql>
 
     <insert id="insertTask" useGeneratedKeys="true" keyProperty="id"
             parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask">
         INSERT INTO  linkis_stream_task(`job_version_id`,`job_id`,`version`,`status`,`start_time`,`last_update_time`,`err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`)
-        VALUES(#{jobVersionId},#{jobId},#{version},#{status},#{startTime},#{lastUpdateTime},#{errDesc},#{submitUser},#{linkisJobId},#{linkisJobInfo})
+        VALUES(#{jobVersionId},#{jobId},#{version},#{status},#{startTime},#{lastUpdateTime},#{errDesc},#{submitUser},#{linkisJobId},#{linkisJobInfo},#{serverInstance})
     </insert>
 
     <update id="updateTask">
