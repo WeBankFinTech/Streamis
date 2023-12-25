@@ -178,7 +178,7 @@ export default {
           if (res && res.details) {
             const conditions = res.details.loadCondition || []
             this.instance = res.details.linkisJobInfo ? 
-              res.details.linkisJobInfo.ecinstance ? res.details.linkisJobInfo.ecinstance.instance || '' : ''
+              res.details.linkisJobInfo.ecInstance ? res.details.linkisJobInfo.ecInstance.instance || '' : ''
               : '',
             this.appId = res.details.linkisJobInfo ? res.details.linkisJobInfo.applicationId || '' : '',
             this.loadCondition = conditions.map(item => {
