@@ -11,12 +11,14 @@ import com.webank.wedatasphere.streamis.jobmanager.restful.api.JobRestfulApi;
 import com.webank.wedatasphere.streamis.jobmanager.service.HighAvailableService;
 import com.webank.wedatasphere.streamis.jobmanager.utils.JsonUtil;
 import com.webank.wedatasphere.streamis.jobmanager.vo.HighAvailableMsg;
+import org.apache.linkis.common.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.executable.ValidateOnExecution;
+import java.net.InetAddress;
 import java.util.Optional;
 
 @Service
@@ -51,7 +53,7 @@ public class HighAvailableServiceImpl implements HighAvailableService {
         HighAvailableMsg msg = new HighAvailableMsg();
         msg.setClusterName(StreamJobLauncherConf.HIGHAVAILABLE_CLUSTER_NAME().getHotValue());
         msg.setWhetherManager(Boolean.parseBoolean(StreamJobLauncherConf.WHETHER_MANAGER_CLUSTER().getHotValue().toString()));
-        msg.setClusterIp(StreamJobLauncherConf.HIGHAVAILABLE_CLUSTER_IP().getHotValue());
+        msg.setClusterIp(Utils.getComputerName());
         return msg;
     }
 
