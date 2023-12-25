@@ -11,6 +11,8 @@ object JobConf {
 
   val STREAMIS_JOB_MONITOR_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.job.monitor.enable", true)
 
+  val STREAMIS_JOB_RESET_ON_START_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.job.reset_on_restart.enable", true)
+
   val STREAMIS_JOB_PARAM_BLANK_PLACEHOLDER: CommonVars[String] = CommonVars("wds.streamis.job.param.blank.placeholder", "\u0001")
 
   /**

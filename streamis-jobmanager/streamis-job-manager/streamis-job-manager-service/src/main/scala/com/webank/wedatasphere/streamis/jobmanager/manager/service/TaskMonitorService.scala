@@ -30,6 +30,8 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper,
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils
 import com.webank.wedatasphere.streamis.errorcode.handler.StreamisErrorCodeHandler
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.utils.ServerUtils
+import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants
 
 import javax.annotation.{PostConstruct, PreDestroy, Resource}
 import org.apache.commons.lang.exception.ExceptionUtils
@@ -69,6 +71,33 @@ class TaskMonitorService extends Logging {
           doMonitor()
         }("Monitor the status of all tasks failed!")
       }, JobConf.TASK_MONITOR_INTERVAL.getValue.toLong, JobConf.TASK_MONITOR_INTERVAL.getValue.toLong, TimeUnit.MILLISECONDS)
+    }
+    if (JobConf.STREAMIS_JOB_RESET_ON_START_ENABLE.getHotValue()) {
+      Utils.defaultScheduler.submit(new Runnable {
+        override def run(): Unit = Utils.tryAndError {
+          Thread.sleep(JobConstrants.JOB_RESET_ON_RESTART_WAIT_MILLS)
+          logger.info("Start to clean halt jobs started in on day after server started.")
+          val statusList = new util.ArrayList[Integer]()
+          statusList.add(JobConf.FLINK_JOB_STATUS_STARTING.getValue)
+          val thisServerInstance = ServerUtils.thisServiceInstance
+          val streamTasks = streamTaskMapper.getTasksByStatus(statusList).filter(_.getServerInstance.equalsIgnoreCase(thisServerInstance))
+          if (null != streamTasks && !streamTasks.isEmpty) {
+            logger.info(s"There are ${streamTasks.size} starting tasks to be killed.")
+            val jobLaunchManager = JobLaunchManager.getJobManager(JobLauncherAutoConfiguration.DEFAULT_JOB_LAUNCH_MANGER)
+            streamTasks.foreach(task => {
+              val tmpTask = new StreamTask()
+              tmpTask.setId(task.getId)
+              val jobClient = jobLaunchManager.connect(task.getLinkisJobId, task.getLinkisJobInfo)
+              Utils.tryAndWarn(jobClient.stop())
+              tmpTask.setStatus(JobConf.FLINK_JOB_STATUS_FAILED.getValue)
+              val msg = s"Task ${task.getId} of job id : ${task.getJobId} in server : ${task.getServerInstance} was killed after streamis server restarted."
+              logger.warn(msg)
+              tmpTask.setErrDesc(msg)
+              streamTaskMapper.updateTask(tmpTask)
+            })
+          }
+        }
+      })
     }
   }
 
