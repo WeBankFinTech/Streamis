@@ -11,8 +11,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -26,7 +24,6 @@ public class RpcHeartbeatService {
 
     protected StreamisLogAppenderConfig logAppenderConfig;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RpcHeartbeatService.class);
     private final Gson gson = new Gson();
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -45,7 +42,7 @@ public class RpcHeartbeatService {
             StringEntity params = new StringEntity(registerData);
             httpPostWithRetry(params);
         } catch (Exception e) {
-            LOGGER.error("flink 应用请求注册失败，appName:" + applicationName);
+            System.err.println("flink 应用请求注册失败，appName:" + applicationName);
         }
         int interval = logAppenderConfig.getSenderConfig().getHeartbeatConfig().getHeartbeatInterval();
         streamisHeartbeat.setPasswordOrHeartbeat("heartbeatData");
@@ -56,7 +53,7 @@ public class RpcHeartbeatService {
                 StringEntity params = new StringEntity(heartbeatData);
                 httpPostWithRetry(params);
             } catch (Exception e) {
-                LOGGER.error("flink 应用请求心跳失败，appName:" + applicationName);
+                System.err.println("flink 应用请求心跳失败，appName:" + applicationName);
             }
         }, 5L * 60 * 1000, interval, TimeUnit.MILLISECONDS);
     }
@@ -70,7 +67,7 @@ public class RpcHeartbeatService {
             } catch (Exception e) {
                 retryCount++;
                 if (retryCount < 3) {
-                    LOGGER.error("httpPost请求失败，重试第 " + retryCount + " 次");
+                    System.err.println("httpPost请求失败，重试第 " + retryCount + " 次");
                     try {
                         Thread.sleep(5000); // 间隔5秒后重试
                     } catch (InterruptedException ex) {
@@ -79,7 +76,7 @@ public class RpcHeartbeatService {
                 }
             }
         }
-        System.out.println("httpPost请求重试次数达到上限，请求失败");
+        System.err.println("httpPost请求重试次数达到上限，请求失败");
     }
 
     private void httpPost(StringEntity params) throws IOException {
@@ -98,10 +95,10 @@ public class RpcHeartbeatService {
                 String responseBody = EntityUtils.toString(response.getEntity());
                 // 处理响应体
             } else {
-                throw new IOException("Failed to send heartbeat");
+                System.err.println("Failed to send heartbeat");
             }
         } catch (IOException e) {
-            LOGGER.error("Failed to send heartbeat");
+            System.err.println("Failed to send heartbeat");
         } finally {
             try {
                 if (response != null) {
@@ -109,7 +106,7 @@ public class RpcHeartbeatService {
                 }
                 httpClient.close();
             } catch (IOException e) {
-                LOGGER.error("Failed to close I/O");
+                System.err.println("Failed to close I/O");
             }
         }
     }
