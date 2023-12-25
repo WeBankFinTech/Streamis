@@ -11,20 +11,25 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.linkis.common.utils.Utils;
-import org.apache.linkis.server.BDPJettyServerHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.Base64;
-import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public class RpcHeartbeat {
+public class RpcHeartbeatService {
 
     protected StreamisLogAppenderConfig logAppenderConfig;
-    protected Gson gson = BDPJettyServerHelper.gson();
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RpcHeartbeatService.class);
+    private final Gson gson = new Gson();
+
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     @PostConstruct
     public void startHeartbeat() {
@@ -38,22 +43,43 @@ public class RpcHeartbeat {
         String registerData = gson.toJson(streamisHeartbeat);
         try {
             StringEntity params = new StringEntity(registerData);
-            httpPost(params);
+            httpPostWithRetry(params);
         } catch (Exception e) {
-
+            LOGGER.error("flink 应用请求注册失败，appName:" + applicationName);
         }
         int interval = logAppenderConfig.getSenderConfig().getHeartbeatConfig().getHeartbeatInterval();
         streamisHeartbeat.setPasswordOrHeartbeat("heartbeatData");
         streamisHeartbeat.setSign("heartbeat");
         String heartbeatData = gson.toJson(streamisHeartbeat);
-        Utils.defaultScheduler().scheduleAtFixedRate(() -> {
+        scheduler.scheduleAtFixedRate(() -> {
             try {
                 StringEntity params = new StringEntity(heartbeatData);
-                httpPost(params);
+                httpPostWithRetry(params);
             } catch (Exception e) {
-
+                LOGGER.error("flink 应用请求心跳失败，appName:" + applicationName);
             }
-        }, 0L, interval, TimeUnit.MINUTES);
+        }, 5L * 60 * 1000, interval, TimeUnit.MILLISECONDS);
+    }
+
+    private void httpPostWithRetry(StringEntity params) {
+        int retryCount = 0;
+        while (retryCount < 3) {
+            try {
+                httpPost(params);
+                return; // 如果执行成功则直接返回
+            } catch (Exception e) {
+                retryCount++;
+                if (retryCount < 3) {
+                    LOGGER.error("httpPost请求失败，重试第 " + retryCount + " 次");
+                    try {
+                        Thread.sleep(5000); // 间隔5秒后重试
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        }
+        System.out.println("httpPost请求重试次数达到上限，请求失败");
     }
 
     private void httpPost(StringEntity params) throws IOException {
@@ -75,7 +101,7 @@ public class RpcHeartbeat {
                 throw new IOException("Failed to send heartbeat");
             }
         } catch (IOException e) {
-            throw new IOException("Failed to send heartbeat");
+            LOGGER.error("Failed to send heartbeat");
         } finally {
             try {
                 if (response != null) {
@@ -83,7 +109,7 @@ public class RpcHeartbeat {
                 }
                 httpClient.close();
             } catch (IOException e) {
-                throw new IOException("Failed to close I/O");
+                LOGGER.error("Failed to close I/O");
             }
         }
     }
