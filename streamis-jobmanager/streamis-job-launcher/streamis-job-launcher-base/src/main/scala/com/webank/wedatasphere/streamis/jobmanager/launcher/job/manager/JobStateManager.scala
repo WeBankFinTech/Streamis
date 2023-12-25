@@ -63,6 +63,9 @@ trait JobStateManager {
   def getJobStateDir[T <: JobState](clazz: Class[_], relativePath: String,highAvailablePolicy : String): URI
 
   def getJobStateDir[T <: JobState](clazz: Class[_], relativePath: String): URI
+
+
+  def getJobStateDir[T <: JobState](clazz: Class[_], scheme: String, authority: String, relativePath: String): URI
   /**
    * Get job state directory uri
    * @param clazz clazz

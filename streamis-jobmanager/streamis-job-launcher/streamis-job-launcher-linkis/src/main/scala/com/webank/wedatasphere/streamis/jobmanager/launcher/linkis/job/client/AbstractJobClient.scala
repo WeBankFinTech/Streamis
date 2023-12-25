@@ -28,6 +28,8 @@ import org.apache.linkis.common.utils.{Logging, Utils}
 import org.apache.linkis.computation.client.once.simple.{SimpleOnceJob, SubmittableSimpleOnceJob}
 import org.apache.linkis.computation.client.once.OnceJob
 
+import java.net.URI
+
 /**
  * @author jefftlin
  */
@@ -109,8 +111,13 @@ abstract class AbstractJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManage
    */
   def triggerSavepoint(): FlinkSavepoint = {
     getJobInfo(true)
-    val savepointURI = this.stateManager.getJobStateDir(classOf[FlinkSavepoint], jobInfo.getName,jobInfo.getHighAvailablePolicy)
-    triggerSavepoint(savepointURI.toString, JobLauncherConfiguration.FLINK_TRIGGER_SAVEPOINT_MODE.getValue)
+    var savepointURI = ""
+    if (null == jobInfo.getHighAvailablePolicy || jobInfo.getHighAvailablePolicy.isEmpty){
+      savepointURI = this.stateManager.getJobStateDir(classOf[FlinkSavepoint], jobInfo.getName).toString
+    } else {
+      savepointURI = this.stateManager.getJobStateDir(classOf[FlinkSavepoint], jobInfo.getName,jobInfo.getHighAvailablePolicy).toString
+    }
+    triggerSavepoint(savepointURI, JobLauncherConfiguration.FLINK_TRIGGER_SAVEPOINT_MODE.getValue)
   }
 
   /**

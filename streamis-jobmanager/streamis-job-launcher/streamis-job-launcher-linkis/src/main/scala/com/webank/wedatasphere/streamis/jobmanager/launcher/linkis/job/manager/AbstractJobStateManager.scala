@@ -92,7 +92,11 @@ abstract class AbstractJobStateManager extends JobStateManager {
 
   override def  getJobStateDir[T <: JobState](clazz: Class[_], relativePath: String): URI = {
     getJobStateDir(clazz, JobLauncherConfiguration.FLINK_STATE_DEFAULT_SCHEME.getValue,
-      JobLauncherConfiguration.FLINK_STATE_DEFAULT_AUTHORITY.getValue, relativePath,null)
+      JobLauncherConfiguration.FLINK_STATE_DEFAULT_AUTHORITY.getValue, relativePath)
+  }
+
+  override def getJobStateDir[T <: JobState](clazz: Class[_], scheme: String, authority: String, relativePath: String): URI = {
+    new URI(scheme, authority, normalizePath(getJobStateRootPath(clazz, scheme) + "/" + relativePath), null, null)
   }
 
   /**
