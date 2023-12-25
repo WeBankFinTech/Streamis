@@ -3,6 +3,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.handler;
 import com.webank.wedatasphere.streamis.errorcode.manager.StreamisErrorCodeManager;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.User;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
+import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel;
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.Alerter;
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper;
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamRegisterMapper;
@@ -38,7 +39,7 @@ public class StreamisHeartbeatHandler {
     private StreamJobService jobService;
 
     @Autowired
-    private Alerter alert;
+    private Alerter[] alert;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamisHeartbeatHandler.class);
 
@@ -73,13 +74,22 @@ public class StreamisHeartbeatHandler {
                     if (!Boolean.parseBoolean(JobConf.LOGS_HEARTBEAT_ALARMS_ENABLE().getHotValue().toString())) {
                         List<String> userList = getAlertUsers(job);
                         StreamTask streamTask = streamTaskMapper.getLatestByJobId(job.getId());
-                        alert.alert(jobService.getAlertLevel(job), alertMsg, userList, streamTask);
+                        alert(jobService.getAlertLevel(job), alertMsg, userList, streamTask);
                     }
                 }
             }
         }
     }
 
+    protected void alert(AlertLevel alertLevel, String alertMsg, List<String> users, StreamTask streamTask) {
+        for (Alerter alerter : alert) {
+            try {
+                alerter.alert(alertLevel, alertMsg, users, streamTask);
+            } catch (Exception t) {
+                LOGGER.error("failed to send alert message to " + alerter.getClass().getSimpleName() + ".", t);
+            }
+        }
+    }
 
     protected List<String> getAlertUsers(StreamJob job) {
         Set<String> allUsers = new LinkedHashSet<>();
