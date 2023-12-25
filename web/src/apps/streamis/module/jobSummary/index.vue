@@ -177,8 +177,10 @@ export default {
         .then(res => {
           if (res && res.details) {
             const conditions = res.details.loadCondition || []
-            this.instance = res.details.linkisJobInfo.esinstance.instance,
-            this.appId = res.details.linkisJobInfo.applicationId,
+            this.instance = res.details.linkisJobInfo ? 
+              res.details.linkisJobInfo.ecinstance ? res.details.linkisJobInfo.ecinstance.instance || '' : ''
+              : '',
+            this.appId = res.details.linkisJobInfo ? res.details.linkisJobInfo.applicationId || '' : '',
             this.loadCondition = conditions.map(item => {
               item.memoryUse = item.memory + ' / ' + item.totalMemory + ' G'
               item.memoryPercent = Math.ceil(
