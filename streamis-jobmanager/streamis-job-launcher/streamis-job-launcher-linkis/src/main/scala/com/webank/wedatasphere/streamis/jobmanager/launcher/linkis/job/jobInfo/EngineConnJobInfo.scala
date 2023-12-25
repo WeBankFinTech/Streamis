@@ -30,6 +30,7 @@ class EngineConnJobInfo extends YarnJobInfo with LinkisJobInfo {
   @JsonIgnore
   private var jobParams: java.util.Map[String, Object] = _
   private var ecInstance: ServiceInstance = _
+  @JsonIgnore
   private var highAvailablePolicy: String = _
 
   override def getApplicationId: String = applicationId
