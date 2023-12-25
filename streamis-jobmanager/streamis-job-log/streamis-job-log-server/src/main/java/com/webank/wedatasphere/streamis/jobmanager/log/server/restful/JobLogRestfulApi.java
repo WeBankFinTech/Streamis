@@ -1,10 +1,13 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.server.restful;
 
-import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisLogEvent;
+
+import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisHeartbeat;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.config.StreamJobLogConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.entities.StreamisLogEvents;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.exception.StreamJobLogException;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.service.StreamisJobLogService;
+import com.webank.wedatasphere.streamis.jobmanager.log.server.service.StreamisRegisterService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamRegister;
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.security.SecurityFilter;
@@ -17,7 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 @RestController
 @RequestMapping(path = "/streamis/streamJobManager/log")
@@ -26,6 +30,9 @@ public class JobLogRestfulApi {
     private static final Logger LOG = LoggerFactory.getLogger(JobLogRestfulApi.class);
     @Resource
     private StreamisJobLogService streamisJobLogService;
+
+    @Resource
+    private StreamisRegisterService streamisRegisterService;
 
     @RequestMapping(value = "/collect/events", method = RequestMethod.POST)
     public Message collectEvents(@RequestBody StreamisLogEvents events, HttpServletRequest request){
@@ -68,6 +75,41 @@ public class JobLogRestfulApi {
             result = Message.error(message);
         }
         return result;
+    }
+
+    @RequestMapping(value = "/heartbeat ", method = RequestMethod.POST)
+    public Message logHeartbeat(@RequestBody StreamisHeartbeat streamisHeartbeat, HttpServletRequest request){
+        String applicationName = streamisHeartbeat.getApplicationName();
+        if (streamisHeartbeat.getSign().equals("register")){
+            String password =streamisHeartbeat.getPasswordOrHeartbeat();
+            byte[] decodedBytes = Base64.getDecoder().decode(password);
+            String decodedString = new String(decodedBytes);
+            if (decodedString.equals("streamisRegister")){
+                StreamRegister streamRegister = new StreamRegister();
+                streamRegister.setApplicationName(applicationName);
+                streamRegister.setPassword(password);
+                streamRegister.setRegisterTime(new Date());
+                streamRegister.setHeartbeatTime(new Date());
+                StreamRegister info = streamisRegisterService.getInfoByApplicationName(applicationName);
+                if (info == null){
+                    streamisRegisterService.addStreamRegister(streamRegister);
+                } else {
+                    streamRegister.setRegisterTime(new Date());
+                    streamisRegisterService.updateRegisterTime(streamRegister);
+                }
+                return  Message.ok();
+            } else {
+                return Message.error(applicationName + "Password error");
+            }
+        } else if (streamisHeartbeat.getSign().equals("heartbeat")){
+            StreamRegister streamRegister = new StreamRegister();
+            streamRegister.setApplicationName(applicationName);
+            streamRegister.setHeartbeatTime(new Date());
+            streamisRegisterService.updateHeartbeatTime(streamRegister);
+            return Message.ok();
+        } else {
+            return Message.error("Unlawful request");
+        }
     }
 
 }

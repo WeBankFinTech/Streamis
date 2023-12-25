@@ -17,8 +17,8 @@ import org.apache.logging.log4j.core.util.Integers;
 public class RpcLogSenderConfig extends com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcLogSenderConfig {
 
     public RpcLogSenderConfig(String address, int sendRetryCnt, int connectionTimeout, int socketTimeout, int serverRecoveryTimeInSec, int maxDelayTimeInSec,
-                              RpcAuthConfig authConfig, SendLogCacheConfig cacheConfig, SendBufferConfig bufferConfig) {
-        super(address, sendRetryCnt, connectionTimeout, socketTimeout, serverRecoveryTimeInSec, maxDelayTimeInSec, authConfig, cacheConfig, bufferConfig);
+                              RpcAuthConfig authConfig, SendLogCacheConfig cacheConfig, SendBufferConfig bufferConfig,RpcHeartbeatConfig rpcHeartbeatConfig) {
+        super(address, sendRetryCnt, connectionTimeout, socketTimeout, serverRecoveryTimeInSec, maxDelayTimeInSec, authConfig, cacheConfig, bufferConfig,rpcHeartbeatConfig);
     }
 
     @PluginFactory
@@ -28,11 +28,11 @@ public class RpcLogSenderConfig extends com.webank.wedatasphere.streamis.jobmana
             @PluginAttribute("serverRecoveryTimeInSec") String serverRecoveryTimeInSec, @PluginAttribute("maxDelayTimeInSec") String maxDelayTimeInSec,
             @PluginAttribute("debugMode")String debugMode,
             @PluginElement("AuthConfig")RpcAuthConfig authConfig, @PluginElement("SendLogCache") SendLogCacheConfig cacheConfig,
-            @PluginElement("SendBuffer")SendBufferConfig bufferConfig){
+            @PluginElement("SendBuffer")SendBufferConfig bufferConfig,@PluginElement("heartbeatConfig")RpcHeartbeatConfig rpcHeartbeatConfig){
         RpcLogSenderConfig config =  new RpcLogSenderConfig(address, Integers.parseInt(sendRetryCnt, 3),
                 Integers.parseInt(connectionTimeout, 3000), Integers.parseInt(socketTimeout, 15000),
                 Integers.parseInt(serverRecoveryTimeInSec, 5), Integers.parseInt(maxDelayTimeInSec, 60),
-                authConfig, cacheConfig, bufferConfig);
+                authConfig, cacheConfig, bufferConfig,rpcHeartbeatConfig);
         config.setDebugMode(Boolean.parseBoolean(debugMode));
         return config;
     }

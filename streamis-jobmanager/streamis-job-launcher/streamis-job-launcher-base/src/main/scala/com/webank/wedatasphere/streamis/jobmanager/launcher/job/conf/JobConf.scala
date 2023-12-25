@@ -120,7 +120,7 @@ object JobConf {
 
   val JOB_SCHEMA_DOUBLE: CommonVars[String] = CommonVars("wds.streamis.app.job.schema.double", "double")
 
-  val JOB_SCHEMA_MANAGER_SLAVE: CommonVars[String] = CommonVars("wds.streamis.app.job.schema.single", "managerSlave")
+  val JOB_SCHEMA_MANAGER_SLAVE: CommonVars[String] = CommonVars("wds.streamis.app.job.schema.managerSlave", "managerSlave")
 
   val HIGHAVAILABLE_POLICY_KEY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.key", "wds.streamis.app.highavailable.policy")
 
@@ -129,4 +129,10 @@ object JobConf {
   val DEFAULT_ARGS_LENGTH: CommonVars[Int] = CommonVars("wds.streamis.default.args.length", 2000)
 
   val AUTO_RESTART_JOB: CommonVars[Boolean] = CommonVars("wds.streamis.app.highavailable.auto.restart.job", true)
+
+  val LOGS_HEARTBEAT_ALARMS_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.logs.heartbeat.alarms", false)
+
+  val LOGS_HEARTBEAT_CHECK_INTERVAL: CommonVars[Int] = CommonVars("wds.streamis.logs.check.heartbeat.interval.mills", 10 *60 * 1000)
+
+  val LOGS_HEARTBEAT_INTERVAL_TIMEOUT: CommonVars[Int] = CommonVars("wds.streamis.logs.check.heartbeat.interval.timeout.mills", 30 * 60 * 1000)
 }

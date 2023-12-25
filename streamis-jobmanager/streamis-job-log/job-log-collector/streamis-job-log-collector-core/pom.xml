@@ -36,5 +36,9 @@
             <artifactId>httpmime</artifactId>
             <version>${httpmine.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.linkis</groupId>
+            <artifactId>linkis-module</artifactId>
+        </dependency>
     </dependencies>
 </project>
