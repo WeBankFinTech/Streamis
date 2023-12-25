@@ -94,15 +94,16 @@ class TaskMonitorService extends Logging {
         val alertMsg = s"Spark Streaming应用[${job.getName}]已经超过 ${Utils.msDurationToString(System.currentTimeMillis - streamTask.getLastUpdateTime.getTime)} 没有更新状态, 请及时确认应用是否正常！"
         alert(jobService.getAlertLevel(job), alertMsg, userList, streamTask)
       } else {
-        if (streamTask.getStatus == JobConf.FLINK_JOB_STATUS_RUNNING.getValue){
-          val streamJob = streamJobMapper.getJobById(streamTask.getJobId)
-          val appName = streamJob.getProjectName +"."+streamJob.getName
-          val streamRegister = streamRegisterMapper.getInfoByApplicationName(appName)
-          if (streamRegister == null || streamTasks.isEmpty){
-            val userList = getAlertUsers(job)
-            val alertMsg =s"Flink应用[${job.getName}] 回调日志没有注册, 请及时确认应用是否正常！"
-            info(alertMsg)
-            if (JobConf.LOGS_HEARTBEAT_ALARMS_ENABLE.getHotValue()){
+        if (JobConf.LOGS_HEARTBEAT_ALARMS_ENABLE.getHotValue()){
+          if (streamTask.getStatus == JobConf.FLINK_JOB_STATUS_RUNNING.getValue){
+            val streamJob = streamJobMapper.getJobById(streamTask.getJobId)
+            val appName = streamJob.getProjectName +"."+streamJob.getName
+            val streamRegister = streamRegisterMapper.getInfoByApplicationName(appName)
+            if (streamRegister == null || streamTasks.isEmpty){
+              val userList = getAllAlertUsers(job)
+              val alertMsg =s"Flink应用[${appName}] 回调日志没有注册, 请及时确认应用是否正常！"
+              logger.info(alertMsg)
+              //todo 自定义告警级别
               alert(jobService.getAlertLevel(job), alertMsg, userList, streamTask)
             }
           }
@@ -196,6 +197,32 @@ class TaskMonitorService extends Logging {
       allUsers.add(job.getSubmitUser)
       allUsers.add(job.getCreateBy)
     }
+    new util.ArrayList[String](allUsers)
+  }
+
+
+  protected def getAllAlertUsers(job: StreamJob): util.List[String] = {
+    val allUsers = new util.LinkedHashSet[String]()
+    val alertUsers = jobService.getAlertUsers(job)
+    var isValid = false
+    if (alertUsers!= null) {
+      alertUsers.foreach(user => {
+        if (StringUtils.isNotBlank(user) && !user.toLowerCase().contains("hduser")) {
+          isValid = true
+          allUsers.add(user)
+        }
+      })
+      if (!allUsers.contains(job.getSubmitUser)) {
+        allUsers.add(job.getSubmitUser)
+      }
+    }
+    if (!isValid){
+      allUsers.add(job.getSubmitUser)
+      allUsers.add(job.getCreateBy)
+    }
+    util.Arrays.asList(JobConf.STREAMIS_DEVELOPER.getHotValue().split(","):_*).foreach(user => {
+      allUsers.add(user)
+    })
     new util.ArrayList[String](allUsers)
   }
 

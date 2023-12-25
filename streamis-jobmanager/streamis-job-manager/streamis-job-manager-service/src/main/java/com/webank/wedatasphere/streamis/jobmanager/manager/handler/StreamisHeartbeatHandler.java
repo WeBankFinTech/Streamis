@@ -49,9 +49,9 @@ public class StreamisHeartbeatHandler {
             try {
                 checkHeartbeatStatus();
             } catch (Exception e) {
-
+                LOGGER.error("stream checkHeartbeatStatus failed");
             }
-        }, 1L, interval ,TimeUnit.MINUTES);
+        }, 1L *60 *1000, interval ,TimeUnit.MILLISECONDS);
     }
 
     public void checkHeartbeatStatus() {
@@ -66,7 +66,7 @@ public class StreamisHeartbeatHandler {
                 long currentTime = System.currentTimeMillis();
                 long diffInMillies = currentTime - heartbeatTime.getTime();
                 int timeout = Integer.parseInt(JobConf.LOGS_HEARTBEAT_INTERVAL_TIMEOUT().getHotValue().toString());
-                if (diffInMillies >timeout) {
+                if (diffInMillies > timeout) {
                     StreamJob job = streamJobMapper.getCurrentJob(projectName, jobName);
                     String alertMsg = "Flink应用[" + job.getName() + "] 回调日志心跳超时, 请及时确认应用是否正常！";
                     LOGGER.info(alertMsg);

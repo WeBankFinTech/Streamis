@@ -124,7 +124,7 @@ object JobConf {
 
   val LOGS_HEARTBEAT_ALARMS_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.logs.heartbeat.alarms", false)
 
-  val LOGS_HEARTBEAT_CHECK_INTERVAL: CommonVars[Int] = CommonVars("wds.streamis.logs.check.heartbeat.interval", 10)
+  val LOGS_HEARTBEAT_CHECK_INTERVAL: CommonVars[Int] = CommonVars("wds.streamis.logs.check.heartbeat.interval.mills", 10 *60 * 1000)
 
-  val LOGS_HEARTBEAT_INTERVAL_TIMEOUT: CommonVars[Int] = CommonVars("wds.streamis.logs.check.heartbeat.interval", 30 * 60 * 1000)
+  val LOGS_HEARTBEAT_INTERVAL_TIMEOUT: CommonVars[Int] = CommonVars("wds.streamis.logs.check.heartbeat.interval.timeout.mills", 30 * 60 * 1000)
 }
