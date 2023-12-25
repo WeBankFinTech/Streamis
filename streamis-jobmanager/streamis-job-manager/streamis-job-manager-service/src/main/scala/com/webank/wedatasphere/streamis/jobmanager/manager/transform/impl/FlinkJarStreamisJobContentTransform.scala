@@ -17,6 +17,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.{JobConfKeyConstants, JobConstants}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 
 import java.util
 import org.apache.linkis.common.utils.JsonUtils
@@ -75,7 +76,6 @@ class FlinkJarStreamisStartupParamsTransform extends Transform {
       // clientTpe
       val prodConfig = streamisTransformJob.getConfigMap.get(JobConfKeyConstants.GROUP_PRODUCE.getValue).asInstanceOf[util.HashMap[String, AnyRef]]
       startupMap.put(JobConfKeyConstants.MANAGE_MODE_KEY.getValue, prodConfig.getOrDefault(JobConfKeyConstants.MANAGE_MODE_KEY.getValue, JobConstants.MANAGE_MODE_ATTACH))
-
       val params = if(job.getParams == null) new util.HashMap[String, AnyRef] else job.getParams
       if (!startupMap.isEmpty) {
         TaskUtils.addStartupMap(params, JobUtils.filterParameterSpec(startupMap))

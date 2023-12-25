@@ -19,7 +19,6 @@ import java.util
 import java.util.concurrent.{Executors, Future, ScheduledExecutorService, TimeUnit}
 import java.util.{Calendar, Map, function}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
-import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobErrorException, JobExecuteErrorException, JobFetchErrorException, JobPauseErrorException, JobTaskErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
@@ -44,6 +43,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.transform.{StreamisTr
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.DateUtils
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils
 import com.webank.wedatasphere.streamis.errorcode.handler.StreamisErrorCodeHandler
+import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 
 import javax.annotation.Resource
 import org.apache.commons.lang.StringUtils
@@ -728,13 +728,14 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
               val jobInfo = jobClient.getJobInfo
               // Get the JobStateManager
               val jobStateManager = jobLaunchManager.getJobStateManager
+              val highAvailablePolicy = this.streamJobConfMapper.getRawConfValue(task.getJobId, JobConf.HIGHAVAILABLE_POLICY_KEY.getValue)
               // First to fetch the latest Savepoint information
-              Option(jobStateManager.getJobState[FlinkSavepoint](classOf[FlinkSavepoint], jobInfo)).foreach(savepoint => stateList.add(savepoint))
+              Option(jobStateManager.getJobState[FlinkSavepoint](classOf[FlinkSavepoint], jobInfo,highAvailablePolicy)).foreach(savepoint => stateList.add(savepoint))
               // Determinate if need the checkpoint information
               this.streamJobConfMapper.getRawConfValue(task.getJobId, JobConfKeyConstants.CHECKPOINT_SWITCH.getValue) match {
                 case "ON" =>
                   // Then to fetch the latest Checkpoint information
-                  Option(jobStateManager.getJobState[FlinkCheckpoint](classOf[FlinkCheckpoint], jobInfo)).foreach(checkpoint => stateList.add(checkpoint))
+                  Option(jobStateManager.getJobState[FlinkCheckpoint](classOf[FlinkCheckpoint], jobInfo,highAvailablePolicy)).foreach(checkpoint => stateList.add(checkpoint))
                 case _ =>
               }
               // At last fetch the state information from storage

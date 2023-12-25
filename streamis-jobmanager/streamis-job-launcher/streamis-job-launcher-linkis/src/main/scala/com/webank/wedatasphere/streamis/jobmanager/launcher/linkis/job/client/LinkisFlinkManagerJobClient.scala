@@ -123,7 +123,7 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
   def stopApp(appId: String, snapshot: Boolean): JobStateInfo = {
     val jobStateInfo = new JobStateInfo()
     if (snapshot) {
-      val savepointURI = this.stateManager.getJobStateDir(classOf[FlinkSavepoint], jobInfo.getName)
+      val savepointURI = this.stateManager.getJobStateDir(classOf[FlinkSavepoint], jobInfo.getName,jobInfo.getHighAvailablePolicy)
       val flinkSavepoint = doSavePoint(appId, null, savepointURI.toString, JobLauncherConfiguration.FLINK_TRIGGER_SAVEPOINT_MODE.getValue)
       jobStateInfo.setLocation(flinkSavepoint.getLocation.toString)
       jobStateInfo.setTimestamp(flinkSavepoint.getTimestamp)
