@@ -127,7 +127,7 @@ class TaskMonitorService extends Logging {
       } else {
         streamTask.setLastUpdateTime(new Date)
         streamTaskMapper.updateTask(streamTask)
-        info(s"Try to update status of StreamJob-${job.getName}.")
+        info(s"Try to update status of StreamJob ${job.getProjectName}.${job.getName} with id ${job.getId}.")
         val retryHandler = new RetryHandler {}
         retryHandler.setRetryNum(3)
         retryHandler.setRetryMaxPeriod(2000)
