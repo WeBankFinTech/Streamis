@@ -5,16 +5,20 @@ import com.google.gson.Gson;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcAuthConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.StreamisLogAppenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisHeartbeat;
+import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -86,6 +90,10 @@ public class RpcHeartbeatService {
         HttpPost httpPost = new HttpPost(address);
         httpPost.setEntity(params);
         httpPost.setHeader(authConfig.getTokenUserKey(), authConfig.getTokenUser());
+        String tokenValue = logAppenderConfig.getSenderConfig().getAuthConfig().getTokenCode();
+        if (null != tokenValue && !tokenValue.trim().equals("")){
+            httpPost.setHeader(logAppenderConfig.getSenderConfig().getAuthConfig().getTokenCodeKey(), tokenValue);
+        }
         CloseableHttpResponse response = null;
         try {
             response = httpClient.execute(httpPost);

@@ -41,26 +41,8 @@ public class JobLogRestfulApi {
             if (StringUtils.isBlank(events.getAppName())){
                 return Message.ok("Ignore the stream log events without application name");
             }
-            String userName;
-            if (StreamJobLogConfig.NO_AUTH_REST.getValue()){
-                userName = request.getHeader("Token-User");
-                if (StringUtils.isBlank(userName)){
-                    try {
-                        userName = SecurityFilter.getLoginUsername(request);
-                    }catch(Exception e){
-                        LOG.error("获取登录用户失败. {}", e.getMessage(), e);
-                    }
-                    if (StringUtils.isBlank(userName)){
-                        LOG.error("获取登录用户失败, 使用默认用户: hadoop");
-                        userName = "hadoop";
-                    }
-                }
-            }else {
-                userName = SecurityFilter.getLoginUsername(request);
-                if (StringUtils.isBlank(userName)) {
-                    throw new StreamJobLogException(-1, "The request should has token user");
-                }
-            }
+            String userName = checkPermissions(request);
+
             String xForwardedForHeader = request.getHeader("X-Forwarded-For");
             if (xForwardedForHeader == null || xForwardedForHeader.isEmpty() || "unknown".equalsIgnoreCase(xForwardedForHeader)) {
                 xForwardedForHeader =  request.getRemoteAddr();
@@ -78,8 +60,12 @@ public class JobLogRestfulApi {
     }
 
     @RequestMapping(value = "/heartbeat ", method = RequestMethod.POST)
-    public Message logHeartbeat(@RequestBody StreamisHeartbeat streamisHeartbeat, HttpServletRequest request){
+    public Message logHeartbeat(@RequestBody StreamisHeartbeat streamisHeartbeat, HttpServletRequest request) throws StreamJobLogException {
         String applicationName = streamisHeartbeat.getApplicationName();
+        if (StringUtils.isBlank(applicationName)){
+            return Message.ok("Ignore the stream log heartbeat OR register without application name");
+        }
+        String userName = checkPermissions(request);
         if (streamisHeartbeat.getSign().equals("register")){
             String password =streamisHeartbeat.getPasswordOrHeartbeat();
             byte[] decodedBytes = Base64.getDecoder().decode(password);
@@ -110,6 +96,30 @@ public class JobLogRestfulApi {
         } else {
             return Message.error("Unlawful request");
         }
+    }
+
+    private String checkPermissions(HttpServletRequest request) throws StreamJobLogException {
+        String userName;
+        if (StreamJobLogConfig.NO_AUTH_REST.getValue()){
+            userName = request.getHeader("Token-User");
+            if (StringUtils.isBlank(userName)){
+                try {
+                    userName = SecurityFilter.getLoginUsername(request);
+                }catch(Exception e){
+                    LOG.error("获取登录用户失败. {}", e.getMessage(), e);
+                }
+                if (StringUtils.isBlank(userName)){
+                    LOG.error("获取登录用户失败, 使用默认用户: hadoop");
+                    userName = "hadoop";
+                }
+            }
+        }else {
+            userName = SecurityFilter.getLoginUsername(request);
+            if (StringUtils.isBlank(userName)) {
+                throw new StreamJobLogException(-1, "The request should has token user");
+            }
+        }
+        return userName;
     }
 
 }
