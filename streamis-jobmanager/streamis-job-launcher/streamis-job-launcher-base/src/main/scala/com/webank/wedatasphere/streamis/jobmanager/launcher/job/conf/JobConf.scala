@@ -25,7 +25,7 @@ object JobConf {
    */
   val STREAMIS_JOB_LOG_COLLECT_PATH: CommonVars[String] = CommonVars("wds.streamis.job.log.collect.path", "/api/rest_j/v1/streamis/streamJobManager/log/collect/events")
 
-  val STREAMIS_JOB_LOG_HEARTBEAT_PATH: CommonVars[String] = CommonVars("wds.streamis.log.heartbeat.path", "/api/rest_j/v1/streamis/streamJobManager/log/collect/events")
+  val STREAMIS_JOB_LOG_HEARTBEAT_PATH: CommonVars[String] = CommonVars("wds.streamis.log.heartbeat.path", "/api/rest_j/v1/streamis/streamJobManager/log/heartbeat")
 
   val STREAMIS_JOB_LOG_HEARTBEAT_INTERVAL: CommonVars[Int] = CommonVars("wds.streamis.log.heartbeat.interval", 30 * 60 * 1000)
 
