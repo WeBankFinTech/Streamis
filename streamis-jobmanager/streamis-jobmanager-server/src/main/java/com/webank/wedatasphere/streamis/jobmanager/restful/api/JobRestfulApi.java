@@ -21,6 +21,7 @@ import com.github.pagehelper.PageInfo;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConstants;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager;
@@ -327,9 +328,9 @@ public class JobRestfulApi {
             }
 
             String managementMode = Optional.ofNullable(this.streamJobConfService.getJobConfValue(jobId, JobConfKeyConstants.MANAGE_MODE_KEY().getValue()))
-                    .orElse("defaultManagementMode");
+                    .orElse(JobConstants.MANAGE_MODE_DETACH());
             if (!Boolean.parseBoolean(JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE().getHotValue().toString()) &&
-                    managementMode.equals("detach")){
+                    managementMode.equals(JobConstants.MANAGE_MODE_DETACH())){
                 return Message.error("The system does not enable the detach feature ,detach job cannot start [" + jobId + "]");
             }
             if (!streamJobService.getEnableStatus(jobId)){
@@ -416,9 +417,9 @@ public class JobRestfulApi {
             return Message.error("Have no permission to execute StreamJob [" + jobId + "]");
         }
         String managementMode = Optional.ofNullable(this.streamJobConfService.getJobConfValue(jobId, JobConfKeyConstants.MANAGE_MODE_KEY().getValue()))
-                    .orElse("defaultManagementMode");
+                    .orElse(JobConstants.MANAGE_MODE_DETACH());
         if (!Boolean.parseBoolean(JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE().getHotValue().toString()) &&
-                managementMode.equals("detach")){
+                managementMode.equals(JobConstants.MANAGE_MODE_DETACH())){
             return Message.error("The system does not enable the detach feature ,detach job cannot start [" + jobId + "]");
         }
         JobHighAvailableVo inspectVo = highAvailableService.getJobHighAvailableVo(jobId);
