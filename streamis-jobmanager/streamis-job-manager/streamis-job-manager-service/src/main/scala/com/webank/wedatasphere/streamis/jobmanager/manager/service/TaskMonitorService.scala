@@ -87,8 +87,10 @@ class TaskMonitorService extends Logging {
             streamTasks.foreach(task => {
               val tmpTask = new StreamTask()
               tmpTask.setId(task.getId)
-              val jobClient = jobLaunchManager.connect(task.getLinkisJobId, task.getLinkisJobInfo)
-              Utils.tryAndWarn(jobClient.stop())
+              Utils.tryAndWarn {
+                val jobClient = jobLaunchManager.connect(task.getLinkisJobId, task.getLinkisJobInfo)
+                jobClient.stop()
+              }
               tmpTask.setStatus(JobConf.FLINK_JOB_STATUS_FAILED.getValue)
               val msg = s"Task ${task.getId} of job id : ${task.getJobId} in server : ${task.getServerInstance} was killed after streamis server restarted."
               logger.warn(msg)
