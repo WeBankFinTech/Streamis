@@ -1,4 +1,5 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
+
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
@@ -42,8 +43,14 @@ object FlinkInternalConfigTransform {
    */
   private val LOG_COLLECT_PATH_CONFIG_NAME = CommonVars("wds.streamis.flink.config.name.log-collect-path", "stream.log.collect.path").getValue
 
+  private val LOG_HEARTBEAT_PATH_CONFIG_NAME = CommonVars("wds.streamis.flink.config.name.log-heartbeat-path", "stream.log.heartbeat.path").getValue
+
+  private val LOG_HEARTBEAT_INTERVAL_CONFIG_NAME = CommonVars("wds.streamis.flink.config.name.log-heartbeat-interval", "stream.log.heartbeat.interval").getValue
+
 
   val INTERNAL_CONFIG_MAP = Map(JobConf.STREAMIS_JOB_LOG_GATEWAY.key -> LOG_GATEWAY_CONFIG_NAME,
-    JobConf.STREAMIS_JOB_LOG_COLLECT_PATH.key -> LOG_COLLECT_PATH_CONFIG_NAME
+    JobConf.STREAMIS_JOB_LOG_COLLECT_PATH.key -> LOG_COLLECT_PATH_CONFIG_NAME,
+    JobConf.STREAMIS_JOB_LOG_HEARTBEAT_PATH.key -> LOG_HEARTBEAT_PATH_CONFIG_NAME,
+    JobConf.STREAMIS_JOB_LOG_HEARTBEAT_INTERVAL.key -> LOG_HEARTBEAT_INTERVAL_CONFIG_NAME
   )
 }
