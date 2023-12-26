@@ -469,6 +469,9 @@ export default {
         ],
       },
       queryRuleValidate: {
+        jobName: [
+          { pattern: /^[a-zA-Z0-9_,.\s]+$/, message: '仅支持大小写字母、数字、下划线、小数点、逗号', trigger: 'blur' }
+        ],
         label: [
           { pattern: /^[a-zA-Z0-9_,.\s]+$/, message: '仅支持大小写字母、数字、下划线、小数点、逗号', trigger: 'blur' }
         ],
