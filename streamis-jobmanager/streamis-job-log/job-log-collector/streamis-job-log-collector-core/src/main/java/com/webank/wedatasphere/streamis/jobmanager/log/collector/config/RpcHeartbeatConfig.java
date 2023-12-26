@@ -37,4 +37,12 @@ public class RpcHeartbeatConfig {
     public void setHeartbeatInterval(int heartbeatInterval) {
         this.heartbeatInterval = heartbeatInterval;
     }
+
+    @Override
+    public String toString() {
+        return "RpcHeartbeatConfig{" +
+                "heartbeatInterval='" + heartbeatInterval + '\'' +
+                ", heartbeatAddress=" + heartbeatAddress +
+                '}';
+    }
 }
