@@ -105,6 +105,10 @@ public class JobRestfulApi {
         if(StringUtils.isBlank(projectName)){
             return Message.error("Project name cannot be empty(项目名不能为空，请指定)");
         }
+
+        if (!RegularUtil.matches(jobName)){
+            return Message.error("查询仅支持大小写字母、数字、下划线、小数点、逗号 [" + jobName + "] ");
+        }
         if (Objects.isNull(pageNow)) {
             pageNow = 1;
         }
