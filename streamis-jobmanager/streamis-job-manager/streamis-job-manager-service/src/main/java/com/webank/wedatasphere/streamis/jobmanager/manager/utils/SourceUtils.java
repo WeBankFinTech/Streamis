@@ -30,7 +30,8 @@ public class SourceUtils {
                 return highAvailableVo;
             } else {
                 //查job conf  wds.streamis.app.highavailable.policy  值
-                if (highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY_DOUBLE().getValue()) || highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY_DOUBLE_BAK().getValue())){
+                if (highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY_DOUBLE().getValue()) || highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY_DOUBLE_BAK().getValue())
+                        || highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY_MANAGERSLAVE().getValue()) || highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY_MANAGERSLAVE_BAK().getValue())){
                     Map map = BDPJettyServerHelper.gson().fromJson(source, Map.class);
                     if (map.containsKey("source")) {
                         String sourceValue = map.get("source").toString();
