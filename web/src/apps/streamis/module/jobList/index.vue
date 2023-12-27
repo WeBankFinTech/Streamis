@@ -56,7 +56,7 @@
             </FormItem>
           </Form>
           <Form ref="queryForm" class="query-form" :model="query" :rules="queryRuleValidate" inline v-else @submit.native.prevent :label-width="80">
-            <FormItem :label="$t('message.streamis.formItems.jobName')">
+            <FormItem prop="jobName" :label="$t('message.streamis.formItems.jobName')">
               <Input
                 v-model="query.jobName"
                 :placeholder="$t('message.streamis.formItems.jobName')"
@@ -469,6 +469,9 @@ export default {
         ],
       },
       queryRuleValidate: {
+        jobName: [
+          { pattern: /^[a-zA-Z0-9_,.\s]+$/, message: '仅支持大小写字母、数字、下划线、小数点、逗号', trigger: 'blur' }
+        ],
         label: [
           { pattern: /^[a-zA-Z0-9_,.\s]+$/, message: '仅支持大小写字母、数字、下划线、小数点、逗号', trigger: 'blur' }
         ],
