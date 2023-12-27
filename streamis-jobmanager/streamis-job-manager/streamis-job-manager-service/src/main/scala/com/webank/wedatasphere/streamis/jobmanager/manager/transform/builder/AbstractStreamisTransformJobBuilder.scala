@@ -64,6 +64,8 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
   private def internalLogConfig(internal: util.Map[String, AnyRef]): Unit = {
     internal.put(JobConf.STREAMIS_JOB_LOG_GATEWAY.key, JobConf.STREAMIS_JOB_LOG_GATEWAY.getValue)
     internal.put(JobConf.STREAMIS_JOB_LOG_COLLECT_PATH.key, JobConf.STREAMIS_JOB_LOG_COLLECT_PATH.getValue)
+    internal.put(JobConf.STREAMIS_JOB_LOG_HEARTBEAT_PATH.key, JobConf.STREAMIS_JOB_LOG_HEARTBEAT_PATH.getValue)
+    internal.put(JobConf.STREAMIS_JOB_LOG_HEARTBEAT_INTERVAL.key, new Integer(JobConf.STREAMIS_JOB_LOG_HEARTBEAT_INTERVAL.getValue))
   }
 }
 
