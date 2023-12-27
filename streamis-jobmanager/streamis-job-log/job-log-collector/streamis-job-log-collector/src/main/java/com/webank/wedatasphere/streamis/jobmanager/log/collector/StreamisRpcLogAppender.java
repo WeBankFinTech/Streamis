@@ -5,6 +5,7 @@ import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcLogSe
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.StreamisLogAppenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.log4j2.StreamisLog4j2AppenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.message.filters.LogMessageFilter;
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.RpcHeartbeatService;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.StreamisRpcLogSender;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisLogEvent;
 import com.webank.wedatasphere.streamis.jobmanager.plugin.StreamisConfigAutowired;
@@ -119,6 +120,7 @@ public class StreamisRpcLogAppender extends AbstractAppender {
             throw new IllegalArgumentException("Application name cannot be empty");
         }
         System.out.println("StreamisRpcLogAppender: init with config => " + logAppenderConfig);
+        new RpcHeartbeatService(logAppenderConfig).startHeartbeat();
         return new StreamisRpcLogAppender(name, logAppenderConfig.getFilter(), layout, ignoreExceptions, Property.EMPTY_ARRAY, logAppenderConfig);
     }
 

@@ -8,6 +8,14 @@ public class StreamisHeartbeat {
 
     private String sign;
 
+    public String toJson() {
+        return "{"
+                + "\"applicationName\":" + applicationName
+                + ",\"passwordOrHeartbeat\":" + passwordOrHeartbeat
+                + ",\"sign\":" + sign
+                + "}";
+    }
+
     public String getSign() {
         return sign;
     }
