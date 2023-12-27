@@ -56,7 +56,7 @@
             </FormItem>
           </Form>
           <Form ref="queryForm" class="query-form" :model="query" :rules="queryRuleValidate" inline v-else @submit.native.prevent :label-width="80">
-            <FormItem :label="$t('message.streamis.formItems.jobName')">
+            <FormItem prop="jobName" :label="$t('message.streamis.formItems.jobName')">
               <Input
                 v-model="query.jobName"
                 :placeholder="$t('message.streamis.formItems.jobName')"
