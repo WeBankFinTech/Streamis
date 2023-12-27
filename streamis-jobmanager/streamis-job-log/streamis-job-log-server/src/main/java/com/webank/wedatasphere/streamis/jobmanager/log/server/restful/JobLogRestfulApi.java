@@ -59,7 +59,7 @@ public class JobLogRestfulApi {
         return result;
     }
 
-    @RequestMapping(value = "/heartbeat ", method = RequestMethod.POST)
+    @RequestMapping(value = "/heartbeat", method = RequestMethod.POST)
     public Message logHeartbeat(@RequestBody StreamisHeartbeat streamisHeartbeat, HttpServletRequest request) throws StreamJobLogException {
         String applicationName = streamisHeartbeat.getApplicationName();
         if (StringUtils.isBlank(applicationName)){
