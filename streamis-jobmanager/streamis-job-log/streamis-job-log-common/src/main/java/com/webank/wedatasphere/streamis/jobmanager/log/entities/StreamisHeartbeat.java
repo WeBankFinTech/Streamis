@@ -10,9 +10,9 @@ public class StreamisHeartbeat {
 
     public String toJson() {
         return "{"
-                + "\"applicationName\":" + applicationName
-                + ",\"passwordOrHeartbeat\":" + passwordOrHeartbeat
-                + ",\"sign\":" + sign
+                + "\"applicationName\":" + "\"" + applicationName + "\""
+                + ",\"passwordOrHeartbeat\":" + "\"" + passwordOrHeartbeat + "\""
+                + ",\"sign\":" + "\"" + sign + "\""
                 + "}";
     }
 
