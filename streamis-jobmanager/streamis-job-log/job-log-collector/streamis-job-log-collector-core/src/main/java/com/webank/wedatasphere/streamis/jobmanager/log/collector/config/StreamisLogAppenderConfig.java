@@ -128,12 +128,12 @@ public class StreamisLogAppenderConfig {
          * @return
          */
         public StreamisLogAppenderConfig.Builder setRpcHeartbeatAddress(String heartbeatAddress){
-            this.rpcLogSenderConfig.getHeartbeatConfig().setHeartbeatAddress(heartbeatAddress);
+            this.rpcLogSenderConfig.setHeartbeatAddress(heartbeatAddress);
             return this;
         }
 
         public StreamisLogAppenderConfig.Builder setRpcHeartbeatInterval(int heartbeatInterval){
-            this.rpcLogSenderConfig.getHeartbeatConfig().setHeartbeatInterval(heartbeatInterval);
+            this.rpcLogSenderConfig.setHeartbeatInterval(heartbeatInterval);
             return this;
         }
 

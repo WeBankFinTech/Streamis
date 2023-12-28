@@ -1,39 +1,54 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender;
 
-import java.io.IOException;
-import com.google.gson.Gson;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcAuthConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.StreamisLogAppenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisHeartbeat;
-import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
-import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Base64;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
-@Component
 public class RpcHeartbeatService {
 
     protected StreamisLogAppenderConfig logAppenderConfig;
 
-    private final Gson gson = new Gson();
+    private CloseableHttpClient httpClient = HttpClients.createDefault();
 
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    public RpcHeartbeatService(StreamisLogAppenderConfig logAppenderConfig) {
+        this.logAppenderConfig = logAppenderConfig;
+    }
 
-    @PostConstruct
+    private ScheduledExecutorService scheduler;
+
+    private ThreadFactory threadFactory(String threadName, Boolean isDaemon) {
+        return new ThreadFactory() {
+            AtomicInteger num = new AtomicInteger(0);
+
+            @Override
+            public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r);
+                    t.setDaemon(isDaemon);
+                    t.setName(threadName + num.incrementAndGet());
+                    return t;
+            }
+        };
+    }
+
     public void startHeartbeat() {
+        System.out.println("Start to heart register.");
+        ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1, threadFactory("Streamis-Log-Default-Scheduler-Thread-", true));
+        scheduler.setMaximumPoolSize(1);
+        scheduler.setKeepAliveTime(5, TimeUnit.MINUTES);
+        this.scheduler = scheduler;
+
         String applicationName = logAppenderConfig.getApplicationName();
         String originalString = "streamisRegister";
         String encodedString = Base64.getEncoder().encodeToString(originalString.getBytes());
@@ -41,25 +56,28 @@ public class RpcHeartbeatService {
         streamisHeartbeat.setApplicationName(applicationName);
         streamisHeartbeat.setPasswordOrHeartbeat(encodedString);
         streamisHeartbeat.setSign("register");
-        String registerData = gson.toJson(streamisHeartbeat);
+        String registerData = streamisHeartbeat.toJson();
         try {
-            StringEntity params = new StringEntity(registerData);
+            StringEntity params = new StringEntity(registerData, "UTF-8");
+            params.setContentType(ContentType.APPLICATION_JSON.toString());
             httpPostWithRetry(params);
         } catch (Exception e) {
             System.err.println("flink 应用请求注册失败，appName:" + applicationName);
         }
-        int interval = logAppenderConfig.getSenderConfig().getHeartbeatConfig().getHeartbeatInterval();
+        int interval = logAppenderConfig.getSenderConfig().getHeartbeatInterval();
         streamisHeartbeat.setPasswordOrHeartbeat("heartbeatData");
         streamisHeartbeat.setSign("heartbeat");
-        String heartbeatData = gson.toJson(streamisHeartbeat);
+        String heartbeatData = streamisHeartbeat.toJson();
         scheduler.scheduleAtFixedRate(() -> {
             try {
-                StringEntity params = new StringEntity(heartbeatData);
+                StringEntity params = new StringEntity(heartbeatData, "UTF-8");
+                params.setContentType(ContentType.APPLICATION_JSON.toString());
                 httpPostWithRetry(params);
             } catch (Exception e) {
                 System.err.println("flink 应用请求心跳失败，appName:" + applicationName);
             }
-        }, 5L * 60 * 1000, interval, TimeUnit.MILLISECONDS);
+        }, 1L * 10 * 1000, interval, TimeUnit.MILLISECONDS);
+        System.out.println("End to heart beat.");
     }
 
     private void httpPostWithRetry(StringEntity params) {
@@ -84,9 +102,8 @@ public class RpcHeartbeatService {
     }
 
     private void httpPost(StringEntity params) throws IOException {
-        String address = logAppenderConfig.getSenderConfig().getHeartbeatConfig().getHeartbeatAddress();
+        String address = logAppenderConfig.getSenderConfig().getHeartbeatAddress();
         RpcAuthConfig authConfig = logAppenderConfig.getSenderConfig().getAuthConfig();
-        CloseableHttpClient httpClient = HttpClients.createDefault();
         HttpPost httpPost = new HttpPost(address);
         httpPost.setEntity(params);
         httpPost.setHeader(authConfig.getTokenUserKey(), authConfig.getTokenUser());
@@ -96,8 +113,10 @@ public class RpcHeartbeatService {
         }
         CloseableHttpResponse response = null;
         try {
+            System.err.println("Start to send request, status : ");
             response = httpClient.execute(httpPost);
             int status = response.getStatusLine().getStatusCode();
+            System.err.println("End to send request, status : " + status);
             if (status >= 200 && status < 300) {
                 // 发送心跳成功
                 String responseBody = EntityUtils.toString(response.getEntity());
