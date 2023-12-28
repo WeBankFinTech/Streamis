@@ -10,7 +10,6 @@ import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.filter.AbstractFilter;
 import org.apache.logging.log4j.message.Message;
-import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
@@ -19,7 +18,6 @@ import java.util.Optional;
  */
 public class KeywordThresholdFilter extends AbstractFilter implements LogMessageFilterAdapter {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(KeywordThresholdFilter.class);
     /**
      * Level
      */
@@ -35,7 +33,7 @@ public class KeywordThresholdFilter extends AbstractFilter implements LogMessage
         // If accept keywords is empty, set the log level to warn
         if (null == acceptKeywords || acceptKeywords.length <= 0){
             this.level = Level.WARN;
-            logger.info("The keywords is empty, set the log threshold level >= " + this.level);
+            System.out.println("The keywords is empty, set the log threshold level >= " + this.level);
         } else {
             this.level = Level.ALL;
         }

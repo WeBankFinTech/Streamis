@@ -24,10 +24,10 @@
 
 
     <update id="updateHeartbeatTime">
-        UPDATE linkis_stream_register_info SET  heartbeat_time = #{heartbeatTime} WHERE applicationName = #{applicationName}
+        UPDATE linkis_stream_register_info SET  heartbeat_time = #{heartbeatTime} WHERE application_name = #{applicationName}
     </update>
     <update id="updateRegisterTime">
-        UPDATE linkis_stream_register_info SET  register_time = #{registerTime} WHERE applicationName = #{applicationName}
+        UPDATE linkis_stream_register_info SET  register_time = #{registerTime} WHERE application_name = #{applicationName}
     </update>
 
     <delete id="delete">

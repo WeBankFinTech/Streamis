@@ -3,6 +3,7 @@ package com.webank.wedatasphere.streamis.jobmanager.log.collector.sender;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcAuthConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.StreamisLogAppenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisHeartbeat;
+import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
@@ -46,8 +47,15 @@ public class RpcHeartbeatService {
         System.out.println("Start to heart register.");
         ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1, threadFactory("Streamis-Log-Default-Scheduler-Thread-", true));
         scheduler.setMaximumPoolSize(1);
-        scheduler.setKeepAliveTime(5, TimeUnit.MINUTES);
+        scheduler.setKeepAliveTime(30, TimeUnit.MINUTES);
         this.scheduler = scheduler;
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                httpClient.close();
+            } catch (IOException e) {
+                // Ignore
+            }
+        }));
 
         String applicationName = logAppenderConfig.getApplicationName();
         String originalString = "streamisRegister";
@@ -57,12 +65,15 @@ public class RpcHeartbeatService {
         streamisHeartbeat.setPasswordOrHeartbeat(encodedString);
         streamisHeartbeat.setSign("register");
         String registerData = streamisHeartbeat.toJson();
+        if (logAppenderConfig.getSenderConfig().isDebugMode()) {
+            System.out.println(registerData);
+        }
         try {
             StringEntity params = new StringEntity(registerData, "UTF-8");
             params.setContentType(ContentType.APPLICATION_JSON.toString());
             httpPostWithRetry(params);
         } catch (Exception e) {
-            System.err.println("flink 应用请求注册失败，appName:" + applicationName);
+            System.err.println("flink 应用请求注册失败，appName:" + applicationName + ". reason: " + e.getMessage());
         }
         int interval = logAppenderConfig.getSenderConfig().getHeartbeatInterval();
         streamisHeartbeat.setPasswordOrHeartbeat("heartbeatData");
@@ -87,6 +98,7 @@ public class RpcHeartbeatService {
                 httpPost(params);
                 return; // 如果执行成功则直接返回
             } catch (Exception e) {
+                System.err.println("send request : " + params.toString() + " failed. Because : " + e.getMessage());
                 retryCount++;
                 if (retryCount < 3) {
                     System.err.println("httpPost请求失败，重试第 " + retryCount + " 次");
@@ -102,6 +114,10 @@ public class RpcHeartbeatService {
     }
 
     private void httpPost(StringEntity params) throws IOException {
+        boolean isDebug = logAppenderConfig.getSenderConfig().isDebugMode();
+        if (isDebug) {
+            System.out.println("start method httpPost, params : " + params.toString());
+        }
         String address = logAppenderConfig.getSenderConfig().getHeartbeatAddress();
         RpcAuthConfig authConfig = logAppenderConfig.getSenderConfig().getAuthConfig();
         HttpPost httpPost = new HttpPost(address);
@@ -113,25 +129,36 @@ public class RpcHeartbeatService {
         }
         CloseableHttpResponse response = null;
         try {
-            System.err.println("Start to send request, status : ");
+            if (isDebug) {
+                System.out.println("Start to send request. headers : ");
+                Header[] headers = httpPost.getAllHeaders();
+                for (int i = 0; i < headers.length; i++) {
+                    System.out.println(headers[i].getName() + "=" + headers[i].getValue());
+                }
+            }
             response = httpClient.execute(httpPost);
             int status = response.getStatusLine().getStatusCode();
-            System.err.println("End to send request, status : " + status);
+            if (isDebug) {
+                System.out.println("End to send request, status : " + status);
+            }
             if (status >= 200 && status < 300) {
                 // 发送心跳成功
                 String responseBody = EntityUtils.toString(response.getEntity());
                 // 处理响应体
+                if (isDebug) {
+                    System.out.println("responseBody: \n" + responseBody);
+                }
             } else {
-                System.err.println("Failed to send heartbeat");
+                System.err.println("Failed to request, status : " + status);
+                throw new RuntimeException("failed to send request : " + params.toString() + ". status is " + status);
             }
         } catch (IOException e) {
-            System.err.println("Failed to send heartbeat");
+            System.err.println("Failed to send heartbeat, because : " + e.getMessage());
         } finally {
             try {
                 if (response != null) {
                     response.close();
                 }
-                httpClient.close();
             } catch (IOException e) {
                 System.err.println("Failed to close I/O");
             }

@@ -78,14 +78,18 @@ public class StreamisRpcLogAppender extends AbstractAppender {
 
     @Override
     public void append(LogEvent event) {
-        String content = Arrays.toString(getLayout().toByteArray(event));
+        String content = new String(getLayout().toByteArray(event));
         if (messageFilterFunction.test(event.getLoggerName(), content)) {
             StreamisLogEvent logEvent = new StreamisLogEvent(content, event.getTimeMillis());
             try {
+                System.out.println(event.getLoggerName() + "will send event content: " + content);
                 this.logCache.cacheLog(logEvent);
             } catch (InterruptedException e) {
                 LOGGER.error("StreamisRpcLogAppender: {} interrupted when cache the log into the RPC sender, message: {}", this.getName(), e.getMessage());
-                
+            }
+        } else {
+            if (appenderConfig.getSenderConfig().isDebugMode()) {
+                System.out.println("debug: event didn't pass messageFilterFunction, will ignore. content:\n" + content);
             }
         }
     }
