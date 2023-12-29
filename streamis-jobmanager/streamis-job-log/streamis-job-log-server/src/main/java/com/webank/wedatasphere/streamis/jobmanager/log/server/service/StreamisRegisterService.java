@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.server.service;
 
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamRegister;
 
 public interface StreamisRegisterService {
@@ -12,4 +13,7 @@ public interface StreamisRegisterService {
 
     StreamRegister getInfoByApplicationName(String applicationName);
 
+    StreamJob getJobByApplicationName(String applicationName);
+
+    void deleteRegister(String applicationName);
 }

@@ -19,7 +19,7 @@
 
 <mapper namespace="com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamRegisterMapper">
     <insert id="insert">
-        INSERT INTO linkis_stream_register_info(application_name, password, register_time, heartbeat_time) VALUES(#{applicationName}, #{password}, #{registerTime},#{heartbeatTime})
+        INSERT INTO linkis_stream_register_info(job_id, application_name, password, register_time, heartbeat_time) VALUES(#{jobId}, #{applicationName}, #{password}, #{registerTime},#{heartbeatTime})
     </insert>
 
 
@@ -45,4 +45,12 @@
         ORDER BY register_time
         DESC LIMIT 1
     </select>
+
+    <select id="getInfoByJobId"
+            resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamRegister">
+        SELECT * FROM linkis_stream_register_info WHERE job_id = #{job_id}
+        ORDER BY register_time DESC
+        LIMIT 1
+    </select>
+
 </mapper>

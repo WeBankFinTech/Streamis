@@ -1,6 +1,7 @@
-package com.webank.wedatasphere.streamis.jobmanager.log.server.service;
+package com.webank.wedatasphere.streamis.jobmanager.log.server.service.impl;
 
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisLogEvents;
+import com.webank.wedatasphere.streamis.jobmanager.log.server.service.StreamisJobLogService;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.JobLogStorage;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.JobLogBucket;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.JobLogBucketConfig;
@@ -13,7 +14,7 @@ import javax.annotation.Resource;
  * Default implement
  */
 @Service
-public class DefaultStreamisJobLogService implements StreamisJobLogService{
+public class DefaultStreamisJobLogService implements StreamisJobLogService {
 
     @Resource
     private JobLogStorage jobLogStorage;
