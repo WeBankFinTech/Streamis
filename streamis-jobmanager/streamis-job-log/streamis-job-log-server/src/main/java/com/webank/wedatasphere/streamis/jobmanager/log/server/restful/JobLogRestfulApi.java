@@ -7,6 +7,7 @@ import com.webank.wedatasphere.streamis.jobmanager.log.server.entities.StreamisL
 import com.webank.wedatasphere.streamis.jobmanager.log.server.exception.StreamJobLogException;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.service.StreamisJobLogService;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.service.StreamisRegisterService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamRegister;
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.server.Message;
@@ -21,13 +22,12 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 @RestController
 @RequestMapping(path = "/streamis/streamJobManager/log")
 public class JobLogRestfulApi {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JobLogRestfulApi.class);
+    private static final Logger logger = LoggerFactory.getLogger(JobLogRestfulApi.class);
     @Resource
     private StreamisJobLogService streamisJobLogService;
 
@@ -76,13 +76,17 @@ public class JobLogRestfulApi {
                 streamRegister.setPassword(password);
                 streamRegister.setRegisterTime(new Date());
                 streamRegister.setHeartbeatTime(new Date());
-                StreamRegister info = streamisRegisterService.getInfoByApplicationName(applicationName);
-                if (info == null){
-                    streamisRegisterService.addStreamRegister(streamRegister);
+                StreamJob job = streamisRegisterService.getJobByApplicationName(applicationName);
+                if (null == job) {
+                    logger.error("Cannot find job with applicationName : " + applicationName);
                 } else {
-                    streamRegister.setRegisterTime(new Date());
-                    streamisRegisterService.updateRegisterTime(streamRegister);
+                    streamRegister.setJobId(job.getId());
                 }
+                StreamRegister info = streamisRegisterService.getInfoByApplicationName(applicationName);
+                if (info != null) {
+                    streamisRegisterService.deleteRegister(applicationName);
+                }
+                streamisRegisterService.addStreamRegister(streamRegister);
                 return  Message.ok();
             } else {
                 return Message.error(applicationName + "Password error");
@@ -94,7 +98,7 @@ public class JobLogRestfulApi {
             streamisRegisterService.updateHeartbeatTime(streamRegister);
             return Message.ok();
         } else {
-            return Message.error("Unlawful request");
+            return Message.error("Unknown heartbeat type :" + streamisHeartbeat.getSign());
         }
     }
 
@@ -106,15 +110,16 @@ public class JobLogRestfulApi {
                 try {
                     userName = SecurityFilter.getLoginUsername(request);
                 }catch(Exception e){
-                    LOG.error("获取登录用户失败. {}", e.getMessage(), e);
+                    logger.error("获取登录用户失败. {}", e.getMessage(), e);
                 }
                 if (StringUtils.isBlank(userName)){
-                    LOG.error("获取登录用户失败, 使用默认用户: hadoop");
+                    logger.error("获取登录用户失败, 使用默认用户: hadoop");
                     userName = "hadoop";
                 }
             }
         }else {
             userName = SecurityFilter.getLoginUsername(request);
+            logger.error("request {} has no token user.", request.getRequestURI());
             if (StringUtils.isBlank(userName)) {
                 throw new StreamJobLogException(-1, "The request should has token user");
             }

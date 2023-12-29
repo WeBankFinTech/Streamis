@@ -27,7 +27,7 @@ object JobConf {
 
   val STREAMIS_JOB_LOG_HEARTBEAT_PATH: CommonVars[String] = CommonVars("wds.streamis.log.heartbeat.path", "/api/rest_j/v1/streamis/streamJobManager/log/heartbeat")
 
-  val STREAMIS_JOB_LOG_HEARTBEAT_INTERVAL: CommonVars[Int] = CommonVars("wds.streamis.log.heartbeat.interval", 30 * 60 * 1000)
+  val STREAMIS_JOB_LOG_HEARTBEAT_INTERVAL: CommonVars[Int] = CommonVars("wds.streamis.log.heartbeat.interval.mills", 30 * 60 * 1000)
 
   /**
    * Enable to use material container
@@ -136,7 +136,11 @@ object JobConf {
 
   val AUTO_RESTART_JOB: CommonVars[Boolean] = CommonVars("wds.streamis.app.highavailable.auto.restart.job", true)
 
-  val LOGS_HEARTBEAT_ALARMS_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.logs.heartbeat.alarms", false)
+  val LOGS_HEARTBEAT_CHECK_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.logs.heartbeat.enable", true)
+
+  val LOGS_HEARTBEAT_ALARMS_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.logs.heartbeat.alarms.enable", true)
+
+  val LOGS_HEARTBEAT_REGISTER_ALARMS_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.logs.heartbeat.register.alarms.enable", true)
 
   val LOGS_HEARTBEAT_CHECK_INTERVAL: CommonVars[Int] = CommonVars("wds.streamis.logs.check.heartbeat.interval.mills", 10 *60 * 1000)
 

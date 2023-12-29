@@ -97,6 +97,13 @@
         linkis_stream_job WHERE name = #{jobName}
     </select>
 
+    <select id="getJobByProjectAndJobName" resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
+        SELECT <include refid="Job_Column"/> FROM
+        linkis_stream_job WHERE CONCAT(project_name, '.', name) = #{applicationName}
+        ORDER BY id DESC
+        LIMIT 1
+    </select>
+
 <!--    <select id="getJobById" resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">-->
 <!--        SELECT j.`id`,j.`name`,j.`status`,j.`submit_user`,j.`description`,j.`label`,l.`create_time`,l.`version` as currentVersion,j.`job_type` FROM-->
 <!--        linkis_stream_job j,linkis_stream_job_version l WHERE j.id = l.job_id and j.id=#{jobId} and l.`version` = #{version}-->

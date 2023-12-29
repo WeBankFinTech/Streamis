@@ -4,7 +4,9 @@ import java.util.Date;
 
 public class StreamRegister {
 
-    private Long Id;
+    private Long id;
+
+    private Long jobId;
 
     private String applicationName;
 
@@ -18,8 +20,9 @@ public class StreamRegister {
     public StreamRegister() {
     }
 
-    public StreamRegister(Long id, String applicationName, String password, Date registerTime, Date heartbeatTime) {
-        Id = id;
+    public StreamRegister(Long id, Long jobId, String applicationName, String password, Date registerTime, Date heartbeatTime) {
+        this.id = id;
+        this.jobId = jobId;
         this.applicationName = applicationName;
         this.password = password;
         this.registerTime = registerTime;
@@ -37,11 +40,19 @@ public class StreamRegister {
     }
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
+    }
+
+    public Long getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(Long jobId) {
+        this.jobId = jobId;
     }
 
     public String getApplicationName() {

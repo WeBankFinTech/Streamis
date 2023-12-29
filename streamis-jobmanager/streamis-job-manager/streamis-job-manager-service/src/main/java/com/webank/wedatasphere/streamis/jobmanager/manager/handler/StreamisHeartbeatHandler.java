@@ -1,7 +1,5 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.handler;
 
-import com.webank.wedatasphere.streamis.errorcode.manager.StreamisErrorCodeManager;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.User;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel;
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.Alerter;
@@ -41,24 +39,33 @@ public class StreamisHeartbeatHandler {
     @Autowired
     private Alerter[] alert;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StreamisHeartbeatHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(StreamisHeartbeatHandler.class);
 
     @PostConstruct
     public void startHeartbeatCheckThread() {
-        int interval = Integer.parseInt(JobConf.LOGS_HEARTBEAT_CHECK_INTERVAL().getHotValue().toString());
-        Utils.defaultScheduler().scheduleAtFixedRate(() -> {
-            try {
-                checkHeartbeatStatus();
-            } catch (Exception e) {
-                LOGGER.error("stream checkHeartbeatStatus failed");
-            }
-        }, 1L *60 *1000, interval ,TimeUnit.MILLISECONDS);
+        if ((Boolean) JobConf.LOGS_HEARTBEAT_CHECK_ENABLE().getValue()) {
+            int interval = Integer.parseInt(JobConf.LOGS_HEARTBEAT_CHECK_INTERVAL().getHotValue().toString());
+            Utils.defaultScheduler().scheduleAtFixedRate(() -> {
+                try {
+                    checkRegisterStatus();
+                    checkHeartbeatStatus();
+                } catch (Exception e) {
+                    logger.error("stream checkHeartbeatStatus failed");
+                }
+            }, 1L *60 *1000, interval ,TimeUnit.MILLISECONDS);
+            logger.info("heart beat info check started.");
+        }
+
     }
 
     public void checkHeartbeatStatus() {
         List<StreamRegister> streamRegisterInfo = streamRegisterMapper.getInfo();
         if (!streamRegisterInfo.isEmpty()) {
             for (StreamRegister streamRegister : streamRegisterInfo) {
+                StreamTask lastTask = streamTaskMapper.getLatestByJobId(streamRegister.getJobId());
+                if (!JobConf.isRunning(lastTask.getStatus())) {
+                    continue;
+                }
                 Date heartbeatTime = streamRegister.getHeartbeatTime();
                 String applicationName = streamRegister.getApplicationName();
                 String[] parts = applicationName.split("\\.");
@@ -69,13 +76,36 @@ public class StreamisHeartbeatHandler {
                 int timeout = Integer.parseInt(JobConf.LOGS_HEARTBEAT_INTERVAL_TIMEOUT().getHotValue().toString());
                 if (diffInMillies > timeout) {
                     StreamJob job = streamJobMapper.getCurrentJob(projectName, jobName);
-                    String alertMsg = "Flink应用[" + job.getName() + "] 回调日志心跳超时, 请及时确认应用是否正常！";
-                    LOGGER.info(alertMsg);
+                    String alertMsg = "流式" + job.getJobType() + "应用[" + job.getProjectName() + "." + job.getName() + "] 回调日志心跳超过" + timeout + "ms未响应, 请及时确认应用是否正常！";
+                    logger.info(alertMsg);
                     if (!Boolean.parseBoolean(JobConf.LOGS_HEARTBEAT_ALARMS_ENABLE().getHotValue().toString())) {
-                        List<String> userList = getAlertUsers(job);
+                        List<String> userList = getAllAlertUsers(job);
                         StreamTask streamTask = streamTaskMapper.getLatestByJobId(job.getId());
                         alert(jobService.getAlertLevel(job), alertMsg, userList, streamTask);
                     }
+                }
+            }
+        }
+    }
+
+    private void checkRegisterStatus() {
+        ArrayList<Integer> statusList = new ArrayList<>();
+        statusList.add((int)JobConf.FLINK_JOB_STATUS_RUNNING().getValue());
+        List<StreamTask> streamTasks = streamTaskMapper.getTasksByStatus(statusList);
+        if (null == streamTasks || streamTasks.isEmpty()) {
+            return ;
+        }
+        for (StreamTask streamTask : streamTasks) {
+            StreamJob streamJob = streamJobMapper.getJobById(streamTask.getJobId());
+            String appName = streamJob.getProjectName() +"."+streamJob.getName();
+            StreamRegister register = streamRegisterMapper.getInfoByApplicationName(appName);
+            if (null == register) {
+                List<String> userList = getAllAlertUsers(streamJob);
+                String alertMsg ="流式" + streamJob.getJobType() + "应用[" + appName + "] 回调日志没有注册, 请及时确认应用是否正常！";
+                logger.info(alertMsg);
+                //todo 自定义告警级别
+                if ((boolean) JobConf.LOGS_HEARTBEAT_REGISTER_ALARMS_ENABLE().getHotValue()) {
+                    alert(jobService.getAlertLevel(streamJob), alertMsg, userList, streamTask);
                 }
             }
         }
@@ -86,12 +116,12 @@ public class StreamisHeartbeatHandler {
             try {
                 alerter.alert(alertLevel, alertMsg, users, streamTask);
             } catch (Exception t) {
-                LOGGER.error("failed to send alert message to " + alerter.getClass().getSimpleName() + ".", t);
+                logger.error("failed to send alert message to " + alerter.getClass().getSimpleName() + ".", t);
             }
         }
     }
 
-    protected List<String> getAlertUsers(StreamJob job) {
+    protected List<String> getAllAlertUsers(StreamJob job) {
         Set<String> allUsers = new LinkedHashSet<>();
         List<String> alertUsers = jobService.getAlertUsers(job);
         boolean isValid = false;

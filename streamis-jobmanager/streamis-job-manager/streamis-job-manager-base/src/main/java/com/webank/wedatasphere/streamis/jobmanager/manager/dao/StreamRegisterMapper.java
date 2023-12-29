@@ -10,6 +10,8 @@ public interface StreamRegisterMapper {
 
     StreamRegister getInfoByApplicationName(String applicationName);
 
+    StreamRegister getInfoByJobId(Long jobId);
+
     void insert(StreamRegister streamRegister);
 
     void delete(String applicationName);
