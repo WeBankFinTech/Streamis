@@ -30,7 +30,6 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper,
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils
 import com.webank.wedatasphere.streamis.errorcode.handler.StreamisErrorCodeHandler
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.utils.ServerUtils
 import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants
 
 import javax.annotation.{PostConstruct, PreDestroy, Resource}
@@ -59,9 +58,10 @@ class TaskMonitorService extends Logging {
   @Resource
   private var streamJobConfMapper: StreamJobConfMapper = _
 
-  private var future: Future[_] = _
+  @Autowired
+  private var instanceService: InstanceService = _
 
-  private val errorCodeHandler = StreamisErrorCodeHandler.getInstance()
+  private var future: Future[_] = _
 
   @PostConstruct
   def init(): Unit = {
@@ -79,7 +79,7 @@ class TaskMonitorService extends Logging {
           logger.info("Start to clean halt jobs started in on day after server started.")
           val statusList = new util.ArrayList[Integer]()
           statusList.add(JobConf.FLINK_JOB_STATUS_STARTING.getValue)
-          val thisServerInstance = ServerUtils.thisServiceInstance
+          val thisServerInstance = instanceService.getThisServiceInstance
           val streamTasks = streamTaskMapper.getTasksByStatus(statusList).filter(_.getServerInstance.equalsIgnoreCase(thisServerInstance))
           if (null != streamTasks && !streamTasks.isEmpty) {
             logger.info(s"There are ${streamTasks.size} starting tasks to be killed.")

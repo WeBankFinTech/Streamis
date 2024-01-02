@@ -17,7 +17,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.E
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.FlinkSavepoint
 import org.apache.commons.lang3.StringUtils
 import org.apache.linkis.common.exception.LinkisRetryException
-import org.apache.linkis.common.utils.{JsonUtils, Logging, RetryHandler}
+import org.apache.linkis.common.utils.{JsonUtils, Logging, RetryHandler, Utils}
 import org.apache.linkis.computation.client.once.OnceJob
 import org.apache.linkis.computation.client.once.result.EngineConnOperateResult
 import org.apache.linkis.computation.client.once.simple.SimpleOnceJob
@@ -80,9 +80,8 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
         case _ =>
           throw new FlinkJobParamErrorException(s"Invalid jobInfo : ${jobInfo} , cannot stop.", null)
       }
-    } else {
-      return super.stop(snapshot)
     }
+    Utils.tryAndWarn(super.stop(snapshot))
   }
 
   def getJobStatusWithRetry(appId: String): String = {

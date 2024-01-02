@@ -81,6 +81,9 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   @Resource
   private var scheduler: FutureScheduler = _
 
+  @Autowired
+  private var instanceService: InstanceService = _
+
   private val errorCodeHandler = StreamisErrorCodeHandler.getInstance()
 
   /**
@@ -240,6 +243,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           finalTask.setStatus(JobConf.FLINK_JOB_STATUS_FAILED.getValue)
           // Output message equals error message, you can use t.getMessage()
           finalTask.setErrDesc(scheduleJob.getOutput)
+          finalTask.setServerInstance(instanceService.getThisServiceInstance)
           if (streamTaskMapper.updateTaskInStatus(finalTask, JobConf.FLINK_JOB_STATUS_STARTING.getValue) > 0) {
             info(s"Transient the StreamTask [$newTaskId]'status from STARTING to FAILED and flush the output message.")
           }
@@ -329,6 +333,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           val finalTask = new StreamTask()
           finalTask.setId(pauseTaskId.asInstanceOf[Long])
           finalTask.setStatus(JobConf.FLINK_JOB_STATUS_RUNNING.getValue)
+          finalTask.setServerInstance(instanceService.getThisServiceInstance)
           // Not need to store the output message
           if (streamTaskMapper.updateTaskInStatus(finalTask, JobConf.FLINK_JOB_STATUS_STOPPING.getValue) > 0) {
             info(s"Restore the StreamTask [$pauseTaskId]'status from STOPPING return to RUNNING.")
@@ -581,6 +586,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
             if (null == latestTask || JobConf.isCompleted(latestTask.getStatus)){
               val streamTask = new StreamTask(jobId, jobVersion.getId, jobVersion.getVersion, creator)
               streamTask.setStatus(status)
+              streamTask.setServerInstance(instanceService.getThisServiceInstance)
               logger.info(s"Produce a new StreamTask [jobId: $jobId, version: ${jobVersion.getVersion}, creator: $creator, status: ${streamTask.getStatus}]")
               streamTaskMapper.insertTask(streamTask)
               streamTask

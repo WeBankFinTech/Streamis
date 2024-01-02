@@ -15,7 +15,6 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.entity;
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.utils.ServerUtils;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -41,7 +40,6 @@ public class StreamTask {
         Calendar calendar = Calendar.getInstance();
         this.lastUpdateTime = calendar.getTime();
         this.startTime = calendar.getTime();
-        this.serverInstance = ServerUtils.thisServiceInstance();
     }
 
     public StreamTask(Long jobId, Long jobVersionId, String version, String submitUser) {
