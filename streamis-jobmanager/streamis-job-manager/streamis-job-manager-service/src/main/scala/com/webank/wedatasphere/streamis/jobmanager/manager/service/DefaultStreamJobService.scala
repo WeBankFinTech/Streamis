@@ -114,6 +114,8 @@ class DefaultStreamJobService extends StreamJobService with Logging {
         else if (fo._1.equals(JobConf.FLINK_JOB_STATUS_RUNNING.getValue)) taskNum.setRunningNum(fo._2)
         else if (fo._1.equals(JobConf.FLINK_JOB_STATUS_FAILED.getValue)) taskNum.setFailureNum(fo._2)
         else if (fo._1.equals(JobConf.FLINK_JOB_STATUS_STOPPED.getValue)) taskNum.setStoppedNum(fo._2)
+        else if (fo._1.equals(JobConf.FLINK_JOB_STATUS_STARTING.getValue)) taskNum.setStartingNum(fo._2)
+        else if (fo._1.equals(JobConf.FLINK_JOB_STATUS_STOPPING.getValue)) taskNum.setStoppingNum(fo._2)
       })
     }
     taskNum
