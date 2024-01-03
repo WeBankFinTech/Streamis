@@ -35,6 +35,27 @@ public class TaskCoreNumVo {
     private Integer successNum = 0;
     //已停止数目
     private Integer stoppedNum = 0;
+    //启动中数目
+    private Integer startingNum = 0;
+
+    public Integer getStartingNum() {
+        return startingNum;
+    }
+
+    public void setStartingNum(Integer startingNum) {
+        this.startingNum = startingNum;
+    }
+
+    public Integer getStoppingNum() {
+        return stoppingNum;
+    }
+
+    public void setStoppingNum(Integer stoppingNum) {
+        this.stoppingNum = stoppingNum;
+    }
+
+    //停止中数目
+    private Integer stoppingNum = 0;
 
     public Integer getStoppedNum() {
         return stoppedNum;
