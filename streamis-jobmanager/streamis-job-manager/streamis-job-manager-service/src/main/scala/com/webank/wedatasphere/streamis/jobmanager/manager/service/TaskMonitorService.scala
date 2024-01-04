@@ -167,12 +167,12 @@ class TaskMonitorService extends Logging {
           this.streamJobConfMapper.getRawConfValue(job.getId, JobConfKeyConstants.FAIL_RESTART_SWITCH.getValue) match {
             case "ON" =>
               alertMsg = s"${alertMsg} 现将自动拉起该应用"
-              restartJob(job)
+              restartJob(job,streamTask)
             case _ =>
               if (JobConf.AUTO_RESTART_JOB.getHotValue()) {
                 if (!highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY_SINGLE_BAK.getValue) && !highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_DEFAULT_POLICY.getValue)) {
                   alertMsg = s"${alertMsg} 现将自动拉起该应用"
-                  restartJob(job)
+                  restartJob(job,streamTask)
                 }
               }
           }
@@ -184,7 +184,7 @@ class TaskMonitorService extends Logging {
     info("All StreamTasks status have updated.")
   }
 
-  protected def restartJob(job: StreamJob): Unit = {
+  protected def restartJob(job: StreamJob, streamTask: StreamTask): Unit = {
     Utils.tryCatch {
       info(s"Start to reLaunch the StreamisJob [${job.getName}], now to submit and schedule it...")
       // Use submit user to start job
@@ -193,6 +193,9 @@ class TaskMonitorService extends Logging {
     } {
       case e: Exception =>
         warn(s"Fail to reLaunch the StreamisJob [${job.getName}]", e)
+        val userList = getAlertUsers(job)
+        val alertMsg = s"Fail to reLaunch the StreamisJob [${job.getName}],please be noticed!"
+        alert(AlertLevel.MAJOR, alertMsg, userList, streamTask)
     }
   }
   /**

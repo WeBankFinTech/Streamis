@@ -9,6 +9,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.Proje
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.service.HighAvailableService;
 import com.webank.wedatasphere.streamis.jobmanager.vo.HighAvailableMsg;
+import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
@@ -40,15 +41,11 @@ public class HighAvailableRestfulApi {
     @RequestMapping(path = "/getHAMsg", method = RequestMethod.GET)
     public Message getClusterMsg(HttpServletRequest request){
         Message result = Message.ok("success");
-//        String userName = ModuleUserUtils.getOperationUser(request, "query job config json");
-//        StreamJob streamJob = this.streamJobService.getJobById(jobId);
-//        if (!streamJobService.hasPermission(streamJob, userName)
-//                && !this.privilegeService.hasAccessPrivilege(request, streamJob.getProjectName())) {
-//            return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
-//        }
+        String userName = ModuleUserUtils.getOperationUser(request, "query job config json");
+        if (StringUtils.isBlank(userName)) return Message.error("current user has no permission");
         HighAvailableMsg msg = highAvailableService.getHighAvailableMsg();
         result.data("clusterName",msg.getClusterName());
-        result.data("clusterIp",msg.getClusterIp());
+        result.data("clusterIp",msg.getNodeIp());
         result.data("whetherManager",msg.getWhetherManager());
         return result;
     }

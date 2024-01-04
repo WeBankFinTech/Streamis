@@ -53,7 +53,7 @@ public class HighAvailableServiceImpl implements HighAvailableService {
         HighAvailableMsg msg = new HighAvailableMsg();
         msg.setClusterName(StreamJobLauncherConf.HIGHAVAILABLE_CLUSTER_NAME().getHotValue());
         msg.setWhetherManager(Boolean.parseBoolean(StreamJobLauncherConf.WHETHER_MANAGER_CLUSTER().getHotValue().toString()));
-        msg.setClusterIp(Utils.getComputerName());
+        msg.setNodeIp(Utils.getComputerName());
         return msg;
     }
 
@@ -63,10 +63,7 @@ public class HighAvailableServiceImpl implements HighAvailableService {
         highAvailablePolicy = Optional.ofNullable(highAvailablePolicy).orElse(JobConf.HIGHAVAILABLE_DEFAULT_POLICY().getHotValue());
         HighAvailableMsg msg = this.getHighAvailableMsg();
         if(highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY_MANAGERSLAVE().getValue()) || highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY_MANAGERSLAVE_BAK().getValue())){
-            if (msg.getWhetherManager()){
-                return true;
-            }
-            else return false;
+            return msg.getWhetherManager();
         }
         return true;
     }

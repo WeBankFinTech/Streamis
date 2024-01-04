@@ -4,7 +4,7 @@ public class HighAvailableMsg {
 
     String clusterName;
 
-    String clusterIp;
+    String nodeIp;
 
     Boolean whetherManager;
 
@@ -16,12 +16,12 @@ public class HighAvailableMsg {
         this.clusterName = clusterName;
     }
 
-    public String getClusterIp() {
-        return clusterIp;
+    public String getNodeIp() {
+        return nodeIp;
     }
 
-    public void setClusterIp(String clusterIp) {
-        this.clusterIp = clusterIp;
+    public void setNodeIp(String nodeIp) {
+        this.nodeIp = nodeIp;
     }
 
     public Boolean getWhetherManager() {
