@@ -144,6 +144,10 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
             } else {
                 return getState(stateFileInfo);
             }
+        } else {
+            if (Objects.nonNull(secondStateFileInfo)) {
+                return getState(secondStateFileInfo);
+            }
         }
         return null;
     }
