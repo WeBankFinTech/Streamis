@@ -168,6 +168,7 @@ public class StreamTask {
                 ", errDesc='" + errDesc + '\'' +
                 ", version='" + version + '\'' +
                 ", status=" + status +
+                ", serverInstance='" + serverInstance + '\'' +
                 '}';
     }
 }

@@ -103,7 +103,6 @@ public class StreamisHeartbeatHandler {
                 List<String> userList = getAllAlertUsers(streamJob);
                 String alertMsg ="流式" + streamJob.getJobType() + "应用[" + appName + "] 回调日志没有注册, 请及时确认应用是否正常！";
                 logger.info(alertMsg);
-                //todo 自定义告警级别
                 if ((boolean) JobConf.LOGS_HEARTBEAT_REGISTER_ALARMS_ENABLE().getHotValue()) {
                     alert(jobService.getAlertLevel(streamJob), alertMsg, userList, streamTask);
                 }
