@@ -80,7 +80,7 @@ class TaskMonitorService extends Logging {
           val statusList = new util.ArrayList[Integer]()
           statusList.add(JobConf.FLINK_JOB_STATUS_STARTING.getValue)
           val thisServerInstance = instanceService.getThisServiceInstance
-          val streamTasks = streamTaskMapper.getTasksByStatus(statusList).filter(_.getServerInstance.equalsIgnoreCase(thisServerInstance))
+          val streamTasks = streamTaskMapper.getTasksByStatus(statusList).filter(e => thisServerInstance.equalsIgnoreCase(e.getServerInstance))
           if (null != streamTasks && !streamTasks.isEmpty) {
             logger.info(s"There are ${streamTasks.size} starting tasks to be killed.")
             val jobLaunchManager = JobLaunchManager.getJobManager(JobLauncherAutoConfiguration.DEFAULT_JOB_LAUNCH_MANGER)
