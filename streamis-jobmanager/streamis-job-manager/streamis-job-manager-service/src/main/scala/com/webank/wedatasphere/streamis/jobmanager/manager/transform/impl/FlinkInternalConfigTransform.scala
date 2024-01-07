@@ -36,21 +36,24 @@ object FlinkInternalConfigTransform {
   /**
    * Defined in FlinkStreamisConfigDefine.LOG_GATEWAY_ADDRESS of 'flink-streamis-log-collector'
    */
-  private val LOG_GATEWAY_CONFIG_NAME = CommonVars("wds.streamis.flink.config.name.log-gateway", "stream.log.gateway.address").getValue
+  private val LOG_GATEWAY_CONFIG_NAME = CommonVars("wds.streamis.flink.config.name.log-gateway", "stream.log.gateway.address")
 
   /**
    * Defined in FlinkStreamisConfigDefine.LOG_GATEWAY_ADDRESS of 'flink-streamis-log-collector'
    */
-  private val LOG_COLLECT_PATH_CONFIG_NAME = CommonVars("wds.streamis.flink.config.name.log-collect-path", "stream.log.collect.path").getValue
+  private val LOG_COLLECT_PATH_CONFIG_NAME = CommonVars("wds.streamis.flink.config.name.log-collect-path", "stream.log.collect.path")
 
-  private val LOG_HEARTBEAT_PATH_CONFIG_NAME = CommonVars("wds.streamis.flink.config.name.log-heartbeat-path", "stream.log.heartbeat.path").getValue
+  private val LOG_HEARTBEAT_PATH_CONFIG_NAME = CommonVars("wds.streamis.flink.config.name.log-heartbeat-path", "stream.log.heartbeat.path")
 
-  private val LOG_HEARTBEAT_INTERVAL_CONFIG_NAME = CommonVars("wds.streamis.flink.config.name.log-heartbeat-interval", "stream.log.heartbeat.interval").getValue
+  private val LOG_HEARTBEAT_INTERVAL_CONFIG_NAME = CommonVars("wds.streamis.flink.config.name.log-heartbeat-interval", "stream.log.heartbeat.interval")
+
+  private val LOG_HEARTBEAT_ENABLE_NAME = CommonVars("wds.streamis.flink.config.name.log-heartbeat-enable", "stream.log.heartbeat.enable")
 
 
-  val INTERNAL_CONFIG_MAP = Map(JobConf.STREAMIS_JOB_LOG_GATEWAY.key -> LOG_GATEWAY_CONFIG_NAME,
-    JobConf.STREAMIS_JOB_LOG_COLLECT_PATH.key -> LOG_COLLECT_PATH_CONFIG_NAME,
-    JobConf.STREAMIS_JOB_LOG_HEARTBEAT_PATH.key -> LOG_HEARTBEAT_PATH_CONFIG_NAME,
-    JobConf.STREAMIS_JOB_LOG_HEARTBEAT_INTERVAL.key -> LOG_HEARTBEAT_INTERVAL_CONFIG_NAME
+  def INTERNAL_CONFIG_MAP() = Map(JobConf.STREAMIS_JOB_LOG_GATEWAY.key -> LOG_GATEWAY_CONFIG_NAME.getHotValue(),
+    JobConf.STREAMIS_JOB_LOG_COLLECT_PATH.key -> LOG_COLLECT_PATH_CONFIG_NAME.getHotValue(),
+    JobConf.STREAMIS_JOB_LOG_HEARTBEAT_PATH.key -> LOG_HEARTBEAT_PATH_CONFIG_NAME.getHotValue(),
+    JobConf.STREAMIS_JOB_LOG_HEARTBEAT_INTERVAL.key -> LOG_HEARTBEAT_INTERVAL_CONFIG_NAME.getHotValue(),
+      JobConf.STREAMIS_JOB_LOG_HEARTBEAT_ENABLE.key -> LOG_HEARTBEAT_ENABLE_NAME.getHotValue()
   )
 }

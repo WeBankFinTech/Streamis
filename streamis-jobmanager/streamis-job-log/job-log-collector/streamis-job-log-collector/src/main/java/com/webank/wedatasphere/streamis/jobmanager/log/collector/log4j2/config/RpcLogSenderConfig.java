@@ -27,6 +27,7 @@ public class RpcLogSenderConfig extends com.webank.wedatasphere.streamis.jobmana
             @PluginAttribute("connectionTimeout") String connectionTimeout, @PluginAttribute("socketTimeout") String socketTimeout,
             @PluginAttribute("serverRecoveryTimeInSec") String serverRecoveryTimeInSec, @PluginAttribute("maxDelayTimeInSec") String maxDelayTimeInSec,
             @PluginAttribute("debugMode")String debugMode,
+            @PluginAttribute("heartbeatEnable")String heartbeatEnable,
             @PluginAttribute("heartbeatAddress")String heartbeatAddress,
             @PluginAttribute("heartbeatInterval")String heartbeatInterval,
             @PluginElement("AuthConfig")RpcAuthConfig authConfig, @PluginElement("SendLogCache") SendLogCacheConfig cacheConfig,
@@ -36,6 +37,7 @@ public class RpcLogSenderConfig extends com.webank.wedatasphere.streamis.jobmana
                 Integers.parseInt(serverRecoveryTimeInSec, 5), Integers.parseInt(maxDelayTimeInSec, 60),
                 authConfig, cacheConfig, bufferConfig, heartbeatAddress, Integers.parseInt(heartbeatInterval, 30 * 60 * 1000));
         config.setDebugMode(Boolean.parseBoolean(debugMode));
+        config.setHeartbeatEnable(Boolean.parseBoolean(heartbeatEnable));
         return config;
     }
 

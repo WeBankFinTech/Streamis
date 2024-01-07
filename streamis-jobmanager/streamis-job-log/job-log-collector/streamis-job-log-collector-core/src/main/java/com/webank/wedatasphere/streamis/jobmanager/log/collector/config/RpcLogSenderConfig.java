@@ -46,6 +46,10 @@ public class RpcLogSenderConfig {
      * Auth config
      */
     /**
+     * If true, flink app will exit when registered failed
+     */
+    private boolean heartbeatEnable = true;
+    /**
      * send heartbeat address
      */
     private String heartbeatAddress;
@@ -192,6 +196,14 @@ public class RpcLogSenderConfig {
         this.heartbeatInterval = heartbeatInterval;
     }
 
+    public boolean isHeartbeatEnable() {
+        return heartbeatEnable;
+    }
+
+    public void setHeartbeatEnable(boolean heartbeatEnable) {
+        this.heartbeatEnable = heartbeatEnable;
+    }
+
     @Override
     public String toString() {
         return "RpcLogSenderConfig{" +
@@ -204,6 +216,7 @@ public class RpcLogSenderConfig {
                 ", authConfig=" + authConfig +
                 ", cacheConfig=" + cacheConfig +
                 ", bufferConfig=" + bufferConfig +
+                ", heartbeatEnable=" + heartbeatEnable +
                 ", heartbeatAddress=" + heartbeatAddress +
                 ", heartbeatInterval=" + heartbeatInterval +
                 ", debug=" + debugMode +

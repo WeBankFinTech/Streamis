@@ -36,6 +36,8 @@ public class FlinkStreamisConfigDefine {
             .intType().defaultValue(30 * 60 * 1000).withDescription("Heartbeat interval (ms) in log RPC module");
 
 
+    public static final ConfigOption<Boolean> LOG_HEARTBEAT_ENABLE = ConfigOptions.key("stream.log.heartbeat.enable")
+            .booleanType().defaultValue(true).withDescription("Heartbeat enable");
 
     /**
      * Connection timeout(in milliseconds) in log RPC module

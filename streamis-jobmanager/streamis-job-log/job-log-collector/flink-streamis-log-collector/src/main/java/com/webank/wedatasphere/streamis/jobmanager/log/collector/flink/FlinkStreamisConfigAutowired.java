@@ -94,6 +94,7 @@ public class FlinkStreamisConfigAutowired implements StreamisConfigAutowired {
                 .setDiscardWindow(this.configuration.getInteger(LOG_RPC_CACHE_DISCARD_WINDOW))
                 .setRpcBufferSize(this.configuration.getInteger(LOG_RPC_BUFFER_SIZE))
                 .setRpcBufferExpireTimeInSec(this.configuration.getInteger(LOG_RPC_BUFFER_EXPIRE_TIME))
+                .setRpcHeartbeatEnable(this.configuration.getBoolean(LOG_HEARTBEAT_ENABLE))
                 .setRpcHeartbeatInterval(this.configuration.getInteger(LOG_HEARTBEAT_INTERVAL)).build();
     }
 

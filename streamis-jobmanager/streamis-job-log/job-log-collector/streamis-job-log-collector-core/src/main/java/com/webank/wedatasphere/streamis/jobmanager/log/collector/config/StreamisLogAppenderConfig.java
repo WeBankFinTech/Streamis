@@ -123,6 +123,16 @@ public class StreamisLogAppenderConfig {
         }
 
         /**
+         * Rpc heartbeat enable
+         * @param heartbeatEnable
+         * @return
+         */
+        public StreamisLogAppenderConfig.Builder setRpcHeartbeatEnable(boolean heartbeatEnable) {
+            this.rpcLogSenderConfig.setHeartbeatEnable(heartbeatEnable);
+            return this;
+        }
+
+        /**
          *
          * @param heartbeatAddress
          * @return

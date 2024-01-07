@@ -29,6 +29,8 @@ object JobConf {
 
   val STREAMIS_JOB_LOG_HEARTBEAT_INTERVAL: CommonVars[Int] = CommonVars("wds.streamis.log.heartbeat.interval.mills", 30 * 60 * 1000)
 
+  val STREAMIS_JOB_LOG_HEARTBEAT_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.log.heartbeat.enable", true)
+
   /**
    * Enable to use material container
    */
