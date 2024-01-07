@@ -29,7 +29,7 @@
         <result column="submit_user" property="submitUser" jdbcType="VARCHAR"/>
         <result column="linkis_job_id" property="linkisJobId" jdbcType="VARCHAR"/>
         <result column="version" property="version" jdbcType="VARCHAR"/>
-        <result column="server_instance" property="version" jdbcType="VARCHAR"/>
+        <result column="server_instance" property="serverInstance" jdbcType="VARCHAR"/>
         <result column="linkis_job_info" property="linkisJobInfo" jdbcType="LONGVARCHAR"/>
     </resultMap>
 
