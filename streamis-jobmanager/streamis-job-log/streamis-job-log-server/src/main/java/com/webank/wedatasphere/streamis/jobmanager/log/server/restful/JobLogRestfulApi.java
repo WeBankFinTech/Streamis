@@ -34,6 +34,8 @@ public class JobLogRestfulApi {
     @Resource
     private StreamisRegisterService streamisRegisterService;
 
+    private Object REGISTER_LOCK = new Object();
+
     @RequestMapping(value = "/collect/events", method = RequestMethod.POST)
     public Message collectEvents(@RequestBody StreamisLogEvents events, HttpServletRequest request){
         Message result;
@@ -82,11 +84,13 @@ public class JobLogRestfulApi {
                 } else {
                     streamRegister.setJobId(job.getId());
                 }
-                StreamRegister info = streamisRegisterService.getInfoByApplicationName(applicationName);
-                if (info != null) {
-                    streamisRegisterService.deleteRegister(applicationName);
+                synchronized (REGISTER_LOCK) {
+                    StreamRegister info = streamisRegisterService.getInfoByApplicationName(applicationName);
+                    if (info != null) {
+                        streamisRegisterService.deleteRegister(applicationName);
+                    }
+                    streamisRegisterService.addStreamRegister(streamRegister);
                 }
-                streamisRegisterService.addStreamRegister(streamRegister);
                 return  Message.ok();
             } else {
                 return Message.error(applicationName + "Password error");
