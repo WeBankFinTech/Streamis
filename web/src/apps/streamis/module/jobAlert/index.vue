@@ -1,6 +1,6 @@
 <template>
   <div class="tableWrap">
-    <Table :columns="columns" :data="tableDatas" border>
+    <Table :loading="loading" :columns="columns" :data="tableDatas" border>
       <template slot-scope="{ row }" slot="operation">
         <div style="margin-left: 5px" @click="showVersionInfo(row)">
           <a href="javascript:void(0)">
@@ -27,6 +27,17 @@
         </div>
       </template>
     </Table>
+    <Page
+      class="page"
+      :total="page.total"
+      :page-size-opts="page.sizeOpts"
+      :page-size="page.size"
+      :current="page.current"
+      show-sizer
+      show-total
+      size="small"
+      @on-change="change"
+      @on-page-size-change="changeSize"/>
   </div>
 </template>
 <script>
@@ -74,7 +85,14 @@ export default {
         //   status: 0,
         //   errorMsg: null
         // }
-      ]
+      ],
+      page: {
+        current: 1,
+        size: 10,
+        sizeOpts: [10, 20, 30, 50],
+        total: 0,
+      },
+      loading: false,
     }
   },
   mounted() {
@@ -83,12 +101,14 @@ export default {
   methods: {
     getDatas() {
       const { id, version } = this.$route.params || {}
-      const queries = `?jobId=${id}&version=${version}`
+      const queries = `?jobId=${id}&version=${version}&pageNow=${this.page.current}&pageSize=${this.page.size}`
+      this.loading = true
       api
         .fetch('streamis/streamJobManager/job/alert' + queries, 'get')
         .then(res => {
           if (res && res.list) {
-            res.list.forEach(item => {
+            const results = res.list
+            results.forEach(item => {
               if (item.createTime) {
                 const newDate = moment(new Date(item.createTime)).format(
                   'YYYY-MM-DD HH:mm:ss'
@@ -96,12 +116,33 @@ export default {
                 item.createTime = newDate
               }
             })
-            this.tableDatas = res.list
+            this.tableDatas = results
+            this.page.total = res.totalPage
+            this.loading = false
           }
         })
-        .catch(e => console.log(e))
-    }
+        .catch(e => {
+          console.log(e)
+          this.loading = false
+        })
+    },
+    change(page) {
+      this.page.current = page;
+      this.getDatas();
+    },
+    changeSize(size) {
+      this.page.size = size;
+      if(this.page.current === 1){
+        this.getDatas();
+      } else{
+        this.page.current = 1;
+      }
+    },
   }
 }
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.page {
+  margin-top: 20px;
+}
+</style>
