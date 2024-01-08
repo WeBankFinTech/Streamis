@@ -161,7 +161,10 @@ trait StreamJobService {
    * @param version  version
    * @return
    */
-  def getAlert(username: String, jobId: Long, version: String): util.List[StreamAlertRecord]
+  def getJobVersionById(username: String, jobId: Long, version: String): StreamJobVersion
+
+  def getAlertByProList(username: String, jobId: Long,  versionId: Long): PageInfo[StreamAlertRecord]
+
 
   def updateLabel(streamJob: StreamJob): Unit
 

@@ -40,6 +40,7 @@
     <select id="getAlertByJobIdAndVersion"
             resultMap="StreamAlertRecordMap">
         select id, alert_level,alert_user,alert_msg,job_id,job_version_id,task_id,create_time,status,error_msg from linkis_stream_alert_record
-        where alert_user = #{username} and job_id = #{jobId} and job_version_id = #{versionId} ORDER BY create_time DESC;
+        where alert_user = #{username} and job_id = #{jobId} and job_version_id = #{versionId}
+        ORDER BY create_time DESC
     </select>
 </mapper>

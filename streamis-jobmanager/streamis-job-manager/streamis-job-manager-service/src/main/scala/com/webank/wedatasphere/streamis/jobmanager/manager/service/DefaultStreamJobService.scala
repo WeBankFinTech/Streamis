@@ -364,10 +364,18 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     username.equals(job.getCreateBy)
   }
 
-  override def getAlert(username: String, jobId: Long, version: String): util.List[StreamAlertRecord] = {
+  override def getJobVersionById(username: String, jobId: Long, version: String): StreamJobVersion = {
     val job = streamJobMapper.getJobVersionById(jobId, version)
-    if (job == null) return null
-    streamAlertMapper.getAlertByJobIdAndVersion(username,jobId,job.getId)
+    job
+  }
+
+  override def getAlertByProList(username: String, jobId: Long,  versionId: Long): PageInfo[StreamAlertRecord] = {
+    val streamJobList = streamAlertMapper.getAlertByJobIdAndVersion(username,jobId,versionId)
+    if (streamJobList != null && !streamJobList.isEmpty) {
+      val pageInfo = new PageInfo[StreamAlertRecord](streamJobList)
+      return pageInfo
+    }
+    new PageInfo[StreamAlertRecord](new util.ArrayList[StreamAlertRecord]())
   }
 
   private def validateJobDeploy(projectName: String, jobName: String, userName: String): JobDeployValidateResult = {

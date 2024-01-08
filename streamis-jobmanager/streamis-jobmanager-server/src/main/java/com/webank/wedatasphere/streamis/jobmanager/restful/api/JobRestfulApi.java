@@ -30,10 +30,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLaunc
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.*;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.*;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobInspectService;
@@ -782,10 +779,30 @@ public class JobRestfulApi {
     }
 
     @RequestMapping(path = "/alert", method = RequestMethod.GET)
-    public Message getAlert(HttpServletRequest req, @RequestParam(value = "jobId", required = false) Long jobId,
+    public Message getAlert(HttpServletRequest req,
+                            @RequestParam(value = "pageNow", required = false) Integer pageNow,
+                            @RequestParam(value = "pageSize", required = false) Integer pageSize,
+                            @RequestParam(value = "jobId", required = false) Long jobId,
                             @RequestParam(value = "version", required = false) String version) {
         String username = ModuleUserUtils.getOperationUser(req, "get alert message list");
-        return Message.ok().data("list", streamJobService.getAlert(username, jobId, version));
+        StreamJobVersion jobVersion = streamJobService.getJobVersionById(username, jobId, version);
+        if (jobVersion == null) {
+            return Message.error("not job version");
+        }
+        if (Objects.isNull(pageNow)) {
+            pageNow = 1;
+        }
+        if (Objects.isNull(pageSize)) {
+            pageSize = 20;
+        }
+        PageInfo<StreamAlertRecord> pageInfo;
+        PageHelper.startPage(pageNow, pageSize);
+        try {
+            pageInfo = streamJobService.getAlertByProList(username, jobId, jobVersion.getId());
+        } finally {
+            PageHelper.clearPage();
+        }
+        return Message.ok().data("list",pageInfo.getList()).data("totalPage", pageInfo.getTotal());
     }
 
     @RequestMapping(path = "/logs", method = RequestMethod.GET)
