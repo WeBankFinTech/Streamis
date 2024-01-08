@@ -77,8 +77,8 @@ public class StreamisHeartbeatHandler {
                 if (diffInMillies > timeout) {
                     StreamJob job = streamJobMapper.getCurrentJob(projectName, jobName);
                     String alertMsg = "流式" + job.getJobType() + "应用[" + job.getProjectName() + "." + job.getName() + "] 回调日志心跳超过" + timeout + "ms未响应, 请及时确认应用是否正常！";
-                    logger.info(alertMsg);
-                    if (!Boolean.parseBoolean(JobConf.LOGS_HEARTBEAT_ALARMS_ENABLE().getHotValue().toString())) {
+                    logger.warn(alertMsg);
+                    if (Boolean.parseBoolean(JobConf.LOGS_HEARTBEAT_ALARMS_ENABLE().getHotValue().toString())) {
                         List<String> userList = getAllAlertUsers(job);
                         StreamTask streamTask = streamTaskMapper.getLatestByJobId(job.getId());
                         alert(jobService.getAlertLevel(job), alertMsg, userList, streamTask);
