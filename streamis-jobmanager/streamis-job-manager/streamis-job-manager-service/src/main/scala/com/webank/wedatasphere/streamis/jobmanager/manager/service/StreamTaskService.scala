@@ -19,7 +19,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{ExecResultVo, JobDetailsVo, JobProgressVo, JobStatusVo, PauseResultVo, StreamTaskListVo}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{ExecResultVo, JobDetailsVo, JobProgressVo, JobStatusVo, PauseResultVo, StreamTaskListVo, StreamTaskPageInfo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.RealtimeLogEntity
 
 import java.util
@@ -131,7 +131,7 @@ trait StreamTaskService {
    * @param version version
    * @return
    */
-  def queryHistory(jobId: Long, version: String): util.List[StreamTaskListVo]
+  def queryHistory(jobId: Long, version: String, pageNow: Long, pageSize: Long): StreamTaskPageInfo
 
 
   def queryErrorCode(jobId: Long): StreamTask

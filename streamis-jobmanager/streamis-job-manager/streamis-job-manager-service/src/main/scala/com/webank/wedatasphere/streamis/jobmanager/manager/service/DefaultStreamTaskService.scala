@@ -384,14 +384,14 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
    * @param version
    * @return
    */
-  def queryHistory(jobId: Long, version: String): util.List[StreamTaskListVo] ={
+  def queryHistory(jobId: Long, version: String,pageNow: Long, pageSize: Long): StreamTaskPageInfo ={
     if(StringUtils.isEmpty(version)) throw new JobFetchErrorException(30355, "version cannot be empty.")
     val job = streamJobMapper.getJobById(jobId)
     if(job == null) throw new JobFetchErrorException(30355, s"Unknown job $jobId.")
     val jobVersion = streamJobMapper.getJobVersionById(jobId, version)
-    if(jobVersion == null) return new util.ArrayList[StreamTaskListVo]
-    val tasks = streamTaskMapper.getByJobVersionId(jobVersion.getId, version)
-    if(tasks == null || tasks.isEmpty) return new util.ArrayList[StreamTaskListVo]
+    if(jobVersion == null) return new StreamTaskPageInfo
+    val tasks = streamTaskMapper.getByJobVersionId(jobVersion.getId, version,pageNow,pageSize)
+    if(tasks == null || tasks.isEmpty) return new StreamTaskPageInfo
     val list = new util.ArrayList[StreamTaskListVo]
     tasks.asScala.foreach{ f =>
       val svo = new StreamTaskListVo()
@@ -409,7 +409,11 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       svo.setStopCause(sub(f.getErrDesc))
       list.add(svo)
     }
-    list
+    val total = streamTaskMapper.countGetByJobVersionId(jobVersion.getId, version)
+    val pageInfo =new StreamTaskPageInfo
+    pageInfo.setStreamTaskList(list)
+    pageInfo.setTotal(total)
+    pageInfo
   }
 
   def getRealtimeLog(jobId: Long, taskId: Long, operator: String, requestPayload: LogRequestPayload): RealtimeLogEntity = {
