@@ -118,8 +118,8 @@ export default {
             })
             this.tableDatas = results
             this.page.total = res.totalPage
-            this.loading = false
           }
+          this.loading = false
         })
         .catch(e => {
           console.log(e)

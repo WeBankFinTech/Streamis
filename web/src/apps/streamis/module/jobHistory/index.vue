@@ -141,8 +141,8 @@ export default {
           if (res && res.details) {
             this.tableDatas = res.details
             this.page.total = res.totalPage
-            this.loading = false
           }
+          this.loading = false
         })
         .catch(e => {
           console.log(e)
