@@ -149,4 +149,6 @@ object JobConf {
   val LOGS_HEARTBEAT_CHECK_INTERVAL: CommonVars[Int] = CommonVars("wds.streamis.logs.check.heartbeat.interval.mills", 10 *60 * 1000)
 
   val LOGS_HEARTBEAT_INTERVAL_TIMEOUT: CommonVars[Int] = CommonVars("wds.streamis.logs.check.heartbeat.interval.timeout.mills", 30 * 60 * 1000)
+
+  val JOB_NAME_LENGTH_MAX: CommonVars[Int] = CommonVars("wds.streamis.job.name.length.max", 2000)
 }
