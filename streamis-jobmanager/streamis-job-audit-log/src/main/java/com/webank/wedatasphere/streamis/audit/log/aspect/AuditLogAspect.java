@@ -2,9 +2,11 @@ package com.webank.wedatasphere.streamis.audit.log.aspect;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.webank.wedatasphere.streamis.audit.log.conf.JobAuditConf;
 import com.webank.wedatasphere.streamis.audit.log.entity.StreamAuditLog;
 import com.webank.wedatasphere.streamis.audit.log.service.AuditLogService;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.linkis.proxy.ProxyUserEntity;
 import org.apache.linkis.server.BDPJettyServerHelper;
 import org.apache.linkis.server.utils.ModuleUserUtils;
@@ -22,6 +24,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,6 +47,12 @@ public class AuditLogAspect {
     private static final Logger LOG = LoggerFactory.getLogger(AuditLogAspect.class);
 
     private static final Pattern PROJECT_NAME_PATTERN = Pattern.compile("[?&]projectName=([^&]+)");
+
+
+    @PostConstruct
+    private void init() {
+        LOG.info("job log audit enabled : " + JobAuditConf.AUDIT_LOG_ENABLE.getValue());
+    }
 
 
     @Around("execution(* com.webank.wedatasphere.streamis.jobmanager.restful.api..*.*(..)) || execution(* com.webank.wedatasphere.streamis.projectmanager.restful.api..*.*(..))")
@@ -70,6 +79,24 @@ public class AuditLogAspect {
 
     @Async
     public void logAuditInformationAsync(HttpServletRequest req, String requestURI, Map<String, Object> requestParams, String result, String proxyUser, String userName, String method) {
+        if (!JobAuditConf.AUDIT_LOG_ENABLE.getValue()) {
+            return;
+        }
+        if (StringUtils.isNotBlank(JobAuditConf.AUDIT_LOG_URI_SKIP.getValue())) {
+            boolean end = false;
+            String tmpUri = "";
+            for (String uri : JobAuditConf.AUDIT_LOG_URI_SKIP.getValue().split(",")) {
+                if (requestURI.contains(uri)) {
+                    end = true;
+                    tmpUri = uri;
+                    break;
+                }
+            }
+            if (end) {
+                LOG.debug("skip to store requestUri : {}, because it matches skipped uri : {}", requestURI, tmpUri);
+                return;
+            }
+        }
         String projectName = "";
         try {
             projectName = getProjectNameFromRequest(req, requestParams, method);
