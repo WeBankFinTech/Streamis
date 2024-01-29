@@ -53,7 +53,9 @@ public class StreamisHeartbeatHandler {
                     logger.error("stream checkHeartbeatStatus failed");
                 }
             }, 1L *60 *1000, interval ,TimeUnit.MILLISECONDS);
-            logger.info("heart beat info check started.");
+            logger.info("heartbeat info check started.");
+        } else {
+            logger.info("heartbeat info check not started.");
         }
 
     }
@@ -61,6 +63,10 @@ public class StreamisHeartbeatHandler {
     public void checkHeartbeatStatus() {
         List<StreamRegister> streamRegisterInfo = streamRegisterMapper.getInfo();
         if (!streamRegisterInfo.isEmpty()) {
+            boolean alarmEnable = (boolean) JobConf.LOGS_HEARTBEAT_ALARMS_ENABLE().getHotValue();
+            if (!alarmEnable) {
+                logger.info("heartbeat status alarm is disabled.");
+            }
             for (StreamRegister streamRegister : streamRegisterInfo) {
                 StreamTask lastTask = streamTaskMapper.getLatestByJobId(streamRegister.getJobId());
                 if (!JobConf.isRunning(lastTask.getStatus())) {
@@ -78,7 +84,7 @@ public class StreamisHeartbeatHandler {
                     StreamJob job = streamJobMapper.getCurrentJob(projectName, jobName);
                     String alertMsg = "流式" + job.getJobType() + "应用[" + job.getProjectName() + "." + job.getName() + "] 回调日志心跳超过" + timeout + "ms未响应, 请及时确认应用是否正常！";
                     logger.warn(alertMsg);
-                    if (Boolean.parseBoolean(JobConf.LOGS_HEARTBEAT_ALARMS_ENABLE().getHotValue().toString())) {
+                    if (alarmEnable) {
                         List<String> userList = getAllAlertUsers(job);
                         StreamTask streamTask = streamTaskMapper.getLatestByJobId(job.getId());
                         alert(jobService.getAlertLevel(job), alertMsg, userList, streamTask);
@@ -95,6 +101,10 @@ public class StreamisHeartbeatHandler {
         if (null == streamTasks || streamTasks.isEmpty()) {
             return ;
         }
+        boolean alarmEnable = (boolean) JobConf.LOGS_HEARTBEAT_REGISTER_ALARMS_ENABLE().getHotValue();
+        if (!alarmEnable) {
+            logger.info("heartbeat register status alarm is disabled.");
+        }
         for (StreamTask streamTask : streamTasks) {
             StreamJob streamJob = streamJobMapper.getJobById(streamTask.getJobId());
             String appName = streamJob.getProjectName() +"."+streamJob.getName();
@@ -103,7 +113,7 @@ public class StreamisHeartbeatHandler {
                 List<String> userList = getAllAlertUsers(streamJob);
                 String alertMsg ="流式" + streamJob.getJobType() + "应用[" + appName + "] 回调日志没有注册, 请及时确认应用是否正常！";
                 logger.info(alertMsg);
-                if ((boolean) JobConf.LOGS_HEARTBEAT_REGISTER_ALARMS_ENABLE().getHotValue()) {
+                if (alarmEnable) {
                     alert(jobService.getAlertLevel(streamJob), alertMsg, userList, streamTask);
                 }
             }
