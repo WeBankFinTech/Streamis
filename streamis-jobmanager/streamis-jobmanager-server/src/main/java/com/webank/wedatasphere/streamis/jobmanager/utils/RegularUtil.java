@@ -13,7 +13,7 @@ public class RegularUtil {
     public static final String PW_LENGTH_PATTERN="^.{0,64}$";//字符长度
     public static final String PATTERN ="^[A-Za-z0-9_,.]{1,64}$" ; //大小写字母数字下划线逗号小数点、
 
-    public static final String JOB_NAME_PATTERN ="^[A-Za-z0-9_,.]" ; //大小写字母数字下划线逗号小数点
+    public static final String JOB_NAME_PATTERN ="^[A-Za-z0-9_,.]+" ; //大小写字母数字下划线逗号小数点
 
 
     public static boolean matches(String input) {
