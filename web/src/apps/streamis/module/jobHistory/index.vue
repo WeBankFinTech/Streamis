@@ -1,6 +1,6 @@
 <template>
   <div class="tableWrap">
-    <Table :columns="columns" :data="tableDatas" border>
+    <Table :loading="loading" :columns="columns" :data="tableDatas" border>
       <template slot-scope="{ row }" slot="operation">
         <div style="margin-left: 5px" @click="showVersionInfo(row)">
           <a href="javascript:void(0)">
@@ -19,6 +19,17 @@
         </div>
       </template>
     </Table>
+    <Page
+      class="page"
+      :total="page.total"
+      :page-size-opts="page.sizeOpts"
+      :page-size="page.size"
+      :current="page.current"
+      show-sizer
+      show-total
+      size="small"
+      @on-change="change"
+      @on-page-size-change="changeSize"/>
     <versionDetail
       :visible="modalVisible"
       :datas="versionDatas"
@@ -106,7 +117,14 @@ export default {
       taskId: 0,
       versionDatas: [],
       jobId: this.$route.params.id,
-      fromHistory: true
+      fromHistory: true,
+      page: {
+        current: 1,
+        size: 10,
+        sizeOpts: [10, 20, 30, 50],
+        total: 0,
+      },
+      loading: false,
     }
   },
   mounted() {
@@ -115,7 +133,8 @@ export default {
   methods: {
     getDatas() {
       const { id, version } = this.$route.params || {}
-      const queries = `?jobId=${id}&version=${version}`
+      const queries = `?jobId=${id}&version=${version}&pageNow=${this.page.current}&pageSize=${this.page.size}`
+      this.loading = true
       api
         .fetch('streamis/streamJobManager/job/execute/history' + queries, 'get')
         .then(res => {
@@ -123,8 +142,24 @@ export default {
             this.tableDatas = res.details
             this.page.total = res.totalPage
           }
+          this.loading = false
         })
-        .catch(e => console.log(e))
+        .catch(e => {
+          console.log(e)
+          this.loading = false
+        })
+    },
+    change(page) {
+      this.page.current = page;
+      this.getDatas();
+    },
+    changeSize(size) {
+      this.page.size = size;
+      if(this.page.current === 1){
+        this.getDatas();
+      } else{
+        this.page.current = 1;
+      }
     },
     showVersionInfo(data) {
       this.loading = true
