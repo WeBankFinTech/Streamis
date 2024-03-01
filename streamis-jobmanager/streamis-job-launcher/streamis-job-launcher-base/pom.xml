@@ -49,6 +49,12 @@
             <groupId>org.apache.linkis</groupId>
             <artifactId>linkis-mybatis</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>${gson.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

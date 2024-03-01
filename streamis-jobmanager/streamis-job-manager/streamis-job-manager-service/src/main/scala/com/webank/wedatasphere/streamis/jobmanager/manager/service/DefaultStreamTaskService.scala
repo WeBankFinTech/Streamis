@@ -32,7 +32,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.E
 import com.webank.wedatasphere.streamis.jobmanager.manager.SpringContextHolder
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo._
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobMode, StreamTask}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{MetaJsonInfo, StreamJob, StreamJobMode, StreamJobVersion, StreamTask}
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.FutureScheduler
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events.AbstractStreamisSchedulerEvent.StreamisEventInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events.StreamisPhaseInSchedulerEvent
@@ -44,6 +44,8 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.util.DateUtils
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils
 import com.webank.wedatasphere.streamis.errorcode.handler.StreamisErrorCodeHandler
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.utils.JobUtils
+import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
 
 import javax.annotation.Resource
 import org.apache.commons.lang.StringUtils
@@ -51,6 +53,7 @@ import org.apache.linkis.common.utils.{Logging, Utils}
 import org.apache.linkis.httpclient.dws.DWSHttpClient
 import org.apache.linkis.scheduler.queue
 import org.apache.linkis.scheduler.queue.{Job, SchedulerEvent}
+import org.apache.linkis.server.BDPJettyServerHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -72,6 +75,9 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
 
   @Resource
   private var streamJobConfMapper: StreamJobConfMapper = _
+
+  @Resource
+  private val streamJobConfService: StreamJobConfService = _
 
   @Resource
   private var streamTaskService: StreamTaskService = _
@@ -407,6 +413,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       svo.setVersionContent(jobVersion.getJobContent)
       svo.setRunTime(DateUtils.intervals(f.getStartTime, f.getLastUpdateTime))
       svo.setStopCause(sub(f.getErrDesc))
+      svo.setJobStartConfig(f.getJobStartConfig)
       list.add(svo)
     }
     list
@@ -588,6 +595,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
               streamTask.setStatus(status)
               streamTask.setServerInstance(instanceService.getThisServiceInstance)
               logger.info(s"Produce a new StreamTask [jobId: $jobId, version: ${jobVersion.getVersion}, creator: $creator, status: ${streamTask.getStatus}]")
+              val jobStartConfig = generateJobStartConfig(job, jobVersion, creator)
+              streamTask.setJobStartConfig(jobStartConfig)
               streamTaskMapper.insertTask(streamTask)
               streamTask
             } else {
@@ -896,5 +905,22 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       errorMsg
     }
 
+  }
+
+  def generateJobStartConfig(job: StreamJob, jobVersion: StreamJobVersion, creator: String): String = {
+    val metaJsonInfo = new MetaJsonInfo
+//    metaJsonInfo.setWorkspaceName(job.getWorkspaceName)
+    metaJsonInfo.setProjectName(job.getProjectName)
+    metaJsonInfo.setJobName(job.getName)
+    metaJsonInfo.setJobType(job.getJobType)
+    metaJsonInfo.setComment("Start config")
+    metaJsonInfo.setTags(job.getLabel)
+    metaJsonInfo.setDescription(job.getDescription)
+    val jobContent: Map[String, Object] = Utils.tryAndWarn(metaJsonInfo.setJobContent(JobUtils.gson.fromJson(jobVersion.getJobContent, Map[String, Object])))
+    metaJsonInfo.setJobContent(jobContent)
+    // get job config
+    val jobConf = streamJobConfService.getJobConfig(job.getId)
+    metaJsonInfo.setJobConfig(jobConf)
+    JobUtils.gson.toJson(metaJsonInfo)
   }
 }

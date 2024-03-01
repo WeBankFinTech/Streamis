@@ -36,6 +36,8 @@ public class StreamTask {
 
     private String serverInstance;
 
+    private String jobStartConfig;
+
     public StreamTask() {
         Calendar calendar = Calendar.getInstance();
         this.lastUpdateTime = calendar.getTime();
@@ -151,6 +153,14 @@ public class StreamTask {
 
     public void setServerInstance(String serverInstance) {
         this.serverInstance = serverInstance;
+    }
+
+    public String getJobStartConfig() {
+        return jobStartConfig;
+    }
+
+    public void setJobStartConfig(String jobStartConfig) {
+        this.jobStartConfig = jobStartConfig;
     }
 
     @Override
