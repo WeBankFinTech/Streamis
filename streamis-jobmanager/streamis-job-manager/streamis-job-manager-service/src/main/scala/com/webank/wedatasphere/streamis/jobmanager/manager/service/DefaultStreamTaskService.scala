@@ -916,7 +916,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     metaJsonInfo.setComment("Start config")
     metaJsonInfo.setTags(job.getLabel)
     metaJsonInfo.setDescription(job.getDescription)
-    val jobContent: Map[String, Object] = Utils.tryAndWarn(metaJsonInfo.setJobContent(JobUtils.gson.fromJson(jobVersion.getJobContent, Map[String, Object])))
+    val jobContent: Map[String, Object] = Utils.tryAndWarn(JobUtils.gson.fromJson(jobVersion.getJobContent, classOf[Map[String, Object]]))
     metaJsonInfo.setJobContent(jobContent)
     // get job config
     val jobConf = streamJobConfService.getJobConfig(job.getId)
