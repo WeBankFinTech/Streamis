@@ -17,6 +17,8 @@ public class StreamAuditLog {
 
     private String clientIp;
 
+    private Long costTimeMills;
+
     public String getClientIp() {
         return clientIp;
     }
@@ -105,5 +107,13 @@ public class StreamAuditLog {
 
     public void setOutputParameters(String outputParameters) {
         this.outputParameters = outputParameters;
+    }
+
+    public Long getCostTimeMills() {
+        return costTimeMills;
+    }
+
+    public void setCostTimeMills(Long costTimeMills) {
+        this.costTimeMills = costTimeMills;
     }
 }

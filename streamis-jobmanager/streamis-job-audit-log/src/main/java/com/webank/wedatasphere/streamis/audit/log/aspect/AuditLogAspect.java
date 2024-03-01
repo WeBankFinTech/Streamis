@@ -66,19 +66,22 @@ public class AuditLogAspect {
 
         Map<String, Object> requestParams = getRequestParamsByProceedingJoinPoint(joinPoint);
         Object result = null;
+        long startTime = System.currentTimeMillis();
         try {
             result = joinPoint.proceed();
         } catch (Exception e) {
             LOG.error("Error executing method: " + joinPoint.getSignature().toShortString());
             throw e;
         }
+        long costTime = System.currentTimeMillis() - startTime;
         result = Optional.ofNullable(result).orElse("--");
-        logAuditInformationAsync(req, requestURI, requestParams, parseObjectToString(result), proxyUser, userName, method);
+        logAuditInformationAsync(req, requestURI, requestParams, parseObjectToString(result), proxyUser, userName, method, costTime);
         return result;
     }
 
     @Async
-    public void logAuditInformationAsync(HttpServletRequest req, String requestURI, Map<String, Object> requestParams, String result, String proxyUser, String userName, String method) {
+    public void logAuditInformationAsync(HttpServletRequest req, String requestURI, Map<String, Object> requestParams,
+                                         String result, String proxyUser, String userName, String method, long costTimeMills) {
         if (!JobAuditConf.AUDIT_LOG_ENABLE.getValue()) {
             return;
         }
@@ -108,14 +111,14 @@ public class AuditLogAspect {
             projectName = getProjectNameFromReferer(req.getHeader("Referer"));
         }
         try {
-            logAuditInformation(requestURI, parseObjectToString(requestParams), result, proxyUser, userName, method, projectName);
+            logAuditInformation(requestURI, parseObjectToString(requestParams), result, proxyUser, userName, method, projectName, costTimeMills);
         } catch (Exception e) {
             LOG.error("审计日志记录保存失败");
         }
     }
 
 
-    private void logAuditInformation(String requestURI, String requestParams, String result, String proxyUser, String userName, String method, String projectName) {
+    private void logAuditInformation(String requestURI, String requestParams, String result, String proxyUser, String userName, String method, String projectName, long costTimeMills) {
         String apiDesc = InterfaceDescriptionEnum.getDescriptionByUrl(requestURI);
         String clientIp = getClientIp();
         StreamAuditLog auditLog = new StreamAuditLog();
@@ -129,6 +132,7 @@ public class AuditLogAspect {
         auditLog.setApiType(method);
         auditLog.setProjectName(projectName);
         auditLog.setClientIp(clientIp);
+        auditLog.setCostTimeMills(costTimeMills);
         auditLogService.saveAuditLog(auditLog);
     }
 
