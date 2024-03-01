@@ -147,7 +147,13 @@
         "operation": "操作",
         "showVersionInfo":"查看版本信息",
         "detail":"详情",
-        "logs":"历史日志"
+        "logs": "历史日志",
+        "metaJson": "查看",
+        "download": "下载",
+        "jobParams": "Job参数",
+        "copy": "复制",
+        "close": "关闭",
+        "noInfo": "没有Meta.json信息"
       },
       "jobDetail": {
         "flinkJarPac": "Flink主Jar包",

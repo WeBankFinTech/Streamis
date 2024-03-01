@@ -1,6 +1,18 @@
 <template>
   <div class="tableWrap">
     <Table :loading="loading" :columns="columns" :data="tableDatas" border>
+      <template slot-scope="{ row }" slot="jobParams">
+        <div style="margin-left: 5px" @click="showMetaJson(row)">
+          <a href="javascript:void(0)">
+            {{ $t('message.streamis.jobHistoryColumns.metaJson') }}
+          </a>
+        </div>
+        <div style="margin-left: 5px" @click="downloadMetaJson(row)">
+          <a href="javascript:void(0)">
+            {{ $t('message.streamis.jobHistoryColumns.download') }}
+          </a>
+        </div>
+      </template>
       <template slot-scope="{ row }" slot="operation">
         <div style="margin-left: 5px" @click="showVersionInfo(row)">
           <a href="javascript:void(0)">
@@ -42,6 +54,48 @@
       @modalCancel="modalCancel"
       ref="logDetail"
     />
+    <Modal
+      :title="metaJsonJobName + ' ' + $t('message.streamis.jobHistoryColumns.jobTemplate')"
+      v-model="metaJsonVisible"
+      footer-hide
+      width="1200"
+      @on-cancel="modalCancel"
+      :class="full ? 'full' : ''"
+    >
+      <div>
+        <div class="meta-wrapper">
+          <Input
+            ref="metaInputRef"
+            v-model="meta"
+            type="textarea"
+            :autosize="{ minRows: 10, maxRows: 15 }"
+            readonly
+            :placeholder="$t('message.streamis.jobHistoryColumns.noInfo')"
+          />
+          <span 
+            class="full-btn"
+            @click="fullToggle"
+          >
+            {{ full ? '> <' : '< >' }}
+          </span>
+        </div>
+        <div class="btnWrap">
+          <Button
+            type="primary"
+            @click="copy"
+          >
+            {{ $t('message.streamis.jobHistoryColumns.copy') }}
+          </Button>
+          <Button
+            type="primary"
+            @click="modalCancel"
+            style="margin-left: 30px;"
+          >
+            {{ $t('message.streamis.jobHistoryColumns.close') }}
+          </Button>
+        </div>
+      </div>
+    </Modal>
   </div>
 </template>
 <script>
@@ -91,6 +145,11 @@ export default {
           tooltip: true
         },
         {
+          title: this.$t('message.streamis.jobHistoryColumns.jobParams'),
+          key: 'jobParams',
+          slot: 'jobParams'
+        },
+        {
           title: this.$t('message.streamis.jobHistoryColumns.operation'),
           key: 'operation',
           slot: 'operation'
@@ -125,6 +184,15 @@ export default {
         total: 0,
       },
       loading: false,
+      metaJsonVisible: false,
+      metaJsonJobName: '',
+      meta: `{
+        "name":"john",
+        "age": 15,
+        "city": "Wuhan"
+      }
+      `,
+      full: false,
     }
   },
   mounted() {
@@ -193,8 +261,73 @@ export default {
     modalCancel() {
       this.modalVisible = false
       this.logVisible = false
-    }
+    },
+    showMetaJson(row) {
+      console.log('show meta.json, taskId:', row.taskId)
+      this.meta = this.formatJSON(this.meta)
+      this.metaJsonVisible = true
+    },
+    downloadMetaJson(row) {
+      console.log('download meta.json, taskId:', row.taskId)
+    },
+    formatJSON(text) {
+      try {
+        const jsonObj = JSON.parse(text)
+        const formatJSON = JSON.stringify(jsonObj, null, 2)
+        return formatJSON
+      } catch (error) {
+        return text
+      }
+    },
+    async copy(){
+      try {
+        console.log('copy', this.meta)
+        const textArea = document.createElement("textarea")
+        textArea.value = this.meta.replace(/\n/g, '')
+        document.body.append(textArea)
+        textArea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textArea)
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    fullToggle() {
+      this.full = !this.full
+    },
   }
 }
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.btnWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+.meta-wrapper{
+  position: relative;
+  .full-btn{
+    position: absolute;
+    cursor: pointer;
+    top: 5px;
+    right: 8px;
+    font-weight: bold;
+  }
+}
+.full {
+  /deep/.ivu-modal{
+    width: 100vw !important;
+    height: 100vh;
+    min-height: 430px;
+    top:0;
+    .ivu-modal-content{
+      height: 100%;
+    }
+  }
+  /deep/textarea{
+   height: calc(100vh - 200px) !important;
+   min-height: 200px;
+   max-height: calc(100vh - 200px) !important;
+  }
+}</style>
