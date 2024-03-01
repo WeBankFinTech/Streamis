@@ -77,7 +77,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   private var streamJobConfMapper: StreamJobConfMapper = _
 
   @Resource
-  private val streamJobConfService: StreamJobConfService = _
+  private var streamJobConfService: StreamJobConfService = _
 
   @Resource
   private var streamTaskService: StreamTaskService = _
