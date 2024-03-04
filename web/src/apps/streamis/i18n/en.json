@@ -163,6 +163,7 @@
         "sqlContent": "SQL content",
         "urlEmpty": "Url is empty",
         "columns": {
+            "type": "Type",
             "name": "Name",
             "version": "Version",
             "versionDescription": "Version description",

@@ -162,6 +162,7 @@
         "sqlContent": "SQL内容",
         "urlEmpty": "链接为空",
         "columns": {
+            "type": "类型",
             "name": "名称",
             "version": "版本",
             "versionDescription": "版本描述",

@@ -166,6 +166,10 @@ export default {
           key: 'id'
         },
         {
+          title: this.$t('message.streamis.jobDetail.columns.type'),
+          key: 'type'
+        },
+        {
           title: this.$t('message.streamis.jobDetail.columns.name'),
           key: 'fileName'
         },
