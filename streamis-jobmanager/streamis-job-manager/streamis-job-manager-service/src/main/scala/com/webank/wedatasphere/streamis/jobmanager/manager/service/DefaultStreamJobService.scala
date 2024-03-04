@@ -455,6 +455,12 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     }
   }
 
+  override def getJobFileById(id: Long): StreamJobVersionFiles = {
+    val streamJobVersionFiles = streamJobMapper.getJobFileById(id)
+    streamJobVersionFiles
+  }
+
+
 }
 
 object DefaultStreamJobService{

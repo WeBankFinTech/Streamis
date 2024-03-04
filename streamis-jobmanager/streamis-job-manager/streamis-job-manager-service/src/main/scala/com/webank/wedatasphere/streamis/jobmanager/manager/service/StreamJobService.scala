@@ -2,7 +2,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import com.github.pagehelper.PageInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{MetaJsonInfo, StreamAlertRecord, StreamJob, StreamJobVersion}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{MetaJsonInfo, StreamAlertRecord, StreamJob, StreamJobVersion, StreamJobVersionFiles}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobStatusVo, QueryJobListVo, TaskCoreNumVo, VersionDetailVo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent
 
@@ -179,4 +179,6 @@ trait StreamJobService {
   def activateJob(streamJob: StreamJob): Unit
 
   def getEnableStatus(jobId: Long): Boolean
+
+  def getJobFileById(id: Long): StreamJobVersionFiles
 }

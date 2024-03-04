@@ -890,5 +890,25 @@ public class JobRestfulApi {
         }
         return result;
     }
+//    /**
+//     * download job files
+//     * @return job files
+//     */
+//    @RequestMapping(path = "/download", method = RequestMethod.GET)
+//    public Message download(HttpServletRequest req, HttpServletResponse response,
+//                            @RequestParam(value = "id",required = false) Long id,
+//                            @RequestParam(value = "projectName",required = false) String projectName,
+//                            @RequestParam(value = "jobName",required = false) String jobName) {
+//        Message result = Message.ok();
+//        if(org.apache.commons.lang.StringUtils.isBlank(projectName)){
+//            projectName = projectManagerService.getProjectNameByFileId(id);
+//        }
+//
+//
+//
+//
+//
+//        return result;
+//    }
 
 }

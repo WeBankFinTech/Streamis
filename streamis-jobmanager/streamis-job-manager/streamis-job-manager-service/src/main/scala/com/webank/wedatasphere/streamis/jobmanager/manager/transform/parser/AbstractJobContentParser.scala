@@ -60,9 +60,19 @@ abstract class AbstractJobContentParser extends JobContentParser with Logging {
 
   protected def findFile(job: StreamJob, jobVersion: StreamJobVersion, fileName: String): StreamisFile = {
     val files = streamJobMapper.getStreamJobVersionFiles(jobVersion.getJobId, jobVersion.getId)
-    val (file, fileSource) = if(files == null || files.isEmpty)
-      (findFromProject(job.getProjectName, fileName), "project")
-    else files.asScala.find(_.getFileName == fileName).map((_, "jobVersion")).getOrElse((findFromProject(job.getProjectName, fileName), "project"))
+    val (file, fileSource) = if(files == null || files.isEmpty) {
+      val projFile = findFromProject(job.getProjectName, fileName)
+      projFile.setMaterialType("project")
+      (projFile, "project")
+    } else files.asScala.find(_.getFileName == fileName)
+           .map{ file => file.setMaterialType("jobVersion")
+                 (file, "jobVersion")
+           }
+           .getOrElse{
+              val projFile = findFromProject(job.getProjectName, fileName)
+              projFile.setMaterialType("project")
+              (projFile, "project")
+           }
     info(s"Find a $fileSource file(${file.getFileName}, ${file.getVersion}) with storePath ${file.getStorePath} for StreamJob-${job.getName} with file $fileName.")
     file
   }

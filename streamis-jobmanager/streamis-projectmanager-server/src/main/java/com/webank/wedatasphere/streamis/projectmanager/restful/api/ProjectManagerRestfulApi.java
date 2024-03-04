@@ -19,10 +19,12 @@ package com.webank.wedatasphere.streamis.projectmanager.restful.api;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersionFiles;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileExceptionManager;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.ReaderUtils;
 import com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles;
@@ -61,7 +63,8 @@ public class ProjectManagerRestfulApi {
     private ProjectManagerService projectManagerService;
     @Autowired
     private ProjectPrivilegeService projectPrivilegeService;
-
+    @Autowired
+    private StreamJobService streamJobService;
     private static final String NO_OPERATION_PERMISSION_MESSAGE = "the current user has no operation permission";
 
     @RequestMapping(path = "/files/upload", method = RequestMethod.POST)
@@ -206,21 +209,24 @@ public class ProjectManagerRestfulApi {
     @RequestMapping(path = "/files/download", method = RequestMethod.GET)
     public Message download( HttpServletRequest req, HttpServletResponse response, @RequestParam(value = "id",required = false) Long id,
                              @RequestParam(value = "projectName",required = false)String projectName) {
-        if(StringUtils.isBlank(projectName)){
-            projectName = projectManagerService.getProjectNameByFileId(id);
+        StreamisFile file = null;
+        if (!projectPrivilegeService.hasEditPrivilege(req, projectName))
+            return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
+        if (StringUtils.isBlank(projectName)) {
+//            projectName = projectManagerService.getProjectNameByFileId(id);
+            file = streamJobService.getJobFileById(id);
+        } else {
+            file = projectManagerService.getFile(id, projectName);
         }
-        ProjectFiles projectFiles = projectManagerService.getFile(id, projectName);
-        if (projectFiles == null) {
+        if (file == null) {
             return Message.error("no such file in this project");
         }
-        if (StringUtils.isBlank(projectFiles.getStorePath())) {
+        if (StringUtils.isBlank(file.getStorePath())) {
             return Message.error("storePath is null");
         }
-        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
-
         response.setContentType("application/x-download");
-        response.setHeader("content-Disposition", "attachment;filename=" + projectFiles.getFileName());
-        try (InputStream is = projectManagerService.download(projectFiles);
+        response.setHeader("content-Disposition", "attachment;filename=" + file.getFileName());
+        try (InputStream is = projectManagerService.download(file);
              OutputStream os = response.getOutputStream()
         ) {
             int len = 0;
@@ -230,7 +236,7 @@ public class ProjectManagerRestfulApi {
             }
             os.flush();
         } catch (Exception e) {
-            LOG.error("download file: {} failed , message is : {}" , projectFiles.getFileName(), e);
+            LOG.error("download file: {} failed , message is : {}", file.getFileName(), e);
             return Message.error(e.getMessage());
         }
         return Message.ok();

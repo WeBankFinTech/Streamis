@@ -49,6 +49,8 @@ public class ProjectFiles implements StreamisFile {
 
     private String source;
 
+    private String materialType;
+
     public String getSource() {
         return source;
     }
@@ -148,5 +150,13 @@ public class ProjectFiles implements StreamisFile {
 
     public void setMD5(String MD5) {
         this.MD5 = MD5;
+    }
+
+    public String getMaterialType() {
+        return materialType;
+    }
+
+    public void setMaterialType(String materialType) {
+        this.materialType = materialType;
     }
 }

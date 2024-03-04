@@ -84,4 +84,6 @@ public interface StreamJobMapper {
     StreamJob queryJobById(@Param("jobId")Long jobId);
 
     void updateJobEnable(StreamJob streamJob);
+
+    StreamJobVersionFiles getJobFileById(@Param("id") Long jobVersionFileId);
 }

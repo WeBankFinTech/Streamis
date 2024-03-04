@@ -244,7 +244,12 @@
         INNER JOIN linkis_stream_job_version j ON f.job_id = j.job_id AND f.version = j.version
         WHERE f.job_id = #{jobId} AND f.job_version_id = #{jobVersionId}
     </select>
-
+    <select id="getJobFileById"
+            resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersionFiles">
+        SELECT `id`,`job_id`,`job_version_id`,`file_name`,`version`,`store_path`,`store_type`,`create_time`,`create_by` FROM
+        linkis_stream_job_version_files WHERE
+        id = #{id}
+    </select>
     <update id="updateJob" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
         UPDATE linkis_stream_job
         <trim prefix="set" suffixOverrides=",">
