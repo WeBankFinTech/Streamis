@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.server.storage;
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.config.StreamJobLogConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.exception.StreamJobLogException;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.JobLogBucket;
@@ -9,6 +10,7 @@ import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.Job
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.context.*;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.loadbalancer.JobLogStorageLoadBalancer;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.utils.MemUtils;
+import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.common.utils.Utils;
 import org.slf4j.Logger;
@@ -68,9 +70,12 @@ public class StreamisJobLogStorage implements JobLogStorage{
      */
     private Future<?> monitorThread;
 
+    private StreamJobConfMapper streamJobConfMapper;
+    private StreamJobMapper streamJobMapper;
+
     @Override
-    public JobLogBucket getOrCreateBucket(String userName, String appName, JobLogBucketConfig bucketConfig) {
-        String bucketName = toBucketName(userName, appName);
+    public JobLogBucket getOrCreateBucket(String userName, String appName, JobLogBucketConfig bucketConfig,String productName) {
+        String bucketName = toBucketName(userName, appName,productName);
         return buckets.computeIfAbsent(bucketName, name -> {
             // First to choose context
             JobLogStorageContext context = chooseStorageContext(bucketName, bucketConfig);
@@ -108,6 +113,21 @@ public class StreamisJobLogStorage implements JobLogStorage{
         this.bucketDriftPolicy = bucketDriftPolicy;
     }
 
+    public void setStreamJobConfMapper(StreamJobConfMapper streamJobConfMapper){
+        this.streamJobConfMapper = streamJobConfMapper;
+    }
+
+    public StreamJobConfMapper getStreamJobConfMapper(){
+        return this.streamJobConfMapper;
+    }
+
+    public StreamJobMapper getStreamJobMapper(){
+        return this.streamJobMapper;
+    }
+
+    public void setStreamJobMapper(StreamJobMapper streamJobMapper){
+        this.streamJobMapper = streamJobMapper;
+    }
     @Override
     public void addContextListener(JobLogStorageContextListener listener) {
         this.contextListeners.add(listener);
@@ -322,7 +342,11 @@ public class StreamisJobLogStorage implements JobLogStorage{
      * @param appName app name
      * @return bucket name
      */
-    private String toBucketName(String userName, String appName){
-        return userName + "." + appName;
+    private String toBucketName(String userName, String appName,String productName){
+        if (StringUtils.isBlank(productName)){
+            return userName + "." + appName;
+        } else {
+            return productName + "." + userName + "." + appName;
+        }
     }
 }

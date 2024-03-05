@@ -1,12 +1,14 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.server.restful;
 
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisHeartbeat;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.config.StreamJobLogConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.entities.StreamisLogEvents;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.exception.StreamJobLogException;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.service.StreamisJobLogService;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.service.StreamisRegisterService;
+import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.utils.RegularUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamRegister;
 import org.apache.commons.lang.StringUtils;
@@ -52,7 +54,13 @@ public class JobLogRestfulApi {
             String eventIp = xForwardedForHeader.split(",")[0].trim();
             Arrays.stream(events.getEvents())
                     .forEach(event -> event.setContent("ip: " +eventIp+" "+event.getContent()));
-            this.streamisJobLogService.store(userName, events);
+            String appName = events.getAppName();
+            String[] arr = RegularUtils.split(appName);
+            String projectName = arr[0];
+            String jobName = arr[1];
+            Long jobId = streamisJobLogService.getCurrentJobId(projectName,jobName);
+            String productName = streamisJobLogService.getProductName(jobId, JobConf.PRODUCT_NAME_KEY().getHotValue());
+            this.streamisJobLogService.store(userName, events,productName);
             result = Message.ok();
         }catch (Exception e){
             String message = "Fail to collect stream log events, message: " + e.getMessage();
