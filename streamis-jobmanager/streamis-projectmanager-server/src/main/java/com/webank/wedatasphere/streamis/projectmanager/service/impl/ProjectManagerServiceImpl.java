@@ -16,7 +16,6 @@
 package com.webank.wedatasphere.streamis.projectmanager.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersionFiles;
 import com.webank.wedatasphere.streamis.projectmanager.utils.MD5Utils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.linkis.common.utils.JsonUtils;
@@ -85,9 +84,9 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
     }
 
     @Override
-    public InputStream download(StreamisFile files) throws JsonProcessingException {
-        Map<String,String> map = JsonUtils.jackson().readValue(files.getStorePath(), Map.class);
-        return bmlService.get(files.getCreateBy(), map.get("resourceId"), map.get("version"));
+    public InputStream download(ProjectFiles projectFiles) throws JsonProcessingException {
+        Map<String,String> map = JsonUtils.jackson().readValue(projectFiles.getStorePath(), Map.class);
+        return bmlService.get(projectFiles.getCreateBy(), map.get("resourceId"), map.get("version"));
     }
 
     @Override

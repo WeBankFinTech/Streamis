@@ -460,7 +460,6 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     streamJobVersionFiles
   }
 
-
 }
 
 object DefaultStreamJobService{

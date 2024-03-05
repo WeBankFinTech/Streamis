@@ -40,6 +40,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.Real
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent;
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils;
 import com.webank.wedatasphere.streamis.jobmanager.service.HighAvailableService;
+import com.webank.wedatasphere.streamis.jobmanager.service.JobManagerService;
 import com.webank.wedatasphere.streamis.jobmanager.utils.RegularUtil;
 import com.webank.wedatasphere.streamis.jobmanager.vo.*;
 import org.apache.commons.collections.CollectionUtils;
@@ -56,6 +57,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -80,6 +84,9 @@ public class JobRestfulApi {
 
     @Autowired
     private HighAvailableService highAvailableService;
+
+    @Autowired
+    private JobManagerService jobManagerService;
 
     @Resource
     private JobLaunchManager<? extends JobInfo> jobLaunchManager;
@@ -890,25 +897,39 @@ public class JobRestfulApi {
         }
         return result;
     }
-//    /**
-//     * download job files
-//     * @return job files
-//     */
-//    @RequestMapping(path = "/download", method = RequestMethod.GET)
-//    public Message download(HttpServletRequest req, HttpServletResponse response,
-//                            @RequestParam(value = "id",required = false) Long id,
-//                            @RequestParam(value = "projectName",required = false) String projectName,
-//                            @RequestParam(value = "jobName",required = false) String jobName) {
-//        Message result = Message.ok();
-//        if(org.apache.commons.lang.StringUtils.isBlank(projectName)){
-//            projectName = projectManagerService.getProjectNameByFileId(id);
-//        }
-//
-//
-//
-//
-//
-//        return result;
-//    }
+    @RequestMapping(path = "/files/download", method = RequestMethod.GET)
+    public Message download(HttpServletRequest req, HttpServletResponse response,
+                            @RequestParam(value = "id",required = false) Long id) {
+        Message result = Message.ok();
+        String userName = ModuleUserUtils.getOperationUser(req, "download job");
+        if (org.apache.commons.lang.StringUtils.isBlank(userName)) return Message.error("current user has no permission");
+        if (id == null) {
+            return Message.error("id cannot be null");
+        }
+        StreamJobVersionFiles file = streamJobService.getJobFileById(id);
+        if (file == null) {
+            return Message.error("no such file in this project");
+        }
+        if (org.apache.commons.lang.StringUtils.isBlank(file.getStorePath())) {
+            return Message.error("storePath is null");
+        }
+        response.setContentType("application/x-download");
+        response.setHeader("content-Disposition", "attachment;filename=" + file.getFileName());
+
+        try (InputStream is = jobManagerService.download(file);
+             OutputStream os = response.getOutputStream()
+        ) {
+            int len = 0;
+            byte[] arr = new byte[2048];
+            while ((len = is.read(arr)) > 0) {
+                os.write(arr, 0, len);
+            }
+            os.flush();
+        } catch (Exception e) {
+            LOG.error("download file: {} failed , message is : {}", file.getFileName(), e);
+            return Message.error(e.getMessage());
+        }
+        return result;
+    }
 
 }
