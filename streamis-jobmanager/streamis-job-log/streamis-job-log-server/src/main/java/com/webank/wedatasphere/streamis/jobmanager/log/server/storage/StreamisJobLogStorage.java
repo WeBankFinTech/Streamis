@@ -10,6 +10,7 @@ import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.Job
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.context.*;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.loadbalancer.JobLogStorageLoadBalancer;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.utils.MemUtils;
+import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.utils.RegularUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.common.utils.Utils;
@@ -346,7 +347,8 @@ public class StreamisJobLogStorage implements JobLogStorage{
         if (StringUtils.isBlank(productName)){
             return userName + "." + appName;
         } else {
-            return productName + "." + userName + "." + appName;
+            String[] arrs = RegularUtils.split(appName);
+            return arrs[0] + ".product." + arrs[1];
         }
     }
 }
