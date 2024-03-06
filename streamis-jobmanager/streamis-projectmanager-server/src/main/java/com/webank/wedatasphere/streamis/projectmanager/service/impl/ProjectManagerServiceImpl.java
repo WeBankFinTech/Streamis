@@ -84,9 +84,9 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
     }
 
     @Override
-    public InputStream download(ProjectFiles projectFiles) throws JsonProcessingException {
-        Map<String,String> map = JsonUtils.jackson().readValue(projectFiles.getStorePath(), Map.class);
-        return bmlService.get(projectFiles.getCreateBy(), map.get("resourceId"), map.get("version"));
+    public InputStream download(StreamisFile file) throws JsonProcessingException {
+        Map<String,String> map = JsonUtils.jackson().readValue(file.getStorePath(), Map.class);
+        return bmlService.get(file.getCreateBy(), map.get("resourceId"), map.get("version"));
     }
 
     @Override

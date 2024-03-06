@@ -28,7 +28,7 @@
     </resultMap>
     <select id="getErrorCodeList"
             resultType="com.webank.wedatasphere.streamis.errorcode.entity.StreamErrorCode">
-        select id , error_code,error_desc,error_regex,error_type from linkis_stream_error_code
+        select id , error_code,error_desc,error_regex,error_type,solution from linkis_stream_error_code
     </select>
 
 </mapper>
