@@ -8,6 +8,7 @@ public class StreamErrorCode {
     private String errorDesc;
     private String errorRegex;
     private Integer errorType;
+    private String solution;
 
     public StreamErrorCode() {
     }
@@ -63,5 +64,13 @@ public class StreamErrorCode {
 
     public void setErrorType(Integer errorType) {
         this.errorType = errorType;
+    }
+
+    public String getSolution() {
+        return solution;
+    }
+
+    public void setSolution(String solution) {
+        this.solution = solution;
     }
 }

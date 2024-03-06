@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.errorcode.handler;
 
+import com.webank.wedatasphere.streamis.errorcode.entity.StreamErrorCode;
 import com.webank.wedatasphere.streamis.errorcode.manager.cache.StreamisErrorCodeCache;
 import org.apache.linkis.common.utils.Utils;
 import org.apache.linkis.errorcode.client.ClientConfiguration;
@@ -14,7 +15,7 @@ import scala.Tuple2;
 import java.util.*;
 import java.util.concurrent.*;
 
-public class StreamisErrorCodeHandler extends LinkisErrorCodeHandler {
+public class StreamisErrorCodeHandler {
 
     private static StreamisErrorCodeHandler streamisErrorCodeHandler;
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamisErrorCodeHandler.class);
@@ -36,10 +37,18 @@ public class StreamisErrorCodeHandler extends LinkisErrorCodeHandler {
         super();
     }
 
-    @Override
-    public List<ErrorCode> handle(String log) {
-        Set<ErrorCode> errorCodeSet = new HashSet<>();
-        List<LinkisErrorCode> errorCodes = StreamisErrorCodeCache.get("data");
+    public List<StreamErrorCode> handle(String log) {
+        Set<StreamErrorCode> errorCodeSet = new HashSet<>();
+        List<StreamErrorCode> streamErrorCodes = StreamisErrorCodeCache.get("data");
+        List<LinkisErrorCode> errorCodes = new ArrayList<>();
+        for (StreamErrorCode item : streamErrorCodes) {
+            LinkisErrorCode errorCode = new LinkisErrorCode();
+            errorCode.setErrorCode(item.getErrorCode());
+            errorCode.setErrorDesc(item.getErrorDesc());
+            errorCode.setErrorRegexStr(item.getErrorRegex());
+            errorCode.setErrorType(item.getErrorType());
+            errorCodes.add(errorCode);
+        }
         Runnable runnable =
                 () -> {
                     Arrays.stream(log.split("\n"))
@@ -48,7 +57,7 @@ public class StreamisErrorCodeHandler extends LinkisErrorCodeHandler {
                                         Option<Tuple2<String, String>> match =
                                                 ErrorCodeMatcher.errorMatch(errorCodes, singleLog);
                                         if (match.isDefined()) {
-                                            errorCodeSet.add(new LinkisErrorCode(match.get()._1, match.get()._2));
+                                            errorCodeSet.add(new StreamErrorCode(match.get()._1, match.get()._2));
                                         }
                                     });
                 };

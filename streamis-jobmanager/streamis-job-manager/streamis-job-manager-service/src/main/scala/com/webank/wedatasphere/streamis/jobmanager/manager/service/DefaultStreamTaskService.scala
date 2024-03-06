@@ -15,6 +15,8 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
+import com.webank.wedatasphere.streamis.errorcode.entity.StreamErrorCode
+
 import java.util
 import java.util.concurrent.{Executors, Future, ScheduledExecutorService, TimeUnit}
 import java.util.{Calendar, Map, function}
@@ -835,6 +837,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
 
   override def  errorCodeMatching(jobId: Long, streamTask: StreamTask): Future[_] = {
     var errorMsg =""
+    var errorCodes = List.empty[StreamErrorCode]
+    var solution =""
     val taskId =streamTask.getId
     val user =streamTask.getSubmitUser
       Utils.defaultScheduler.submit(new Runnable {
@@ -843,8 +847,10 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           breakable(
             for(i<-0 to 10) {
               val logs = getLog(jobId, taskId, user, "yarn",i*100)
-              errorMsg =exceptionAnalyze(errorMsg,logs)
-              if(errorMsg.nonEmpty){
+              errorCodes =exceptionAnalyze(errorMsg,logs)
+              if (errorCodes != null && errorCodes.nonEmpty) {
+                errorMsg = errorCodes.map(e => e.getErrorDesc).mkString(",")
+                solution = errorCodes.map(e => e.getSolution).mkString(",")
                 break()
               }
             })
@@ -857,8 +863,10 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
             breakable(
               for(i<-0 to 10) {
                 val logs = getLog(jobId, taskId, user, "client",i*100)
-                errorMsg =exceptionAnalyze(errorMsg,logs)
-                if(errorMsg.nonEmpty){
+                errorCodes =exceptionAnalyze(errorMsg,logs)
+                if (errorCodes != null && errorCodes.nonEmpty) {
+                  errorMsg = errorCodes.map(e => e.getErrorDesc).mkString(",")
+                  solution = errorCodes.map(e => e.getSolution).mkString(",")
                   break()
                 }
               })
@@ -868,6 +876,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
             val streamTask = new StreamTask()
             streamTask.setId(taskId);
             streamTask.setErrDesc(errorMsg)
+            streamTask.setSolution(solution)
             streamTaskService.updateTask(streamTask)
           }{
             case e: Exception =>
@@ -877,6 +886,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
         val streamTask = new StreamTask()
         streamTask.setId(taskId);
         streamTask.setErrDesc(errorMsg)
+        streamTask.setSolution(solution)
         streamTaskService.updateTask(streamTask)
       }
     })
@@ -893,18 +903,13 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     logString
   }
 
-  def exceptionAnalyze(errorMsg: String, log: String): String = {
-    if (null != log) {
+  def exceptionAnalyze(errorMsg: String, log: String): List[StreamErrorCode] = {
+    if (null != log && log.nonEmpty) {
       val errorCodes = errorCodeHandler.handle(log)
-      if (errorCodes != null && errorCodes.size() > 0) {
-        errorCodes.asScala.map(e => e.getErrorDesc).mkString(",")
-      } else {
-        errorMsg
-      }
-    } else {
-      errorMsg
+      if (errorCodes != null) errorCodes.asScala.toList else List.empty[StreamErrorCode]
+    }else{
+      List.empty[StreamErrorCode]
     }
-
   }
 
   def generateJobStartConfig(job: StreamJob, jobVersion: StreamJobVersion, creator: String): String = {
