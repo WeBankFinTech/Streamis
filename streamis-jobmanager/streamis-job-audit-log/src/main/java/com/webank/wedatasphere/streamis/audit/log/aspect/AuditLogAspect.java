@@ -89,7 +89,7 @@ public class AuditLogAspect {
             boolean end = false;
             String tmpUri = "";
             for (String uri : JobAuditConf.AUDIT_LOG_URI_SKIP.getValue().split(",")) {
-                if (requestURI.equalsIgnoreCase(uri)) {
+                if (requestURI.contains(uri)) {
                     end = true;
                     tmpUri = uri;
                     break;
