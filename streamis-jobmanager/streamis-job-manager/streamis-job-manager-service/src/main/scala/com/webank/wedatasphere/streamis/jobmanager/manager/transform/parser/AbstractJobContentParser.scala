@@ -16,9 +16,10 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.parser
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobExecuteErrorException
+import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants.{TYPE_JOB, TYPE_PROJECT}
+
 import java.io.InputStream
 import java.util
-
 import org.apache.linkis.common.conf.Configuration
 import org.apache.linkis.common.utils.{JsonUtils, Logging}
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper
@@ -60,9 +61,19 @@ abstract class AbstractJobContentParser extends JobContentParser with Logging {
 
   protected def findFile(job: StreamJob, jobVersion: StreamJobVersion, fileName: String): StreamisFile = {
     val files = streamJobMapper.getStreamJobVersionFiles(jobVersion.getJobId, jobVersion.getId)
-    val (file, fileSource) = if(files == null || files.isEmpty)
-      (findFromProject(job.getProjectName, fileName), "project")
-    else files.asScala.find(_.getFileName == fileName).map((_, "jobVersion")).getOrElse((findFromProject(job.getProjectName, fileName), "project"))
+    val (file, fileSource) = if(files == null || files.isEmpty) {
+      val projFile = findFromProject(job.getProjectName, fileName)
+      projFile.setMaterialType(TYPE_PROJECT)
+      (projFile, TYPE_PROJECT)
+    } else files.asScala.find(_.getFileName == fileName)
+           .map{ file => file.setMaterialType(TYPE_JOB)
+                 (file, TYPE_JOB)
+           }
+           .getOrElse{
+              val projFile = findFromProject(job.getProjectName, fileName)
+              projFile.setMaterialType(TYPE_PROJECT)
+              (projFile, TYPE_PROJECT)
+           }
     info(s"Find a $fileSource file(${file.getFileName}, ${file.getVersion}) with storePath ${file.getStorePath} for StreamJob-${job.getName} with file $fileName.")
     file
   }

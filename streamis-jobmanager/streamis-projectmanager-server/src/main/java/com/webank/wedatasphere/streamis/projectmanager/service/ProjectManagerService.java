@@ -37,7 +37,7 @@ public interface ProjectManagerService {
 
     List<? extends StreamisFile> listFileVersions(String projectName, String fileName);
 
-    InputStream download(ProjectFiles projectFiles) throws JsonProcessingException;
+    InputStream download(StreamisFile projectFiles) throws JsonProcessingException;
 
     ProjectFiles getById(Long id);
 

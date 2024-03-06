@@ -8,21 +8,24 @@ public class StreamErrorCode {
     private String errorDesc;
     private String errorRegex;
     private Integer errorType;
+    private String solution;
 
     public StreamErrorCode() {
     }
 
-    public StreamErrorCode(String errorCode, String errorDesc) {
+    public StreamErrorCode(String errorCode, String errorDesc,String solution) {
         this.errorCode = errorCode;
         this.errorDesc = errorDesc;
+        this.solution = solution;
     }
 
-    public StreamErrorCode(Integer id, String errorCode, String errorDesc, String errorRegex, Integer errorType) {
+    public StreamErrorCode(Integer id, String errorCode, String errorDesc, String errorRegex, Integer errorType,String solution) {
         this.id = id;
         this.errorCode = errorCode;
         this.errorDesc = errorDesc;
         this.errorRegex = errorRegex;
         this.errorType = errorType;
+        this.solution = solution;
     }
 
     public Integer getId() {
@@ -63,5 +66,13 @@ public class StreamErrorCode {
 
     public void setErrorType(Integer errorType) {
         this.errorType = errorType;
+    }
+
+    public String getSolution() {
+        return solution;
+    }
+
+    public void setSolution(String solution) {
+        this.solution = solution;
     }
 }

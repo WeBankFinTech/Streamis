@@ -23,6 +23,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileExceptionManager;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.ReaderUtils;
 import com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles;
@@ -61,6 +62,8 @@ public class ProjectManagerRestfulApi {
     private ProjectManagerService projectManagerService;
     @Autowired
     private ProjectPrivilegeService projectPrivilegeService;
+    @Autowired
+    private StreamJobService streamJobService;
 
     private static final String NO_OPERATION_PERMISSION_MESSAGE = "the current user has no operation permission";
 
@@ -204,23 +207,34 @@ public class ProjectManagerRestfulApi {
     }
 
     @RequestMapping(path = "/files/download", method = RequestMethod.GET)
-    public Message download( HttpServletRequest req, HttpServletResponse response, @RequestParam(value = "id",required = false) Long id,
+    public Message download( HttpServletRequest req, HttpServletResponse response,
+                             @RequestParam(value = "id",required = false) Long id,
+                             @RequestParam(value = "materialType",required = false) String materialType,
                              @RequestParam(value = "projectName",required = false)String projectName) {
-        if(StringUtils.isBlank(projectName)){
-            projectName = projectManagerService.getProjectNameByFileId(id);
+        StreamisFile file = null;
+        String userName = ModuleUserUtils.getOperationUser(req, "download job");
+        if (org.apache.commons.lang.StringUtils.isBlank(userName)) return Message.error("current user has no permission");
+        if (StringUtils.isBlank(projectName)) {
+            if (StringUtils.isBlank(materialType)) {
+                return Message.error("projectName and materialType is null");
+            } else if (materialType.equals("job")) {
+                file = streamJobService.getJobFileById(id);
+            }
+        } else {
+            if (!projectPrivilegeService.hasEditPrivilege(req, projectName))
+                return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
+            file = projectManagerService.getFile(id, projectName);
         }
-        ProjectFiles projectFiles = projectManagerService.getFile(id, projectName);
-        if (projectFiles == null) {
+        if (file == null) {
             return Message.error("no such file in this project");
         }
-        if (StringUtils.isBlank(projectFiles.getStorePath())) {
+        if (StringUtils.isBlank(file.getStorePath())) {
             return Message.error("storePath is null");
         }
-        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
-
         response.setContentType("application/x-download");
-        response.setHeader("content-Disposition", "attachment;filename=" + projectFiles.getFileName());
-        try (InputStream is = projectManagerService.download(projectFiles);
+        response.setHeader("content-Disposition", "attachment;filename=" + file.getFileName());
+
+        try (InputStream is = projectManagerService.download(file);
              OutputStream os = response.getOutputStream()
         ) {
             int len = 0;
@@ -230,7 +244,7 @@ public class ProjectManagerRestfulApi {
             }
             os.flush();
         } catch (Exception e) {
-            LOG.error("download file: {} failed , message is : {}" , projectFiles.getFileName(), e);
+            LOG.error("download file: {} failed , message is : {}", file.getFileName(), e);
             return Message.error(e.getMessage());
         }
         return Message.ok();
