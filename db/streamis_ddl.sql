@@ -220,7 +220,7 @@ CREATE TABLE `linkis_stream_task` (
   `submit_user` varchar(50) DEFAULT NULL,
   `linkis_job_id` varchar(200) DEFAULT NULL,
   `linkis_job_info` mediumtext,
-  `job_startup_config` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'streamis job startup config',
+  `job_start_config` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'streamis job startup config',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='任务表';
 
