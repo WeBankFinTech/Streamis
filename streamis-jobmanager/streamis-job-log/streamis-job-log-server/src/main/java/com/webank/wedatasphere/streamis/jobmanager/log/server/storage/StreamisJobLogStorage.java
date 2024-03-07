@@ -348,7 +348,7 @@ public class StreamisJobLogStorage implements JobLogStorage{
             return userName + "." + appName;
         } else {
             String[] arrs = RegularUtils.split(appName);
-            return arrs[0] + ".product." + arrs[1];
+            return userName + "." + arrs[0] + ".product." + arrs[1];
         }
     }
 }
