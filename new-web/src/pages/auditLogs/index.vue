@@ -100,6 +100,13 @@
                     ellipsis
                 />
                 <f-table-column
+                    prop="costTimeMills"
+                    label="接口耗时"
+                    :width="88"
+                    :formatter="formatterEmptyValue"
+                    ellipsis
+                />
+                <f-table-column
                     v-slot="{ row }"
                     prop="inputParameters"
                     label="入参"
