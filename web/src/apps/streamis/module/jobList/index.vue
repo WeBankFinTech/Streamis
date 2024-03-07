@@ -48,6 +48,26 @@
             <FormItem>
               <Button
                 type="primary"
+                :disabled="!selections.length || query.enable === 'all'"
+                @click="clickBatchStart"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 16px;display: flex;align-items: center;justify-content: center;"
+              >
+                启动
+              </Button>
+            </FormItem>
+            <FormItem>
+              <Button
+                type="primary"
+                :disabled="!selections.length || query.enable === 'all'"
+                @click="clickBatchStop"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 16px;display: flex;align-items: center;justify-content: center;"
+              >
+                停止
+              </Button>
+            </FormItem>
+            <FormItem>
+              <Button
+                type="primary"
                 @click="hideButtons"
                 style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 16px;display: flex;align-items: center;justify-content: center;"
               >
@@ -363,7 +383,7 @@
       :mask-closable="false"
     >
       <div class="wrap">
-        <Table border :row-class-name="rowClassName" :columns="checkColumns" :data="checkData">
+        <Table border :row-class-name="rowClassName" :columns="checkColumns" :data="checkData" :loading="startHintLoading">
           <template slot-scope="{row}" slot="yarn">
             <div v-for="(item, index) in row.yarn" :key="index">
               <a class="red-color" v-if="item.applicationUrl && item.applicationUrl !== '无' && item.applicationId" style="display: block" @click="goToNewTab(item.applicationUrl)">{{item.yarnAppType}}: {{item.applicationName}}</a>
@@ -383,7 +403,7 @@
             <div v-if="hasWarningCount" class="warning-color">检查到 {{hasWarningCount}} 个作业存在异常，可能导致启动失败，请检查</div>
           </div>
           <div class="modal-footer-btns">
-            <Button type="primary" @click="confirmStarting">{{ $t('message.streamis.formItems.confirmBtn') }}</Button>
+            <Button type="primary" @click="confirmStarting" :disabled="startHintLoading">{{ $t('message.streamis.formItems.confirmBtn') }}</Button>
             <Button type="primary" @click="cancelStartHint">{{ $t('message.streamis.formItems.cancel') }}</Button>
           </div>
         </div>
@@ -411,6 +431,21 @@
     >
       <div class="text">
         {{ failureReason }}
+      </div>
+    </Modal>
+    <Modal
+      v-model="stopDataShow"
+      title="批量停止"
+      @on-ok="batchStop"
+      @on-cancel="modalCancel"
+      :mask-closable="false"
+    >
+      <div class="wrap">
+        <Table border :row-class-name="rowClassName" :columns="stopColumns" :data="stopData">
+        </Table>
+      </div>
+      <div class="text" style="margin-top: 16px;">
+        以上{{ stopData.length }}个应用待停止
       </div>
     </Modal>
   </div>
@@ -622,6 +657,7 @@ export default {
       // 作业启动弹框
       waitSingleStartCheck: false,
       startHintVisible: false,
+      startHintLoading: false,
       isBatchRestart: false,
       // 启动弹框的列和数据
       checkColumns: [
@@ -660,6 +696,21 @@ export default {
           key: 'link',
           align: 'center',
         },
+      ],
+      stopDataShow: false,
+      stopData: [],
+      // 停止弹窗的列和数据
+      stopColumns: [
+        {
+          title: '作业名',
+          key: 'name',
+          align: 'center',
+        },
+        {
+          title: '运行状态',
+          key: 'status',
+          align: 'center',
+        }
       ],
       hasWarningCount: 0,
       checkData: [],
@@ -945,6 +996,61 @@ export default {
         this.processModalVisable = false;
       }
     },
+    async clickBatchStart(){
+      const bulk_sbj = this.selections.map(item => +item.id);
+      if(!this.checkTaskStatus(bulk_sbj, 'batchStart')){
+        this.$Message.error('存在运行中、启动中、停止中的任务，请取消勾选此类任务再执行该操作!')
+        return
+      }
+      try {
+        // 1、快照重启和直接重启只有调用接口时snapshot参数的区别
+        await this.handleAction(this.selections, 0, false)
+      } catch (error) {
+        this.processModalVisable = false;
+      }
+    },
+    async clickBatchStop(){
+      const bulk_sbj = this.selections.map(item => +item.id);
+      this.stopData = this.selections.slice().map(item=>({...item, status: '运行中'}))
+      if(!this.checkTaskStatus(bulk_sbj, 'batchStop')){
+        this.$Message.error('存在非运行中的任务，请取消勾选此类任务再执行该操作!')
+        return
+      }
+      this.stopDataShow = true
+    },
+    async batchStop(){
+      const bulk_sbj = this.selections.map(item => +item.id);
+      this.processModalVisable = true;
+      this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
+      this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
+      try {
+        const pauseRes = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot: false });
+        console.log('pause pauseRes', pauseRes);
+        if (!pauseRes.result || !pauseRes.result.Success || !pauseRes.result.Failed) {
+          this.isFinish = true;
+          this.modalContent = "停止接口后台返回异常"
+          return
+        }
+        this.failTasks = pauseRes.result.Failed.data.map(item => ({
+          taskId: item.jobId,
+          taskName: item.scheduleId,
+          info: item.message,
+        }));
+        this.orderNum = this.selections.length - this.failTasks.length;
+        if (this.failTasks.length) {
+          this.isFinish = true;
+          this.modalTitle = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+          this.modalContent = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+          return;
+        }
+        this.processModalVisable = false;
+      } catch (error) {
+        console.log('clickBatchStop err: ', error);
+        this.isFinish = true
+        this.modalContent = '停止任务失败，失败信息：' + error
+        return;
+      }
+    },
     clickBatchEditTags(){
       const bulk_sbj = this.selections.map(item => +item.id);
       if(!this.checkTask(bulk_sbj)){
@@ -972,40 +1078,48 @@ export default {
       if (this.isBatchRestart) {
         // 是批量重启，tempData是数组
         this.hasWarningCount = 0;
-        const inspectRes = await Promise.all(this.tempData.map(async (item) => {
-          const { id, name } = item
-          const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
-          const inspectRes = await api.fetch(checkPath, {}, 'put')
-          const tempData = {
-            id,
-            jobName: name,
-            link: inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--',
-            latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
-            lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
-            yarn: inspectRes.list && inspectRes.list.list ? inspectRes.list.list : [],
-            consistency: inspectRes.highavailable && inspectRes.highavailable.highAvailable ? '通过：检查通过' : (inspectRes.highavailable.msg ? '不通过：' + inspectRes.highavailable.msg + '不一致' : '--'),
-            warningRow: false
-          }
-          if (tempData.consistency.includes('不通过')) {
-            tempData.warningRow = true
-          }
-          if (Array.isArray(tempData.yarn)) {
-            for (let i = 0; i < tempData.yarn.length; i++) {
-              if (tempData.yarn[i].applicationId && tempData.yarn[i].applicationId !== '无') {
-                tempData.warningRow = true
-                break
+        try {
+          this.startHintVisible = true
+          this.startHintLoading = true
+          const inspectRes = await Promise.all(this.tempData.map(async (item) => {
+            const { id, name } = item
+            const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
+            const inspectRes = await api.fetch(checkPath, {}, 'put')
+            const tempData = {
+              id,
+              jobName: name,
+              link: inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--',
+              latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
+              lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
+              yarn: inspectRes.list && inspectRes.list.list ? inspectRes.list.list : [],
+              consistency: inspectRes.highavailable && inspectRes.highavailable.highAvailable ? '通过：检查通过' : (inspectRes.highavailable.msg ? '不通过：' + inspectRes.highavailable.msg + '不一致' : '--'),
+              warningRow: false
+            }
+            if (tempData.consistency.includes('不通过')) {
+              tempData.warningRow = true
+            }
+            if (Array.isArray(tempData.yarn)) {
+              for (let i = 0; i < tempData.yarn.length; i++) {
+                if (tempData.yarn[i].applicationId && tempData.yarn[i].applicationId !== '无') {
+                  tempData.warningRow = true
+                  break
+                }
               }
             }
-          }
-          if (tempData.warningRow === true) {
-            this.hasWarningCount++
-          }
-          this.checkData.push(tempData)
-        }))
-        console.log('inspectRes: ', inspectRes);
-        // 上面虽然是调用多个接口，但因为是await，所以这里的打开弹框的顺序可以按照同步的方式写
-        this.startHintVisible = true
-        console.log('打开弹框 this.startHintData: ', this.startHintData);
+            if (tempData.warningRow === true) {
+              this.hasWarningCount++
+            }
+            this.checkData.push(tempData)
+          }))
+          this.startHintLoading = false
+          console.log('inspectRes: ', inspectRes);
+          // 上面虽然是调用多个接口，但因为是await，所以这里的打开弹框的顺序可以按照同步的方式写
+          this.startHintVisible = true
+          console.log('打开弹框 this.startHintData: ', this.startHintData);
+        } catch (error) {
+          this.startHintLoading = false
+          this.startHintVisible = false
+        }
       } else {
         try {
           if (this.waitSingleStartCheck) {
@@ -1016,7 +1130,10 @@ export default {
           const { id, name } = this.tempData
           const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
           this.waitSingleStartCheck = true;
+          this.startHintVisible = true
+          this.startHintLoading = true
           const inspectRes = await api.fetch(checkPath, {}, 'put')
+          this.startHintLoading = false
           this.waitSingleStartCheck = false;
           const tempData = {
             id,
@@ -1047,6 +1164,8 @@ export default {
           this.startHintVisible = true
           console.log('打开弹框 this.startHintData: ', this.startHintData);
         } catch (error) {
+          this.startHintLoading = false
+          this.startHintVisible = false
           this.waitSingleStartCheck = false;
         }
       }
@@ -1096,6 +1215,7 @@ export default {
       } else {
         // 批量启动
         console.log('bulkExecution');
+        this.processModalVisable = true
         try {
           const bulk_sbj = this.selections.map(item => +item.id);
           const result = await api.fetch('streamis/streamJobManager/job/bulk/execution', { bulk_sbj });
@@ -1144,6 +1264,12 @@ export default {
       const resArray = this.tableDatas.filter(item => ids.includes(item.id)).map(item => item.status)
       if (type === "startOrStop") {
         return (resArray.includes(0) || resArray.includes(8) || resArray.includes(9)) ? false : true // 存在未启动、启动中或停止中的任务，不允许执行启动、停止
+      }
+      if (type === "batchStart") {
+        return (resArray.includes(5) || resArray.includes(8) || resArray.includes(9)) ? false : true // 存在运行中、启动中或停止中的任务，不允许执行启动
+      }
+      if (type === "batchStop") {
+        return resArray.every(item=> item === 5) // 存在非运行中的任务，不允许执行停止
       }
       if (type === "disableCheck") { // 用于是否允许批量禁止
         return (resArray.includes(8) || resArray.includes(9) || resArray.includes(5)) ? false : true // 存在运行中、启动中或停止中的任务，不允许执行禁止
@@ -1266,6 +1392,7 @@ export default {
     },
     modalCancel() {
       this.modalVisible = false
+      this.stopDataShow = false
     },
     jarModalCancel() {
       this.uploadVisible = false

@@ -149,7 +149,12 @@
         "operation": "Operation",
         "showVersionInfo":"Show version info",
         "detail":"Detail",
-        "logs":"History logs"
+        "logs": "History logs",
+        "metaJson": "View",
+        "download": "download",
+        "jobParams": "Job Params",
+        "copy": "Copy",
+        "close": "Close"
       },
       "jobDetail": {
         "flinkJarPac": "Flink main Jar package",
@@ -158,6 +163,7 @@
         "sqlContent": "SQL content",
         "urlEmpty": "Url is empty",
         "columns": {
+            "type": "Type",
             "name": "Name",
             "version": "Version",
             "versionDescription": "Version description",
