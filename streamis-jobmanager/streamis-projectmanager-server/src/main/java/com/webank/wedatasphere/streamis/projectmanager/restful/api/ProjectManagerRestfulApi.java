@@ -67,6 +67,10 @@ public class ProjectManagerRestfulApi {
 
     private static final String NO_OPERATION_PERMISSION_MESSAGE = "the current user has no operation permission";
 
+    private static final String TYPE_PROJECT = "project";
+
+    private static final String TYPE_JOB = "job";
+
     @RequestMapping(path = "/files/upload", method = RequestMethod.POST)
     public Message upload(HttpServletRequest req,
                            @RequestParam(name = "version",required = false) String version,
@@ -217,8 +221,10 @@ public class ProjectManagerRestfulApi {
         if (StringUtils.isBlank(projectName)) {
             if (StringUtils.isBlank(materialType)) {
                 return Message.error("projectName and materialType is null");
-            } else if (materialType.equals("job")) {
+            } else if (materialType.equals(TYPE_JOB)) {
                 file = streamJobService.getJobFileById(id);
+            } else if (materialType.equals(TYPE_PROJECT)){
+                file = projectManagerService.getFile(id, projectName);
             }
         } else {
             if (!projectPrivilegeService.hasEditPrivilege(req, projectName))
