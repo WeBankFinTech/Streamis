@@ -2,6 +2,7 @@ package com.webank.wedatasphere.streamis.errorcode.handler;
 
 import com.webank.wedatasphere.streamis.errorcode.entity.StreamErrorCode;
 import com.webank.wedatasphere.streamis.errorcode.manager.cache.StreamisErrorCodeCache;
+import com.webank.wedatasphere.streamis.errorcode.utils.StreamisErrorCodeMatcher;
 import org.apache.linkis.common.utils.Utils;
 import org.apache.linkis.errorcode.client.ClientConfiguration;
 import org.apache.linkis.errorcode.client.handler.LinkisErrorCodeHandler;
@@ -12,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Option;
 import scala.Tuple2;
+import scala.Tuple3;
+
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -20,7 +23,6 @@ public class StreamisErrorCodeHandler {
     private static StreamisErrorCodeHandler streamisErrorCodeHandler;
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamisErrorCodeHandler.class);
     private final long futureTimeOut = ClientConfiguration.FUTURE_TIME_OUT.getValue();
-
 
 
     public static StreamisErrorCodeHandler getInstance() {
@@ -40,24 +42,24 @@ public class StreamisErrorCodeHandler {
     public List<StreamErrorCode> handle(String log) {
         Set<StreamErrorCode> errorCodeSet = new HashSet<>();
         List<StreamErrorCode> streamErrorCodes = StreamisErrorCodeCache.get("data");
-        List<LinkisErrorCode> errorCodes = new ArrayList<>();
-        for (StreamErrorCode item : streamErrorCodes) {
-            LinkisErrorCode errorCode = new LinkisErrorCode();
-            errorCode.setErrorCode(item.getErrorCode());
-            errorCode.setErrorDesc(item.getErrorDesc());
-            errorCode.setErrorRegexStr(item.getErrorRegex());
-            errorCode.setErrorType(item.getErrorType());
-            errorCodes.add(errorCode);
-        }
+//        List<LinkisErrorCode> errorCodes = new ArrayList<>();
+//        for (StreamErrorCode item : streamErrorCodes) {
+//            LinkisErrorCode errorCode = new LinkisErrorCode();
+//            errorCode.setErrorCode(item.getErrorCode());
+//            errorCode.setErrorDesc(item.getErrorDesc());
+//            errorCode.setErrorRegexStr(item.getErrorRegex());
+//            errorCode.setErrorType(item.getErrorType());
+//            errorCodes.add(errorCode);
+//        }
         Runnable runnable =
                 () -> {
                     Arrays.stream(log.split("\n"))
                             .forEach(
                                     singleLog -> {
-                                        Option<Tuple2<String, String>> match =
-                                                ErrorCodeMatcher.errorMatch(errorCodes, singleLog);
+                                        Option<Tuple3<String, String,String>> match =
+                                                StreamisErrorCodeMatcher.errorMatch(streamErrorCodes, singleLog);
                                         if (match.isDefined()) {
-                                            errorCodeSet.add(new StreamErrorCode(match.get()._1, match.get()._2));
+                                            errorCodeSet.add(new StreamErrorCode(match.get()._1(), match.get()._2(),match.get()._3()));
                                         }
                                     });
                 };

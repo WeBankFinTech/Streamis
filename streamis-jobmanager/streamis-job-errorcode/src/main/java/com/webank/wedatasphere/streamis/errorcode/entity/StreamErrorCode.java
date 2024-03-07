@@ -13,9 +13,10 @@ public class StreamErrorCode {
     public StreamErrorCode() {
     }
 
-    public StreamErrorCode(String errorCode, String errorDesc) {
+    public StreamErrorCode(String errorCode, String errorDesc,String solution) {
         this.errorCode = errorCode;
         this.errorDesc = errorDesc;
+        this.solution = solution;
     }
 
     public StreamErrorCode(Integer id, String errorCode, String errorDesc, String errorRegex, Integer errorType) {
