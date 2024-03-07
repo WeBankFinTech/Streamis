@@ -47,8 +47,8 @@
 
     <insert id="insertTask" useGeneratedKeys="true" keyProperty="id"
             parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask">
-        INSERT INTO  linkis_stream_task(`job_version_id`,`job_id`,`version`,`status`,`start_time`,`last_update_time`,`err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`,`server_instance`,`job_start_config`)
-        VALUES(#{jobVersionId},#{jobId},#{version},#{status},#{startTime},#{lastUpdateTime},#{errDesc},#{submitUser},#{linkisJobId},#{linkisJobInfo},#{serverInstance},#{jobStartConfig})
+        INSERT INTO  linkis_stream_task(`job_version_id`,`job_id`,`version`,`status`,`start_time`,`last_update_time`,`err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`,`server_instance`,`job_start_config`,`solution`)
+        VALUES(#{jobVersionId},#{jobId},#{version},#{status},#{startTime},#{lastUpdateTime},#{errDesc},#{submitUser},#{linkisJobId},#{linkisJobInfo},#{serverInstance},#{jobStartConfig},#{solution})
     </insert>
 
     <update id="updateTask">
@@ -68,6 +68,9 @@
             </if>
             <if test="errDesc != null">
                 err_desc=#{errDesc},
+            </if>
+            <if test="solution != null">
+                solution=#{solution},
             </if>
         </trim>
         WHERE id=#{id}
@@ -114,7 +117,7 @@
     <select id="getLatestByJobVersionId" resultMap="StreamTaskMap">
         SELECT `id`,`job_version_id`,`job_id`, status
         ,`start_time`,`last_update_time`,
-        `err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`
+        `err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`,`solution`
         FROM linkis_stream_task
         <where>
             <if test="jobVersionId != null">
