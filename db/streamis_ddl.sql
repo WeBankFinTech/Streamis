@@ -259,7 +259,7 @@ CREATE TABLE `linkis_stream_error_code` (
   `error_regex` varchar(1024) COLLATE utf8_bin DEFAULT NULL,
   `error_type` int(3) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=143 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 DROP TABLE IF EXISTS `linkis_stream_audit_log`;
 
@@ -275,8 +275,9 @@ CREATE TABLE `linkis_stream_audit_log` (
   `output_parameters` text COLLATE utf8_bin,
   `project_name` varchar(100) COLLATE utf8_bin DEFAULT NULL,
   `client_ip` varchar(100) COLLATE utf8_bin DEFAULT NULL,
+  `cost_time_mills` bigint(20) NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1325 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 
 ALTER TABLE `linkis_stream_project` ADD create_time datetime DEFAULT NULL;

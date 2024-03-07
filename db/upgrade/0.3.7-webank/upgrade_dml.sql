@@ -1,0 +1,1 @@
+ALTER TABLE linkis_stream_audit_log ADD cost_time_mills bigint(20) NULL COMMENT 'cost time';
