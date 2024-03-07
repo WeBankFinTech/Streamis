@@ -432,7 +432,7 @@ public class JobRestfulApi {
         if(!highAvailableService.canBeStarted(jobId)){
             return Message.error("current Job " + streamJob.getName() + " is in managerSlave mode,please check whether it runs on manager cluster" );
         }
-        if(RegularUtil.matchesProductName(streamJobConfService.getJobConfValue(jobId,JobConf.PRODUCT_NAME_KEY().getHotValue())) && StringUtils.isNotBlank(streamJobConfService.getJobConfValue(jobId,JobConf.PRODUCT_NAME_KEY().getHotValue()))){
+        if(!RegularUtil.matchesProductName(streamJobConfService.getJobConfValue(jobId,JobConf.PRODUCT_NAME_KEY().getHotValue())) && StringUtils.isNotBlank(streamJobConfService.getJobConfValue(jobId,JobConf.PRODUCT_NAME_KEY().getHotValue()))){
             return Message.error("The product name of the job is not configured correctly, please check");
         };
         try {
