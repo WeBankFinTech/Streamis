@@ -837,7 +837,6 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
 
   override def  errorCodeMatching(jobId: Long, streamTask: StreamTask): Future[_] = {
     var errorMsg =""
-    var errorCodes = List.empty[StreamErrorCode]
     var solution =""
     val taskId =streamTask.getId
     val user =streamTask.getSubmitUser
@@ -847,10 +846,10 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           breakable(
             for(i<-0 to 10) {
               val logs = getLog(jobId, taskId, user, "yarn",i*100)
-              errorCodes =exceptionAnalyze(errorMsg,logs)
-              if (errorCodes != null && errorCodes.nonEmpty) {
-                errorMsg = errorCodes.map(e => e.getErrorDesc).mkString(",")
-                solution = errorCodes.map(e => e.getSolution).mkString(",")
+              val result = exceptionAnalyze(errorMsg,logs,solution)
+              errorMsg = result._1
+              solution = result._2
+              if (errorMsg.nonEmpty) {
                 break()
               }
             })
@@ -863,10 +862,10 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
             breakable(
               for(i<-0 to 10) {
                 val logs = getLog(jobId, taskId, user, "client",i*100)
-                errorCodes =exceptionAnalyze(errorMsg,logs)
-                if (errorCodes != null && errorCodes.nonEmpty) {
-                  errorMsg = errorCodes.map(e => e.getErrorDesc).mkString(",")
-                  solution = errorCodes.map(e => e.getSolution).mkString(",")
+                val result =exceptionAnalyze(errorMsg,logs,solution)
+                errorMsg = result._1
+                solution = result._2
+                if (errorMsg.nonEmpty) {
                   break()
                 }
               })
@@ -903,12 +902,16 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     logString
   }
 
-  def exceptionAnalyze(errorMsg: String, log: String): List[StreamErrorCode] = {
+  def exceptionAnalyze(errorMsg: String, log: String,solution: String): (String,String) = {
     if (null != log && log.nonEmpty) {
       val errorCodes = errorCodeHandler.handle(log)
-      if (errorCodes != null) errorCodes.asScala.toList else List.empty[StreamErrorCode]
-    }else{
-      List.empty[StreamErrorCode]
+      if (errorCodes != null && errorCodes.size() > 0) {
+        (errorCodes.asScala.map(e => e.getErrorDesc).mkString(","), errorCodes.asScala.map(e => e.getSolution).mkString(","))
+      } else {
+        (errorMsg,solution)
+      }
+    } else {
+      (errorMsg,solution)
     }
   }
 
