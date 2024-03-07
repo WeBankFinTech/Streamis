@@ -27,20 +27,11 @@ public class StreamisErrorCodeManager {
     private StreamErrorCodeMapper streamErrorCodeMapper;
 
 
-    public List<LinkisErrorCode> getLinkisErrorCodes() {
-        LOGGER.info("加载linkis错误码");
-        List<StreamErrorCode> linkisErrorCodes = streamErrorCodeMapper.getErrorCodeList();
-        List<LinkisErrorCode> errorCodes = new ArrayList<>();
-        for (StreamErrorCode item : linkisErrorCodes) {
-            LinkisErrorCode errorCode = new LinkisErrorCode();
-            errorCode.setErrorCode(item.getErrorCode());
-            errorCode.setErrorDesc(item.getErrorDesc());
-            errorCode.setErrorRegexStr(item.getErrorRegex());
-            errorCode.setErrorType(item.getErrorType());
-            errorCodes.add(errorCode);
-        }
-        LOGGER.info("加载完成，加载错误码个数为: {}", linkisErrorCodes.size());
-        return errorCodes;
+    public List<StreamErrorCode> getStreamErrorCodes() {
+        LOGGER.info("加载streamis错误码");
+        List<StreamErrorCode> streamErrorCodes = streamErrorCodeMapper.getErrorCodeList();
+        LOGGER.info("加载完成，加载错误码个数为: {}", streamErrorCodes.size());
+        return streamErrorCodes;
     }
 
     @PostConstruct
@@ -48,10 +39,10 @@ public class StreamisErrorCodeManager {
         Utils.defaultScheduler().scheduleAtFixedRate(() -> {
             LOGGER.info("start to get errorCodes");
             synchronized (this.lock) {
-                List<LinkisErrorCode> linkisErrorCodes = getLinkisErrorCodes();
-                if (!linkisErrorCodes.isEmpty()){
+                List<StreamErrorCode> streamErrorCodes = getStreamErrorCodes();
+                if (!streamErrorCodes.isEmpty()){
                     StreamisErrorCodeCache.clear();
-                    StreamisErrorCodeCache.put("data", linkisErrorCodes);
+                    StreamisErrorCodeCache.put("data", streamErrorCodes);
                 }
             }
         }, 0L, 1L, TimeUnit.HOURS);
