@@ -103,7 +103,7 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
 
     @Override
     public ProjectFiles getFile(Long id, String projectName) {
-        return StringUtils.isBlank(projectName) ? projectManagerMapper.getJobFile(id) : projectManagerMapper.getProjectFile(id);
+        return projectManagerMapper.getProjectFile(id);
     }
 
     @Override
