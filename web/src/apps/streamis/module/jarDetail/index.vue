@@ -13,13 +13,17 @@
         >
           <template
             slot-scope="{ row }"
+            slot="materialType"
+          >
+            {{ row.materialType === 'project' ? '项目资源' : 'Job资源' }}
+          </template>
+          <template
+            slot-scope="{ row }"
             slot="operation"
           >
             <div>
               <a
-                :href="
-                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}&projectName=${jarData.projectName || ''}`
-                "
+                :href="`/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}&projectName=${jarData.projectName || ''}&materialType=${row.materialType}`"
                 download
               >
                 <Button
@@ -91,13 +95,17 @@
         >
           <template
             slot-scope="{ row }"
+            slot="materialType"
+          >
+            {{ row.materialType === 'project' ? '项目资源' : 'Job资源' }}
+          </template>
+          <template
+            slot-scope="{ row }"
             slot="operation"
           >
             <div>
               <a
-                :href="
-                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}&projectName=${jarData.projectName || ''}`
-                "
+                :href="`/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}&projectName=${jarData.projectName || ''}&materialType=${row.materialType}`"
                 download
               >
                 <Button
@@ -125,13 +133,17 @@
         >
           <template
             slot-scope="{ row }"
+            slot="materialType"
+          >
+            {{ row.materialType === 'project' ? '项目资源' : 'Job资源' }}
+          </template>
+          <template
+            slot-scope="{ row }"
             slot="operation"
           >
             <div>
               <a
-                :href="
-                  `/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}&projectName=${jarData.projectName || ''}`
-                "
+                :href="`/api/rest_j/v1/streamis/streamProjectManager/project/files/download?id=${row.id}&projectName=${jarData.projectName || ''}&materialType=${row.materialType}`"
                 download
               >
                 <Button
@@ -164,6 +176,11 @@ export default {
         {
           title: 'id',
           key: 'id'
+        },
+        {
+          title: this.$t('message.streamis.jobDetail.columns.type'),
+          key: 'materialType',
+          slot: 'materialType',
         },
         {
           title: this.$t('message.streamis.jobDetail.columns.name'),
