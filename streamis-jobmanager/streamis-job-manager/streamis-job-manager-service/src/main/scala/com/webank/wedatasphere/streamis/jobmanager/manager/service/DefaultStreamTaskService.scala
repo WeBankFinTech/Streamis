@@ -921,6 +921,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     // get job config
     val jobConf = streamJobConfService.getJobConfig(job.getId)
     metaJsonInfo.setJobConfig(jobConf)
-    JobUtils.gson.toJson(metaJsonInfo)
+    val configJson = JobUtils.gson.toJson(metaJsonInfo)
+    logger.debug(s"new task with creator : ${creator} configJson: ${configJson}")
+    configJson
   }
 }
