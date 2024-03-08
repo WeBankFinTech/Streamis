@@ -432,6 +432,7 @@
       <div class="text">
         {{ failureReason }}
       </div>
+      <a class="solution" v-if="solutionURL" target="_blank" :href="'http://kn.dss.weoa.com/'+solutionURL">解决方案</a>
     </Modal>
     <Modal
       v-model="stopDataShow"
@@ -719,6 +720,7 @@ export default {
       // 失败原因
       failureReason: '',
       failureReasonShow: false,
+      solutionURL: '',
     }
   },
   async mounted() {
@@ -1360,6 +1362,7 @@ export default {
         res=>{
           console.log(res)
           this.failureReason = res.details.errDesc || '原因未知'
+          this.solutionURL = res.details.solution || ''
         }
       ).catch(err=>{
         console.log('showFailureReason err:',err)
@@ -1505,6 +1508,11 @@ export default {
 <style lang="scss" scoped>
 .text{
   word-break: break-all;
+}
+
+.solution{
+  margin-top: 6px;
+  display: block;
 }
 .select {
   width: 200px;
