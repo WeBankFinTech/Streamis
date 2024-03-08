@@ -55,7 +55,7 @@
       ref="logDetail"
     />
     <Modal
-      :title="metaJsonJobName + ' ' + $t('message.streamis.jobHistoryColumns.jobTemplate')"
+      :title="metaJsonJobName + ' ' + $t('message.streamis.jobHistoryColumns.jobParams')"
       v-model="metaJsonVisible"
       footer-hide
       width="1200"
