@@ -15,6 +15,7 @@ public class RegularUtil {
 
     public static final String JOB_NAME_PATTERN ="^[A-Za-z0-9_,.]+" ; //大小写字母数字下划线逗号小数点
 
+    public static final String PRODUCT_NAME_PATTERN = "^[A-Za-z0-9_]+" ; //大小写字母数字下划线
 
     public static boolean matches(String input) {
         if (StringUtils.isNotBlank(input)){
@@ -29,6 +30,10 @@ public class RegularUtil {
             return jobName.matches(JOB_NAME_PATTERN);
         }
         return false;
+    }
+
+    public static boolean matchesProductName(String productName) {
+        return productName.matches(PRODUCT_NAME_PATTERN);
     }
 
 
