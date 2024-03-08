@@ -112,6 +112,20 @@
             </if>
         </where>
         ORDER BY start_time DESC
+        LIMIT #{pageSize} OFFSET #{pageNow}
+    </select>
+
+    <select id="countGetByJobVersionId" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM linkis_stream_task
+        <where>
+            <if test="jobVersionId != null">
+                AND job_version_id=#{jobVersionId}
+            </if>
+            <if test="version != null">
+                AND version=#{version}
+            </if>
+        </where>
     </select>
 
     <select id="getLatestByJobVersionId" resultMap="StreamTaskMap">

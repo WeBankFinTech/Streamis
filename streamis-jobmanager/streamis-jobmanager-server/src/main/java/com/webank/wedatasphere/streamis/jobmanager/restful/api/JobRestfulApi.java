@@ -502,6 +502,8 @@ public class JobRestfulApi {
 
     @RequestMapping(path = "/execute/history", method = RequestMethod.GET)
     public Message executeHistoryJob(HttpServletRequest req,
+                                     @RequestParam(value = "pageNow", required = false) Integer pageNow,
+                                     @RequestParam(value = "pageSize", required = false) Integer pageSize,
                                      @RequestParam(value = "jobId", required = false) Long jobId,
                                      @RequestParam(value = "version", required = false) String version) throws JobException {
         String username = ModuleUserUtils.getOperationUser(req, "view the job history");
@@ -516,8 +518,14 @@ public class JobRestfulApi {
                 !this.privilegeService.hasAccessPrivilege(req, streamJob.getProjectName())){
             return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
         }
-        List<StreamTaskListVo> details = streamTaskService.queryHistory(jobId, version);
-        return Message.ok().data("details", details);
+        if (Objects.isNull(pageNow)) {
+            pageNow = 1;
+        }
+        if (Objects.isNull(pageSize)) {
+            pageSize = 20;
+        }
+        StreamTaskPageInfo pageInfo = streamTaskService.queryHistory(jobId, version,pageNow,pageSize);
+        return Message.ok().data("details",  pageInfo.getStreamTaskList()).data("totalPage", pageInfo.getTotal());
     }
 
     @RequestMapping(path = "/execute/errorMsg", method = RequestMethod.GET)

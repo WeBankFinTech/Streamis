@@ -34,7 +34,9 @@ public interface StreamTaskMapper {
      */
     int updateTaskInStatus(@Param("task")StreamTask streamTask, @Param("status")Integer status);
 
-    List<StreamTask> getByJobVersionId(@Param("jobVersionId") Long jobVersionId, @Param("version") String version);
+    List<StreamTask> getByJobVersionId(@Param("jobVersionId") Long jobVersionId, @Param("version") String version, @Param("pageNow") Long pageNow, @Param("pageSize") Long pageSize);
+
+    int countGetByJobVersionId(@Param("jobVersionId") Long jobVersionId, @Param("version") String version);
 
     /**
      * Get latest task by job version id
