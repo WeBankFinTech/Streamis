@@ -51,7 +51,7 @@
           :label="$t('message.streamis.moduleName.jobHistory')"
         >
           <div class="contWrap">
-            <jobHistory />
+            <jobHistory :projectName="projectName" />
           </div>
         </TabPane>
         <TabPane

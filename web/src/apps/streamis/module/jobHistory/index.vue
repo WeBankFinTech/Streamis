@@ -55,7 +55,7 @@
       ref="logDetail"
     />
     <Modal
-      :title="metaJsonJobName + ' ' + $t('message.streamis.jobHistoryColumns.jobParams')"
+      :title="metaJsonJobName + ' ' + $t('message.streamis.jobHistoryColumns.jobTemplate')"
       v-model="metaJsonVisible"
       footer-hide
       width="1200"
@@ -104,6 +104,13 @@ import versionDetail from '@/apps/streamis/module/versionDetail'
 import logDetail from '@/apps/streamis/module/logDetail'
 export default {
   components: { versionDetail, logDetail },
+  props: {
+    projectName: {
+      type: String,
+      default: '',
+      required: true
+    }
+  },
   data() {
     return {
       columns: [
@@ -186,12 +193,7 @@ export default {
       loading: false,
       metaJsonVisible: false,
       metaJsonJobName: '',
-      meta: `{
-        "name":"john",
-        "age": 15,
-        "city": "Wuhan"
-      }
-      `,
+      meta: '',
       full: false,
     }
   },
@@ -261,14 +263,31 @@ export default {
     modalCancel() {
       this.modalVisible = false
       this.logVisible = false
+      this.metaJsonVisible = false
     },
     showMetaJson(row) {
       console.log('show meta.json, taskId:', row.taskId)
-      this.meta = this.formatJSON(this.meta)
+      this.metaJsonJobName = row.jobName
+      this.meta = row.jobStartConfig ? this.formatJSON(row.jobStartConfig) : ''
       this.metaJsonVisible = true
     },
     downloadMetaJson(row) {
-      console.log('download meta.json, taskId:', row.taskId)
+      if (!row.jobStartConfig) {
+        this.$Message.error({ content: 'Job参数为空！' })
+        return
+      }
+      const blob = new Blob([row.jobStartConfig], { type: 'application/json' })
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${this.projectName}.${row.jobName}-${row.version}-meta.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      // 下载完成后移除 <a> 标签
+      document.body.removeChild(a);
     },
     formatJSON(text) {
       try {
@@ -282,6 +301,10 @@ export default {
     async copy(){
       try {
         console.log('copy', this.meta)
+        if (this.meta === '') {
+          this.$Message.error({ content: 'Job参数为空！' })
+          return
+        }
         const textArea = document.createElement("textarea")
         textArea.value = this.meta.replace(/\n/g, '')
         document.body.append(textArea)
