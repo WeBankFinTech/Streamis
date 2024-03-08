@@ -5,6 +5,6 @@ public class RegularUtils {
     private RegularUtils(){}
 
     public static String[] split(String str){
-        return str.split("\\.", 2);
+        return str.split("\\.");
     }
 }

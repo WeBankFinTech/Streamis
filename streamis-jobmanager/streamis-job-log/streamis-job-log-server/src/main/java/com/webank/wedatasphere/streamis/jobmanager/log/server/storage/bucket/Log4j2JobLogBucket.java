@@ -335,8 +335,8 @@ public class Log4j2JobLogBucket implements JobLogBucket{
         }
         basePath += fileName.replace(".", "/");
         String[] fileNameArray = RegularUtils.split(fileName);
-        if (fileNameArray.length > 2){
-            fileName = fileNameArray[0] + "." + fileNameArray[2];
+        if (fileNameArray.length > 3){
+            fileName = fileNameArray[0] + "." + fileNameArray[1] + "." + fileNameArray[3];
         }
         return basePath + "/" + fileName.substring(bucketName.indexOf(".") + 1) + ".log";
     }
