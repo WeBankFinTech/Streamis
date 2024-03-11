@@ -25,6 +25,8 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobErrorException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
+import com.webank.wedatasphere.streamis.jobmanager.utils.RegularUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.linkis.httpclient.dws.DWSHttpClient;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.utils.ModuleUserUtils;
@@ -130,6 +132,20 @@ public class JobConfRestfulApi {
     public Message saveConfig(@PathVariable("jobId") Long jobId, @RequestBody Map<String, Object> configContent,
                               HttpServletRequest request) {
         Message result = Message.ok("success");
+        if((Boolean) JobConf.PRODUCT_NAME_SWITCH().getHotValue()){
+            try {
+                String productValue = Optional.ofNullable(configContent)
+                        .map(jovConf -> (Map<String, Object>) jovConf.get("wds.linkis.flink.produce"))
+                        .map(produce -> (String) produce.get(JobConf.PRODUCT_NAME_KEY().getHotValue()))
+                        .orElse(null); // 如果任何一步失败，返回null
+                if (StringUtils.isNotBlank(productValue) && !RegularUtil.matchesProductName(productValue)){
+                    return Message.error("The product name of the job is not configured correctly, please check");
+                }
+            } catch (ClassCastException e) {
+                String message = "Error,Invalid configuration format";
+                LOG.warn(message, e);
+            }
+        }
         try {
             String userName = ModuleUserUtils.getOperationUser(request, "save job config json");
             StreamJob streamJob = this.streamJobService.getJobById(jobId);
