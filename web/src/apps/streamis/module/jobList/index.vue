@@ -1220,10 +1220,10 @@ export default {
       } else {
         // 批量启动
         console.log('bulkExecution');
-        this.processModalVisable = true
         try {
           const bulk_sbj = this.selections.map(item => +item.id);
           const result = await api.fetch('streamis/streamJobManager/job/bulk/execution', { bulk_sbj });
+          this.processModalVisable = true
           console.log('start result', result);
           this.queryProcess(bulk_sbj);
         } catch (err) {
