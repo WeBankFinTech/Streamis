@@ -702,18 +702,18 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
    * @return
    */
   private def sub(str:String):String = {
-    if (StringUtils.isBlank(str) || str.length <= 100){
+    if (StringUtils.isBlank(str) || str.length <= 300){
       str
     }else {
       if (str.contains("message")){
         val subStr = str.substring(str.indexOf("message") - 1)
-        if (subStr.length <= 100){
+        if (subStr.length <= 300){
           subStr + "..."
         }else {
-          subStr.substring(0,100) + "..."
+          subStr.substring(0,300) + "..."
         }
       }else {
-        str.substring(0,100) + "..."
+        str.substring(0,300) + "..."
       }
     }
   }
@@ -911,7 +911,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       val errorCodes = errorCodeHandler.handle(log)
       if (errorCodes != null && errorCodes.size() > 0) {
         val errorDescs = errorCodes.asScala.map(e => e.getErrorDesc).mkString(",")
-        val errorSolution = errorCodes.asScala.head.getSolution
+        val errorSolutions = errorCodes.asScala.flatMap(e => Option(e.getSolution)).filter(_.nonEmpty)
+        val errorSolution = errorSolutions.headOption.getOrElse(solution)
         (errorDescs,errorSolution)
       } else {
         (errorMsg,solution)
