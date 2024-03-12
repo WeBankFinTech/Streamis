@@ -907,7 +907,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       val errorCodes = errorCodeHandler.handle(log)
       if (errorCodes != null && errorCodes.size() > 0) {
         val errorDescs = errorCodes.asScala.map(e => e.getErrorDesc).mkString(",")
-        val errorSolution = errorCodes.asScala.head.getSolution
+        val errorSolutions = errorCodes.asScala.flatMap(e => Option(e.getSolution)).filter(_.nonEmpty)
+        val errorSolution = errorSolutions.headOption.getOrElse(solution)
         (errorDescs,errorSolution)
       } else {
         (errorMsg,solution)
