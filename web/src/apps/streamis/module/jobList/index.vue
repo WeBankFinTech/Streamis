@@ -437,7 +437,6 @@
     <Modal
       v-model="stopDataShow"
       title="批量停止"
-      @on-ok="batchStop"
       @on-cancel="modalCancel"
       :mask-closable="false"
     >
@@ -448,6 +447,10 @@
       <div class="text" style="margin-top: 16px;">
         以上{{ stopData.length }}个应用待停止
       </div>
+      <template #footer>
+        <Button type="primary" @click="batchStop" :disabled="startHintLoading">{{ $t('message.streamis.formItems.confirmBtn') }}</Button>
+        <Button type="primary" @click="modalCancel">{{ $t('message.streamis.formItems.cancel') }}</Button>
+      </template>
     </Modal>
   </div>
 </template>
@@ -1217,10 +1220,10 @@ export default {
       } else {
         // 批量启动
         console.log('bulkExecution');
-        this.processModalVisable = true
         try {
           const bulk_sbj = this.selections.map(item => +item.id);
           const result = await api.fetch('streamis/streamJobManager/job/bulk/execution', { bulk_sbj });
+          this.processModalVisable = true
           console.log('start result', result);
           this.queryProcess(bulk_sbj);
         } catch (err) {
