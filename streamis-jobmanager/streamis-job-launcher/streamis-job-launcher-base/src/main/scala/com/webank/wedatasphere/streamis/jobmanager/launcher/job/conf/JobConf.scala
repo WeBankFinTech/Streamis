@@ -104,6 +104,8 @@ object JobConf {
 
   val DEFAULT_ERROR_MSG: CommonVars[String] = CommonVars("wds.streamis.default.error.msg", "正在分析日志，请稍后")
 
+  val FINAL_ERROR_MSG: CommonVars[String] = CommonVars("wds.streamis.default.error.msg", "错误原因分析失败，请联系管理员")
+
   val PROJECT_NAME_STRICT_CHECK_SWITCH: CommonVars[Boolean] = CommonVars("wds.streamis.project.name.strict.check.enable", false)
 
   val HIGHAVAILABLE_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.app.highavailable.enable", true)
