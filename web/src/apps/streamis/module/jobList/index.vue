@@ -437,7 +437,6 @@
     <Modal
       v-model="stopDataShow"
       title="批量停止"
-      @on-ok="batchStop"
       @on-cancel="modalCancel"
       :mask-closable="false"
     >
@@ -448,6 +447,10 @@
       <div class="text" style="margin-top: 16px;">
         以上{{ stopData.length }}个应用待停止
       </div>
+      <template #footer>
+        <Button type="primary" @click="batchStop" :disabled="startHintLoading">{{ $t('message.streamis.formItems.confirmBtn') }}</Button>
+        <Button type="primary" @click="modalCancel">{{ $t('message.streamis.formItems.cancel') }}</Button>
+      </template>
     </Modal>
   </div>
 </template>
