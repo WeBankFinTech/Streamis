@@ -398,7 +398,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     if(job == null) throw new JobFetchErrorException(30355, s"Unknown job $jobId.")
     val jobVersion = streamJobMapper.getJobVersionById(jobId, version)
     if(jobVersion == null) return new StreamTaskPageInfo
-    val tasks = streamTaskMapper.getByJobVersionId(jobVersion.getId, version,pageNow,pageSize)
+    val tasks = streamTaskMapper.getByJobVersionId(jobVersion.getId, version,(pageNow - 1) * pageSize,pageSize)
     if(tasks == null || tasks.isEmpty) return new StreamTaskPageInfo
     val list = new util.ArrayList[StreamTaskListVo]
     tasks.asScala.foreach{ f =>
