@@ -848,7 +848,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       override def run(): Unit = {
         Utils.tryCatch{
           breakable(
-            for(i<-0 to 10) {
+            for(i<-0 to 100) {
               val logs = getLog(jobId, taskId, user, "yarn",i*100)
               val result = exceptionAnalyze(errorMsg,logs,solution)
               errorMsg = result._1
@@ -864,7 +864,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
         if (errorMsg.isEmpty){
           Utils.tryCatch{
             breakable(
-              for(i<-0 to 10) {
+              for(i<-0 to 100) {
                 val logs = getLog(jobId, taskId, user, "client",i*100)
                 val result =exceptionAnalyze(errorMsg,logs,solution)
                 errorMsg = result._1
@@ -888,7 +888,11 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
         }
         val streamTask = new StreamTask()
         streamTask.setId(taskId);
-        streamTask.setErrDesc(errorMsg)
+        if(errorMsg.equals(JobConf.DEFAULT_ERROR_MSG.getHotValue())) {
+          streamTask.setErrDesc(JobConf.FINAL_ERROR_MSG.getHotValue())
+        }else{
+          streamTask.setErrDesc(errorMsg)
+        }
         streamTask.setSolution(solution)
         streamTaskService.updateTask(streamTask)
       }
