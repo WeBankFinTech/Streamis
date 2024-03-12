@@ -698,18 +698,18 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
    * @return
    */
   private def sub(str:String):String = {
-    if (StringUtils.isBlank(str) || str.length <= 100){
+    if (StringUtils.isBlank(str) || str.length <= 300){
       str
     }else {
       if (str.contains("message")){
         val subStr = str.substring(str.indexOf("message") - 1)
-        if (subStr.length <= 100){
+        if (subStr.length <= 300){
           subStr + "..."
         }else {
-          subStr.substring(0,100) + "..."
+          subStr.substring(0,300) + "..."
         }
       }else {
-        str.substring(0,100) + "..."
+        str.substring(0,300) + "..."
       }
     }
   }
