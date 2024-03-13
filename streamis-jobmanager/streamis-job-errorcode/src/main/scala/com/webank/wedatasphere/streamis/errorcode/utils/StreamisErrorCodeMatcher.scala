@@ -21,6 +21,7 @@ import com.webank.wedatasphere.streamis.errorcode.entity.StreamErrorCode
 import org.apache.linkis.common.utils.{Logging, Utils}
 
 import java.util
+import scala.util.matching.Regex
 
 object StreamisErrorCodeMatcher extends Logging {
 
