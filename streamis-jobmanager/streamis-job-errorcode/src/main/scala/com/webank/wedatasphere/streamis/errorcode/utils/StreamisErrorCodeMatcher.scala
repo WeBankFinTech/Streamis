@@ -21,6 +21,7 @@ import com.webank.wedatasphere.streamis.errorcode.entity.StreamErrorCode
 import org.apache.linkis.common.utils.{Logging, Utils}
 
 import java.util
+import scala.util.matching.Regex
 
 object StreamisErrorCodeMatcher extends Logging {
 
@@ -29,9 +30,13 @@ object StreamisErrorCodeMatcher extends Logging {
       import scala.collection.JavaConverters._
       errorCodes.asScala.foreach(e =>
         if (e.getErrorRegex.r.findFirstIn(log).isDefined) {
-          val matched = e.getErrorRegex.r.unapplySeq(log)
+          val matched = e.getErrorRegex.r.findFirstMatchIn(log).map(_.group(1))
+          val formattedError = matched match {
+            case Some(filePath) => e.getErrorDesc.format(filePath)
+            case None => e.getErrorDesc
+          }
           if (matched.nonEmpty) {
-            return Some(e.getErrorCode, e.getErrorDesc.format(matched.get: _*), e.getSolution)
+            return Some(e.getErrorCode, formattedError, e.getSolution)
           } else return Some(e.getErrorCode, e.getErrorDesc, e.getSolution)
         }
       )

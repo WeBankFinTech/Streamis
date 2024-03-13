@@ -42,15 +42,6 @@ public class StreamisErrorCodeHandler {
     public List<StreamErrorCode> handle(String log) {
         Set<StreamErrorCode> errorCodeSet = new HashSet<>();
         List<StreamErrorCode> streamErrorCodes = StreamisErrorCodeCache.get("data");
-//        List<LinkisErrorCode> errorCodes = new ArrayList<>();
-//        for (StreamErrorCode item : streamErrorCodes) {
-//            LinkisErrorCode errorCode = new LinkisErrorCode();
-//            errorCode.setErrorCode(item.getErrorCode());
-//            errorCode.setErrorDesc(item.getErrorDesc());
-//            errorCode.setErrorRegexStr(item.getErrorRegex());
-//            errorCode.setErrorType(item.getErrorType());
-//            errorCodes.add(errorCode);
-//        }
         Runnable runnable =
                 () -> {
                     Arrays.stream(log.split("\n"))
