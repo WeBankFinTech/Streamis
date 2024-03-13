@@ -30,13 +30,9 @@ object StreamisErrorCodeMatcher extends Logging {
       import scala.collection.JavaConverters._
       errorCodes.asScala.foreach(e =>
         if (e.getErrorRegex.r.findFirstIn(log).isDefined) {
-          val matched = e.getErrorRegex.r.findFirstMatchIn(log).map(_.group(1))
-          val formattedError = matched match {
-            case Some(filePath) => e.getErrorDesc.format(filePath)
-            case None => e.getErrorDesc
-          }
+          val matched = e.getErrorRegex.r.unapplySeq(log)
           if (matched.nonEmpty) {
-            return Some(e.getErrorCode, formattedError, e.getSolution)
+            return Some(e.getErrorCode, e.getErrorDesc.format(matched.get: _*), e.getSolution)
           } else return Some(e.getErrorCode, e.getErrorDesc, e.getSolution)
         }
       )
