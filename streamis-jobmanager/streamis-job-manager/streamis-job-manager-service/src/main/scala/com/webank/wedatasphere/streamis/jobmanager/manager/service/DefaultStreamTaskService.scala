@@ -15,6 +15,8 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
+import com.google.gson.JsonParser
+
 import java.util
 import java.util.concurrent.{Executors, Future, ScheduledExecutorService, TimeUnit}
 import java.util.{Calendar, Map, function}
@@ -46,6 +48,7 @@ import com.webank.wedatasphere.streamis.errorcode.handler.StreamisErrorCodeHandl
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.utils.JobUtils
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
+import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants
 
 import javax.annotation.Resource
 import org.apache.commons.lang.StringUtils
@@ -922,7 +925,15 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     val jobConf = streamJobConfService.getJobConfig(job.getId)
     metaJsonInfo.setJobConfig(jobConf)
     val configJson = JobUtils.gson.toJson(metaJsonInfo)
-    logger.debug(s"new task with creator : ${creator} configJson: ${configJson}")
+    val jsonObj = new JsonParser().parse(configJson).getAsJsonObject
+    if (jsonObj.has(JobConstrants.FIELD_WORKSPACE_NAME)) {
+      jsonObj.remove(JobConstrants.FIELD_WORKSPACE_NAME)
+    }
+    if (jsonObj.has(JobConstrants.FIELD_METAINFO_NAME)) {
+      jsonObj.remove(JobConstrants.FIELD_METAINFO_NAME)
+    }
+    val parsedConfigJson = jsonObj.toString
+    logger.debug(s"new task with creator : ${creator} configJson: ${parsedConfigJson}")
     configJson
   }
 }

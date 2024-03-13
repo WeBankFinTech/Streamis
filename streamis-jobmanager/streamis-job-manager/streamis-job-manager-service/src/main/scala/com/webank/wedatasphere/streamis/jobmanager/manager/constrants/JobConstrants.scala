@@ -9,4 +9,8 @@ object JobConstrants {
   val TYPE_PROJECT = "project"
 
   val TYPE_JOB = "job"
+
+  val FIELD_WORKSPACE_NAME = "workspaceName"
+
+  val FIELD_METAINFO_NAME = "metaInfo"
 }
