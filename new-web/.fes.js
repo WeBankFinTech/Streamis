@@ -14,7 +14,7 @@ export default {
     },
     layout: false,
     define: {
-        BASEURL: 'http://10.107.97.166:8088/api/rest_j/v1/'
+        BASEURL: '/'
     },
     alias: {
         '@': path.resolve(__dirname, 'src')
