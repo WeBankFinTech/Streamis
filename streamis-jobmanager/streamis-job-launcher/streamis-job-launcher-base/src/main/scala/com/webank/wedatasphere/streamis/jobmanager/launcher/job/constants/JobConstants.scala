@@ -32,5 +32,7 @@ object JobConstants {
 
   val APP_TYPE_SPARK = "SPARK"
 
-  val JOB_NAME_DELIMITER = ","
+  val DELIMITER_COMMA = ","
+
+  val DELIMITER_EUQAL = "="
 }

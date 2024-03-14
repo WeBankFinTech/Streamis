@@ -1,6 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.enums.FlinkManagerActionType
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{FlinkManagerAction, FlinkManagerClient}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkJobFlinkECErrorException, FlinkJobParamErrorException}
@@ -69,6 +70,24 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
     initProperties.put(JobLauncherConfiguration.FLINK_MANAGER_EC_KEY.getValue, true.toString)
     initProperties.put(JobLauncherConfiguration.LINKIS_EC_EXPIRE_TIME_KEY.getValue, JobLauncherConfiguration.FLINKK_MANAGER_EXIT_TIME.getHotValue().toString)
     initProperties.put(JobLauncherConfiguration.LINKIS_EC_SUPPORT_PARALLEM, true.toString)
+
+    if (StringUtils.isNotBlank(JobLauncherConfiguration.FLINK_MANAGER_EXTRA_INIT_CONFIGS.getValue)) {
+      JobLauncherConfiguration.FLINK_MANAGER_EXTRA_INIT_CONFIGS.getValue.split(JobConstants.DELIMITER_COMMA).foreach(s => {
+        if (StringUtils.isNotBlank(s)) {
+          val arr = s.split(JobConstants.DELIMITER_EUQAL)
+          if (null != arr && arr.length == 2) {
+            val key = arr(0)
+            val value = arr(0)
+            if (initProperties.containsKey(arr(0))) {
+              logger.warn(s"init extra params ${key}=${value} will overite params : ${key}=${initProperties.get(key)} for flink manager ec.")
+            } else {
+              logger.info(s"add init extra params : ${key}=${value} for flink manager ec.")
+            }
+            initProperties.put(key, value)
+          }
+        }
+      })
+    }
 
     var askEngineConnAction = AskEngineConnAction
       .newBuilder()

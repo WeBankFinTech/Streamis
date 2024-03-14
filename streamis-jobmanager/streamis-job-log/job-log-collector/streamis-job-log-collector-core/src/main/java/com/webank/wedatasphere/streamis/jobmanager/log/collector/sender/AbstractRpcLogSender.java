@@ -339,6 +339,9 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
                         cacheWaitTime.addAndGet(System.currentTimeMillis() - ws);
                     }
                     enqueue(logElement);
+                    if (rpcSenderConfig.isDebugMode()) {
+                        System.out.println("cache log at time: " + logElement.getLogTimeStamp());
+                    }
                 }finally{
                     lock.unlock();
                 }
@@ -395,6 +398,9 @@ public abstract class AbstractRpcLogSender<T extends LogElement, E> implements R
                 }
                 element = dequeue();
                 process.incrementAndGet();
+                if (rpcSenderConfig.isDebugMode()) {
+                    System.out.println("cache log at time: " + element.getLogTimeStamp());
+                }
             } finally {
                 lock.unlock();
             }

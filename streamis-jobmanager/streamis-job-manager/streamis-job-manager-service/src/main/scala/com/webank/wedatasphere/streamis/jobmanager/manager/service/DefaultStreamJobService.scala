@@ -71,9 +71,9 @@ class DefaultStreamJobService extends StreamJobService with Logging {
 
   override def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String, label: String, enable: java.lang.Boolean = null,jobType :String): PageInfo[QueryJobListVo] = {
     var streamJobList: util.List[QueryJobListVo] = null
-    if (StringUtils.isNotBlank(jobName) && jobName.contains(JobConstants.JOB_NAME_DELIMITER)) {
+    if (StringUtils.isNotBlank(jobName) && jobName.contains(JobConstants.DELIMITER_COMMA)) {
       val jobNameList = new util.ArrayList[String]()
-      jobName.split(JobConstants.JOB_NAME_DELIMITER).filter(StringUtils.isNotBlank(_)).foreach(jobNameList.add)
+      jobName.split(JobConstants.DELIMITER_COMMA).filter(StringUtils.isNotBlank(_)).foreach(jobNameList.add)
       streamJobList = streamJobMapper.getJobLists(projectName, userName, null, jobStatus, jobCreator, JobUtils.escapeChar(label), JobConfKeyConstants.MANAGE_MODE_KEY.getValue, jobNameList, enable,jobType)
     } else {
       streamJobList = streamJobMapper.getJobLists(projectName, userName, JobUtils.escapeChar(jobName), jobStatus, jobCreator, JobUtils.escapeChar(label), JobConfKeyConstants.MANAGE_MODE_KEY.getValue, null, enable,jobType)

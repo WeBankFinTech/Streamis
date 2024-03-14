@@ -56,6 +56,9 @@ public class FlinkStreamisConfigAutowired implements StreamisConfigAutowired {
         if (builder instanceof StreamisLog4j2AppenderConfig.Builder) {
             List<String> filterStrategies = this.configuration.get(LOG_FILTER_STRATEGIES);
             for (String filterStrategy : filterStrategies) {
+                if (this.configuration.getBoolean(DEBUG_MODE)) {
+                    System.out.println("Found strategy: " + filterStrategy);
+                }
                 if ("LevelMatch".equals(filterStrategy)) {
                     ((StreamisLog4j2AppenderConfig.Builder)builder).withFilter(LevelMatchFilter.newBuilder().setOnMatch(Filter.Result.ACCEPT).setOnMismatch(Filter.Result.DENY)
                             .setLevel(Level.getLevel(this.configuration.getString(LOG_FILTER_LEVEL_MATCH))).build());
