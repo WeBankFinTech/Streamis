@@ -934,6 +934,6 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     }
     val parsedConfigJson = jsonObj.toString
     logger.debug(s"new task with creator : ${creator} configJson: ${parsedConfigJson}")
-   parsedConfigJson
+    parsedConfigJson
   }
 }
