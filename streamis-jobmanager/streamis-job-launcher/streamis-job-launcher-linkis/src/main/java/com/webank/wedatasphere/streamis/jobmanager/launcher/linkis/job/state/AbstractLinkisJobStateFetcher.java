@@ -116,7 +116,8 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
     @Override
     public T getState(JobInfo jobInfo, String highAvailablePolicy) {
         JobStateFileInfo secondStateFileInfo = null;
-        if (!Boolean.parseBoolean(JobConf.STREAMIS_OLD_SNAPSHOT_PATH_ENABLE().getHotValue().toString())) {
+        LOG.info("config wds.streamis.old snapshot path.enable vaule is " + JobConf.STREAMIS_OLD_SNAPSHOT_PATH_ENABLE().toString());
+        if (Boolean.parseBoolean(JobConf.STREAMIS_OLD_SNAPSHOT_PATH_ENABLE().getHotValue().toString())) {
             String secondTreeDir = this.jobStateManager.getJobStateDir(stateClass, jobInfo.getName()).toString();
             StateFileTree secondStateFileTree = traverseFileTreeToFind(jobInfo, getDirFileTree(jobInfo, secondTreeDir), this::isMatch, false);
             if (Objects.nonNull(secondStateFileTree) && StringUtils.isNotBlank(secondStateFileTree.getPath())) {
