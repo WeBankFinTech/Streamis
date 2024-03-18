@@ -77,7 +77,7 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
           val arr = s.split(JobConstants.DELIMITER_EUQAL)
           if (null != arr && arr.length == 2) {
             val key = arr(0)
-            val value = arr(0)
+            val value = arr(1)
             if (initProperties.containsKey(arr(0))) {
               logger.warn(s"init extra params ${key}=${value} will overite params : ${key}=${initProperties.get(key)} for flink manager ec.")
             } else {
