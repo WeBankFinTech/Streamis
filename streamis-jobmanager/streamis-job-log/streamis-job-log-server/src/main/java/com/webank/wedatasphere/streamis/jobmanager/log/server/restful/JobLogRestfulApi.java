@@ -58,8 +58,7 @@ public class JobLogRestfulApi {
             String[] arr = RegularUtils.split(appName);
             String projectName = arr[0];
             String jobName = arr[1];
-            Long jobId = streamisJobLogService.getCurrentJobId(projectName,jobName);
-            String productName = streamisJobLogService.getProductName(jobId, JobConf.PRODUCT_NAME_KEY().getHotValue());
+            String productName = streamisJobLogService.getProductName(projectName, jobName,JobConf.PRODUCT_NAME_KEY().getHotValue());
             this.streamisJobLogService.store(userName, events,productName);
             result = Message.ok();
         }catch (Exception e){

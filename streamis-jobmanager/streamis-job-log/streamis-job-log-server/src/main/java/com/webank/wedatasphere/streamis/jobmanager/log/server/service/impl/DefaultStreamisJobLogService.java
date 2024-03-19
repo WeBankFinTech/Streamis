@@ -11,6 +11,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+//import static com.webank.wedatasphere.streamis.jobmanager.log.server.StreamisJobLogAutoConfiguration.productNameCache;
 
 /**
  * Default implement
@@ -23,9 +27,12 @@ public class DefaultStreamisJobLogService implements StreamisJobLogService {
 
     private JobLogBucketConfig jobLogBucketConfig;
 
+    private Map<Long,String> productNameCache = new ConcurrentHashMap<>();
+
     @PostConstruct
     public void init(){
         jobLogBucketConfig = new JobLogBucketConfig();
+        productNameCache = new ConcurrentHashMap<>();
     }
     @Override
     public void store(String user, StreamisLogEvents events,String productName) {
@@ -36,15 +43,18 @@ public class DefaultStreamisJobLogService implements StreamisJobLogService {
         }
     }
     @Override
-    public Long getCurrentJobId(String projectName, String jobName) {
+    public String getProductName(String projectName,String jobName,String value) {
         StreamJob job = jobLogStorage.getStreamJobMapper().getCurrentJob(projectName, jobName);
         if (job == null){
             return null;
         }
-        return job.getId();
-    }
-
-    public String getProductName(Long jobId,String value) {
-        return jobLogStorage.getStreamJobConfMapper().getRawConfValue(jobId,value);
+        Long jobId = job.getId();
+        if (productNameCache.containsKey(jobId)){
+            return productNameCache.get(jobId);
+        }else{
+            String productName = jobLogStorage.getStreamJobConfMapper().getRawConfValue(jobId,value);
+            productNameCache.put(jobId,productName);
+            return productName;
+        }
     }
 }

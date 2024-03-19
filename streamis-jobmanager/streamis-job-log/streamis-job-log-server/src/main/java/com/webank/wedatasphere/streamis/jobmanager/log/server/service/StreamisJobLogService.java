@@ -15,7 +15,5 @@ public interface StreamisJobLogService {
      */
     void store(String user, StreamisLogEvents events,String productName);
 
-    Long getCurrentJobId(String projectName,String jobName);
-
-    String getProductName(Long jobId,String value);
+    String getProductName(String projectName,String jobName,String value);
 }
