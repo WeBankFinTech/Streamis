@@ -1,6 +1,5 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.server.service.impl;
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisLogEvents;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.service.StreamisJobLogService;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.JobLogStorage;
@@ -13,8 +12,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-//import static com.webank.wedatasphere.streamis.jobmanager.log.server.StreamisJobLogAutoConfiguration.productNameCache;
 
 /**
  * Default implement

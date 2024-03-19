@@ -863,6 +863,9 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
         }{
           case e: Exception =>
             logger.error("errorCodeMatching failed. ", e)
+            val streamTask = new StreamTask()
+            streamTask.setErrDesc(JobConf.ANALYZE_ERROR_MSG.getHotValue())
+            streamTaskService.updateTask(streamTask)
         }
         if (errorMsg.isEmpty){
           Utils.tryCatch{
@@ -887,6 +890,9 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           }{
             case e: Exception =>
               logger.error("errorCodeMatching failed. ", e)
+              val streamTask = new StreamTask()
+              streamTask.setErrDesc(JobConf.ANALYZE_ERROR_MSG.getHotValue())
+              streamTaskService.updateTask(streamTask)
           }
         }
         val streamTask = new StreamTask()
