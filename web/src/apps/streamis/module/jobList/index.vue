@@ -1126,6 +1126,7 @@ export default {
         } catch (error) {
           this.startHintLoading = false
           this.startHintVisible = false
+          this.processModalVisable = false
         }
       } else {
         try {
@@ -1174,6 +1175,7 @@ export default {
           this.startHintLoading = false
           this.startHintVisible = false
           this.waitSingleStartCheck = false;
+          this.processModalVisable = false
         }
       }
     },
