@@ -432,7 +432,7 @@
       <div class="text">
         {{ failureReason }}
       </div>
-      <a class="solution" v-if="solutionURL" target="_blank" :href="'http://kn.dss.weoa.com/'+solutionURL">解决方案</a>
+      <a class="solution" v-if="solutionURL" target="_blank" :href="knowledgeLibraryUrl + solutionURL">解决方案</a>
     </Modal>
     <Modal
       v-model="stopDataShow"
@@ -724,6 +724,7 @@ export default {
       failureReason: '',
       failureReasonShow: false,
       solutionURL: '',
+      knowledgeLibraryUrl: ''
     }
   },
   async mounted() {
@@ -749,6 +750,7 @@ export default {
       pageSize: parseInt(pageSize) || 10,
     })
     this.getJobList(false)
+    this.knowledgeLibraryUrl = window.knowledgeLibraryUrl || 'http://kn.dss.weoa.com/'
   },
   methods: {
     // 获取任务列表
@@ -1124,6 +1126,7 @@ export default {
         } catch (error) {
           this.startHintLoading = false
           this.startHintVisible = false
+          this.processModalVisable = false
         }
       } else {
         try {
@@ -1172,6 +1175,7 @@ export default {
           this.startHintLoading = false
           this.startHintVisible = false
           this.waitSingleStartCheck = false;
+          this.processModalVisable = false
         }
       }
     },
