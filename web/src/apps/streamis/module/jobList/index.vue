@@ -921,6 +921,7 @@ export default {
             this.showEditTags = false;
             this.editTagsLoading = false;
             this.getJobList()
+            this.selections = []
           } catch {
             this.editTagsLoading = false;
           }
