@@ -115,7 +115,7 @@ Dimension节点、Transform节点、Sink节点 和 [Visualis](https://github.com
 
 &nbsp; &nbsp; &nbsp; &nbsp;对 Streamis 的任何问题和建议，敬请提交 [issue](https://github.com/WeBankFinTech/Streamis/issues)，以便跟踪处理和经验沉淀共享。
 
-&nbsp; &nbsp; &nbsp; &nbsp;您也可以扫描下面的二维码，加入我们的 微信/QQ群，以获得更快速的响应。
+&nbsp; &nbsp; &nbsp; &nbsp;您也可以扫描下面的二维码，加入我们的 微信群，以获得更快速的响应。
 
 ![交流](images/zh_CN/readme/communication.png)
 
