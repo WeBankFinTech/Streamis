@@ -115,7 +115,7 @@ please refer to [Streamis Installation and Deployment Document](docs/en_US/0.3.0
 
 &nbsp; &nbsp; &nbsp; &nbsp;For any questions or suggestions, please kindly submit an [issue](https://github.com/WeBankFinTech/Streamis/issues).
 
-&nbsp; &nbsp; &nbsp; &nbsp;You can scan the QR code below to join our WeChat and QQ group to get more immediate response.
+&nbsp; &nbsp; &nbsp; &nbsp;You can scan the QR code below to join our WeChat group to get more immediate response.
 
 ![comminicate](images/zh_CN/readme/communication.png)
 
