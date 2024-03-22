@@ -112,7 +112,7 @@
                 </configuration>
             </plugin>
         </plugins>
-        <resources>
+        <!--<resources>
             <resource>
                 <directory>${basedir}/src/main/resources</directory>
                 <includes>
@@ -127,7 +127,7 @@
                     <include>**/*.xml</include>
                 </includes>
             </resource>
-        </resources>
+        </resources>-->
 
         <finalName>${project.artifactId}-${project.version}</finalName>
     </build>
