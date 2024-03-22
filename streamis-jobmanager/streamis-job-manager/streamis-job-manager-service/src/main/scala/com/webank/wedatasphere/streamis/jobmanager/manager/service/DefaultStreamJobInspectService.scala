@@ -175,10 +175,7 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
     Utils.tryAndError {
       var inspectVo = new JobHighAvailableVo
       val jobId = job.getId
-      val version = job.getCurrentVersion
-      val jobVersion = if (StringUtils.isBlank(version)) {
-        streamJobMapper.getJobVersions(jobId).get(0)
-      } else streamJobMapper.getJobVersionById(jobId, version)
+      val jobVersion = streamJobMapper.getLatestJobVersion(jobId)
       val highAvailablePolicy = streamJobConfMapper.getRawConfValue(jobId, JobConf.HIGHAVAILABLE_POLICY_KEY.getValue)
       val sourceOption: Option[String] = Option(jobVersion.getSource)
       sourceOption match {
