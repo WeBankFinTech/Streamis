@@ -171,6 +171,9 @@
                     <include>**/*.xml</include>
                     <include>**/*.properties</include>
                 </includes>
+                <excludes>
+                    <exclude>**/*.yml</exclude>
+                </excludes>
             </resource>
         </resources>
     </build>
