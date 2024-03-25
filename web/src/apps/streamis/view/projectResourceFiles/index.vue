@@ -344,7 +344,10 @@ export default {
     },
 
     handleUpload() {
-      console.log(1234444)
+      if (!window.enableUpload) {
+        this.$Message.error({ content: '禁止页面上传任务，请通过aomp发布' });
+        return false
+      }
       this.uploadVisible = true
     },
     fileModalCancel() {

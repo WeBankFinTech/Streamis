@@ -185,12 +185,19 @@
                   :on-success="jarUploadSuccess"
                   :on-error="jarUploadError"
                   :show-upload-list="false"
+                  v-if="enableUpload"
                 >
                   <Icon type="md-add" class="upload" />
                   <span>{{
                     $t('message.streamis.jobListTableColumns.upload')
-                  }}</span></Upload
-                >
+                  }}</span>  
+                </Upload>
+                <div v-else @click="beforeUpload()">
+                  <Icon type="md-add" class="upload" />
+                  <span>{{
+                    $t('message.streamis.jobListTableColumns.upload')
+                  }}</span> 
+                </div>
               </div>
               <div class="jobName" v-show="index !== 0">
                 <Dropdown transfer transfer-class-name="joblist-table-ivu-select-dropdown" @on-click="name => handleRouter(row, name)">
@@ -724,7 +731,8 @@ export default {
       failureReason: '',
       failureReasonShow: false,
       solutionURL: '',
-      knowledgeLibraryUrl: ''
+      knowledgeLibraryUrl: '',
+      enableUpload: true,
     }
   },
   async mounted() {
@@ -751,6 +759,7 @@ export default {
     })
     this.getJobList(false)
     this.knowledgeLibraryUrl = window.knowledgeLibraryUrl || 'http://kn.dss.weoa.com/'
+    this.enableUpload = window.enableUpload
   },
   methods: {
     // 获取任务列表
@@ -866,6 +875,9 @@ export default {
     },
     handleUpload() {
       this.uploadVisible = true
+    },
+    beforeUpload() {
+      this.$Message.error({ content: '禁止页面上传任务，请通过aomp发布' });
     },
     handleStop(data, type, index) {
       const { id } = data
