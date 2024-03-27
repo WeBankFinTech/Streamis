@@ -1064,6 +1064,7 @@ export default {
           return;
         }
         this.processModalVisable = false;
+        this.stopDataShow = false;
       } catch (error) {
         console.log('clickBatchStop err: ', error);
         this.isFinish = true
