@@ -50,4 +50,6 @@ public interface ProjectManagerService {
     String getProjectNameById(Long id);
 
     String getProjectNameByFileId(Long id);
+
+    Boolean confirmToken(String token);
 }

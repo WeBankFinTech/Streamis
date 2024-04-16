@@ -26,6 +26,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.Proje
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.ReaderUtils;
+import com.webank.wedatasphere.streamis.jobmanager.service.HighAvailableService;
 import com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles;
 import com.webank.wedatasphere.streamis.projectmanager.service.ProjectManagerService;
 import org.apache.commons.io.IOUtils;
@@ -94,6 +95,9 @@ public class ProjectManagerRestfulApi {
         }
         if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) {
             return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
+        }
+        if (!projectManagerService.confirmToken(source)){
+            return Message.error("As this file is not from standard release, it is not allowed to upload");
         }
         //Only uses 1st file(只取第一个文件)
         MultipartFile p = files.get(0);

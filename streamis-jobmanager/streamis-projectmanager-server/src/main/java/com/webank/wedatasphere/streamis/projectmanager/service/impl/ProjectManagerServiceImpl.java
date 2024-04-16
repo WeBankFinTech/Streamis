@@ -16,6 +16,8 @@
 package com.webank.wedatasphere.streamis.projectmanager.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
+import com.webank.wedatasphere.streamis.jobmanager.utils.JsonUtil;
 import com.webank.wedatasphere.streamis.projectmanager.utils.MD5Utils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.linkis.common.utils.JsonUtils;
@@ -28,6 +30,7 @@ import com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles;
 import com.webank.wedatasphere.streamis.projectmanager.service.ProjectManagerService;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.linkis.server.BDPJettyServerHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -145,5 +148,24 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
     @Override
     public String getProjectNameByFileId(Long id) {
         return projectManagerMapper.getProjectNameByFileId(id);
+    }
+
+    @Override
+    public Boolean confirmToken(String source){
+        Optional<String> sourceOption = Optional.ofNullable(source);
+        if(sourceOption.isPresent() && JsonUtil.isJson(sourceOption.get())) {
+            String sourceStr = sourceOption.get();
+            Map sourceMap = BDPJettyServerHelper.gson().fromJson(sourceStr, Map.class);
+            if (sourceMap.containsKey("source")) {
+                String sourceValue = sourceMap.get("source").toString();
+                if (sourceValue.equals(JobConf.HIGHAVAILABLE_SOURCE().getValue())) {
+                    if (sourceMap.containsKey("token")) {
+                        String tokenContent = sourceMap.get("token").toString();
+                        return tokenContent.equals(JobConf.HIGHAVAILABLE_TOKEN().getValue());
+                    }
+                }
+            }
+        }
+        return false;
     }
 }
