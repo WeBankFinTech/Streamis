@@ -17,6 +17,7 @@ package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.BMLService;
@@ -94,8 +95,10 @@ public class UploadRestfulApi {
         if(!ZipHelper.isZip(fileName)){
             throw JobExceptionManager.createException(30302);
         }
-        if(!highAvailableService.confirmToken(source)){
-            return Message.error("As this job is not from standard release, it is not allowed to upload");
+        if ((Boolean) JobConf.STANDARD_AUTHENTICATION_KEY().getHotValue()){
+            if (!highAvailableService.confirmToken(source)){
+                return Message.error("As this job is not from standard release, it is not allowed to upload");
+            }
         }
         InputStream is = null;
         OutputStream os = null;

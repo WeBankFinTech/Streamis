@@ -96,8 +96,10 @@ public class ProjectManagerRestfulApi {
         if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) {
             return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
         }
-        if (!projectManagerService.confirmToken(source)){
-            return Message.error("As this file is not from standard release, it is not allowed to upload");
+        if ((Boolean) JobConf.STANDARD_AUTHENTICATION_KEY().getHotValue()){
+            if (!projectManagerService.confirmToken(source)){
+                return Message.error("As this file is not from standard release, it is not allowed to upload");
+            }
         }
         //Only uses 1st file(只取第一个文件)
         MultipartFile p = files.get(0);
