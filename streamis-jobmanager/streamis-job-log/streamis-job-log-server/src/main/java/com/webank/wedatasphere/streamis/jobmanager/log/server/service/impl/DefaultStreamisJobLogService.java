@@ -6,6 +6,7 @@ import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.JobLogStor
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.JobLogBucket;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket.JobLogBucketConfig;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -50,6 +51,9 @@ public class DefaultStreamisJobLogService implements StreamisJobLogService {
             return productNameCache.get(jobId);
         }else{
             String productName = jobLogStorage.getStreamJobConfMapper().getRawConfValue(jobId,value);
+            if(StringUtils.isBlank(productName)){
+                return null;
+            }
             productNameCache.put(jobId,productName);
             return productName;
         }
