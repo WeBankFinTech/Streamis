@@ -44,10 +44,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -120,6 +117,10 @@ public class ProjectManagerRestfulApi {
             is = p.getInputStream();
             os = IoUtils.generateExportOutputStream(inputPath);
             IOUtils.copy(is, os);
+            if (!p.isEmpty() && p.getContentType().equals("application/json")) {
+                if(!readerUtils.checkMetaTemplate(fileName,inputPath,projectName)) return Message.error("meta template is not correct,eg:testProject(项目名)-meta.json");
+                projectManagerService.uploadJobTemplate(username,fileName,inputPath,projectName,version);
+            }
             projectManagerService.upload(username, fileName, version, projectName, inputPath, comment, source);
             File file = new File(inputPath);
             if (file.exists()) {

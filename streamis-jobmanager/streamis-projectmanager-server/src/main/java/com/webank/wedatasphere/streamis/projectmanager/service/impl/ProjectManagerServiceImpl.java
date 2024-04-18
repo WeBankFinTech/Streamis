@@ -16,6 +16,10 @@
 package com.webank.wedatasphere.streamis.projectmanager.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.utils.JobUtils;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
+import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
+import com.webank.wedatasphere.streamis.projectmanager.entity.JobTemplateFiles;
 import com.webank.wedatasphere.streamis.projectmanager.utils.MD5Utils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.linkis.common.utils.JsonUtils;
@@ -32,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
@@ -46,6 +51,8 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
 
     @Autowired
     private ProjectManagerMapper projectManagerMapper;
+
+    private static final String JSON_TYPE = ".json";
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -145,5 +152,34 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
     @Override
     public String getProjectNameByFileId(Long id) {
         return projectManagerMapper.getProjectNameByFileId(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void uploadJobTemplate(String username, String fileName, String filePath,String projectName,String version) throws FileException, IOException {
+        Map<String, Object> result = bmlService.upload(username, filePath);
+        String path = filePath.replace(JSON_TYPE,"");
+        ReaderUtils readerUtils = new ReaderUtils();
+        MetaJsonInfo metaJsonInfo = readerUtils.parseJson(path);
+
+        JobTemplateFiles jobTemplateFiles = new JobTemplateFiles();
+        jobTemplateFiles.setName(fileName);
+        jobTemplateFiles.setProjectName(projectName);
+        jobTemplateFiles.setStorePath(readerUtils.readAsJson(result.get("resourceId").toString(),result.get("version").toString()));
+        jobTemplateFiles.setMetaJson(JobUtils.gson().toJson(metaJsonInfo));
+        jobTemplateFiles.setVersion(version);
+
+        JobTemplateFiles file = selectJobTemplate(fileName, version, projectName);
+        if (file == null) {
+            projectManagerMapper.insertJobTemplate(jobTemplateFiles);
+        }else {
+            jobTemplateFiles.setId(file.getId());
+            jobTemplateFiles.setDate(new Date());
+            projectManagerMapper.updateJobTemplateById(jobTemplateFiles);
+        }
+    }
+
+    public JobTemplateFiles selectJobTemplate(String fileName, String version, String projectName) {
+        return projectManagerMapper.selectJobTemplate(fileName, version, projectName);
     }
 }

@@ -24,6 +24,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.PublishRequ
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileExceptionManager;
 import org.apache.commons.lang.StringUtils;
+import org.apache.linkis.server.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +53,8 @@ public class ReaderUtils {
     private String zipName;
     private boolean hasTags = false;
     private boolean hasProjectName = false;
+    private static final String templateName = "-meta.json";
+    private static final String JSON_TYPE = ".json";
 
 
     private static final Logger LOG = LoggerFactory.getLogger(ReaderUtils.class);
@@ -315,5 +318,21 @@ public class ReaderUtils {
         String regex = "^[a-zA-Z0-9_\u4e00-\u9fa5]+$";
         return str.matches(regex);
     }
-
+    public Boolean checkMetaTemplate(String fileName,String inputPath,String projectName) throws FileException, IOException {
+        if (!fileName.endsWith(templateName)) {
+            return false;
+        }
+        int index = fileName.indexOf('-');
+        if (index == -1) {
+            return false;
+        }
+        if (projectName.equals(fileName.substring(0, index))) {
+            String path = inputPath.replace(JSON_TYPE, "");
+            MetaJsonInfo metaJsonInfo = parseJson(path);
+            if (metaJsonInfo.getJobName().isEmpty() && metaJsonInfo.getJobType().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

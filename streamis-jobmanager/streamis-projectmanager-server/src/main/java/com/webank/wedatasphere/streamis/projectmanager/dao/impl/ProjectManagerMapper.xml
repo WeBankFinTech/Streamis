@@ -117,4 +117,26 @@
         WHERE jvf.id = #{id}
     </select>
 
+    <insert id="insertJobTemplate" parameterType="com.webank.wedatasphere.streamis.projectmanager.entity.JobTemplateFiles">
+        INSERT INTO linkis_stream_project_job_template
+        (`name`,`version`,`store_path`,`meta_json`,`project_name`)
+        VALUES (#{name},#{version},#{storePath},#{metaJson},#{projectName})
+    </insert>
+
+    <select id="selectJobTemplate" resultType="com.webank.wedatasphere.streamis.projectmanager.entity.JobTemplateFiles">
+        select `id`, `name`,`version`,`store_path`,`meta_json`,`project_name`,`date` from
+        linkis_stream_project_job_template where project_name = #{projectName} and version = #{version} and name = #{name}
+    </select>
+
+    <update id="updateJobTemplateById" parameterType="com.webank.wedatasphere.streamis.projectmanager.entity.JobTemplateFiles">
+        update linkis_stream_project_job_template set store_path = #{storePath},date = #{date},name={#name},project_name=#{projectName}
+        <if test="version != null and version !=''">
+            ,version = #{version}
+        </if>
+        <if test="meta_json != null and meta_json !=''">
+            ,metaJson = #{metaJson}
+        </if>
+        where id = #{id}
+    </update>
+
 </mapper>

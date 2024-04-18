@@ -17,6 +17,7 @@ package com.webank.wedatasphere.streamis.projectmanager.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
+import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles;
 
 import java.io.IOException;
@@ -50,4 +51,6 @@ public interface ProjectManagerService {
     String getProjectNameById(Long id);
 
     String getProjectNameByFileId(Long id);
+
+    void uploadJobTemplate(String username, String fileName, String filePath, String projectName,String version) throws FileException, IOException;
 }
