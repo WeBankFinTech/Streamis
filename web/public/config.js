@@ -6,3 +6,5 @@
 window.knowledgeLibraryUrl = "http://kn.dss.weoa.com/"
 // 是否允许上传 true 测试 false 生产
 window.enableUpload = true
+// 水印中region字段的设置
+window.watermarkRegion = "东莞"
