@@ -32,7 +32,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.service.DefaultStream
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.{JobUtils, JsonUtils, ReaderUtils, ZipHelper}
-import com.webank.wedatasphere.streamis.jobmanager.manager.utils.SourceUtils
+import com.webank.wedatasphere.streamis.jobmanager.manager.utils.{JobContentUtils, SourceUtils}
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.lang3.ObjectUtils
 import org.apache.linkis.common.exception.ErrorException
@@ -201,7 +201,9 @@ class DefaultStreamJobService extends StreamJobService with Logging {
       logger.info("newStreamJob is {}", newStreamJob)
       jobVersion.setJobId(newStreamJob.getId)
     }
-    jobVersion.setJobContent(metaJsonInfo.getMetaInfo)
+    val JobContentMap = JobContentUtils.getFinalJobContent(jobVersion, JobContentUtils.gson.toJson(metaJsonInfo))
+    val finalJobContent = JobContentUtils.gson.toJson(JobContentMap)
+    jobVersion.setJobContent(finalJobContent)
     jobVersion.setCreateBy(userName)
     jobVersion.setCreateTime(new Date)
     jobVersion.setSource(source)
@@ -219,6 +221,13 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     val inputPath = ZipHelper.unzip(inputZipPath)
     val readerUtils = new ReaderUtils
     val metaJsonInfo = readerUtils.parseJson(inputPath)
+    if (null == metaJsonInfo.getJobContent){
+      val jobTemplate = streamJobMapper.getLatestJobTemplate(projectName)
+        if (StringUtils.isNotBlank(jobTemplate)){
+          val jobContent = JobContentUtils.getJobTemplateContent(jobTemplate)
+          metaJsonInfo.setJobContent(jobContent)
+        }
+    }
     if (StringUtils.isNotBlank(projectName) && !projectName.equals(metaJsonInfo.getProjectName)) {
       if (JobConf.PROJECT_NAME_STRICT_CHECK_SWITCH.getHotValue && StringUtils.isNotBlank(metaJsonInfo.getProjectName)){
         logger.error(s"The projectName [${projectName}] dose not match metaJson ProjectName [${metaJsonInfo.getProjectName}]")

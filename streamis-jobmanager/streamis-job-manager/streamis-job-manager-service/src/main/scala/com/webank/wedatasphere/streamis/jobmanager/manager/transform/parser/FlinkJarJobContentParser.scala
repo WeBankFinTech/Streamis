@@ -16,12 +16,14 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.parser
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobExecuteErrorException
+
 import java.util
 import org.apache.linkis.common.utils.{JsonUtils, Utils}
 import org.apache.linkis.manager.label.entity.engine.RunType
 import org.apache.linkis.manager.label.entity.engine.RunType.RunType
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion, StreamisFile}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisJarTransformJobContent, StreamisTransformJobContent}
+import com.webank.wedatasphere.streamis.jobmanager.manager.utils.JobContentUtils
 import org.apache.commons.lang.StringUtils
 import org.springframework.stereotype.Component
 
@@ -36,11 +38,7 @@ class FlinkJarJobContentParser extends AbstractJobContentParser {
 
   override def parseTo(job: StreamJob, jobVersion: StreamJobVersion,jobTemplate: String): StreamisTransformJobContent = {
     val transformJobContent = new StreamisJarTransformJobContent
-    val jobContent = JsonUtils.jackson.readValue(jobVersion.getJobContent, classOf[util.Map[String, Object]])
-    val jobContentTemplate = JsonUtils.jackson.readValue(jobTemplate, classOf[util.Map[String, Object]])
-    val finalJobContent: JavaMap[String, Object] = new java.util.HashMap[String, Object](jobContentTemplate)
-    finalJobContent.putAll(jobContent)
-
+    val finalJobContent = JobContentUtils.getFinalJobContent(jobVersion, jobTemplate)
     finalJobContent.get("main.class.jar") match {
       case mainClassJar: String =>
         val file = dealStreamisFile(job, jobVersion, mainClassJar, "main.class.jar")
