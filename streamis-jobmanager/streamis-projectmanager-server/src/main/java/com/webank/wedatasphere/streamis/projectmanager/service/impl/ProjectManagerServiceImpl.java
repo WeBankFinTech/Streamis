@@ -17,9 +17,10 @@ package com.webank.wedatasphere.streamis.projectmanager.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.utils.JobUtils;
+import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
-import com.webank.wedatasphere.streamis.projectmanager.entity.JobTemplateFiles;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles;
 import com.webank.wedatasphere.streamis.projectmanager.utils.MD5Utils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.linkis.common.utils.JsonUtils;
@@ -51,6 +52,9 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
 
     @Autowired
     private ProjectManagerMapper projectManagerMapper;
+
+    @Autowired
+    private StreamJobMapper streamJobMapper;
 
     private static final String JSON_TYPE = ".json";
 
@@ -171,15 +175,15 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
 
         JobTemplateFiles file = selectJobTemplate(fileName, version, projectName);
         if (file == null) {
-            projectManagerMapper.insertJobTemplate(jobTemplateFiles);
+            streamJobMapper.insertJobTemplate(jobTemplateFiles);
         }else {
             jobTemplateFiles.setId(file.getId());
             jobTemplateFiles.setDate(new Date());
-            projectManagerMapper.updateJobTemplateById(jobTemplateFiles);
+            streamJobMapper.updateJobTemplateById(jobTemplateFiles);
         }
     }
 
     public JobTemplateFiles selectJobTemplate(String fileName, String version, String projectName) {
-        return projectManagerMapper.selectJobTemplate(fileName, version, projectName);
+        return streamJobMapper.selectJobTemplate(fileName, version, projectName);
     }
 }

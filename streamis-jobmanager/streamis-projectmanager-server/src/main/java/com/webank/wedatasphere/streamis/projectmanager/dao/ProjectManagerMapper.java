@@ -15,7 +15,6 @@
 
 package com.webank.wedatasphere.streamis.projectmanager.dao;
 
-import com.webank.wedatasphere.streamis.projectmanager.entity.JobTemplateFiles;
 import com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles;
 import org.apache.ibatis.annotations.Param;
 
@@ -53,10 +52,4 @@ public interface ProjectManagerMapper {
     String getProjectNameById(Long id);
 
     String getProjectNameByFileId(Long id);
-
-    void insertJobTemplate(JobTemplateFiles jobTemplateFiles);
-
-    JobTemplateFiles selectJobTemplate(@Param("fileName")String fileName, @Param("version")String version, @Param("projectName")String projectName);
-
-    void updateJobTemplateById (JobTemplateFiles jobTemplateFiles);
 }

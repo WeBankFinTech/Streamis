@@ -262,10 +262,16 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     } else streamJobMapper.getJobVersionById(jobId, version)
     if(jobVersion == null)
       throw new JobFetchErrorException(30030, s"job has no versions.")
-//    val highAvailablePolicy = streamJobConfService.getJobConfValue(jobId, "wds.streamis.app.highavailable.policy")
-//    val highAvailableVo = SourceUtils.manageJobProjectFile(highAvailablePolicy, jobVersion.getSource)
-//    jobVersion.setSource(highAvailableVo.toString)
-    jobContentParsers.find(_.canParse(job, jobVersion)).map(_.parseTo(job, jobVersion))
+    val streamJob: StreamJob = streamJobMapper.getJobById(jobId)
+    val projectName: String = streamJob.getProjectName
+    val streamTask = streamTaskMapper.getLatestByJobId(jobId)
+    val jobTemplate: String = if (streamTask.getStatus.equals(JobConf.FLINK_JOB_STATUS_RUNNING.getValue)) {
+      streamJobMapper.getLatestJobTemplate(projectName)
+    } else {
+      val templateId: Long = streamJobMapper.getJobTemplateJsonId(jobId, version)
+      streamJobMapper.getJobTemplateJson(templateId)
+    }
+    jobContentParsers.find(_.canParse(job, jobVersion)).map(_.parseTo(job, jobVersion,jobTemplate))
       .getOrElse(throw new JobFetchErrorException(30030, s"Cannot find a JobContentParser to parse jobContent."))
   }
 
