@@ -9,6 +9,9 @@
 import coreIndex from '@/apps/streamis/module/coreIndex';
 import jobList from '@/apps/streamis/module/jobList';
 import watermark from "@/common/util/waterMark.js";
+import { GetBaseInfo } from '@/common/service/apiCommonMethod.js';
+import storage from "@/common/helper/storage";
+import { isEmpty } from "lodash";
 export default {
   components: {
     coreIndex: coreIndex.component,
@@ -23,21 +26,10 @@ export default {
     };
   },
   mounted() {
-    // this.init();
     if(!this.$route.query.projectName){
       this.$router.push(`/realTimeJobCenter?projectName=${this.projectName}`)
     }
-    const baseInfo = JSON.parse(localStorage.getItem('baseInfo'))
-    this.user= baseInfo.username
-    this.region = window.watermarkRegion
-    watermark.init({
-      maskTxt: `${this.user} ${this.region}`, 
-      addTime: true, 
-      setIntervalTime: "60000", 
-      fontSize: "12px",
-      frontXSpace: 150, // 水印横向间隙
-      frontYSpace: 100, // 水印纵向间隙
-    });
+    this.init()
   },
   methods: {
     resize(height) {
@@ -45,6 +37,26 @@ export default {
     },
     refreshCoreIndex(){
       this.$refs.coreIndex.getIndexData();
+    },
+    async init(){
+      try {
+        const rst = await GetBaseInfo()
+        if (!isEmpty(rst)) {
+          storage.set("baseInfo", rst, "local");
+          this.user= rst.username
+        }
+      } catch (error) {
+        console.log(error)
+      }
+      this.region = window.watermarkRegion
+      watermark.init({
+        maskTxt: `${this.user} ${this.region}`, 
+        addTime: true, 
+        setIntervalTime: "60000", 
+        fontSize: "12px",
+        frontXSpace: 150, // 水印横向间隙
+        frontYSpace: 100, // 水印纵向间隙
+      });
     }
   },
 };
