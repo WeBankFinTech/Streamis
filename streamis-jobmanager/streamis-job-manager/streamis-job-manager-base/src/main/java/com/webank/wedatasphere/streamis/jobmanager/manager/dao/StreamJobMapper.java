@@ -93,7 +93,7 @@ public interface StreamJobMapper {
 
     void insertJobTemplate(JobTemplateFiles jobTemplateFiles);
 
-    JobTemplateFiles selectJobTemplate(@Param("fileName")String fileName, @Param("version")String version, @Param("projectName")String projectName);
+    JobTemplateFiles selectJobTemplate(@Param("name")String name, @Param("version")String version, @Param("projectName")String projectName);
 
     void updateJobTemplateById (JobTemplateFiles jobTemplateFiles);
 

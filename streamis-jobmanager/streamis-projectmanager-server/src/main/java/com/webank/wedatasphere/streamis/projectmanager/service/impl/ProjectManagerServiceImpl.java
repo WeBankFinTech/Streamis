@@ -172,6 +172,7 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
         jobTemplateFiles.setStorePath(readerUtils.readAsJson(result.get("resourceId").toString(),result.get("version").toString()));
         jobTemplateFiles.setMetaJson(JobUtils.gson().toJson(metaJsonInfo));
         jobTemplateFiles.setVersion(version);
+        jobTemplateFiles.setDate(new Date());
 
         JobTemplateFiles file = selectJobTemplate(fileName, version, projectName);
         if (file == null) {

@@ -331,7 +331,8 @@ public class ReaderUtils {
         if (projectName.equals(fileName.substring(0, index))) {
             String path = inputPath.replace(JSON_TYPE, "");
             MetaJsonInfo metaJsonInfo = parseJson(path,projectName);
-            if (metaJsonInfo.getJobName().isEmpty() && metaJsonInfo.getJobType().isEmpty()) {
+            if ((metaJsonInfo.getJobName() == null || metaJsonInfo.getJobName().isEmpty()) &&
+                    (metaJsonInfo.getJobType() == null || metaJsonInfo.getJobType().isEmpty())) {
                 return true;
             }
         }
@@ -369,6 +370,6 @@ public class ReaderUtils {
         if (!metaFile.exists()) {
             throw new FileException(30603, metaFileJsonName);
         }
-        return IoUtils.generateInputInputStream(basePath + File.separator + metaFileJsonName);
+        return IoUtils.generateInputInputStream(basePath + File.separator + projectName +templateMetaFileJsonName);
     }
 }
