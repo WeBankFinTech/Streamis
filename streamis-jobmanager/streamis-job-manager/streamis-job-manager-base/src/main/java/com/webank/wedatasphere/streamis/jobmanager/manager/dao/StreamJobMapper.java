@@ -89,7 +89,7 @@ public interface StreamJobMapper {
 
     Long getJobTemplateJsonId(@Param("jobId")Long jobId,@Param("version") String version);
 
-    String getJobTemplateJson(@Param("id")Long id);
+    JobTemplateFiles getJobTemplate(@Param("id")Long id);
 
     void insertJobTemplate(JobTemplateFiles jobTemplateFiles);
 
@@ -98,6 +98,8 @@ public interface StreamJobMapper {
     void updateJobTemplateById (JobTemplateFiles jobTemplateFiles);
 
     String getLatestJobTemplate (String projectName);
+
+    JobTemplateFiles getLatestJobTemplateFile (String projectName);
 
     Long getJobTemplateByProject(@Param("projectName") String projectName);
 }

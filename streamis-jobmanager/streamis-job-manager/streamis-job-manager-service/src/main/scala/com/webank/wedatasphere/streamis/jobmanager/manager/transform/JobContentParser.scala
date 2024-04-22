@@ -16,7 +16,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform
 
 import org.apache.linkis.manager.label.entity.engine.RunType.RunType
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{JobTemplateFiles, StreamJob, StreamJobVersion}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent
 
 /**
@@ -30,6 +30,6 @@ trait JobContentParser {
 
   def canParse(job: StreamJob, jobVersion: StreamJobVersion): Boolean
 
-  def parseTo(job: StreamJob, jobVersion: StreamJobVersion,jobTemplate: String): StreamisTransformJobContent
+  def parseTo(job: StreamJob, jobVersion: StreamJobVersion,jobTemplate: JobTemplateFiles): StreamisTransformJobContent
 
 }

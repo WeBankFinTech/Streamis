@@ -16,12 +16,12 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.parser
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobExecuteErrorException
-import java.util
 
+import java.util
 import org.apache.linkis.common.utils.JsonUtils
 import org.apache.linkis.manager.label.entity.engine.RunType
 import org.apache.linkis.manager.label.entity.engine.RunType.RunType
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{JobTemplateFiles, StreamJob, StreamJobVersion}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisSqlTransformJobContent, StreamisTransformJobContent}
 import org.springframework.stereotype.Component
 
@@ -31,7 +31,7 @@ import org.springframework.stereotype.Component
 @Component
 class FlinkSQLJobContentParser extends AbstractJobContentParser {
 
-  override def parseTo(job: StreamJob, jobVersion: StreamJobVersion,jobTemplate: String): StreamisTransformJobContent = {
+  override def parseTo(job: StreamJob, jobVersion: StreamJobVersion,jobTemplate: JobTemplateFiles): StreamisTransformJobContent = {
     val jobContent = JsonUtils.jackson.readValue(jobVersion.getJobContent, classOf[util.Map[String, Object]])
     val transformJobContent = new StreamisSqlTransformJobContent
     val sql = jobContent.get("type") match {

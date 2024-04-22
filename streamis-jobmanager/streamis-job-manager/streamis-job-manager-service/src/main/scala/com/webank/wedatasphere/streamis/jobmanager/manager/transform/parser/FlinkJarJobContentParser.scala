@@ -21,7 +21,7 @@ import java.util
 import org.apache.linkis.common.utils.{JsonUtils, Utils}
 import org.apache.linkis.manager.label.entity.engine.RunType
 import org.apache.linkis.manager.label.entity.engine.RunType.RunType
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion, StreamisFile}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{JobTemplateFiles, StreamJob, StreamJobVersion, StreamisFile}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisJarTransformJobContent, StreamisTransformJobContent}
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.JobContentUtils
 import org.apache.commons.lang.StringUtils
@@ -36,9 +36,12 @@ import scala.collection.JavaConverters._
 @Component
 class FlinkJarJobContentParser extends AbstractJobContentParser {
 
-  override def parseTo(job: StreamJob, jobVersion: StreamJobVersion,jobTemplate: String): StreamisTransformJobContent = {
+  override def parseTo(job: StreamJob, jobVersion: StreamJobVersion,jobTemplate: JobTemplateFiles): StreamisTransformJobContent = {
     val transformJobContent = new StreamisJarTransformJobContent
-    val finalJobContent = JobContentUtils.getFinalJobContent(jobVersion, jobTemplate)
+    var finalJobContent = JsonUtils.jackson.readValue(jobVersion.getJobContent, classOf[util.Map[String, Object]])
+    if (null != jobTemplate){
+      finalJobContent = JobContentUtils.getFinalJobContent(jobVersion, jobTemplate.getMetaJson)
+    }
     finalJobContent.get("main.class.jar") match {
       case mainClassJar: String =>
         val file = dealStreamisFile(job, jobVersion, mainClassJar, "main.class.jar")
@@ -76,8 +79,8 @@ class FlinkJarJobContentParser extends AbstractJobContentParser {
         transformJobContent.setResources(parsedResources)
       case _ =>
     }
-    val jobTemplateOption : Option[String] = Option(jobTemplate)
-    jobTemplateOption match {
+    val jobTemplateMapOption : Option[JobTemplateFiles] = Option(jobTemplate)
+    jobTemplateMapOption match {
       case Some(jobTemplate) =>
         transformJobContent.setJobTemplate(jobTemplate)
       case None =>
