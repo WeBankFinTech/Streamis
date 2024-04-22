@@ -77,7 +77,7 @@ object JobContentUtils {
     .create
 
   def getMap(jobTemplate: String): JavaMap[String, Object] = {
-    val jobContent = JsonUtils.jackson.readValue(jobTemplate, classOf[util.Map[String, Object]])
-    jobContent
+    val jobTemplateMap = JsonUtils.jackson.readValue(jobTemplate, classOf[util.Map[String, Object]])
+    jobTemplateMap
   }
 }

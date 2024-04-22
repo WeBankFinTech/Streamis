@@ -114,10 +114,11 @@ public class JobConfRestfulApi {
             }
             String jobTemplate = streamJobService.getLatestJobTemplate(streamJob.getProjectName());
             Map<String,Object> jobTemplateMap = JobContentUtils.getMap(jobTemplate);
-            String jobTemplateConfig = null;
-            if(jobTemplateMap.containsKey("config")){
-                jobTemplateConfig = jobTemplateMap.get("config").toString();
+            Map<String,Object> jobTemplateConfig = null;
+            if (jobTemplateMap.containsKey("jobConfig") && jobTemplateMap.get("jobConfig") instanceof Map<?, ?>) {
+                jobTemplateConfig = (Map<String, Object>) jobTemplateMap.get("jobConfig");
             }
+//            HashMap<String, Object> jobConfigMap = new HashMap<>(streamJobConfService.getJobConfig(jobId) != null ? streamJobConfService.getJobConfig(jobId) : new HashMap<String, Object>());
             HashMap<String, Object> jobConfigMap = new HashMap<>(streamJobConfService.getJobConfig(jobId));
             if (jobTemplateConfig != null) {
                 jobConfigMap.put("template", jobTemplateConfig);

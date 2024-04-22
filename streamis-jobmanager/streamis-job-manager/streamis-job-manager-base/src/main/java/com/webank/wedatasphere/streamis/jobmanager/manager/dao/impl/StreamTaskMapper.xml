@@ -214,7 +214,4 @@
         </foreach> GROUP BY job_id)
     </select>
 
-    <select id="getJobTemplateByProject" resultMap="StreamTaskMap">
-        SELECT id FROM linkis_stream_project_job_template WHERE project_name=#{projectName} ORDER BY version desc LIMIT 1
-    </select>
 </mapper>

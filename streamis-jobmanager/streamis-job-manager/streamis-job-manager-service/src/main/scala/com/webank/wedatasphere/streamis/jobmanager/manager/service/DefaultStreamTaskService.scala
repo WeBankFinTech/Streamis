@@ -606,7 +606,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
               logger.info(s"Produce a new StreamTask [jobId: $jobId, version: ${jobVersion.getVersion}, creator: $creator, status: ${streamTask.getStatus}]")
               val jobStartConfig = generateJobStartConfig(job, jobVersion, creator)
               streamTask.setJobStartConfig(jobStartConfig)
-              val jobTemplateId = streamTaskMapper.getJobTemplateByProject(job.getProjectName)
+              val jobTemplateId = streamJobMapper.getJobTemplateByProject(job.getProjectName)
               streamTask.setTemplateId(jobTemplateId)
               streamTaskMapper.insertTask(streamTask)
               streamTask

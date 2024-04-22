@@ -98,4 +98,6 @@ public interface StreamJobMapper {
     void updateJobTemplateById (JobTemplateFiles jobTemplateFiles);
 
     String getLatestJobTemplate (String projectName);
+
+    Long getJobTemplateByProject(@Param("projectName") String projectName);
 }
