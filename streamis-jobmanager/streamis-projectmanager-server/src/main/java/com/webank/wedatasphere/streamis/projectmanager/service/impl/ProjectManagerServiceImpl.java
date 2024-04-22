@@ -164,7 +164,7 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
         Map<String, Object> result = bmlService.upload(username, filePath);
         String path = filePath.replace(JSON_TYPE,"");
         ReaderUtils readerUtils = new ReaderUtils();
-        MetaJsonInfo metaJsonInfo = readerUtils.parseJson(path);
+        MetaJsonInfo metaJsonInfo = readerUtils.parseJson(path,projectName);
 
         JobTemplateFiles jobTemplateFiles = new JobTemplateFiles();
         jobTemplateFiles.setName(fileName);

@@ -36,6 +36,8 @@ import java.util.regex.Pattern;
 public class ReaderUtils {
     private static final String metaFileName = "meta.txt";
     private static final String metaFileJsonName = "meta.json";
+
+    private static final String templateMetaFileJsonName = "-meta.json";
     private static final String type = "type";
     private static final String fileName = "filename";
     private static final String projectName = "projectname";
@@ -328,11 +330,45 @@ public class ReaderUtils {
         }
         if (projectName.equals(fileName.substring(0, index))) {
             String path = inputPath.replace(JSON_TYPE, "");
-            MetaJsonInfo metaJsonInfo = parseJson(path);
+            MetaJsonInfo metaJsonInfo = parseJson(path,projectName);
             if (metaJsonInfo.getJobName().isEmpty() && metaJsonInfo.getJobType().isEmpty()) {
                 return true;
             }
         }
         return false;
+    }
+
+    public MetaJsonInfo parseJson(String dirPath,String projectName) throws IOException, FileException {
+        getBasePath(dirPath);
+        InputStream inputStream = null;
+        InputStreamReader streamReader = null;
+        try {
+            inputStream = generateInputStream(basePath,projectName);
+            streamReader = new InputStreamReader(inputStream);
+            BufferedReader reader = new BufferedReader(streamReader);
+            return readJson(reader);
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+            throw e;
+        } finally {
+            try {
+                if (null != inputStream) {
+                    inputStream.close();
+                }
+                if (null != streamReader) {
+                    streamReader.close();
+                }
+            } catch (Exception e1) {
+                LOG.warn("close stream error, {}", e1.getMessage());
+            }
+        }
+    }
+
+    private InputStream generateInputStream(String basePath,String projectName) throws IOException, FileException {
+        File metaFile = new File(basePath + File.separator + projectName +templateMetaFileJsonName);
+        if (!metaFile.exists()) {
+            throw new FileException(30603, metaFileJsonName);
+        }
+        return IoUtils.generateInputInputStream(basePath + File.separator + metaFileJsonName);
     }
 }
