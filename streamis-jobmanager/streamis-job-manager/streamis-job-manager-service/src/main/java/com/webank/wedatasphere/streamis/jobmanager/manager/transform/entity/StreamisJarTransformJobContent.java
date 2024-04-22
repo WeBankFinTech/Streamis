@@ -31,8 +31,16 @@ public class StreamisJarTransformJobContent implements StreamisTransformJobConte
     private List<StreamisFile> dependencyJars;
     private List<String> hdfsJars;
     private List<StreamisFile> resources;
-
     private String source;
+    private String jobTemplate;
+
+    public String getJobTemplate() {
+        return jobTemplate;
+    }
+
+    public void setJobTemplate(String jobTemplate) {
+        this.jobTemplate = jobTemplate;
+    }
 
     public StreamisFile getMainClassJar() {
         return mainClassJar;

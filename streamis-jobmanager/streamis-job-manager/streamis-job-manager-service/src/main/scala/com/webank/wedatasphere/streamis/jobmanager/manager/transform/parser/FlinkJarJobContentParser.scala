@@ -76,6 +76,13 @@ class FlinkJarJobContentParser extends AbstractJobContentParser {
         transformJobContent.setResources(parsedResources)
       case _ =>
     }
+    val jobTemplateOption : Option[String] = Option(jobTemplate)
+    jobTemplateOption match {
+      case Some(jobTemplate) =>
+        transformJobContent.setSource(jobTemplate)
+      case None =>
+        logger.warn("job template is null")
+    }
     val sourceOption: Option[String] = Option(jobVersion.getSource)
     sourceOption match {
       case Some(source) =>

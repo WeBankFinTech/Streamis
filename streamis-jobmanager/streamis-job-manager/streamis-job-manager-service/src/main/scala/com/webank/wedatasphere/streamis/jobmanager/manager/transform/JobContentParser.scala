@@ -30,6 +30,6 @@ trait JobContentParser {
 
   def canParse(job: StreamJob, jobVersion: StreamJobVersion): Boolean
 
-  def parseTo(job: StreamJob, jobVersion: StreamJobVersion,tempateId: String): StreamisTransformJobContent
+  def parseTo(job: StreamJob, jobVersion: StreamJobVersion,jobTemplate: String): StreamisTransformJobContent
 
 }

@@ -25,6 +25,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobErrorException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.utils.JobContentUtils;
 import com.webank.wedatasphere.streamis.jobmanager.utils.RegularUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.linkis.httpclient.dws.DWSHttpClient;
@@ -111,7 +112,18 @@ public class JobConfRestfulApi {
                     && !this.privilegeService.hasAccessPrivilege(request, streamJob.getProjectName())) {
                 return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
             }
-            result.setData(new HashMap<>(this.streamJobConfService.getJobConfig(jobId)));
+            String jobTemplate = streamJobService.getLatestJobTemplate(streamJob.getProjectName());
+            Map<String,Object> jobTemplateMap = JobContentUtils.getMap(jobTemplate);
+            String jobTemplateConfig = null;
+            if(jobTemplateMap.containsKey("config")){
+                jobTemplateConfig = jobTemplateMap.get("config").toString();
+            }
+            HashMap<String, Object> jobConfigMap = new HashMap<>(streamJobConfService.getJobConfig(jobId));
+            if (jobTemplateConfig != null) {
+                jobConfigMap.put("template", jobTemplateConfig);
+            }
+            result.setData(jobConfigMap);
+
         } catch (Exception e) {
             String message = "Fail to view StreamJob configuration(查看任务配置失败), message: " + e.getMessage();
             LOG.warn(message, e);

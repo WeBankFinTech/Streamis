@@ -79,7 +79,7 @@ trait StreamJobService {
    * @param updateVersion should update version
    * @return
    */
-  def deployStreamJob(streamJob: StreamJob, metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean, source: String = null): StreamJobVersion
+  def deployStreamJob(streamJob: StreamJob, metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean, jobTemplateContent: String, source: String = null): StreamJobVersion
 
   /**
    * Upload job
@@ -181,4 +181,6 @@ trait StreamJobService {
   def getEnableStatus(jobId: Long): Boolean
 
   def getJobFileById(id: Long): StreamJobVersionFiles
+
+  def getLatestJobTemplate(projectName: String): String
 }
