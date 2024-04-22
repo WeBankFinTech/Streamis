@@ -287,8 +287,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     val jobTemplate: String = if (streamTask.getStatus.equals(JobConf.FLINK_JOB_STATUS_RUNNING.getValue)) {
       streamJobMapper.getLatestJobTemplate(projectName)
     } else {
-      val templateId: Long = streamJobMapper.getJobTemplateJsonId(jobId, version)
-      streamJobMapper.getJobTemplateJson(templateId)
+      streamJobMapper.getJobTemplateJson(streamTask.getTemplateId)
     }
     jobContentParsers.find(_.canParse(job, jobVersion)).map(_.parseTo(job, jobVersion,jobTemplate))
       .getOrElse(throw new JobFetchErrorException(30030, s"Cannot find a JobContentParser to parse jobContent."))

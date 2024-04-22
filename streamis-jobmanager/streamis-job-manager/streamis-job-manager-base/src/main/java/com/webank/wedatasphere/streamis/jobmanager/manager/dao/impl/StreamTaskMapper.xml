@@ -32,6 +32,8 @@
         <result column="server_instance" property="serverInstance" jdbcType="VARCHAR"/>
         <result column="linkis_job_info" property="linkisJobInfo" jdbcType="LONGVARCHAR"/>
         <result column="job_start_config" property="jobStartConfig" jdbcType="LONGNVARCHAR" />
+        <result column="solution" property="solution" jdbcType="LONGNVARCHAR" />
+        <result column="template_id" property="templateId" jdbcType="BIGINT"/>
     </resultMap>
 
     <resultMap id="StreamTaskStatusInfo" type="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask">
@@ -47,8 +49,8 @@
 
     <insert id="insertTask" useGeneratedKeys="true" keyProperty="id"
             parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask">
-        INSERT INTO  linkis_stream_task(`job_version_id`,`job_id`,`version`,`status`,`start_time`,`last_update_time`,`err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`,`server_instance`,`job_start_config`,`solution`)
-        VALUES(#{jobVersionId},#{jobId},#{version},#{status},#{startTime},#{lastUpdateTime},#{errDesc},#{submitUser},#{linkisJobId},#{linkisJobInfo},#{serverInstance},#{jobStartConfig},#{solution})
+        INSERT INTO  linkis_stream_task(`job_version_id`,`job_id`,`version`,`status`,`start_time`,`last_update_time`,`err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`,`server_instance`,`job_start_config`,`solution`,`templateId`)
+        VALUES(#{jobVersionId},#{jobId},#{version},#{status},#{startTime},#{lastUpdateTime},#{errDesc},#{submitUser},#{linkisJobId},#{linkisJobInfo},#{serverInstance},#{jobStartConfig},#{solution},#{templateId})
     </insert>
 
     <update id="updateTask">
@@ -147,7 +149,7 @@
     <select id="getLatestByJobId" resultMap="StreamTaskMap">
         SELECT `id`,`job_version_id`,`job_id`,`version`, status
         ,`start_time`,`last_update_time`,
-        `err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`,`solution`
+        `err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`,`solution`,`template_id`
         FROM linkis_stream_task where `job_id`=#{jobId} ORDER BY start_time DESC, id DESC LIMIT 1
     </select>
 
@@ -210,5 +212,9 @@
         <foreach collection="jobIds" item="item" open="(" close=")" separator=",">
             #{item}
         </foreach> GROUP BY job_id)
+    </select>
+
+    <select id="getJobTemplateByProject" resultMap="StreamTaskMap">
+        SELECT id FROM linkis_stream_project_job_template WHERE project_name=#{projectName} ORDER BY version desc LIMIT 1
     </select>
 </mapper>

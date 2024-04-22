@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component
 @Component
 class FlinkWorkflowJobContentParser extends FlinkSQLJobContentParser {
 
-  override def parseTo(job: StreamJob, jobVersion: StreamJobVersion): StreamisTransformJobContent = super.parseTo(job, jobVersion) match {
+  override def parseTo(job: StreamJob, jobVersion: StreamJobVersion,jobTemplate: String): StreamisTransformJobContent = super.parseTo(job, jobVersion,jobTemplate) match {
     case transformJobContent: StreamisSqlTransformJobContent =>
       val workflowJobContent = new StreamisWorkflowTransformJobContent
       val jobContent = JsonUtils.jackson.readValue(jobVersion.getJobContent, classOf[util.Map[String, Object]])

@@ -38,7 +38,7 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
 
   protected def createStreamisTransformJob(): StreamisTransformJobImpl = new StreamisTransformJobImpl
 
-  protected def createStreamisTransformJobContent(transformJob: StreamisTransformJob): StreamisTransformJobContent
+  protected def createStreamisTransformJobContent(transformJob: StreamisTransformJob,jobTemplate: String): StreamisTransformJobContent
 
   override def build(streamJob: StreamJob): StreamisTransformJob = {
     val transformJob = createStreamisTransformJob()
@@ -53,7 +53,8 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
     val streamJobVersions = streamJobMapper.getJobVersions(streamJob.getId)
     // 无需判断streamJobVersions是否非空，因为TaskService已经判断了
     transformJob.setStreamJobVersion(streamJobVersions.get(0))
-    transformJob.setStreamisTransformJobContent(createStreamisTransformJobContent(transformJob))
+    val jobTemplate: String = streamJobMapper.getLatestJobTemplate(streamJob.getProjectName)
+    transformJob.setStreamisTransformJobContent(createStreamisTransformJobContent(transformJob,jobTemplate))
     transformJob
   }
 

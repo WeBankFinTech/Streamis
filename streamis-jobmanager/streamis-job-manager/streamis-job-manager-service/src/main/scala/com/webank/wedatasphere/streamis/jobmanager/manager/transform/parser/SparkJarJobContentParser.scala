@@ -25,7 +25,7 @@ class SparkJarJobContentParser extends AbstractJobContentParser {
   override val jobType: String = "spark.jar"
   override val runType: RunType = RunType.JAR
 
-  override def parseTo(job: StreamJob, jobVersion: StreamJobVersion): StreamisTransformJobContent = {
+  override def parseTo(job: StreamJob, jobVersion: StreamJobVersion,jobTemplate: String): StreamisTransformJobContent = {
     val createFile: String => StreamisFile = fileName => {
       val file = new StreamJobVersionFiles()
       file.setFileName(fileName)
