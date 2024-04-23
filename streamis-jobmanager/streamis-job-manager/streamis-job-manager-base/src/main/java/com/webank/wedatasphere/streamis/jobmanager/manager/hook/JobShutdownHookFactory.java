@@ -1,5 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.hook;
 
+import com.sun.deploy.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +34,14 @@ public class JobShutdownHookFactory {
         List<JobShutdownHook> hooks = new ArrayList<>();
         hookMap.values().stream().forEach(hook -> hooks.add(hook));
         return hooks;
+    }
+
+    public static JobShutdownHook getHookByName(String hookName) {
+        if (StringUtils.isNotBlank(hookName)) {
+            return hookMap.getOrDefault(hookName, null);
+        } else {
+            return null;
+        }
     }
 
 }
