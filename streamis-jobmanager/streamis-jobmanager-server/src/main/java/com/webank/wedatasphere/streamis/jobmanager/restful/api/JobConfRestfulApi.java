@@ -113,13 +113,13 @@ public class JobConfRestfulApi {
                 return Message.error("Have no permission to get Job details of StreamJob [" + jobId + "]");
             }
             String jobTemplate = streamJobService.getLatestJobTemplate(streamJob.getProjectName());
-            Map<String,Object> jobTemplateMap = JobContentUtils.getMap(jobTemplate);
             Map<String,Object> jobTemplateConfig = null;
-            if (jobTemplateMap.containsKey("jobConfig") && jobTemplateMap.get("jobConfig") instanceof Map<?, ?>) {
-                jobTemplateConfig = (Map<String, Object>) jobTemplateMap.get("jobConfig");
-            }
-//            HashMap<String, Object> jobConfigMap = new HashMap<>(streamJobConfService.getJobConfig(jobId) != null ? streamJobConfService.getJobConfig(jobId) : new HashMap<String, Object>());
-            HashMap<String, Object> jobConfigMap = new HashMap<>(streamJobConfService.getJobConfig(jobId));
+            if(StringUtils.isNotBlank(jobTemplate)){
+                Map<String,Object> jobTemplateMap = JobContentUtils.getMap(jobTemplate);
+                if (jobTemplateMap.containsKey("jobConfig") && jobTemplateMap.get("jobConfig") instanceof Map<?, ?>) {
+                    jobTemplateConfig = (Map<String, Object>) jobTemplateMap.get("jobConfig");
+                }
+            }            HashMap<String, Object> jobConfigMap = new HashMap<>(streamJobConfService.getJobConfig(jobId));
             if (jobTemplateConfig != null) {
                 jobConfigMap.put("template", jobTemplateConfig);
             }
