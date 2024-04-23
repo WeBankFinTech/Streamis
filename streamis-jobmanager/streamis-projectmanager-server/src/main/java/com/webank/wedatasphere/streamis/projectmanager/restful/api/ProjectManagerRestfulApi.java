@@ -26,7 +26,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.Proje
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.ReaderUtils;
-import com.webank.wedatasphere.streamis.jobmanager.service.HighAvailableService;
+
 import com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles;
 import com.webank.wedatasphere.streamis.projectmanager.service.ProjectManagerService;
 import org.apache.commons.io.IOUtils;
