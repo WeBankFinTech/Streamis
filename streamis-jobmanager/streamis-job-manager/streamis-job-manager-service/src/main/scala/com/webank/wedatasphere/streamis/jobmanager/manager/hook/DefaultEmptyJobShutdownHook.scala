@@ -6,13 +6,13 @@ import org.apache.linkis.common.utils.Logging
 import java.util
 
 class DefaultEmptyJobShutdownHook extends StreamisJobShutdowHook with Logging {
-  override def doBeforeJobShutdown(jobId: String, projectName: String, jobName: String, timeoutMills: Int, params: util.Map[String, AnyRef]): Unit = {
+  override def doBeforeJobShutdown(jobId: String, projectName: String, jobName: String, timeoutMills: Long, params: util.Map[String, AnyRef]): Unit = {
     Thread.sleep(1000L)
     logger.info(s"hook : ${getName} called doBeforeJobShutdown(${jobId}, ${projectName}, ${jobName}, ${timeoutMills}), params : " +
       JobUtils.gson.toJson(params))
   }
 
-  override def doAfterJobShutdown(jobId: String, projectName: String, jobName: String, timeoutMills: Int, params: util.Map[String, AnyRef]): Unit = {
+  override def doAfterJobShutdown(jobId: String, projectName: String, jobName: String, timeoutMills: Long, params: util.Map[String, AnyRef]): Unit = {
     Thread.sleep(1000L)
     logger.info(s"hook : ${getName} called doAfterJobShutdown(${jobId}, ${projectName}, ${jobName}, ${timeoutMills}), params : " +
       JobUtils.gson.toJson(params))
