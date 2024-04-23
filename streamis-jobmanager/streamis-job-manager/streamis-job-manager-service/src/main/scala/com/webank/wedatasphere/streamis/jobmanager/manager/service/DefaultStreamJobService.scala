@@ -519,6 +519,10 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     streamJobMapper.getLatestJobTemplate(projectName)
   }
 
+  override def getJobTemplateById(id: Long): JobTemplateFiles = {
+    streamJobMapper.getJobTemplate(id)
+  }
+
 }
 
 object DefaultStreamJobService{
