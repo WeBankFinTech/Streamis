@@ -963,12 +963,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     parsedConfigJson
   }
 
-  override def generateJobTemplate(job: StreamJob, jobVersion: StreamJobVersion,jobTemplate: JobTemplateFiles): String = {
-    val configJson = JobUtils.gson.toJson(jobTemplate.getMetaJson)
-    val jsonObj = new JsonParser().parse(configJson).getAsJsonObject
-    if (jsonObj.has(JobConstrants.FIELD_WORKSPACE_NAME)) {
-      jsonObj.remove(JobConstrants.FIELD_WORKSPACE_NAME)
-    }
+  override def generateJobTemplate(jobTemplate: JobTemplateFiles): String = {
+    val jsonObj = new JsonParser().parse(jobTemplate.getMetaJson).getAsJsonObject
     if (jsonObj.has(JobConstrants.FIELD_METAINFO_NAME)) {
       jsonObj.remove(JobConstrants.FIELD_METAINFO_NAME)
     }

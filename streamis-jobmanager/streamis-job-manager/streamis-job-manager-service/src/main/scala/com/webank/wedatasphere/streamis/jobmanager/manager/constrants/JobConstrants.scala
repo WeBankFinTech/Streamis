@@ -13,4 +13,11 @@ object JobConstrants {
   val FIELD_WORKSPACE_NAME = "workspaceName"
 
   val FIELD_METAINFO_NAME = "metaInfo"
+
+  val FIELD_JOB_NAME = "jobName"
+
+  val FIELD_JOB_TYPE = "jobType"
+  val FIELD_JOB_TAG = "tags"
+  val FIELD_JOB_COMMENT = "comment"
+  val FIELD_JOB_DESCRIPTION = "description"
 }

@@ -82,7 +82,7 @@ class FlinkJarJobContentParser extends AbstractJobContentParser {
     val jobTemplateMapOption: Option[JobTemplateFiles] = Option(jobTemplate)
     jobTemplateMapOption match {
       case Some(jobTemplate) =>
-        val jobFinalTemplateJson = getFinalTemplate(job, jobVersion, jobTemplate)
+        val jobFinalTemplateJson = getFinalTemplate(jobTemplate)
         jobTemplate.setMetaJson(jobFinalTemplateJson)
         transformJobContent.setJobTemplate(jobTemplate)
       case None =>

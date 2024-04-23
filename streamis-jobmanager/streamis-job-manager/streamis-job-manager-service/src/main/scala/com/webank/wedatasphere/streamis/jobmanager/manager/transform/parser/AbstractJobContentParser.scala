@@ -117,8 +117,8 @@ abstract class AbstractJobContentParser extends JobContentParser with Logging {
 
   override def canParse(job: StreamJob, jobVersion: StreamJobVersion): Boolean = jobType == job.getJobType
 
-  protected def getFinalTemplate(job: StreamJob, jobVersion: StreamJobVersion, jobTemplate: JobTemplateFiles): String = {
-    streamTaskService.generateJobTemplate(job,jobVersion,jobTemplate)
+  protected def getFinalTemplate(jobTemplate: JobTemplateFiles): String = {
+    streamTaskService.generateJobTemplate(jobTemplate)
   }
 
 //  protected def getJobTemplateFile(job: StreamJob, jobVersion: StreamJobVersion): JobTemplateFiles = {
