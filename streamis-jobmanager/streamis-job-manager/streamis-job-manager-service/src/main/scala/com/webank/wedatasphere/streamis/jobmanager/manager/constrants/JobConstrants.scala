@@ -13,4 +13,6 @@ object JobConstrants {
   val FIELD_WORKSPACE_NAME = "workspaceName"
 
   val FIELD_METAINFO_NAME = "metaInfo"
+
+  val FLINK_APPLICATION_SEPARATE = "#"
 }
