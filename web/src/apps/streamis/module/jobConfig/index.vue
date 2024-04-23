@@ -7,10 +7,11 @@
           <div>
             <Form v-if="valueMap[part.key]" :model="valueMap[part.key]" :ref="part.key" :rules="rule[part.key]">
               <FormItem v-for="(def, index) in part.child_def" :key="index" :label="def.name" :prop="def.key" :data-prop="def.key">
-                <Input v-if="def.type === 'INPUT' || def.type === 'NUMBER'" v-model="valueMap[part.key][def.key]" />
-                <!-- <Input v-else-if="def.type === 'NUMBER'" v-model="valueMap[part.key][def.key]" type="number" /> -->
-                <Select
+                <Input :disabled="!editable" v-if="def.type === 'INPUT' || def.type === 'NUMBER'" v-model="valueMap[part.key][def.key]" />
+                <!-- <Input :disabled="!editable" v-else-if="def.type === 'NUMBER'" v-model="valueMap[part.key][def.key]" type="number" /> -->
+                <Select 
                   v-else
+                  :disabled="!editable"
                   v-model="valueMap[part.key][def.key]"
                   class="select"
                 >
@@ -35,14 +36,14 @@
                   <FormItem>
                     <div class="inputWrap">
                       <div class="flinkIndex">{{ index + 1 }}</div>
-                      <Input v-model="item.key" />
+                      <Input :disabled="!editable" v-model="item.key" />
                       <div class="equity">=</div>
                     </div>
                   </FormItem>
                 </Col>
                 <Col span="5">
                   <FormItem>
-                    <Input v-model="item.value" />
+                    <Input :disabled="!editable" v-model="item.value" />
                   </FormItem>
                 </Col>
                 <Col span="10">
@@ -97,11 +98,13 @@ export default {
       saveLoading: false,
       rule: {},
       enable: this.$route.params.enable, // 任务是否启用
+      editable: true,
     }
   },
   mounted() {
     this.getUsers()
     this.getConfigs()
+    this.editable = window.enableUpload
   },
   methods: {
     getUsers() {
