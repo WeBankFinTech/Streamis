@@ -18,7 +18,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamTask}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion, StreamTask}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{ExecResultVo, JobDetailsVo, JobProgressVo, JobStatusVo, PauseResultVo, StreamTaskListVo, StreamTaskPageInfo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.RealtimeLogEntity
 
@@ -190,4 +190,5 @@ trait StreamTaskService {
 
   def errorCodeMatching(jobId: Long, streamTask: StreamTask): Future[_]
 
+  def generateJobStartConfig(job: StreamJob, jobVersion: StreamJobVersion, creator: String): String
 }

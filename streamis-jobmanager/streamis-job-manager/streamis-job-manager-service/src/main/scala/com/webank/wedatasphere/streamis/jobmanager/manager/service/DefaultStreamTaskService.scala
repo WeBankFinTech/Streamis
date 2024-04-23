@@ -937,7 +937,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     }
   }
 
-  def generateJobStartConfig(job: StreamJob, jobVersion: StreamJobVersion, creator: String): String = {
+  override def generateJobStartConfig(job: StreamJob, jobVersion: StreamJobVersion, creator: String): String = {
     val metaJsonInfo = new MetaJsonInfo
 //    metaJsonInfo.setWorkspaceName(job.getWorkspaceName)
     metaJsonInfo.setProjectName(job.getProjectName)

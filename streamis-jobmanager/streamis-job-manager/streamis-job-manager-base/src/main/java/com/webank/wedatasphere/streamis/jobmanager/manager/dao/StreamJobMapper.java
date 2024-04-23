@@ -97,9 +97,9 @@ public interface StreamJobMapper {
 
     void updateJobTemplateById (JobTemplateFiles jobTemplateFiles);
 
-    String getLatestJobTemplate (String projectName);
+    String getLatestJobTemplate (@Param("projectName")String projectName);
 
-    JobTemplateFiles getLatestJobTemplateFile (String projectName);
+    JobTemplateFiles getLatestJobTemplateFile (@Param("projectName")String projectName);
 
-    Long getJobTemplateByProject(@Param("projectName") String projectName);
+    Long getJobTemplateByProject(@Param("projectName")String projectName);
 }
