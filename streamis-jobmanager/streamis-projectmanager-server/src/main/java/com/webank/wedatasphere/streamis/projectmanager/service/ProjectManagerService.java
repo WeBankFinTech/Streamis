@@ -53,4 +53,6 @@ public interface ProjectManagerService {
     String getProjectNameByFileId(Long id);
 
     void uploadJobTemplate(String username, String fileName, String filePath, String projectName,String version) throws FileException, IOException;
+
+    Boolean confirmToken(String token);
 }

@@ -159,4 +159,8 @@ object JobConf {
   val PRODUCT_NAME_KEY: CommonVars[String] = CommonVars("wds.linkis.flink.product.key", "wds.linkis.flink.product")
 
   val PRODUCT_NAME_SWITCH: CommonVars[Boolean] = CommonVars("wds.linkis.flink.product.key.enable", true)
+
+  val HIGHAVAILABLE_TOKEN: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.token", "streamis0.3.8")
+
+  val STANDARD_AUTHENTICATION_KEY: CommonVars[Boolean] = CommonVars("wds.streamis.standard.authentication.key", true)
 }

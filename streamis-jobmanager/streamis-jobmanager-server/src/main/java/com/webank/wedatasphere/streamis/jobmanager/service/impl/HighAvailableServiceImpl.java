@@ -12,6 +12,7 @@ import com.webank.wedatasphere.streamis.jobmanager.service.HighAvailableService;
 import com.webank.wedatasphere.streamis.jobmanager.utils.JsonUtil;
 import com.webank.wedatasphere.streamis.jobmanager.vo.HighAvailableMsg;
 import org.apache.linkis.common.utils.Utils;
+import org.apache.linkis.server.BDPJettyServerHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import javax.validation.executable.ValidateOnExecution;
 import java.net.InetAddress;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -66,5 +68,24 @@ public class HighAvailableServiceImpl implements HighAvailableService {
             return msg.getWhetherManager();
         }
         return true;
+    }
+
+    @Override
+    public Boolean confirmToken(String source){
+        Optional<String> sourceOption = Optional.ofNullable(source);
+        if(sourceOption.isPresent() && JsonUtil.isJson(sourceOption.get())) {
+            String sourceStr = sourceOption.get();
+            Map sourceMap = BDPJettyServerHelper.gson().fromJson(sourceStr, Map.class);
+            if (sourceMap.containsKey("source")) {
+                String sourceValue = sourceMap.get("source").toString();
+                if (sourceValue.equals(JobConf.HIGHAVAILABLE_SOURCE().getValue())) {
+                    if (sourceMap.containsKey("token")) {
+                        String tokenContent = sourceMap.get("token").toString();
+                        return tokenContent.equals(JobConf.HIGHAVAILABLE_TOKEN().getValue());
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

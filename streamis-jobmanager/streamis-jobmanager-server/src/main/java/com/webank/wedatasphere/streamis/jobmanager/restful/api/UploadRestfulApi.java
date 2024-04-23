@@ -17,12 +17,15 @@ package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.BMLService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.ZipHelper;
+import com.webank.wedatasphere.streamis.jobmanager.service.HighAvailableService;
+import com.webank.wedatasphere.streamis.jobmanager.utils.JsonUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -48,6 +51,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -65,6 +69,9 @@ public class UploadRestfulApi {
 
     @Autowired
     private ProjectPrivilegeService projectPrivilegeService;
+
+    @Autowired
+    private HighAvailableService highAvailableService;
 
     private static final String NO_OPERATION_PERMISSION_MESSAGE = "the current user has no operation permission";
 
@@ -87,6 +94,11 @@ public class UploadRestfulApi {
         LOG.info("Try to upload a StreamJob zip {} to project {}.", fileName, projectName);
         if(!ZipHelper.isZip(fileName)){
             throw JobExceptionManager.createException(30302);
+        }
+        if ((Boolean) JobConf.STANDARD_AUTHENTICATION_KEY().getHotValue()){
+            if (!highAvailableService.confirmToken(source)){
+                return Message.error("As this job is not from standard release, it is not allowed to upload");
+            }
         }
         InputStream is = null;
         OutputStream os = null;

@@ -10,4 +10,6 @@ public interface HighAvailableService {
     HighAvailableMsg getHighAvailableMsg();
 
     Boolean canBeStarted(Long jobId);
+
+    Boolean confirmToken(String token);
 }
