@@ -16,7 +16,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import com.webank.wedatasphere.streamis.errorcode.entity.StreamErrorCode
-
 import com.google.gson.JsonParser
 
 import java.util
@@ -36,7 +35,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.E
 import com.webank.wedatasphere.streamis.jobmanager.manager.SpringContextHolder
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo._
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{MetaJsonInfo, StreamJob, StreamJobMode, StreamJobVersion, StreamTask}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{JobTemplateFiles, MetaJsonInfo, StreamJob, StreamJobMode, StreamJobVersion, StreamTask}
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.FutureScheduler
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events.AbstractStreamisSchedulerEvent.StreamisEventInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events.StreamisPhaseInSchedulerEvent
@@ -961,6 +960,19 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     }
     val parsedConfigJson = jsonObj.toString
     logger.debug(s"new task with creator : ${creator} configJson: ${parsedConfigJson}")
+    parsedConfigJson
+  }
+
+  override def generateJobTemplate(job: StreamJob, jobVersion: StreamJobVersion,jobTemplate: JobTemplateFiles): String = {
+    val configJson = JobUtils.gson.toJson(jobTemplate.getMetaJson)
+    val jsonObj = new JsonParser().parse(configJson).getAsJsonObject
+    if (jsonObj.has(JobConstrants.FIELD_WORKSPACE_NAME)) {
+      jsonObj.remove(JobConstrants.FIELD_WORKSPACE_NAME)
+    }
+    if (jsonObj.has(JobConstrants.FIELD_METAINFO_NAME)) {
+      jsonObj.remove(JobConstrants.FIELD_METAINFO_NAME)
+    }
+    val parsedConfigJson = jsonObj.toString
     parsedConfigJson
   }
 }

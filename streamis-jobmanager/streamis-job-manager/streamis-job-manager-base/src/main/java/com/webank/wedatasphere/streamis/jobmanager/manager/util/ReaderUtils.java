@@ -332,7 +332,9 @@ public class ReaderUtils {
             String path = inputPath.replace(JSON_TYPE, "");
             MetaJsonInfo metaJsonInfo = parseJson(path,projectName);
             if ((metaJsonInfo.getJobName() == null || metaJsonInfo.getJobName().isEmpty()) &&
-                    (metaJsonInfo.getJobType() == null || metaJsonInfo.getJobType().isEmpty())) {
+                    (metaJsonInfo.getJobType() == null || metaJsonInfo.getJobType().isEmpty()) &&
+                    (metaJsonInfo.getTags() == null || metaJsonInfo.getTags().isEmpty()) &&
+                    (metaJsonInfo.getDescription() == null || metaJsonInfo.getDescription().isEmpty())) {
                 return true;
             }
         }
