@@ -16,9 +16,11 @@
 package com.webank.wedatasphere.streamis.projectmanager.restful.api;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileExceptionManager;
@@ -258,6 +260,38 @@ public class ProjectManagerRestfulApi {
             os.flush();
         } catch (Exception e) {
             LOG.error("download file: {} failed , message is : {}", file.getFileName(), e);
+            return Message.error(e.getMessage());
+        }
+        return Message.ok();
+    }
+
+    @RequestMapping(path = "/files/template", method = RequestMethod.GET)
+    public Message downloadTemplate( HttpServletRequest req, HttpServletResponse response,
+                             @RequestParam(value = "id") Long id,
+                             @RequestParam(value = "projectName",required = false)String projectName){
+        String userName = ModuleUserUtils.getOperationUser(req, "download job");
+        if (org.apache.commons.lang.StringUtils.isBlank(userName)) return Message.error("current user has no permission");
+        JobTemplateFiles file = streamJobService.getJobTemplateById(id);
+        if (file == null) {
+            return Message.error("no such file in this project");
+        }
+        if (StringUtils.isBlank(file.getStorePath())) {
+            return Message.error("storePath is null");
+        }
+        response.setContentType("application/x-download");
+        response.setHeader("content-Disposition", "attachment;filename=" + file.getName());
+
+        try (InputStream is = projectManagerService.downloadTemplate(file,userName);
+             OutputStream os = response.getOutputStream()
+        ) {
+            int len = 0;
+            byte[] arr = new byte[2048];
+            while ((len = is.read(arr)) > 0) {
+                os.write(arr, 0, len);
+            }
+            os.flush();
+        } catch (Exception e) {
+            LOG.error("download file: {} failed , message is : {}", file.getName(), e);
             return Message.error(e.getMessage());
         }
         return Message.ok();

@@ -106,6 +106,11 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
         return bmlService.get(file.getCreateBy(), map.get("resourceId"), map.get("version"));
     }
 
+    public InputStream downloadTemplate(JobTemplateFiles file,String userName) throws JsonProcessingException {
+        Map<String,String> map = JsonUtils.jackson().readValue(file.getStorePath(), Map.class);
+        return bmlService.get(userName, map.get("resourceId"), map.get("version"));
+    }
+
     @Override
     public ProjectFiles getById(Long id) {
         return projectManagerMapper.getById(id);

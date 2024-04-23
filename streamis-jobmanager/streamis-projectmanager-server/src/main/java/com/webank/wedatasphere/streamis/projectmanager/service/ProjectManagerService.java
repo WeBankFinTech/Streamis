@@ -16,6 +16,7 @@
 package com.webank.wedatasphere.streamis.projectmanager.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles;
@@ -39,6 +40,8 @@ public interface ProjectManagerService {
     List<? extends StreamisFile> listFileVersions(String projectName, String fileName);
 
     InputStream download(StreamisFile projectFiles) throws JsonProcessingException;
+
+    InputStream downloadTemplate(JobTemplateFiles jobTemplateFiles,String userName) throws JsonProcessingException;
 
     ProjectFiles getById(Long id);
 
