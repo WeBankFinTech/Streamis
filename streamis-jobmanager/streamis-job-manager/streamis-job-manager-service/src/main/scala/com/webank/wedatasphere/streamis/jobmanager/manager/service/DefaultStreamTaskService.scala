@@ -16,7 +16,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import com.webank.wedatasphere.streamis.errorcode.entity.StreamErrorCode
-
 import com.google.gson.JsonParser
 
 import java.util
@@ -36,7 +35,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.E
 import com.webank.wedatasphere.streamis.jobmanager.manager.SpringContextHolder
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo._
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{MetaJsonInfo, StreamJob, StreamJobMode, StreamJobVersion, StreamTask}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{JobTemplateFiles, MetaJsonInfo, StreamJob, StreamJobMode, StreamJobVersion, StreamTask}
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.FutureScheduler
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events.AbstractStreamisSchedulerEvent.StreamisEventInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.events.StreamisPhaseInSchedulerEvent
@@ -606,6 +605,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
               logger.info(s"Produce a new StreamTask [jobId: $jobId, version: ${jobVersion.getVersion}, creator: $creator, status: ${streamTask.getStatus}]")
               val jobStartConfig = generateJobStartConfig(job, jobVersion, creator)
               streamTask.setJobStartConfig(jobStartConfig)
+              val jobTemplateId = streamJobMapper.getJobTemplateByProject(job.getProjectName)
+              streamTask.setTemplateId(jobTemplateId)
               streamTaskMapper.insertTask(streamTask)
               streamTask
             } else {
@@ -935,7 +936,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     }
   }
 
-  def generateJobStartConfig(job: StreamJob, jobVersion: StreamJobVersion, creator: String): String = {
+  override def generateJobStartConfig(job: StreamJob, jobVersion: StreamJobVersion, creator: String): String = {
     val metaJsonInfo = new MetaJsonInfo
 //    metaJsonInfo.setWorkspaceName(job.getWorkspaceName)
     metaJsonInfo.setProjectName(job.getProjectName)
@@ -959,6 +960,15 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     }
     val parsedConfigJson = jsonObj.toString
     logger.debug(s"new task with creator : ${creator} configJson: ${parsedConfigJson}")
+    parsedConfigJson
+  }
+
+  override def generateJobTemplate(jobTemplate: JobTemplateFiles): String = {
+    val jsonObj = new JsonParser().parse(jobTemplate.getMetaJson).getAsJsonObject
+    if (jsonObj.has(JobConstrants.FIELD_METAINFO_NAME)) {
+      jsonObj.remove(JobConstrants.FIELD_METAINFO_NAME)
+    }
+    val parsedConfigJson = jsonObj.toString
     parsedConfigJson
   }
 }

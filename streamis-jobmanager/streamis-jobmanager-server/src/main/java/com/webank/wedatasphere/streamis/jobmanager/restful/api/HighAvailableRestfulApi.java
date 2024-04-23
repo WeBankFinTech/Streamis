@@ -41,12 +41,21 @@ public class HighAvailableRestfulApi {
     @RequestMapping(path = "/getHAMsg", method = RequestMethod.GET)
     public Message getClusterMsg(HttpServletRequest request){
         Message result = Message.ok("success");
-        String userName = ModuleUserUtils.getOperationUser(request, "query job config json");
+        String userName = ModuleUserUtils.getOperationUser(request, "get cluster msg");
         if (StringUtils.isBlank(userName)) return Message.error("current user has no permission");
         HighAvailableMsg msg = highAvailableService.getHighAvailableMsg();
         result.data("clusterName",msg.getClusterName());
         result.data("clusterIp",msg.getNodeIp());
         result.data("whetherManager",msg.getWhetherManager());
+        return result;
+    }
+
+    @RequestMapping(path = "/username", method = RequestMethod.GET)
+    public Message getUserName(HttpServletRequest request){
+        Message result = Message.ok("success");
+        String userName = ModuleUserUtils.getOperationUser(request, "get user name");
+        if (StringUtils.isBlank(userName)) return Message.error("current user has no permission");
+        result.data("userName",userName);
         return result;
     }
 }

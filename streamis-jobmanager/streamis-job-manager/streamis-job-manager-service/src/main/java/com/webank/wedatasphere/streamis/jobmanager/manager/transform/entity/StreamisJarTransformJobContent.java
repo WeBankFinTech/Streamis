@@ -15,8 +15,10 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity;
 
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by enjoyyin on 2021/9/23.
@@ -31,8 +33,15 @@ public class StreamisJarTransformJobContent implements StreamisTransformJobConte
     private List<StreamisFile> dependencyJars;
     private List<String> hdfsJars;
     private List<StreamisFile> resources;
-
     private String source;
+    private JobTemplateFiles jobTemplate;
+    public JobTemplateFiles getJobTemplate() {
+        return jobTemplate;
+    }
+
+    public void setJobTemplate(JobTemplateFiles jobTemplate) {
+        this.jobTemplate = jobTemplate;
+    }
 
     public StreamisFile getMainClassJar() {
         return mainClassJar;

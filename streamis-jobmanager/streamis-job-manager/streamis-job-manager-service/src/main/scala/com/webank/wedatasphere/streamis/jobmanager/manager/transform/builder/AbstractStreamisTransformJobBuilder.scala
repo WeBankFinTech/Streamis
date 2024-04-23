@@ -21,7 +21,7 @@ import org.apache.linkis.common.conf.CommonVars
 import org.apache.linkis.manager.label.entity.engine.RunType.RunType
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{JobTemplateFiles, StreamJob}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.StreamisTransformJobBuilder
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisJobConnect, StreamisJobConnectImpl, StreamisJobEngineConnImpl, StreamisTransformJob, StreamisTransformJobContent, StreamisTransformJobImpl}
 import org.springframework.beans.factory.annotation.Autowired
@@ -38,7 +38,7 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
 
   protected def createStreamisTransformJob(): StreamisTransformJobImpl = new StreamisTransformJobImpl
 
-  protected def createStreamisTransformJobContent(transformJob: StreamisTransformJob): StreamisTransformJobContent
+  protected def createStreamisTransformJobContent(transformJob: StreamisTransformJob,jobTemplate: JobTemplateFiles): StreamisTransformJobContent
 
   override def build(streamJob: StreamJob): StreamisTransformJob = {
     val transformJob = createStreamisTransformJob()
@@ -53,7 +53,8 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
     val streamJobVersions = streamJobMapper.getJobVersions(streamJob.getId)
     // 无需判断streamJobVersions是否非空，因为TaskService已经判断了
     transformJob.setStreamJobVersion(streamJobVersions.get(0))
-    transformJob.setStreamisTransformJobContent(createStreamisTransformJobContent(transformJob))
+    val jobTemplate = streamJobMapper.getLatestJobTemplateFile(streamJob.getProjectName)
+    transformJob.setStreamisTransformJobContent(createStreamisTransformJobContent(transformJob,jobTemplate))
     transformJob
   }
 

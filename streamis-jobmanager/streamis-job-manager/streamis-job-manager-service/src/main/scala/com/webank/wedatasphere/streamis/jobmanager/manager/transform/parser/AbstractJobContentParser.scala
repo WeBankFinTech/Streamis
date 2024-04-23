@@ -15,6 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.parser
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobExecuteErrorException
 import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants.{TYPE_JOB, TYPE_PROJECT}
 
@@ -23,8 +24,8 @@ import java.util
 import org.apache.linkis.common.conf.Configuration
 import org.apache.linkis.common.utils.{JsonUtils, Logging}
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion, StreamisFile}
-import com.webank.wedatasphere.streamis.jobmanager.manager.service.{BMLService, StreamiFileService}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{JobTemplateFiles, StreamJob, StreamJobVersion, StreamisFile}
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.{BMLService, StreamTaskService, StreamiFileService}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.StringUtils
@@ -40,6 +41,7 @@ abstract class AbstractJobContentParser extends JobContentParser with Logging {
   @Autowired private var streamJobMapper: StreamJobMapper = _
   @Autowired private var bmlService: BMLService = _
   @Autowired private var streamiFileService: StreamiFileService = _
+  @Autowired private var streamTaskService: StreamTaskService = _
 
   private def findFromProject(projectName: String, fileName: String): StreamisFile = fileName match {
     case AbstractJobContentParser.PROJECT_FILE_REGEX(name, version) =>
@@ -114,6 +116,24 @@ abstract class AbstractJobContentParser extends JobContentParser with Logging {
     IOUtils.toString(readBMLFile(userName, resourceId, version), Configuration.BDP_ENCODING.getValue)
 
   override def canParse(job: StreamJob, jobVersion: StreamJobVersion): Boolean = jobType == job.getJobType
+
+  protected def getFinalTemplate(jobTemplate: JobTemplateFiles): String = {
+    streamTaskService.generateJobTemplate(jobTemplate)
+  }
+
+//  protected def getJobTemplateFile(job: StreamJob, jobVersion: StreamJobVersion): JobTemplateFiles = {
+//    val projectName: String = job.getProjectName
+////    val streamTask = streamTaskMapper.getLatestByJobId(jobId)
+////    val jobTemplate: String = if (null != streamTask) {
+////      if (streamTask.getStatus.equals(JobConf.FLINK_JOB_STATUS_RUNNING.getValue)) {
+////        streamJobMapper.getJobTemplateJson(streamTask.getTemplateId)
+////      } else {
+////        streamJobMapper.getLatestJobTemplate(projectName)
+////      }
+////    } else {
+////      streamJobMapper.getLatestJobTemplate(projectName)
+////    }
+//  }
 
 }
 object AbstractJobContentParser {

@@ -32,7 +32,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.service.DefaultStream
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.{JobUtils, JsonUtils, ReaderUtils, ZipHelper}
-import com.webank.wedatasphere.streamis.jobmanager.manager.utils.SourceUtils
+import com.webank.wedatasphere.streamis.jobmanager.manager.utils.{JobContentUtils, SourceUtils}
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.lang3.ObjectUtils
 import org.apache.linkis.common.exception.ErrorException
@@ -155,14 +155,24 @@ class DefaultStreamJobService extends StreamJobService with Logging {
 
 
   override def deployStreamJob(streamJob: StreamJob,
-                               metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean, source: String = null): StreamJobVersion = {
+                               metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean,source: String = null, jobTemplateContent: String): StreamJobVersion = {
     if(StringUtils.isBlank(metaJsonInfo.getJobType))
       throw new JobCreateErrorException(30030, s"jobType is needed.")
     else if(!JobConf.SUPPORTED_JOB_TYPES.getValue.contains(metaJsonInfo.getJobType)) {
       throw new JobCreateErrorException(30030, s"jobType ${metaJsonInfo.getJobType} is not supported.")
     }
-    if(metaJsonInfo.getJobContent == null || metaJsonInfo.getJobContent.isEmpty)
-      throw new JobCreateErrorException(30030, s"jobContent is needed.")
+    var finalJobContent = jobTemplateContent
+    if ((metaJsonInfo.getJobContent == null || metaJsonInfo.getJobContent.isEmpty) &&
+      StringUtils.isBlank(jobTemplateContent)) {
+      throw new JobCreateErrorException(30030, s"jobContent is needed, both jobContent and jobTemplateContent are empty.")
+    } else if (StringUtils.isNotBlank(jobTemplateContent) &&
+      (metaJsonInfo.getJobContent != null && !metaJsonInfo.getJobContent.isEmpty)) {
+      val JobContentMap = JobContentUtils.getFinalJobContent(metaJsonInfo.getMetaInfo, jobTemplateContent)
+      finalJobContent = JobContentUtils.gson.toJson(JobContentMap)
+    } else if (StringUtils.isBlank(jobTemplateContent) &&
+      (metaJsonInfo.getJobContent != null && !metaJsonInfo.getJobContent.isEmpty)) {
+      finalJobContent = JobContentUtils.gson.toJson(metaJsonInfo.getJobContent)
+    }
     val jobVersion = new StreamJobVersion()
     val newStreamJob = new StreamJob()
     if (streamJob == null) {
@@ -201,7 +211,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
       logger.info("newStreamJob is {}", newStreamJob)
       jobVersion.setJobId(newStreamJob.getId)
     }
-    jobVersion.setJobContent(metaJsonInfo.getMetaInfo)
+    jobVersion.setJobContent(finalJobContent)
     jobVersion.setCreateBy(userName)
     jobVersion.setCreateTime(new Date)
     jobVersion.setSource(source)
@@ -219,6 +229,14 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     val inputPath = ZipHelper.unzip(inputZipPath)
     val readerUtils = new ReaderUtils
     val metaJsonInfo = readerUtils.parseJson(inputPath)
+    val jobTemplateContent: Option[String] = {
+      val jobTemplate = streamJobMapper.getLatestJobTemplate(projectName)
+      if (StringUtils.isNotBlank(jobTemplate)) {
+        Some(JobContentUtils.getJobTemplateContent(jobTemplate))
+      } else {
+        None
+      }
+    }
     if (StringUtils.isNotBlank(projectName) && !projectName.equals(metaJsonInfo.getProjectName)) {
       if (JobConf.PROJECT_NAME_STRICT_CHECK_SWITCH.getHotValue && StringUtils.isNotBlank(metaJsonInfo.getProjectName)){
         logger.error(s"The projectName [${projectName}] dose not match metaJson ProjectName [${metaJsonInfo.getProjectName}]")
@@ -230,11 +248,30 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     }
     val validateResult = validateJobDeploy(metaJsonInfo.getProjectName, metaJsonInfo.getJobName, userName)
     //  生成StreamJob，根据StreamJob生成StreamJobVersion
-    val version = deployStreamJob(validateResult.streamJob, metaJsonInfo, userName, validateResult.updateVersion, source)
+    val version = deployStreamJob(validateResult.streamJob, metaJsonInfo, userName, validateResult.updateVersion, source,jobTemplateContent.orNull)
     // Save the job configuration, lock the job again if exists
-    if (null != metaJsonInfo.getJobConfig){
-      this.streamJobConfService.saveJobConfig(version.getJobId, metaJsonInfo.getJobConfig.asInstanceOf[util.Map[String, AnyRef]])
+    val jobTemplateConfig: Option[String] = {
+      val jobTemplate = streamJobMapper.getLatestJobTemplate(projectName)
+      if (StringUtils.isNotBlank(jobTemplate)) {
+        Some(JobContentUtils.getJobTemplateConfig(jobTemplate))
+      } else {
+        None
+      }
     }
+    var finaljobTemplateConfig = jobTemplateConfig.orNull
+    if ((metaJsonInfo.getJobConfig == null || metaJsonInfo.getJobConfig.isEmpty) &&
+      StringUtils.isBlank(jobTemplateConfig.orNull)) {
+      throw new JobCreateErrorException(30030, s"jobConfig is needed, both jobConfig and jobTemplateConfig are empty.")
+    } else if (StringUtils.isNotBlank(jobTemplateConfig.orNull) &&
+      (metaJsonInfo.getJobConfig != null && !metaJsonInfo.getJobConfig.isEmpty)) {
+      val JobConfigMap = JobContentUtils.getFinalJobConfig(metaJsonInfo.getJobConfig, jobTemplateConfig.orNull)
+      finaljobTemplateConfig = JobContentUtils.gson.toJson(JobConfigMap)
+    } else if (StringUtils.isBlank(jobTemplateConfig.orNull) &&
+      (metaJsonInfo.getJobConfig != null && !metaJsonInfo.getJobConfig.isEmpty)) {
+      finaljobTemplateConfig = JobContentUtils.gson.toJson(metaJsonInfo.getJobConfig)
+    }
+    val finalJobConfig = JobContentUtils.getMap(finaljobTemplateConfig)
+    this.streamJobConfService.saveJobConfig(version.getJobId, finalJobConfig.asInstanceOf[util.Map[String, AnyRef]])
     //  上传所有非meta.json的文件
     uploadFiles(metaJsonInfo, version, inputZipPath)
     version
@@ -246,7 +283,16 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     val validateResult = validateJobDeploy(metaJsonInfo.getProjectName, metaJsonInfo.getJobName, userName)
     val readerUtils = new ReaderUtils
     metaJsonInfo.setMetaInfo(readerUtils.readAsJson(metaJsonInfo))
-    val version = deployStreamJob(validateResult.streamJob, metaJsonInfo, userName, validateResult.updateVersion)
+    val projectName = metaJsonInfo.getProjectName
+    val jobTemplateContent: Option[String] = {
+      val jobTemplate = streamJobMapper.getLatestJobTemplate(projectName)
+      if (StringUtils.isNotBlank(jobTemplate)) {
+        Some(JobContentUtils.getJobTemplateContent(jobTemplate))
+      } else {
+        None
+      }
+    }
+    val version = deployStreamJob(validateResult.streamJob, metaJsonInfo, userName, validateResult.updateVersion,jobTemplateContent.orNull)
     // Save the job configuration, lock the job again if exists
     if (null != metaJsonInfo.getJobConfig){
       this.streamJobConfService.saveJobConfig(version.getJobId, metaJsonInfo.getJobConfig.asInstanceOf[util.Map[String, AnyRef]])
@@ -262,10 +308,19 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     } else streamJobMapper.getJobVersionById(jobId, version)
     if(jobVersion == null)
       throw new JobFetchErrorException(30030, s"job has no versions.")
-//    val highAvailablePolicy = streamJobConfService.getJobConfValue(jobId, "wds.streamis.app.highavailable.policy")
-//    val highAvailableVo = SourceUtils.manageJobProjectFile(highAvailablePolicy, jobVersion.getSource)
-//    jobVersion.setSource(highAvailableVo.toString)
-    jobContentParsers.find(_.canParse(job, jobVersion)).map(_.parseTo(job, jobVersion))
+    val streamJob: StreamJob = streamJobMapper.getJobById(jobId)
+    val projectName: String = streamJob.getProjectName
+    val streamTask = streamTaskMapper.getLatestByJobId(jobId)
+    val jobTemplate: JobTemplateFiles = if (null != streamTask) {
+      if (streamTask.getStatus.equals(JobConf.FLINK_JOB_STATUS_RUNNING.getValue)) {
+        streamJobMapper.getJobTemplate(streamTask.getTemplateId)
+      }else{
+        streamJobMapper.getLatestJobTemplateFile(projectName)
+      }
+    }else{
+      streamJobMapper.getLatestJobTemplateFile(projectName)
+    }
+    jobContentParsers.find(_.canParse(job, jobVersion)).map(_.parseTo(job, jobVersion,jobTemplate))
       .getOrElse(throw new JobFetchErrorException(30030, s"Cannot find a JobContentParser to parse jobContent."))
   }
 
@@ -458,6 +513,10 @@ class DefaultStreamJobService extends StreamJobService with Logging {
   override def getJobFileById(id: Long): StreamJobVersionFiles = {
     val streamJobVersionFiles = streamJobMapper.getJobFileById(id)
     streamJobVersionFiles
+  }
+
+  override def getLatestJobTemplate(projectName: String): String = {
+    streamJobMapper.getLatestJobTemplate(projectName)
   }
 
 }

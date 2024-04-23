@@ -62,6 +62,7 @@
         <result column="comment" property="comment" jdbcType="VARCHAR"/>
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
         <result column="create_by" property="createBy" jdbcType="VARCHAR"/>
+        <result column="template_id" property="createBy" jdbcType="VARCHAR"/>
     </resultMap>
 
     <resultMap id="StreamJobVersionFilesMap"
@@ -76,6 +77,17 @@
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
         <result column="create_by" property="createBy" jdbcType="VARCHAR"/>
     </resultMap>
+
+<!--    <resultMap id="JobTemplateMap"-->
+<!--               type="com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles">-->
+<!--        <id column="id" property="id" jdbcType="BIGINT"/>-->
+<!--        <result column="name" property="name" jdbcType="VARCHAR"/>-->
+<!--        <result column="store_path" property="storePath" jdbcType="VARCHAR"/>-->
+<!--        <result column="meta_json" property="metaJson" jdbcType="VARCHAR"/>-->
+<!--        <result column="version" property="version" jdbcType="VARCHAR"/>-->
+<!--        <result column="date" property="date" jdbcType="TIMESTAMP"/>-->
+<!--        <result column="project_name" property="projectName" jdbcType="VARCHAR"/>-->
+<!--    </resultMap>-->
 
     <sql id="Job_Column">
         `id`,`project_name`, `workspace_name`,`name`,`create_by`, `create_time`,`label`,`description`,`submit_user`,`job_type`, `current_version`, `status`, `enable`
@@ -295,5 +307,53 @@
         </trim>
         WHERE id=#{id}
     </update>
+
+    <select id="getJobTemplateJsonId" resultMap="StreamJobVersionMap">
+        select template_id from linkis_stream_job_version
+        <where>
+            <if test="jobId != null">job_id=#{jobId}</if>
+            <if test="version != null">AND version=#{version}</if>
+        </where>
+    </select>
+
+    <select id="getJobTemplate" resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles">
+        select * from linkis_stream_project_job_template
+        where id = #{id}
+    </select>
+
+    <insert id="insertJobTemplate" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles">
+        INSERT INTO linkis_stream_project_job_template
+        (`name`,`version`,`store_path`,`meta_json`,`project_name`,`date`)
+        VALUES (#{name},#{version},#{storePath},#{metaJson},#{projectName},#{date})
+    </insert>
+
+    <select id="selectJobTemplate" resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles">
+        select * from
+        linkis_stream_project_job_template where project_name = #{projectName} and version = #{version} and name = #{name}
+    </select>
+
+    <update id="updateJobTemplateById" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles">
+        update linkis_stream_project_job_template set store_path = #{storePath},date = #{date},name={#name},project_name=#{projectName}
+        <if test="version != null and version !=''">
+            ,version = #{version}
+        </if>
+        <if test="meta_json != null and meta_json !=''">
+            ,metaJson = #{metaJson}
+        </if>
+        where id = #{id}
+    </update>
+
+    <select id="getLatestJobTemplate" resultType="java.lang.String">
+        SELECT `meta_json` FROM linkis_stream_project_job_template WHERE project_name=#{projectName} ORDER BY id desc,version desc LIMIT 1
+    </select>
+
+    <select id="getLatestJobTemplateFile" resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles">
+        select * from
+        linkis_stream_project_job_template WHERE project_name=#{projectName} ORDER BY id desc,version desc LIMIT 1
+    </select>
+
+    <select id="getJobTemplateByProject" resultType="java.lang.Long">
+        SELECT `id` FROM linkis_stream_project_job_template WHERE project_name=#{projectName} ORDER BY version desc LIMIT 1
+    </select>
 
 </mapper>

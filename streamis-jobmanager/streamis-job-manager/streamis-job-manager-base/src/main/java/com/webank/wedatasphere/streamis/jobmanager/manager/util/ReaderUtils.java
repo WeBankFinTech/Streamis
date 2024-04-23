@@ -24,6 +24,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.PublishRequ
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileExceptionManager;
 import org.apache.commons.lang.StringUtils;
+import org.apache.linkis.server.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,8 @@ import java.util.regex.Pattern;
 public class ReaderUtils {
     private static final String metaFileName = "meta.txt";
     private static final String metaFileJsonName = "meta.json";
+
+    private static final String templateMetaFileJsonName = "-meta.json";
     private static final String type = "type";
     private static final String fileName = "filename";
     private static final String projectName = "projectname";
@@ -52,6 +55,8 @@ public class ReaderUtils {
     private String zipName;
     private boolean hasTags = false;
     private boolean hasProjectName = false;
+    private static final String templateName = "-meta.json";
+    private static final String JSON_TYPE = ".json";
 
 
     private static final Logger LOG = LoggerFactory.getLogger(ReaderUtils.class);
@@ -315,5 +320,58 @@ public class ReaderUtils {
         String regex = "^[a-zA-Z0-9_\u4e00-\u9fa5]+$";
         return str.matches(regex);
     }
+    public Boolean checkMetaTemplate(String fileName,String inputPath,String projectName) throws FileException, IOException {
+        if (!fileName.endsWith(templateName)) {
+            return false;
+        }
+        int index = fileName.indexOf('-');
+        if (index == -1) {
+            return false;
+        }
+        if (projectName.equals(fileName.substring(0, index))) {
+            String path = inputPath.replace(JSON_TYPE, "");
+            MetaJsonInfo metaJsonInfo = parseJson(path,projectName);
+            if ((metaJsonInfo.getJobName() == null || metaJsonInfo.getJobName().isEmpty()) &&
+                    (metaJsonInfo.getJobType() == null || metaJsonInfo.getJobType().isEmpty()) &&
+                    (metaJsonInfo.getTags() == null || metaJsonInfo.getTags().isEmpty()) &&
+                    (metaJsonInfo.getDescription() == null || metaJsonInfo.getDescription().isEmpty())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
+    public MetaJsonInfo parseJson(String dirPath,String projectName) throws IOException, FileException {
+        getBasePath(dirPath);
+        InputStream inputStream = null;
+        InputStreamReader streamReader = null;
+        try {
+            inputStream = generateInputStream(basePath,projectName);
+            streamReader = new InputStreamReader(inputStream);
+            BufferedReader reader = new BufferedReader(streamReader);
+            return readJson(reader);
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+            throw e;
+        } finally {
+            try {
+                if (null != inputStream) {
+                    inputStream.close();
+                }
+                if (null != streamReader) {
+                    streamReader.close();
+                }
+            } catch (Exception e1) {
+                LOG.warn("close stream error, {}", e1.getMessage());
+            }
+        }
+    }
+
+    private InputStream generateInputStream(String basePath,String projectName) throws IOException, FileException {
+        File metaFile = new File(basePath + File.separator + projectName +templateMetaFileJsonName);
+        if (!metaFile.exists()) {
+            throw new FileException(30603, metaFileJsonName);
+        }
+        return IoUtils.generateInputInputStream(basePath + File.separator + projectName +templateMetaFileJsonName);
+    }
 }

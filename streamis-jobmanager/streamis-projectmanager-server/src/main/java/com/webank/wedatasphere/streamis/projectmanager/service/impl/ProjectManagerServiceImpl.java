@@ -16,6 +16,14 @@
 package com.webank.wedatasphere.streamis.projectmanager.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.utils.JobUtils;
+import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants;
+import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
+import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles;
 import com.webank.wedatasphere.streamis.projectmanager.utils.MD5Utils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.linkis.common.utils.JsonUtils;
@@ -32,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
@@ -46,6 +55,11 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
 
     @Autowired
     private ProjectManagerMapper projectManagerMapper;
+
+    @Autowired
+    private StreamJobMapper streamJobMapper;
+
+    private static final String JSON_TYPE = ".json";
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -145,5 +159,63 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
     @Override
     public String getProjectNameByFileId(Long id) {
         return projectManagerMapper.getProjectNameByFileId(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void uploadJobTemplate(String username, String fileName, String filePath,String projectName,String version) throws FileException, IOException {
+        Map<String, Object> result = bmlService.upload(username, filePath);
+        String path = filePath.replace(JSON_TYPE,"");
+        ReaderUtils readerUtils = new ReaderUtils();
+        MetaJsonInfo metaJsonInfo = readerUtils.parseJson(path,projectName);
+        String metaJson = generateJobTemplate(metaJsonInfo);
+        JobTemplateFiles jobTemplateFiles = new JobTemplateFiles();
+        jobTemplateFiles.setName(fileName);
+        jobTemplateFiles.setProjectName(projectName);
+        jobTemplateFiles.setStorePath(readerUtils.readAsJson(result.get("resourceId").toString(),result.get("version").toString()));
+        jobTemplateFiles.setMetaJson(metaJson);
+        jobTemplateFiles.setVersion(version);
+        jobTemplateFiles.setDate(new Date());
+
+        JobTemplateFiles file = selectJobTemplate(fileName, version, projectName);
+        if (file == null) {
+            streamJobMapper.insertJobTemplate(jobTemplateFiles);
+        }else {
+            jobTemplateFiles.setId(file.getId());
+            jobTemplateFiles.setDate(new Date());
+            streamJobMapper.updateJobTemplateById(jobTemplateFiles);
+        }
+    }
+
+    public JobTemplateFiles selectJobTemplate(String fileName, String version, String projectName) {
+        return streamJobMapper.selectJobTemplate(fileName, version, projectName);
+    }
+
+    public String generateJobTemplate(MetaJsonInfo metaJsonInfo){
+        String configJson = JobUtils.gson().toJson(metaJsonInfo);
+        JsonObject jsonObj = new JsonParser().parse(configJson).getAsJsonObject();
+        if (jsonObj.has(JobConstrants.FIELD_WORKSPACE_NAME())) {
+            jsonObj.remove(JobConstrants.FIELD_WORKSPACE_NAME());
+        }
+//        if (jsonObj.has(JobConstrants.FIELD_METAINFO_NAME())) {
+//            jsonObj.remove(JobConstrants.FIELD_METAINFO_NAME());
+//        }
+        if (jsonObj.has(JobConstrants.FIELD_JOB_NAME())) {
+            jsonObj.remove(JobConstrants.FIELD_JOB_NAME());
+        }
+        if (jsonObj.has(JobConstrants.FIELD_JOB_TYPE())) {
+            jsonObj.remove(JobConstrants.FIELD_JOB_TYPE());
+        }
+        if (jsonObj.has(JobConstrants.FIELD_JOB_TAG())) {
+            jsonObj.remove(JobConstrants.FIELD_JOB_TAG());
+        }
+        if (jsonObj.has(JobConstrants.FIELD_JOB_COMMENT())) {
+            jsonObj.remove(JobConstrants.FIELD_JOB_COMMENT());
+        }
+        if (jsonObj.has(JobConstrants.FIELD_JOB_DESCRIPTION())) {
+            jsonObj.remove(JobConstrants.FIELD_JOB_DESCRIPTION());
+        }
+        String metaJson = jsonObj.toString();
+        return metaJson;
     }
 }
