@@ -45,18 +45,24 @@ object JobContentUtils {
     JobContentUtils.gson.toJson(jobContentTemplate)
   }
 
-//  def getFinalJobConfig(jobVersion: StreamJobVersion,jobTemplate: String): JavaMap[String, Object] ={
-//    val jobContent = JsonUtils.jackson.readValue(jobVersion.getJobContent, classOf[util.Map[String, Object]])
-//    if (StringUtils.isNotBlank(jobTemplate)){
-//      val metaJsonTemplate = JsonUtils.jackson.readValue(jobTemplate, classOf[util.Map[String, Object]])
-//      val jobContentTemplate = metaJsonTemplate.get("jobContent").asInstanceOf[JavaMap[String, Object]]
-//      val finalJobContent: JavaMap[String, Object] = new java.util.HashMap[String, Object](jobContentTemplate)
-//      finalJobContent.putAll(jobContent)
-//      finalJobContent
-//    }else{
-//      jobContent
-//    }
-//  }
+  def getJobTemplateConfig(jobTemplate: String): String = {
+    val metaJsonTemplate = JsonUtils.jackson.readValue(jobTemplate, classOf[util.Map[String, Object]])
+    val jobConfigTemplate = metaJsonTemplate.get("jobConfig").asInstanceOf[JavaMap[String, Object]]
+    JobContentUtils.gson.toJson(jobConfigTemplate)
+  }
+
+  def getFinalJobConfig(jobConfigMap: JavaMap[String, Object], jobTemplate: String): JavaMap[String, Object] = {
+//    val jobConfigMap = JsonUtils.jackson.readValue(jobConfig, classOf[util.Map[String, Object]])
+    if (StringUtils.isNotBlank(jobTemplate)) {
+      val metaJsonTemplate = JsonUtils.jackson.readValue(jobTemplate, classOf[util.Map[String, Object]])
+      val jobConfigTemplate = metaJsonTemplate.get("jobContent").asInstanceOf[JavaMap[String, Object]]
+      val finalJobConfig: JavaMap[String, Object] = new java.util.HashMap[String, Object](jobConfigTemplate)
+      finalJobConfig.putAll(jobConfigMap)
+      finalJobConfig
+    } else {
+      jobConfigMap
+    }
+  }
 
   val gson = new GsonBuilder()
     .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
@@ -76,8 +82,8 @@ object JobContentUtils {
     )
     .create
 
-  def getMap(jobTemplate: String): JavaMap[String, Object] = {
-    val jobTemplateMap = JsonUtils.jackson.readValue(jobTemplate, classOf[util.Map[String, Object]])
-    jobTemplateMap
+  def getMap(json: String): JavaMap[String, Object] = {
+    val map = JsonUtils.jackson.readValue(json, classOf[util.Map[String, Object]])
+    map
   }
 }

@@ -197,9 +197,9 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
         if (jsonObj.has(JobConstrants.FIELD_WORKSPACE_NAME())) {
             jsonObj.remove(JobConstrants.FIELD_WORKSPACE_NAME());
         }
-        if (jsonObj.has(JobConstrants.FIELD_METAINFO_NAME())) {
-            jsonObj.remove(JobConstrants.FIELD_METAINFO_NAME());
-        }
+//        if (jsonObj.has(JobConstrants.FIELD_METAINFO_NAME())) {
+//            jsonObj.remove(JobConstrants.FIELD_METAINFO_NAME());
+//        }
         if (jsonObj.has(JobConstrants.FIELD_JOB_NAME())) {
             jsonObj.remove(JobConstrants.FIELD_JOB_NAME());
         }

@@ -155,16 +155,24 @@ class DefaultStreamJobService extends StreamJobService with Logging {
 
 
   override def deployStreamJob(streamJob: StreamJob,
-                               metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean, jobTemplateContent: String, source: String = null): StreamJobVersion = {
+                               metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean,source: String = null, jobTemplateContent: String): StreamJobVersion = {
     if(StringUtils.isBlank(metaJsonInfo.getJobType))
       throw new JobCreateErrorException(30030, s"jobType is needed.")
     else if(!JobConf.SUPPORTED_JOB_TYPES.getValue.contains(metaJsonInfo.getJobType)) {
       throw new JobCreateErrorException(30030, s"jobType ${metaJsonInfo.getJobType} is not supported.")
     }
-    val JobContentMap = JobContentUtils.getFinalJobContent(metaJsonInfo.getMetaInfo, jobTemplateContent)
-    val finalJobContent = JobContentUtils.gson.toJson(JobContentMap)
-    if(metaJsonInfo.getJobContent == null || metaJsonInfo.getJobContent.isEmpty)
-      throw new JobCreateErrorException(30030, s"jobContent is needed.")
+    var finalJobContent = jobTemplateContent
+    if ((metaJsonInfo.getJobContent == null || metaJsonInfo.getJobContent.isEmpty) &&
+      StringUtils.isBlank(jobTemplateContent)) {
+      throw new JobCreateErrorException(30030, s"jobContent is needed, both jobContent and jobTemplateContent are empty.")
+    } else if (StringUtils.isNotBlank(jobTemplateContent) &&
+      (metaJsonInfo.getJobContent != null && !metaJsonInfo.getJobContent.isEmpty)) {
+      val JobContentMap = JobContentUtils.getFinalJobContent(metaJsonInfo.getMetaInfo, jobTemplateContent)
+      finalJobContent = JobContentUtils.gson.toJson(JobContentMap)
+    } else if (StringUtils.isBlank(jobTemplateContent) &&
+      (metaJsonInfo.getJobContent != null && !metaJsonInfo.getJobContent.isEmpty)) {
+      finalJobContent = JobContentUtils.gson.toJson(metaJsonInfo.getJobContent)
+    }
     val jobVersion = new StreamJobVersion()
     val newStreamJob = new StreamJob()
     if (streamJob == null) {
@@ -242,9 +250,28 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     //  生成StreamJob，根据StreamJob生成StreamJobVersion
     val version = deployStreamJob(validateResult.streamJob, metaJsonInfo, userName, validateResult.updateVersion, source,jobTemplateContent.orNull)
     // Save the job configuration, lock the job again if exists
-    if (null != metaJsonInfo.getJobConfig){
-      this.streamJobConfService.saveJobConfig(version.getJobId, metaJsonInfo.getJobConfig.asInstanceOf[util.Map[String, AnyRef]])
+    val jobTemplateConfig: Option[String] = {
+      val jobTemplate = streamJobMapper.getLatestJobTemplate(projectName)
+      if (StringUtils.isNotBlank(jobTemplate)) {
+        Some(JobContentUtils.getJobTemplateConfig(jobTemplate))
+      } else {
+        None
+      }
     }
+    var finaljobTemplateConfig = jobTemplateConfig.orNull
+    if ((metaJsonInfo.getJobConfig == null || metaJsonInfo.getJobConfig.isEmpty) &&
+      StringUtils.isBlank(jobTemplateConfig.orNull)) {
+      throw new JobCreateErrorException(30030, s"jobConfig is needed, both jobConfig and jobTemplateConfig are empty.")
+    } else if (StringUtils.isNotBlank(jobTemplateConfig.orNull) &&
+      (metaJsonInfo.getJobConfig != null && !metaJsonInfo.getJobConfig.isEmpty)) {
+      val JobConfigMap = JobContentUtils.getFinalJobConfig(metaJsonInfo.getJobConfig, jobTemplateConfig.orNull)
+      finaljobTemplateConfig = JobContentUtils.gson.toJson(JobConfigMap)
+    } else if (StringUtils.isBlank(jobTemplateConfig.orNull) &&
+      (metaJsonInfo.getJobConfig != null && !metaJsonInfo.getJobConfig.isEmpty)) {
+      finaljobTemplateConfig = JobContentUtils.gson.toJson(metaJsonInfo.getJobConfig)
+    }
+    val finalJobConfig = JobContentUtils.getMap(finaljobTemplateConfig)
+    this.streamJobConfService.saveJobConfig(version.getJobId, finalJobConfig.asInstanceOf[util.Map[String, AnyRef]])
     //  上传所有非meta.json的文件
     uploadFiles(metaJsonInfo, version, inputZipPath)
     version
