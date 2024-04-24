@@ -1,6 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.hook;
 
-import com.sun.deploy.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,17 +9,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class JobShutdownHookFactory {
+public class StreamisJobShutdownHookFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(JobShutdownHookFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(StreamisJobShutdownHookFactory.class);
 
-    private static final Map<String, JobShutdownHook> hookMap = new HashMap<String, JobShutdownHook>();
+    private static final Map<String, StreamisJobShutdownHook> hookMap = new HashMap<String, StreamisJobShutdownHook>();
 
-    public static boolean registerJobShutdownHook(JobShutdownHook hook) {
+    public static boolean registerJobShutdownHook(StreamisJobShutdownHook hook) {
         if (null == hook) {
             return false;
         }
-        JobShutdownHook oldHook = hookMap.getOrDefault(hook.getName(), null);
+        StreamisJobShutdownHook oldHook = hookMap.getOrDefault(hook.getName(), null);
         if (null != oldHook) {
             logger.warn("there are already a hook with name : {} and class : {}, will cover it with new hook name : {} class : {}"
                         , oldHook.getName(), oldHook.getClass().getName(), hook.getName(), hook.getClass().getName());
@@ -30,13 +30,13 @@ public class JobShutdownHookFactory {
         return true;
     }
 
-    public static List<JobShutdownHook> getAllHooks() {
-        List<JobShutdownHook> hooks = new ArrayList<>();
+    public static List<StreamisJobShutdownHook> getAllHooks() {
+        List<StreamisJobShutdownHook> hooks = new ArrayList<>();
         hookMap.values().stream().forEach(hook -> hooks.add(hook));
         return hooks;
     }
 
-    public static JobShutdownHook getHookByName(String hookName) {
+    public static StreamisJobShutdownHook getHookByName(String hookName) {
         if (StringUtils.isNotBlank(hookName)) {
             return hookMap.getOrDefault(hookName, null);
         } else {

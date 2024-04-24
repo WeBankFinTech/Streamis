@@ -80,9 +80,9 @@ trait StreamTaskService {
    * @param taskId   task id
    * @param operator user name
    */
-  def pause(jobId: Long, taskId: Long, operator: String, snapshot: Boolean): PauseResultVo
+  def pause(jobId: Long, taskId: Long, operator: String, snapshot: Boolean, skipHookError: Boolean): PauseResultVo
 
-  def asyncPause(jobId: Long, taskId: Long, operator: String, snapshot: Boolean): Future[PauseResultVo]
+  def asyncPause(jobId: Long, taskId: Long, operator: String, snapshot: Boolean, skipHookError: Boolean): Future[PauseResultVo]
 
   /**
    * Bulk pausing
@@ -93,7 +93,7 @@ trait StreamTaskService {
    * @param snapshot snapshot
    * @return
    */
-  def bulkPause(jobIds: util.List[Long], taskIds: util.List[Long], operator: String, snapshot: Boolean): util.List[PauseResultVo]
+  def bulkPause(jobIds: util.List[Long], taskIds: util.List[Long], operator: String, snapshot: Boolean, skipHookError: Boolean): util.List[PauseResultVo]
 
   /**
    * Just launch task by task id

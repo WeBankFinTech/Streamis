@@ -16,14 +16,13 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import com.webank.wedatasphere.streamis.errorcode.entity.StreamErrorCode
-
 import com.google.gson.JsonParser
 
 import java.util
 import java.util.concurrent.{Executors, Future, ScheduledExecutorService, TimeUnit}
 import java.util.{Calendar, Map, function}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.{JobConf, StreamJobLauncherConf}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobErrorException, JobExecuteErrorException, JobFetchErrorException, JobPauseErrorException, JobTaskErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobGenericState, JobState}
@@ -50,7 +49,11 @@ import com.webank.wedatasphere.streamis.errorcode.handler.StreamisErrorCodeHandl
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.utils.JobUtils
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
+import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobManagerConf
+import com.webank.wedatasphere.streamis.jobmanager.manager.constants.JobShutdownHookConstants
 import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants
+import com.webank.wedatasphere.streamis.jobmanager.manager.exception.HookExecutionException
+import com.webank.wedatasphere.streamis.jobmanager.manager.hook.StreamisJobShutdownHookFactory
 
 import javax.annotation.Resource
 import org.apache.commons.lang.StringUtils
@@ -64,6 +67,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 import scala.collection.JavaConverters._
+import scala.concurrent.duration.Duration
 import scala.util.control.Breaks.{break, breakable}
 
 
@@ -272,8 +276,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
    * @param taskId   task id
    * @param operator user name
    */
-  override def pause(jobId: Long, taskId: Long, operator: String, snapshot: Boolean): PauseResultVo = {
-    val result: Future[PauseResultVo] = asyncPause(jobId, taskId, operator, snapshot)
+  override def pause(jobId: Long, taskId: Long, operator: String, snapshot: Boolean, skipHookError: Boolean): PauseResultVo = {
+    val result: Future[PauseResultVo] = asyncPause(jobId, taskId, operator, snapshot, skipHookError)
     val pauseResult = result.get()
     if (StringUtils.isNotBlank(pauseResult.getMessage)){
       throw new JobExecuteErrorException(-1, s"Fail to pause StreamJob(Task), message output: ${pauseResult.getMessage}");
@@ -282,8 +286,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   }
 
 
-  override def asyncPause(jobId: Long, taskId: Long, operator: String, snapshot: Boolean): Future[PauseResultVo] = {
-    pause(jobId, taskId, operator, snapshot, new function.Function[SchedulerEvent, PauseResultVo] {
+  override def asyncPause(jobId: Long, taskId: Long, operator: String, snapshot: Boolean, skipHookError: Boolean): Future[PauseResultVo] = {
+    pause(jobId, taskId, operator, snapshot, skipHookError, new function.Function[SchedulerEvent, PauseResultVo] {
       override def apply(event: SchedulerEvent): PauseResultVo = {
         val resultVo: PauseResultVo = new PauseResultVo(jobId, taskId)
         event match {
@@ -311,19 +315,19 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
    * @param snapshot snapshot
    * @return
    */
-  override def bulkPause(jobIds: util.List[Long], taskIds: util.List[Long], operator: String, snapshot: Boolean): util.List[PauseResultVo] = {
+  override def bulkPause(jobIds: util.List[Long], taskIds: util.List[Long], operator: String, snapshot: Boolean, skipHookError: Boolean): util.List[PauseResultVo] = {
     val result: util.List[Future[PauseResultVo]] = new util.ArrayList[Future[PauseResultVo]]()
     val counter = (jobIds.size(), taskIds.size())
     val iterateNum: Int = math.max(counter._1, counter._2)
     for (i <- 0 until iterateNum) {
       val jobId = if (i < counter._1) jobIds.get(i) else 0L
       val taskId = if (i < counter._2) taskIds.get(i) else 0L
-      result.add(asyncPause(jobId, taskId, operator, snapshot))
+      result.add(asyncPause(jobId, taskId, operator, snapshot, skipHookError))
     }
     result.asScala.map(_.get()).asJava
   }
 
-  def pause[T](jobId: Long, taskId: Long, operator: String, snapshot: Boolean, returnMapping: function.Function[SchedulerEvent, T]): (SchedulerEvent, Future[T]) = {
+  def pause[T](jobId: Long, taskId: Long, operator: String, snapshot: Boolean, skipHookError: Boolean, returnMapping: function.Function[SchedulerEvent, T]): (SchedulerEvent, Future[T]) = {
     val self = SpringContextHolder.getBean(classOf[StreamTaskService])
     var finalJobId = jobId
     val event = new StreamisPhaseInSchedulerEvent(if (jobId > 0) "pauseJob-" + jobId else "pauseTask-" + taskId, new ScheduleCommand {
@@ -364,6 +368,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
             throw new JobPauseErrorException(-1, s"Unable to pause the StreamTask [$pauseTaskId}], the linkis job id is null")
           }
           val streamJob = streamJobMapper.getJobById(finalJobId)
+          executeJobShutdownHook(skipHookError, streamTask, streamJob)
           logger.info(s"Try to stop StreamJob [${streamJob.getName} with task(taskId: ${streamTask.getId}, linkisJobId: ${streamTask.getLinkisJobId}).")
           val jobClient = getJobLaunchManager(streamTask).connect(streamTask.getLinkisJobId, streamTask.getLinkisJobInfo)
           val status = JobConf.linkisStatusToStreamisStatus(jobClient.getJobInfo(true).getStatus)
@@ -389,8 +394,56 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     (event, this.scheduler.submit(event, returnMapping))
   }
 
+  private def executeJobShutdownHook[T](skipHookError: Boolean, streamTask: StreamTask, streamJob: StreamJob): Unit = {
+    if (!JobManagerConf.ENABLE_JOB_SHUTDOWN_HOOKS.getValue) {
+      return
+    }
+    val hookNameList = JobManagerConf.getHooksByProject(streamJob.getProjectName).asScala
+    val hooksNames = hookNameList.mkString(",")
+    val hookList = hookNameList.map(name => {
+      val hook = StreamisJobShutdownHookFactory.getHookByName(name)
+      if (null == hook) {
+        logger.error(s"Got null hook for name : ${name}")
+      }
+      hook
+    }).filter(null != _)
+    logger.info(s"will execute jobShutdownHooks : ${hooksNames} for project : ${streamJob.getProjectName} and job : ${streamJob.getName}")
+    val hookExtraParams = new util.HashMap[String, Object]()
+    hookExtraParams.put(JobShutdownHookConstants.START_TIME_MILLS_KEY, streamTask.getStartTime.getTime)
+    hookExtraParams.put(JobShutdownHookConstants.STATUS_KEY, JobConf.getStatusString(streamTask.getStatus))
+    //            hookExtraParams.put(JobShutdownHookConstants.ENGINE_TYPE_KEY, streamJob.getEngineType)
+    //            hookExtraParams.put(JobShutdownHookConstants.ENGINE_TYPE_KEY, streamJob.getEngineVersion)
+    val jobInfo = DWSHttpClient.jacksonJson.readValue(streamTask.getLinkisJobInfo, classOf[EngineConnJobInfo])
+    hookExtraParams.put(JobShutdownHookConstants.APPLICATION_ID_KEY, jobInfo.getApplicationId)
+    hookExtraParams.put(JobShutdownHookConstants.APPLICATION_URL_KEY, jobInfo.getApplicationUrl)
+    hookExtraParams.put(JobShutdownHookConstants.CLUSTER_NAME_KEY, StreamJobLauncherConf.HIGHAVAILABLE_CLUSTER_NAME.getHotValue)
+    hookExtraParams.put(JobShutdownHookConstants.IS_MANAGER_KEY, StreamJobLauncherConf.WHETHER_MANAGER_CLUSTER.getHotValue.toString.toBoolean)
+    val startTimeMills = System.currentTimeMillis()
+    hookList.foreach(hook => {
+      val hookStartTimeMills = System.currentTimeMillis()
+      Utils.tryCatch {
+        Utils.waitUntil(() => {
+          hook.doBeforeJobShutdown(streamTask.getId.toString, streamJob.getProjectName, streamJob.getName,
+            JobManagerConf.JOB_SHUTDOWN_HOOK_TIMEOUT_MILLS.getHotValue(), hookExtraParams)
+          logger.debug(s"hook : ${hook.getName} succeed, costed ${System.currentTimeMillis() - hookStartTimeMills}mills.")
+          true
+        }, Duration.apply(JobManagerConf.JOB_SHUTDOWN_HOOK_TIMEOUT_MILLS.getHotValue(), TimeUnit.MILLISECONDS))
+      } {
+        case e: Exception =>
+          logger.debug(s"hook : ${hook.getName} failed, costed ${System.currentTimeMillis() - hookStartTimeMills}mills.")
+          val msg = s"job : ${streamJob.getProjectName}.${streamJob.getName} execute hook : ${hook.getName} failed, because : ${e.getMessage}"
+          logger.error(msg, e)
+          if (!skipHookError) {
+            throw new HookExecutionException(msg)
+          }
+      }
+    })
+    logger.info(s"execute all ${hookList.size} cost ${System.currentTimeMillis() - startTimeMills}mills.")
+  }
+
   /**
    * Query execute history(查询运行历史)
+   *
    * @param jobId
    * @param version
    * @return
