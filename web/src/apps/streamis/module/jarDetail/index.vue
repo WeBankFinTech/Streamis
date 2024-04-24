@@ -289,7 +289,7 @@ export default {
     }
   },
   mounted(){
-    this.editable = window.enableUpload
+    this.editable = this.jarData.editable
   },
   methods: {
     toggleEditProgramArguement(value) {
