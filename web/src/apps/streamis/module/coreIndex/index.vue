@@ -43,6 +43,7 @@
 import api from '@/common/service/api'
 import titleCard from '@/apps/streamis/components/titleCard'
 import { jobStatuses } from '@/apps/streamis/common/common'
+import storage from "@/common/helper/storage";
 export default {
   components: { titleCard },
   data() {
@@ -69,6 +70,7 @@ export default {
               newDatas.push(newItem)
             })
             this.indexItems = newDatas
+            storage.set("jobShutdownHooks", res.taskCore.jobShutdownHooks || '', "local");
           }
         })
         .catch(e => console.log(e))

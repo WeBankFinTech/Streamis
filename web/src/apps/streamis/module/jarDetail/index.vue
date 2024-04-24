@@ -158,6 +158,69 @@
         </Table>
       </div>
     </div>
+    <div
+      class="itemWrap"
+      v-if="!isSql"
+    >
+      <p class="args-header">
+        项目模板文件
+        <span>
+          <Button
+            v-if="!editProgramArguement"
+            type="primary"
+            class="btn"
+            @click="showTemplate"
+            style="margin-right: 8px;"
+          >查看</Button>
+          <a
+            :href="`/api/rest_j/v1/streamis/streamProjectManager/project/files/template?id=${templateId}`"
+            download
+          >
+            <Button
+              type="primary"
+              class="btn"
+            >
+              {{ $t('message.streamis.projectFile.download') }}
+            </Button>
+          </a>
+        </span>
+      </p>
+    </div>
+    <Modal
+      title="项目模板文件"
+      v-model="templateVisible"
+      footer-hide
+      width="1200"
+      @on-cancel="modalCancel"
+      :class="full ? 'full' : ''"
+    >
+      <div>
+        <div class="meta-wrapper">
+          <Input
+            ref="metaInputRef"
+            v-model="meta"
+            type="textarea"
+            :autosize="{ minRows: 10, maxRows: 15 }"
+            readonly
+          />
+          <span 
+            class="full-btn"
+            @click="fullToggle"
+          >
+            {{ full ? '> <' : '< >' }}
+          </span>
+        </div>
+        <div class="btnWrap">
+          <Button
+            type="primary"
+            @click="modalCancel"
+            style="margin-left: 30px;"
+          >
+            {{ $t('message.streamis.jobHistoryColumns.close') }}
+          </Button>
+        </div>
+      </div>
+    </Modal>
   </div>
 </template>
 <script>
@@ -219,10 +282,14 @@ export default {
       version: '',
       enable: this.$route.params.enable, // 任务是否启用
       editable: true,
+      templateId: this.jarData.jobTemplate ? this.jarData.jobTemplate.id : '',
+      templateVisible: false,
+      meta: JSON.stringify(this.jarData.jobTemplate, null, 2),
+      full: false,
     }
   },
   mounted(){
-    this.editable = window.enableUpload
+    this.editable = this.jarData.editable
   },
   methods: {
     toggleEditProgramArguement(value) {
@@ -261,6 +328,15 @@ export default {
           this.$Message.error('请输入正确的Program Arguement')
         }
       }
+    },
+    fullToggle() {
+      this.full = !this.full
+    },
+    modalCancel() {
+      this.templateVisible = false
+    },
+    showTemplate(){
+      this.templateVisible = true
     }
   },
   watch: {
@@ -314,5 +390,38 @@ export default {
   background: #f8f8f9;
   padding: 10px 20px;
   min-height: 64px;
+}
+
+.meta-wrapper{
+  position: relative;
+  .full-btn{
+    position: absolute;
+    cursor: pointer;
+    top: 5px;
+    right: 8px;
+    font-weight: bold;
+  }
+}
+.full {
+  /deep/.ivu-modal{
+    width: 100vw !important;
+    height: 100vh;
+    min-height: 430px;
+    top:0;
+    .ivu-modal-content{
+      height: 100%;
+    }
+  }
+  /deep/textarea{
+   height: calc(100vh - 200px) !important;
+   min-height: 200px;
+   max-height: calc(100vh - 200px) !important;
+  }
+}
+.btnWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
 }
 </style>
