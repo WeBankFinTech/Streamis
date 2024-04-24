@@ -18,6 +18,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.{JobConfKeyConstants, JobConstants}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
+import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants.FLINK_APPLICATION_SEPARATE
 
 import java.util
 import org.apache.linkis.common.utils.JsonUtils
@@ -37,7 +38,7 @@ class FlinkJarStreamisJobContentTransform extends StreamisJobContentTransform {
   override protected def transformJobContent(transformJob: StreamisTransformJobContent): util.HashMap[String, AnyRef] = transformJob match {
     case transformJobContent: StreamisJarTransformJobContent =>
       val jobContent = new util.HashMap[String, AnyRef]
-      jobContent.put("flink.app.args", transformJobContent.getArgs.asScala.mkString(" "))
+      jobContent.put("flink.app.args", transformJobContent.getArgs.asScala.mkString(FLINK_APPLICATION_SEPARATE))
       jobContent.put("flink.app.main.class", transformJobContent.getMainClass)
       jobContent
     case _ => null
