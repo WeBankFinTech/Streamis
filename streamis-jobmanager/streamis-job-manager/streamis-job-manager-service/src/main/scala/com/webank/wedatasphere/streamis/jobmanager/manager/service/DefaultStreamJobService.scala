@@ -24,6 +24,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobCon
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobCreateErrorException, JobErrorException, JobFetchErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
+import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobManagerConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamAlertMapper, StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity._
@@ -117,6 +118,9 @@ class DefaultStreamJobService extends StreamJobService with Logging {
         else if (fo._1.equals(JobConf.FLINK_JOB_STATUS_STARTING.getValue)) taskNum.setStartingNum(fo._2)
         else if (fo._1.equals(JobConf.FLINK_JOB_STATUS_STOPPING.getValue)) taskNum.setStoppingNum(fo._2)
       })
+    }
+    if (JobManagerConf.ENABLE_JOB_SHUTDOWN_HOOKS.getValue) {
+      taskNum.setJobShutdownHooks(JobManagerConf.getHooksByProject(projectName))
     }
     taskNum
   }

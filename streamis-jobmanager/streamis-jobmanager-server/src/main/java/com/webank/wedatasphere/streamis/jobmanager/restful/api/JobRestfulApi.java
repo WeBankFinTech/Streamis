@@ -452,7 +452,8 @@ public class JobRestfulApi {
     @RequestMapping(path = "/stop", method = RequestMethod.GET)
     public Message killJob(HttpServletRequest req,
                            @RequestParam(value = "jobId", required = false) Long jobId,
-                           @RequestParam(value = "snapshot", required = false) Boolean snapshot) throws JobException {
+                           @RequestParam(value = "snapshot", required = false) Boolean snapshot,
+                           @RequestParam(value = "skipHookError", required = false) Boolean skipHookError) throws JobException {
         String userName = ModuleUserUtils.getOperationUser(req, "stop the job");
         snapshot = !Objects.isNull(snapshot) && snapshot;
         if (jobId == null) {
@@ -472,7 +473,7 @@ public class JobRestfulApi {
         }
         if(JobConf.SUPPORTED_MANAGEMENT_JOB_TYPES().getValue().contains(streamJob.getJobType())) {
             try {
-                PauseResultVo resultVo = streamTaskService.pause(jobId, 0L, userName, snapshot);
+                PauseResultVo resultVo = streamTaskService.pause(jobId, 0L, userName, snapshot, skipHookError);
                 return snapshot? Message.ok().data("path", resultVo.getSnapshotPath()) : Message.ok();
             } catch (Exception e) {
                 LOG.error("{} kill job {} failed!", userName, jobId, e);

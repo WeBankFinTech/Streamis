@@ -158,10 +158,10 @@ public class JobBulkRestfulApi {
                     }
                 }
                 pauseResults = streamTaskService.bulkPause(new ArrayList<>(pauseRequest.getBulkSubject()),
-                        Collections.emptyList(), username, pauseRequest.isSnapshot());
+                        Collections.emptyList(), username, pauseRequest.isSnapshot(), pauseRequest.isSkipHookError());
             } else {
                 pauseResults = streamTaskService.bulkPause(Collections.emptyList(),
-                        new ArrayList<>(pauseRequest.getBulkSubject()), username, pauseRequest.isSnapshot());
+                        new ArrayList<>(pauseRequest.getBulkSubject()), username, pauseRequest.isSnapshot(), pauseRequest.isSkipHookError());
             }
             // Convert to bulk response
             BulkResponse<PauseResultVo> response = new BulkResponse<>(pauseResult -> {
