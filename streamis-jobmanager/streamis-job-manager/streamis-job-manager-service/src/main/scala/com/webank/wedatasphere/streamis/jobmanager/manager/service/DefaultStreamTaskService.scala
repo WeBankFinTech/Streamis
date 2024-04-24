@@ -409,7 +409,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     }).filter(null != _)
     logger.info(s"will execute jobShutdownHooks : ${hooksNames} for project : ${streamJob.getProjectName} and job : ${streamJob.getName}")
     val hookExtraParams = new util.HashMap[String, Object]()
-    hookExtraParams.put(JobShutdownHookConstants.START_TIME_MILLS_KEY, streamTask.getStartTime.getTime)
+    hookExtraParams.put(JobShutdownHookConstants.START_TIME_MILLS_KEY, streamTask.getStartTime.getTime.toString)
     hookExtraParams.put(JobShutdownHookConstants.STATUS_KEY, JobConf.getStatusString(streamTask.getStatus))
     //            hookExtraParams.put(JobShutdownHookConstants.ENGINE_TYPE_KEY, streamJob.getEngineType)
     //            hookExtraParams.put(JobShutdownHookConstants.ENGINE_TYPE_KEY, streamJob.getEngineVersion)
@@ -417,7 +417,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     hookExtraParams.put(JobShutdownHookConstants.APPLICATION_ID_KEY, jobInfo.getApplicationId)
     hookExtraParams.put(JobShutdownHookConstants.APPLICATION_URL_KEY, jobInfo.getApplicationUrl)
     hookExtraParams.put(JobShutdownHookConstants.CLUSTER_NAME_KEY, StreamJobLauncherConf.HIGHAVAILABLE_CLUSTER_NAME.getHotValue)
-    hookExtraParams.put(JobShutdownHookConstants.IS_MANAGER_KEY, StreamJobLauncherConf.WHETHER_MANAGER_CLUSTER.getHotValue.toString.toBoolean)
+    hookExtraParams.put(JobShutdownHookConstants.IS_MANAGER_KEY, StreamJobLauncherConf.WHETHER_MANAGER_CLUSTER.getHotValue.toString)
     val startTimeMills = System.currentTimeMillis()
     hookList.foreach(hook => {
       val hookStartTimeMills = System.currentTimeMillis()
