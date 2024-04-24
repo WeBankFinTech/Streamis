@@ -173,7 +173,7 @@
             style="margin-right: 8px;"
           >查看</Button>
           <a
-            :href="`/api/rest_j/v1/streamis/streamProjectManager/project/files/template?id=${templateId}`"
+            :href="`/api/rest_j/v1/streamis/streamProjectManager/project/files/template?id=${jarData.jobTemplate ? jarData.jobTemplate.id : ''}`"
             download
           >
             <Button
@@ -282,9 +282,8 @@ export default {
       version: '',
       enable: this.$route.params.enable, // 任务是否启用
       editable: true,
-      templateId: this.jarData.jobTemplate ? this.jarData.jobTemplate.id : '',
       templateVisible: false,
-      meta: JSON.stringify(this.jarData.jobTemplate, null, 2),
+      meta: '',
       full: false,
     }
   },
@@ -329,6 +328,15 @@ export default {
         }
       }
     },
+    formatJSON(text) {
+      try {
+        const jsonObj = JSON.parse(text)
+        const formatJSON = JSON.stringify(jsonObj, null, 2)
+        return formatJSON
+      } catch (error) {
+        return text
+      }
+    },
     fullToggle() {
       this.full = !this.full
     },
@@ -337,6 +345,7 @@ export default {
     },
     showTemplate(){
       this.templateVisible = true
+      this.meta = this.formatJSON(this.jarData.jobTemplate ? this.jarData.jobTemplate.metaJson : '')
     }
   },
   watch: {
