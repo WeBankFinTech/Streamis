@@ -9,9 +9,9 @@
 import coreIndex from '@/apps/streamis/module/coreIndex';
 import jobList from '@/apps/streamis/module/jobList';
 import watermark from "@/common/util/waterMark.js";
-import { GetBaseInfo } from '@/common/service/apiCommonMethod.js';
 import storage from "@/common/helper/storage";
 import { isEmpty } from "lodash";
+import api from '@/common/service/api'
 export default {
   components: {
     coreIndex: coreIndex.component,
@@ -40,10 +40,10 @@ export default {
     },
     async init(){
       try {
-        const rst = await GetBaseInfo()
+        const rst = await api.fetch('streamis/streamJobManager/highAvailable/username', 'get')
         if (!isEmpty(rst)) {
-          storage.set("baseInfo", rst, "local");
-          this.user= rst.username
+          storage.set("username", rst, "local");
+          this.user= rst.userName
         }
       } catch (error) {
         console.log(error)
@@ -56,6 +56,7 @@ export default {
         fontSize: "12px",
         frontXSpace: 150, // 水印横向间隙
         frontYSpace: 100, // 水印纵向间隙
+        frontTxtAlpha: 0.2,
       });
     }
   },
