@@ -7,13 +7,8 @@ import org.springframework.stereotype.Component
 import java.util
 import javax.annotation.PostConstruct
 
-@Component
 class DefaultEmptyStreamisJobShutdownHook extends StreamisJobShutdownHook with Logging {
 
-  @PostConstruct
-  private def init(): Unit = {
-    StreamisJobShutdownHookFactory.registerJobShutdownHook(this)
-  }
 
   override def doBeforeJobShutdown(taskId: String, projectName: String, jobName: String, timeoutMills: Long, params: util.Map[String, AnyRef]): Unit = {
     Thread.sleep(1000L)
