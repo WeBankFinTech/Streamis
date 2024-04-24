@@ -77,7 +77,7 @@
       <Button
         type="primary"
         @click="handleSaveConfig()"
-        :disabled="!enable"
+        :disabled="!enable || !editable"
         :loading="saveLoading"
         style="width:100px;height:40px;background:rgba(22, 155, 213, 1);"
       >
@@ -125,12 +125,23 @@ export default {
         )
         .then(res => {
           const valueMap = this.valueMap;
+          this.editable = res.editEnable
           Object.keys(res || {}).forEach(key => {
             valueMap[key] = {};
-            Object.keys(res[key]).forEach(k => {
-              const formatKey = k.replace(/\./g, '/');
-              valueMap[key][formatKey] = res[key][k];
-            })
+            if (key === 'editEnable') return
+            if (key === 'template') { // 先使用模板的value
+              Object.keys(res.template).forEach(k => {
+                Object.keys(res.template[k]).forEach(j => {
+                  const formatKey = j.replace(/\./g, '/');
+                  valueMap[k][formatKey] = res.template[k][j];
+                })
+              })
+            } else {
+              Object.keys(res[key]).forEach(k => {
+                const formatKey = k.replace(/\./g, '/');
+                valueMap[key][formatKey] = res[key][k];
+              })
+            }
           })
           Object.keys(this.diyMap).forEach(key => {
             if (Object.keys(valueMap).includes(key)) {

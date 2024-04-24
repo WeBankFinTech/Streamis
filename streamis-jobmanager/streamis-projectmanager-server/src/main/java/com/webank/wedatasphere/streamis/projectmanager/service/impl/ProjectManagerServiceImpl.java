@@ -171,8 +171,7 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void uploadJobTemplate(String username, String fileName, String filePath,String projectName,String version) throws FileException, IOException {
-        Map<String, Object> result = bmlService.upload(username, filePath);
+    public void uploadJobTemplate(String username, String fileName, String filePath,String projectName,String version,String storePath) throws FileException, IOException {
         String path = filePath.replace(JSON_TYPE,"");
         ReaderUtils readerUtils = new ReaderUtils();
         MetaJsonInfo metaJsonInfo = readerUtils.parseJson(path,projectName);
@@ -180,7 +179,7 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
         JobTemplateFiles jobTemplateFiles = new JobTemplateFiles();
         jobTemplateFiles.setName(fileName);
         jobTemplateFiles.setProjectName(projectName);
-        jobTemplateFiles.setStorePath(readerUtils.readAsJson(result.get("resourceId").toString(),result.get("version").toString()));
+        jobTemplateFiles.setStorePath(storePath);
         jobTemplateFiles.setMetaJson(metaJson);
         jobTemplateFiles.setVersion(version);
         jobTemplateFiles.setDate(new Date());

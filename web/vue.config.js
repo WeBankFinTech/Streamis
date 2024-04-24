@@ -127,6 +127,7 @@ module.exports = {
         target: 'http://sit.dss.bdp.weoa.com',
         // target: 'http://10.107.97.166:9188',
         // target: 'http://172.24.2.230:9400',
+        // target: 'http://10.107.119.46:8088',
         changeOrigin: true,
         pathRewrite: {
           //'^/api': '/mock/15/api'

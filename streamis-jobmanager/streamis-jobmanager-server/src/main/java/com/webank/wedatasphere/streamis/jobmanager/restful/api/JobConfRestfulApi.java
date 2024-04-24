@@ -119,12 +119,13 @@ public class JobConfRestfulApi {
                 if (jobTemplateMap.containsKey("jobConfig") && jobTemplateMap.get("jobConfig") instanceof Map<?, ?>) {
                     jobTemplateConfig = (Map<String, Object>) jobTemplateMap.get("jobConfig");
                 }
-            }            HashMap<String, Object> jobConfigMap = new HashMap<>(streamJobConfService.getJobConfig(jobId));
+            }
+            HashMap<String, Object> jobConfigMap = new HashMap<>(streamJobConfService.getJobConfig(jobId));
             if (jobTemplateConfig != null) {
                 jobConfigMap.put("template", jobTemplateConfig);
             }
             result.setData(jobConfigMap);
-
+            result.data("editEnable",JobConf.JOB_CONFIG_EDIT_ENABLE().getHotValue());
         } catch (Exception e) {
             String message = "Fail to view StreamJob configuration(查看任务配置失败), message: " + e.getMessage();
             LOG.warn(message, e);
@@ -145,6 +146,9 @@ public class JobConfRestfulApi {
     public Message saveConfig(@PathVariable("jobId") Long jobId, @RequestBody Map<String, Object> configContent,
                               HttpServletRequest request) {
         Message result = Message.ok("success");
+        if (!(Boolean) JobConf.JOB_CONFIG_EDIT_ENABLE().getHotValue()){
+            return Message.error("job config cannot be changed,please contact the admin for advice");
+        }
         if((Boolean) JobConf.PRODUCT_NAME_SWITCH().getHotValue()){
             try {
                 String productValue = Optional.ofNullable(configContent)
