@@ -271,7 +271,7 @@
                         type="primary"
                         :disabled="row.buttonLoading"
                         style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
-                        @click="handleStop(row, 0, index)"
+                        @click="handleStopWithHook(row, 0, index)"
                       >
                         {{ $t('message.streamis.formItems.directStop') }}
                       </Button>
@@ -280,7 +280,7 @@
                         type="primary"
                         :disabled="row.buttonLoading"
                         style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
-                        @click="handleStop(row, 1, index)"
+                        @click="handleStopWithHook(row, 1, index)"
                       >
                         {{ $t('message.streamis.formItems.snapshotAndStop') }}
                       </Button>
@@ -459,6 +459,13 @@
         <Button type="primary" @click="modalCancel">{{ $t('message.streamis.formItems.cancel') }}</Button>
       </template>
     </Modal>
+    <Modal
+      v-model="ignoreHookModal"
+      title="确认"
+      @on-ok="confirmIgnoreHookModal"
+    >
+      <Checkbox v-model="ignoreHookException">跳过Hook异常</Checkbox>
+    </Modal>
   </div>
 </template>
 <script>
@@ -468,6 +475,7 @@ import versionDetail from '@/apps/streamis/module/versionDetail'
 import uploadJobJar from '@/apps/streamis/module/uploadJobJar'
 import { allJobStatuses, enableStatus } from '@/apps/streamis/common/common'
 import moment from 'moment'
+import storage from "@/common/helper/storage";
 
 /**
  * 渲染特殊表头
@@ -733,6 +741,14 @@ export default {
       solutionURL: '',
       knowledgeLibraryUrl: '',
       enableUpload: true,
+      ignoreHookModal: false,
+      ignoreHookException: false,
+      singleStop: false,
+      singleStopData: '',
+      singleStopType: '',
+      singleStopIndex: '',
+      isBatchRestartHook: false,
+      snapshot: false,
     }
   },
   async mounted() {
@@ -887,7 +903,7 @@ export default {
       data.poptipVisible = false
       this.$set(this.tableDatas, index, data)
       api
-        .fetch(path, { jobId: id, snapshot: !!type }, 'get')
+        .fetch(path, { jobId: id, snapshot: !!type, skipHookError: this.ignoreHookException }, 'get')
         .then(res => {
           data.buttonLoading = false
           this.choosedRowId = ''
@@ -903,6 +919,29 @@ export default {
           this.choosedRowId = ''
           this.getJobList()
         })
+    },
+    handleStopWithHook(data, type, index) {
+      const hasHook = storage.get('jobShutdownHooks', 'local')
+      if (hasHook) {
+        this.ignoreHookModal = true
+        this.singleStop = true
+        this.isBatchRestartHook = false
+        this.singleStopData = data
+        this.singleStopType = type
+        this.singleStopIndex = index
+      } else {
+        this.handleStop(data, type, index)
+      }
+    },
+    confirmIgnoreHookModal() {
+      console.log('Is ignore hook ?', this.ignoreHookException)
+      if (this.singleStop) {
+        this.handleStop(this.singleStopData, this.singleStopType, this.singleStopIndex)
+      } else if(this.isBatchRestartHook) {
+        this.batchRestart(this.snapshot)
+      }else{
+        this.stopDataShow = true
+      }
     },
     changeVisible(value) {
       console.log('value: ', value);
@@ -969,13 +1008,26 @@ export default {
         this.$Message.error('存在未启动、启动中、停止中的任务，请取消勾选此类任务再执行该操作!')
         return
       }
+      const hasHook = storage.get('jobShutdownHooks', 'local')
+      if (hasHook) {
+        this.ignoreHookModal = true
+        this.singleStop = false
+        this.isBatchRestartHook = true
+        this.snapshot = snapshot
+      } else {
+        this.batchRestart(snapshot)
+      }
+      
+    },
+    async batchRestart(snapshot) {
+      const bulk_sbj = this.selections.map(item => +item.id);
       // 点击批量重启的按钮后，就应该弹出弹窗，pause结束后改变这个一体弹窗的进度，然后开始请求inspect，如果inspect都为空，一体弹窗直接进入下一步启动，如果不为空，上层遮罩再弹出inspect的弹窗需要确认
       this.processModalVisable = true;
       this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
       this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
 
       try {
-        const pauseRes = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot });
+        const pauseRes = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot, skipHookError: this.ignoreHookException });
         console.log('pause pauseRes', pauseRes);
         if (!pauseRes.result || !pauseRes.result.Success || !pauseRes.result.Failed) {
           this.isFinish = true;
@@ -1036,7 +1088,14 @@ export default {
         this.$Message.error('存在非运行中的任务，请取消勾选此类任务再执行该操作!')
         return
       }
-      this.stopDataShow = true
+      const hasHook = storage.get('jobShutdownHooks', 'local')
+      if (hasHook) {
+        this.ignoreHookModal = true
+        this.singleStop = false
+        this.isBatchRestartHook = false
+      } else {
+        this.stopDataShow = true
+      }
     },
     async batchStop(){
       const bulk_sbj = this.selections.map(item => +item.id);
@@ -1044,7 +1103,7 @@ export default {
       this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
       this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
       try {
-        const pauseRes = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot: false });
+        const pauseRes = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot: false, skipHookError: this.ignoreHookException });
         console.log('pause pauseRes', pauseRes);
         if (!pauseRes.result || !pauseRes.result.Success || !pauseRes.result.Failed) {
           this.isFinish = true;
