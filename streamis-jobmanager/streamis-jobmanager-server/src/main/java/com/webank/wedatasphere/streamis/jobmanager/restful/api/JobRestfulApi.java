@@ -762,7 +762,7 @@ public class JobRestfulApi {
             return Message.error("Have no permission to view job details of StreamJob [" + jobId + "]");
         }
         StreamisTransformJobContent jobContent = streamJobService.getJobContent(jobId, version);
-        return Message.ok().data("jobContent", jobContent);
+        return Message.ok().data("jobContent", jobContent).data("editEnable",JobConf.JOB_CONTENT_EDIT_ENABLE().getHotValue());
     }
 
     @RequestMapping(path = "/updateContent", method = RequestMethod.POST)
@@ -785,6 +785,9 @@ public class JobRestfulApi {
             StreamisTransformJobContent jobContent = streamJobService.updateArgs(jobId, version,null,isHighAvailable,highAvailableMessage);
             return Message.ok().data("jobContent", jobContent);
         } else {
+            if (!(Boolean) JobConf.JOB_CONTENT_EDIT_ENABLE().getHotValue()){
+                return Message.error("job args cannot be changed,please contact the admin for advice");
+            }
             int hotValue =  Integer.parseInt(JobConf.DEFAULT_ARGS_LENGTH().getHotValue().toString());
             if (args.toString().length() > hotValue ){
                 return Message.error("args length is too long, please less than "+ hotValue);
