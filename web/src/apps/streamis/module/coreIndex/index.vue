@@ -43,9 +43,9 @@
 import api from '@/common/service/api'
 import titleCard from '@/apps/streamis/components/titleCard'
 import { jobStatuses } from '@/apps/streamis/common/common'
-import storage from "@/common/helper/storage";
 export default {
   components: { titleCard },
+  props: ['hasHook'],
   data() {
     return {
       indexItems: [...jobStatuses]
@@ -70,7 +70,7 @@ export default {
               newDatas.push(newItem)
             })
             this.indexItems = newDatas
-            storage.set("jobShutdownHooks", res.taskCore.jobShutdownHooks || '', "local");
+            this.$emit('input', res.taskCore.jobShutdownHooks || '')
           }
         })
         .catch(e => console.log(e))
