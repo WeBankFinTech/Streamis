@@ -26,7 +26,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.{JobConf, S
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobErrorException, JobExecuteErrorException, JobFetchErrorException, JobPauseErrorException, JobTaskErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobGenericState, JobState}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobInfo, LaunchJob}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, JobInfo, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.{AbstractJobClient, EngineConnJobClient}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.SimpleFlinkJobLaunchManager
@@ -68,6 +68,7 @@ import org.springframework.transaction.annotation.Transactional
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration.Duration
+import scala.util.{Failure, Success}
 import scala.util.control.Breaks.{break, breakable}
 
 
@@ -709,7 +710,28 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     launchJob = Transform.getTransforms.foldLeft(launchJob)((job, transform) => transform.transform(transformJob, job))
     info(s"StreamJob [${streamJob.getName}] has transformed with launchJob $launchJob, now to launch it.")
     //TODO getLinkisJobManager should use jobManagerType to instance in future, since not only `simpleFlink` mode is supported in future.
-    val jobClient = getJobLaunchManager(streamTask).launch(launchJob, state)
+    var jobClient: JobClient[_ <: JobInfo] = null
+    Utils.tryCatch {
+      jobClient = getJobLaunchManager(streamTask).launch(launchJob, state)
+    } {
+      case e: Exception =>
+        val result: Future[_] = streamTaskService.errorCodeMatchException(streamJob.getId, streamTask, e.toString)
+        logger.error(s"get jobClient failed ", e)
+        val executor = Executors.newSingleThreadExecutor()
+        executor.execute(new Runnable {
+          override def run(): Unit = {
+            try {
+              result.get()
+              logger.error("get jobClient failed, but error handler succeeded", e)
+              throw e
+            } catch {
+              case ex: Throwable =>
+                logger.error("get jobClient failed, and error handler also failed", ex)
+                throw ex
+            }
+          }
+        })
+    }
     // Refresh and store the information from JobClient
     Utils.tryCatch {
       // Refresh the job info(If the job shutdown immediately)
@@ -959,6 +981,40 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
         }
         streamTask.setSolution(solution)
         streamTaskService.updateTask(streamTask)
+      }
+    })
+  }
+
+  override def errorCodeMatchException(jobId: Long, streamTask: StreamTask, exception: String): Future[_] = {
+    var errorMsg = ""
+    var solution = ""
+    val taskId = streamTask.getId
+//    Thread.sleep(2000)
+    Utils.defaultScheduler.submit(new Runnable {
+      override def run(): Unit = {
+        Utils.tryCatch {
+          val result = exceptionAnalyze(errorMsg, exception, solution)
+          errorMsg = result._1
+          solution = result._2
+          if (errorMsg.isEmpty) {
+            errorMsg = JobConf.DEFAULT_ERROR_MSG.getHotValue()
+          }
+        } {
+          case e: Exception =>
+            logger.error("errorCodeMatching failed. ", e)
+            val newStreamTask = new StreamTask()
+            newStreamTask.setErrDesc(JobConf.ANALYZE_ERROR_MSG.getHotValue())
+            streamTaskService.updateTask(newStreamTask)
+        }
+        val newStreamTask = new StreamTask()
+        newStreamTask.setId(taskId);
+        if (errorMsg.equals(JobConf.DEFAULT_ERROR_MSG.getHotValue())) {
+          newStreamTask.setErrDesc(JobConf.FINAL_ERROR_MSG.getHotValue())
+        } else {
+          newStreamTask.setErrDesc(errorMsg)
+        }
+        newStreamTask.setSolution(solution)
+        streamTaskService.updateTask(newStreamTask)
       }
     })
   }

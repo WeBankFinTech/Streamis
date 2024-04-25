@@ -190,6 +190,8 @@ trait StreamTaskService {
 
   def errorCodeMatching(jobId: Long, streamTask: StreamTask): Future[_]
 
+  def errorCodeMatchException(jobId: Long, streamTask: StreamTask,exception: String): Future[_]
+
   def generateJobStartConfig(job: StreamJob, jobVersion: StreamJobVersion, creator: String): String
 
   def generateJobTemplate(jobTemplate: JobTemplateFiles): String
