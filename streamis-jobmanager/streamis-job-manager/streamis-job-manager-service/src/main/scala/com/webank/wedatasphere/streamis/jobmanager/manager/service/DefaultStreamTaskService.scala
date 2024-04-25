@@ -427,7 +427,9 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
             JobManagerConf.JOB_SHUTDOWN_HOOK_TIMEOUT_MILLS.getHotValue(), hookExtraParams)
           logger.debug(s"hook : ${hook.getName} succeed, costed ${System.currentTimeMillis() - hookStartTimeMills}mills.")
           true
-        }, Duration.apply(JobManagerConf.JOB_SHUTDOWN_HOOK_TIMEOUT_MILLS.getHotValue(), TimeUnit.MILLISECONDS))
+        }, Duration.apply(JobManagerConf.JOB_SHUTDOWN_HOOK_TIMEOUT_MILLS.getHotValue(), TimeUnit.MILLISECONDS)
+          , 100
+          , 500)
       } {
         case e: Exception =>
           logger.debug(s"hook : ${hook.getName} failed, costed ${System.currentTimeMillis() - hookStartTimeMills}mills.")
