@@ -271,7 +271,7 @@
                         type="primary"
                         :disabled="row.buttonLoading"
                         style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
-                        @click="handleStopWithHook(row, 0, index)"
+                        @click="handleStop(row, 0, index)"
                       >
                         {{ $t('message.streamis.formItems.directStop') }}
                       </Button>
@@ -280,10 +280,11 @@
                         type="primary"
                         :disabled="row.buttonLoading"
                         style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
-                        @click="handleStopWithHook(row, 1, index)"
+                        @click="handleStop(row, 1, index)"
                       >
                         {{ $t('message.streamis.formItems.snapshotAndStop') }}
                       </Button>
+                      <Checkbox v-if="hasHook" v-model="ignoreHookException">跳过Hook异常</Checkbox>
                     </div>
                   </div>
                 </Poptip>
@@ -475,7 +476,6 @@ import versionDetail from '@/apps/streamis/module/versionDetail'
 import uploadJobJar from '@/apps/streamis/module/uploadJobJar'
 import { allJobStatuses, enableStatus } from '@/apps/streamis/common/common'
 import moment from 'moment'
-import storage from "@/common/helper/storage";
 
 /**
  * 渲染特殊表头
@@ -497,6 +497,7 @@ function renderSpecialHeader(h, params) {
 
 export default {
   components: { titleCard, versionDetail, uploadJobJar },
+  props: ['hasHook'],
   data() {
     return {
       query: {
@@ -743,10 +744,6 @@ export default {
       enableUpload: true,
       ignoreHookModal: false,
       ignoreHookException: false,
-      singleStop: false,
-      singleStopData: '',
-      singleStopType: '',
-      singleStopIndex: '',
       isBatchRestartHook: false,
       snapshot: false,
     }
@@ -920,24 +917,9 @@ export default {
           this.getJobList()
         })
     },
-    handleStopWithHook(data, type, index) {
-      const hasHook = storage.get('jobShutdownHooks', 'local')
-      if (hasHook) {
-        this.ignoreHookModal = true
-        this.singleStop = true
-        this.isBatchRestartHook = false
-        this.singleStopData = data
-        this.singleStopType = type
-        this.singleStopIndex = index
-      } else {
-        this.handleStop(data, type, index)
-      }
-    },
     confirmIgnoreHookModal() {
       console.log('Is ignore hook ?', this.ignoreHookException)
-      if (this.singleStop) {
-        this.handleStop(this.singleStopData, this.singleStopType, this.singleStopIndex)
-      } else if(this.isBatchRestartHook) {
+      if(this.isBatchRestartHook) {
         this.batchRestart(this.snapshot)
       }else{
         this.stopDataShow = true
@@ -1008,10 +990,8 @@ export default {
         this.$Message.error('存在未启动、启动中、停止中的任务，请取消勾选此类任务再执行该操作!')
         return
       }
-      const hasHook = storage.get('jobShutdownHooks', 'local')
-      if (hasHook) {
+      if (this.hasHook) {
         this.ignoreHookModal = true
-        this.singleStop = false
         this.isBatchRestartHook = true
         this.snapshot = snapshot
       } else {
@@ -1088,10 +1068,8 @@ export default {
         this.$Message.error('存在非运行中的任务，请取消勾选此类任务再执行该操作!')
         return
       }
-      const hasHook = storage.get('jobShutdownHooks', 'local')
-      if (hasHook) {
+      if (this.hasHook) {
         this.ignoreHookModal = true
-        this.singleStop = false
         this.isBatchRestartHook = false
       } else {
         this.stopDataShow = true

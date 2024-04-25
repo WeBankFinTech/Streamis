@@ -1,8 +1,8 @@
 <template>
   <div class="container">
-    <coreIndex ref="coreIndex"/>
+    <coreIndex v-model="hasHook" ref="coreIndex"/>
     <div class="divider"/>
-    <jobList @refreshCoreIndex="refreshCoreIndex"/>
+    <jobList :hasHook="hasHook" @refreshCoreIndex="refreshCoreIndex"/>
   </div>
 </template>
 <script>
@@ -23,6 +23,7 @@ export default {
       projectName: this.$route.query.projectName || (new URLSearchParams(window.location.search)).get('projectName'),
       user: '',
       region: '',
+      hasHook: false,
     };
   },
   mounted() {
