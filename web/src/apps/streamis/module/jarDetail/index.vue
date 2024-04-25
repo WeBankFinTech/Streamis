@@ -56,7 +56,7 @@
             v-if="!editProgramArguement"
             type="primary"
             class="btn"
-            :disabled="!enable || !editable"
+            :disabled="!enable || !jarData.editable"
             @click="toggleEditProgramArguement(true)"
           >编辑</Button>
           <Button
@@ -281,14 +281,10 @@ export default {
       argsBak: JSON.stringify(this.jarData.args),
       version: '',
       enable: this.$route.params.enable, // 任务是否启用
-      editable: true,
       templateVisible: false,
       meta: '',
       full: false,
     }
-  },
-  mounted(){
-    this.editable = this.jarData.editable
   },
   methods: {
     toggleEditProgramArguement(value) {

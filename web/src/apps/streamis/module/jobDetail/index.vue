@@ -40,6 +40,7 @@ export default {
           if (res && res.jobContent) {
             this.detailName = 'jarDetail'
             this.data = res.jobContent
+            this.data.editabel = res.editEnable
             const {
               sql,
               mainClassJar,
