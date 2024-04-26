@@ -70,7 +70,8 @@ export default {
               newDatas.push(newItem)
             })
             this.indexItems = newDatas
-            this.$emit('input', res.taskCore.jobShutdownHooks || '')
+            const hasHook = Array.isArray(res.taskCore.jobShutdownHooks) && res.taskCore.jobShutdownHooks.length > 0
+            this.$emit('input', hasHook)
           }
         })
         .catch(e => console.log(e))

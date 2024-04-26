@@ -1552,6 +1552,8 @@ export default {
     onClose(status) {
       if (status) return;
       this.processModalVisable = false;
+      this.modalVisible = false;
+      this.stopDataShow = false;
       this.snapPaths = []
       this.isFinish = false;
       clearTimeout(this.timer);
