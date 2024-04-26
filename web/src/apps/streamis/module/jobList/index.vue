@@ -254,7 +254,7 @@
                 >
                   {{ $t('message.streamis.formItems.startBtn') }}
                 </Button>
-                <Poptip placement="top" v-model="row.poptipVisible" :disabled="row.buttonLoading">
+                <Poptip :transfer="true" placement="top" v-model="row.poptipVisible" :disabled="row.buttonLoading">
                   <Button
                     type="primary"
                     v-show="row.status === 5 || row.status === 9"
