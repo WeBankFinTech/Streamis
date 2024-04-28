@@ -164,7 +164,7 @@
     >
       <p class="args-header">
         项目模板文件
-        <span>
+        <span v-if="jarData.jobTemplate">
           <Button
             v-if="!editProgramArguement"
             type="primary"
@@ -185,6 +185,7 @@
           </a>
         </span>
       </p>
+      <div v-if="!jarData.jobTemplate" style="text-align: center;">暂无数据</div>
     </div>
     <Modal
       title="项目模板文件"
