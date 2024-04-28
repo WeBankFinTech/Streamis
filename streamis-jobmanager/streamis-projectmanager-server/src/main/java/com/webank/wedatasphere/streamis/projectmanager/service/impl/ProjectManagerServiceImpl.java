@@ -19,12 +19,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.utils.JobUtils;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants;
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
+import com.webank.wedatasphere.streamis.projectmanager.utils.JobRefreshUtils;
 import com.webank.wedatasphere.streamis.projectmanager.utils.JsonUtil;
 import com.webank.wedatasphere.streamis.projectmanager.utils.MD5Utils;
 import org.apache.commons.collections.CollectionUtils;
@@ -124,6 +127,13 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
     }
 
     @Override
+    public boolean deleteTemplate(String name, String projectName, String username){
+        int count = projectManagerMapper.countTemplateFiles(name,projectName);
+        int delete = projectManagerMapper.deleteTemplateVersions(name,projectName);
+        return count == delete;
+    }
+
+    @Override
     public ProjectFiles getFile(Long id, String projectName) {
         return projectManagerMapper.getProjectFile(id);
     }
@@ -144,6 +154,22 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
             return projectManagerMapper.deleteFiles(list, username) >= list.size();
         }
         return true;
+    }
+
+    @Override
+    public void deleteTemplateFiles(String ids) {
+        if (!StringUtils.isBlank(ids) && !ArrayUtils.isEmpty(ids.split(","))) {
+            String[] split = ids.split(",");
+            List<Long> list = new ArrayList<>();
+            for (String s : split) {
+                list.add(Long.parseLong(s));
+            }
+            for (Long id : list){
+                ProjectFiles projectFile = projectManagerMapper.getById(id);
+                projectManagerMapper.deleteTemplateFiles(projectFile.getFileName(),projectFile.getVersion());
+            }
+        }
+
     }
 
     @Override
@@ -244,4 +270,9 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
         }
         return false;
     }
+
+//    public void refreshJobConfig(StreamJobService streamJobService, StreamJobConfService streamJobConfService,String projectName,Long jobId){
+//        Map<String,Object> finalJobConfig = JobRefreshUtils.refreshJobConfig(streamJobService,streamJobConfService,projectName,jobId);
+//        streamJobConfService.saveJobConfig(version.getJobId, finalJobConfig);
+//    }
 }

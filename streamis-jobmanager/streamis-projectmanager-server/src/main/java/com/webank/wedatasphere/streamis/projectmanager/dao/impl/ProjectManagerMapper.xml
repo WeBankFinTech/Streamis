@@ -48,10 +48,21 @@
         </foreach>
     </delete>
 
+    <delete id="deleteTemplateFiles">
+        delete from linkis_stream_project_job_template
+        where name = #{name} AND version = #{version}
+    </delete>
+
     <delete id="deleteVersions">
         DELETE FROM linkis_stream_project_files WHERE project_name =
         #{projectName} AND file_name = #{fileName} AND create_by = #{username}
     </delete>
+
+    <delete id="deleteTemplateVersions">
+        DELETE FROM linkis_stream_project_job_template WHERE project_name =
+        #{projectName} AND name = #{name}
+    </delete>
+
 
     <select id="listFiles" resultType="com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles">
         SELECT f.id,f.file_name,v.version,`store_path`,`store_type`,f.project_name,`create_time`,`create_by`,f.comment,f.update_time,f.md5 FROM
@@ -86,6 +97,10 @@
 
     <select id="countFiles" resultType="int">
         SELECT COUNT(*) FROM linkis_stream_project_files WHERE project_name = #{projectName} AND file_name = #{fileName}
+    </select>
+
+    <select id="countTemplateFiles" resultType="int">
+        SELECT COUNT(*) FROM linkis_stream_project_job_template WHERE project_name = #{projectName} AND name = #{name}
     </select>
 
     <select id="getJobFile" resultType="com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles">
