@@ -35,6 +35,8 @@ public interface ProjectManagerService {
 
     boolean deleteFiles(String ids,String username);
 
+    void deleteTemplateFiles(String ids);
+
     ProjectFiles selectFile(String fileName, String version, String projectName);
 
     List<? extends StreamisFile> listFileVersions(String projectName, String fileName);
@@ -46,6 +48,8 @@ public interface ProjectManagerService {
     ProjectFiles getById(Long id);
 
     boolean delete(String fileName, String projectName, String username);
+
+    boolean deleteTemplate(String name, String projectName, String username);
 
     ProjectFiles getFile(Long id, String projectName);
 
