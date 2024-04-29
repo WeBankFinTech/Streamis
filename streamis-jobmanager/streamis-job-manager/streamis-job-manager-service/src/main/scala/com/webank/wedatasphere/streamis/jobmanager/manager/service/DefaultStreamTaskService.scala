@@ -427,11 +427,9 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       Utils.tryCatch {
         val hookTask = new Runnable {
           override def run(): Unit = {
-            Utils.tryAndWarn {
               hook.doBeforeJobShutdown(streamTask.getId.toString, streamJob.getProjectName, streamJob.getName,
                 JobManagerConf.JOB_SHUTDOWN_HOOK_TIMEOUT_MILLS.getHotValue(), hookExtraParams)
               logger.info(s"hook : ${hook.getName} internal succeed, costed ${System.currentTimeMillis() - hookStartTimeMills}mills.")
-            }
           }
         }
         hookFuture = cachedPool.submit(hookTask)
