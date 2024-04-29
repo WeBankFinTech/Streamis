@@ -101,8 +101,6 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
 
   private val errorCodeHandler = StreamisErrorCodeHandler.getInstance()
 
-  private val cachedPool = Utils.newCachedThreadPool(8, "StreamisJobShutHookThread", true)
-
   /**
    *
    * @param Id
@@ -432,7 +430,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
               logger.info(s"hook : ${hook.getName} internal succeed, costed ${System.currentTimeMillis() - hookStartTimeMills}mills.")
           }
         }
-        hookFuture = cachedPool.submit(hookTask)
+        hookFuture = Utils.defaultScheduler.submit(hookTask)
         val rs = hookFuture.get(JobManagerConf.JOB_SHUTDOWN_HOOK_TIMEOUT_MILLS.getHotValue(), TimeUnit.MILLISECONDS)
         logger.info(s"hook : ${hook.getName} outside succeed, costed ${System.currentTimeMillis() - hookStartTimeMills}mills.")
       } {
