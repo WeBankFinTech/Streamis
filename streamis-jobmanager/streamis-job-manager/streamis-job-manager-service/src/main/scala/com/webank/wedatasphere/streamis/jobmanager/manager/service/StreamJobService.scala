@@ -185,4 +185,8 @@ trait StreamJobService {
   def getLatestJobTemplate(projectName: String): String
 
   def getJobTemplateById(id: Long): JobTemplateFiles
+
+  def getJobTemplateConfMap(streamJob: StreamJob): util.Map[String, AnyRef]
+
+  def mergeJobConfig(destination: util.Map[String, AnyRef], source: util.Map[String, AnyRef]): Unit
 }
