@@ -103,7 +103,7 @@
     <select id="getByJobVersionId" resultMap="StreamTaskMap">
         SELECT `id`,`job_version_id`,`job_id`, status
         ,`start_time`,`last_update_time`,
-        `err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`, `job_start_config`
+        `err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`, `job_start_config`,`template_id`
         FROM linkis_stream_task
         <where>
             <if test="jobVersionId != null">
@@ -133,7 +133,7 @@
     <select id="getLatestByJobVersionId" resultMap="StreamTaskMap">
         SELECT `id`,`job_version_id`,`job_id`, status
         ,`start_time`,`last_update_time`,
-        `err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`,`solution`
+        `err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`,`solution`,`template_id`
         FROM linkis_stream_task
         <where>
             <if test="jobVersionId != null">
@@ -212,6 +212,16 @@
         <foreach collection="jobIds" item="item" open="(" close=")" separator=",">
             #{item}
         </foreach> GROUP BY job_id)
+    </select>
+
+    <select id="getTaskInfoByTemplateId" resultMap="StreamTaskMap">
+        SELECT `id`,`job_version_id`,`job_id`,`version`, status
+        ,`start_time`,`last_update_time`,
+        `err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`,`solution`,`template_id`
+        FROM linkis_stream_task where template_id in
+        <foreach collection="list" item="template_id" open="(" separator="," close=")">
+            #{templateId}
+        </foreach>
     </select>
 
 </mapper>

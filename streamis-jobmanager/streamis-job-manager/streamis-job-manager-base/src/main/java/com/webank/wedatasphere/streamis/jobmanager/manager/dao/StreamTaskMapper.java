@@ -84,4 +84,5 @@ public interface StreamTaskMapper {
      */
     List<StreamTask> getStatusInfoByJobIds(@Param("jobIds")List<Long> jobIds);
 
+    List<StreamTask> getTaskInfoByTemplateId(@Param("templateId")List<Long> templateId);
 }

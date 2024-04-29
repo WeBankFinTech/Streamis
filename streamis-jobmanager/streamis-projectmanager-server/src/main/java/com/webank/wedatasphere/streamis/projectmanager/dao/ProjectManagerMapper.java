@@ -31,8 +31,6 @@ public interface ProjectManagerMapper {
 
     Integer deleteFiles(@Param("list")List<Long> list,@Param("username")String username);
 
-    Integer deleteTemplateFiles(@Param("name")String name, @Param("version")String version);
-
     List<ProjectFiles> listFileVersions(@Param("projectName") String projectName, @Param("fileName") String fileName);
 
     ProjectFiles selectFile(@Param("fileName")String fileName, @Param("version")String version, @Param("projectName")String projectName);
@@ -43,11 +41,7 @@ public interface ProjectManagerMapper {
 
     int countFiles(@Param("fileName")String fileName, @Param("projectName")String projectName);
 
-    int countTemplateFiles(@Param("name")String name, @Param("projectName")String projectName);
-
     int deleteVersions(@Param("fileName")String fileName, @Param("projectName")String projectName, @Param("username") String username);
-
-    int deleteTemplateVersions(@Param("name")String name, @Param("projectName")String projectName);
 
     ProjectFiles getProjectFile(Long id);
 
@@ -58,4 +52,12 @@ public interface ProjectManagerMapper {
     String getProjectNameById(Long id);
 
     String getProjectNameByFileId(Long id);
+
+    Integer setEnableByVersion(@Param("name")String name, @Param("version")String version,@Param("enable")Boolean enable);
+
+    void deleteTemplateVersions(@Param("name")String name, @Param("projectName")String projectName);
+
+    List<Long> selectTemplateId(@Param("name")String name, @Param("projectName")String projectName);
+
+    void setEnable(@Param("templateIds")List<Long> templateIds,@Param("enable")Boolean enable);
 }
