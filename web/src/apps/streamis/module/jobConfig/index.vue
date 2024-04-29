@@ -130,21 +130,21 @@ export default {
           const valueMap = this.valueMap;
           this.editable = res.editEnable
           Object.keys(res || {}).forEach(key => {
-            valueMap[key] = {};
+            if(valueMap[key] === undefined) valueMap[key] = {}
             if (key === 'editEnable') return
             if (key === 'template') { // 先使用模板的value
               Object.keys(res.template).forEach(k => {
                 Object.keys(res.template[k]).forEach(j => {
                   const formatKey = j.replace(/\./g, '/');
                   valueMap[k][formatKey] = res.template[k][j];
-                  this.isTemplateMap.set(k+formatKey, true)
+                  this.isTemplateMap.set(k+j, true)
                 })
               })
             } else {
               Object.keys(res[key]).forEach(k => {
                 const formatKey = k.replace(/\./g, '/');
                 valueMap[key][formatKey] = res[key][k];
-                this.isTemplateMap.set(key+formatKey, false)
+                this.isTemplateMap.set(key+k, false)
               })
             }
           })
