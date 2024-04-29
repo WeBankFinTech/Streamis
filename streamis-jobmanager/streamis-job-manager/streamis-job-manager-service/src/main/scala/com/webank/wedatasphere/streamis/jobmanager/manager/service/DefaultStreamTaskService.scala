@@ -433,7 +433,8 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           }
         }
         hookFuture = Utils.defaultScheduler.submit(hookTask)
-        hookFuture.get(JobManagerConf.JOB_SHUTDOWN_HOOK_TIMEOUT_MILLS.getHotValue(), TimeUnit.MILLISECONDS)
+        val rs = hookFuture.get(JobManagerConf.JOB_SHUTDOWN_HOOK_TIMEOUT_MILLS.getHotValue(), TimeUnit.MILLISECONDS)
+        logger.info(s"hook : ${hook.getName} succeed, costed ${System.currentTimeMillis() - hookStartTimeMills}mills.")
       } {
         case e: Exception =>
           logger.error(s"hook : ${hook.getName} failed, costed ${System.currentTimeMillis() - hookStartTimeMills}mills.")
