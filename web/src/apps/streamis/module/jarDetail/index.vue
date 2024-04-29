@@ -172,17 +172,13 @@
             @click="showTemplate"
             style="margin-right: 8px;"
           >查看</Button>
-          <a
-            :href="`/api/rest_j/v1/streamis/streamProjectManager/project/files/template?id=${jarData.jobTemplate ? jarData.jobTemplate.id : ''}`"
-            download
+          <Button
+            type="primary"
+            class="btn"
+            @click="downloadMetaJson"
           >
-            <Button
-              type="primary"
-              class="btn"
-            >
-              {{ $t('message.streamis.projectFile.download') }}
-            </Button>
-          </a>
+            {{ $t('message.streamis.projectFile.download') }}
+          </Button>
         </span>
       </p>
       <div v-if="!jarData.jobTemplate" style="text-align: center;">暂无数据</div>
@@ -343,7 +339,25 @@ export default {
     showTemplate(){
       this.templateVisible = true
       this.meta = this.formatJSON(this.jarData.jobTemplate ? this.jarData.jobTemplate.metaJson : '')
-    }
+    },
+    downloadMetaJson() {
+      if (!this.meta) {
+        this.$Message.error({ content: '模版为空' })
+        return
+      }
+      const blob = new Blob([this.meta], { type: 'application/json' })
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${this.projectName}.template.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      // 下载完成后移除 <a> 标签
+      document.body.removeChild(a);
+    },
   },
   watch: {
     jarData: {
