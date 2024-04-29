@@ -44,7 +44,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.Real
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.exception.TransformFailedErrorException
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.{StreamisTransformJobBuilder, TaskMetricsParser, Transform}
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.DateUtils
-import com.webank.wedatasphere.streamis.jobmanager.manager.utils.StreamTaskUtils
+import com.webank.wedatasphere.streamis.jobmanager.manager.utils.{JobContentUtils, StreamTaskUtils}
 import com.webank.wedatasphere.streamis.errorcode.handler.StreamisErrorCodeHandler
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.utils.JobUtils
@@ -79,6 +79,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   @Autowired private var streamJobMapper:StreamJobMapper=_
   @Autowired private var streamisTransformJobBuilders: Array[StreamisTransformJobBuilder] = _
   @Autowired private var taskMetricsParser: Array[TaskMetricsParser] = _
+  @Autowired private var streamJobService: StreamJobService = _
 
   @Resource
   private var jobLaunchManager: JobLaunchManager[_ <: JobInfo] = _
@@ -666,10 +667,11 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
               streamTask.setStatus(status)
               streamTask.setServerInstance(instanceService.getThisServiceInstance)
               logger.info(s"Produce a new StreamTask [jobId: $jobId, version: ${jobVersion.getVersion}, creator: $creator, status: ${streamTask.getStatus}]")
-              val jobStartConfig = generateJobStartConfig(job, jobVersion, creator)
-              streamTask.setJobStartConfig(jobStartConfig)
               val jobTemplateId = streamJobMapper.getJobTemplateByProject(job.getProjectName)
               streamTask.setTemplateId(jobTemplateId)
+              val jobTemplate = streamJobMapper.getJobTemplate(jobTemplateId,true)
+              val jobStartConfig = generateJobStartConfig(job, jobVersion, creator,jobTemplate)
+              streamTask.setJobStartConfig(jobStartConfig)
               streamTaskMapper.insertTask(streamTask)
               streamTask
             } else {
@@ -1054,7 +1056,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     }
   }
 
-  override def generateJobStartConfig(job: StreamJob, jobVersion: StreamJobVersion, creator: String): String = {
+  override def generateJobStartConfig(job: StreamJob, jobVersion: StreamJobVersion, creator: String,jobTemplate: JobTemplateFiles): String = {
     val metaJsonInfo = new MetaJsonInfo
 //    metaJsonInfo.setWorkspaceName(job.getWorkspaceName)
     metaJsonInfo.setProjectName(job.getProjectName)
@@ -1064,10 +1066,24 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     metaJsonInfo.setTags(job.getLabel)
     metaJsonInfo.setDescription(job.getDescription)
     val jobContent: Map[String, Object] = Utils.tryAndWarn(JobUtils.gson.fromJson(jobVersion.getJobContent, classOf[Map[String, Object]]))
-    metaJsonInfo.setJobContent(jobContent)
+    var finalJobContent = jobContent
+    if (null != jobTemplate) {
+      finalJobContent = JobContentUtils.getFinalJobContent(jobVersion, jobTemplate.getMetaJson)
+    }
+    metaJsonInfo.setJobContent(finalJobContent)
     // get job config
-    val jobConf = streamJobConfService.getJobConfig(job.getId)
-    metaJsonInfo.setJobConfig(jobConf)
+    val jobConfig: util.Map[String, AnyRef] = Option(streamJobConfService.getJobConfig(job.getId))
+      .getOrElse(new util.HashMap[String, AnyRef]())
+    val jobTemplateMapOption = Option(streamJobService.getJobTemplateConfMap(job))
+    val finalJobConfig: util.Map[String, AnyRef] = jobTemplateMapOption match {
+      case Some(jobTemplateMap) =>
+        val mergedConfig = new util.HashMap[String, Object](jobTemplateMap)
+        streamJobService.mergeJobConfig(mergedConfig, jobConfig)
+        mergedConfig
+      case None =>
+        jobConfig
+    }
+    metaJsonInfo.setJobConfig(finalJobConfig)
     val configJson = JobUtils.gson.toJson(metaJsonInfo)
     val jsonObj = new JsonParser().parse(configJson).getAsJsonObject
     if (jsonObj.has(JobConstrants.FIELD_WORKSPACE_NAME)) {

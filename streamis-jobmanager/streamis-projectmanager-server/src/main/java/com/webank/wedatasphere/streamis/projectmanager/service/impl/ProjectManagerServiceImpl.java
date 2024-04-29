@@ -22,12 +22,13 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.utils.JobUtils;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants;
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper;
+import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamTaskMapper;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
-import com.webank.wedatasphere.streamis.projectmanager.utils.JobRefreshUtils;
 import com.webank.wedatasphere.streamis.projectmanager.utils.JsonUtil;
 import com.webank.wedatasphere.streamis.projectmanager.utils.MD5Utils;
 import org.apache.commons.collections.CollectionUtils;
@@ -65,7 +66,12 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
     @Autowired
     private StreamJobMapper streamJobMapper;
 
+    @Autowired
+    private StreamTaskMapper streamTaskMapper;
+
     private static final String JSON_TYPE = ".json";
+
+    private static final Integer RUNNING = 5;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -109,11 +115,6 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
         return bmlService.get(file.getCreateBy(), map.get("resourceId"), map.get("version"));
     }
 
-    public InputStream downloadTemplate(JobTemplateFiles file,String userName) throws JsonProcessingException {
-        Map<String,String> map = JsonUtils.jackson().readValue(file.getStorePath(), Map.class);
-        return bmlService.get(userName, map.get("resourceId"), map.get("version"));
-    }
-
     @Override
     public ProjectFiles getById(Long id) {
         return projectManagerMapper.getById(id);
@@ -127,10 +128,9 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
     }
 
     @Override
-    public boolean deleteTemplate(String name, String projectName, String username){
-        int count = projectManagerMapper.countTemplateFiles(name,projectName);
-        int delete = projectManagerMapper.deleteTemplateVersions(name,projectName);
-        return count == delete;
+    public void deleteTemplate(String name, String projectName, String username){
+        List<Long> templateIds = projectManagerMapper.selectTemplateId(name,projectName);
+        projectManagerMapper.setEnable(templateIds,false);
     }
 
     @Override
@@ -166,10 +166,9 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
             }
             for (Long id : list){
                 ProjectFiles projectFile = projectManagerMapper.getById(id);
-                projectManagerMapper.deleteTemplateFiles(projectFile.getFileName(),projectFile.getVersion());
+                projectManagerMapper.setEnableByVersion(projectFile.getFileName(),projectFile.getVersion(),false);
             }
         }
-
     }
 
     @Override
@@ -209,6 +208,7 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
         jobTemplateFiles.setMetaJson(metaJson);
         jobTemplateFiles.setVersion(version);
         jobTemplateFiles.setDate(new Date());
+        jobTemplateFiles.setEnable(true);
 
         JobTemplateFiles file = selectJobTemplate(fileName, version, projectName);
         if (file == null) {
@@ -271,8 +271,4 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
         return false;
     }
 
-//    public void refreshJobConfig(StreamJobService streamJobService, StreamJobConfService streamJobConfService,String projectName,Long jobId){
-//        Map<String,Object> finalJobConfig = JobRefreshUtils.refreshJobConfig(streamJobService,streamJobConfService,projectName,jobId);
-//        streamJobConfService.saveJobConfig(version.getJobId, finalJobConfig);
-//    }
 }
