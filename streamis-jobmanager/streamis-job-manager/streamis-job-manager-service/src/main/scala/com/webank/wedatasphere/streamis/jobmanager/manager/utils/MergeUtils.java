@@ -1,9 +1,12 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.utils;
 
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Map;
 import java.util.Stack;
 
-public class mergeUtils {
+public class MergeUtils {
     public static void merge(Map<String, Object> destination, Map<String, Object> source) {
         Stack<Map<String, Object>> stackDest = new Stack<>();
         Stack<Map<String, Object>> stackSrc = new Stack<>();
@@ -27,4 +30,15 @@ public class mergeUtils {
             }
         }
     }
+    public static Map<String,Object> getJobTemplateConfMap(String jobTemplate){
+        Map<String,Object> jobTemplateConfig = null;
+        if(StringUtils.isNotBlank(jobTemplate)){
+            Map<String,Object> jobTemplateMap = JobContentUtils.getMap(jobTemplate);
+            if (jobTemplateMap.containsKey("jobConfig") && jobTemplateMap.get("jobConfig") instanceof Map<?, ?>) {
+                jobTemplateConfig = (Map<String, Object>) jobTemplateMap.get("jobConfig");
+            }
+        }
+        return jobTemplateConfig;
+    }
+
 }

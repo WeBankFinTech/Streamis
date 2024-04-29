@@ -195,4 +195,6 @@ trait StreamTaskService {
   def generateJobStartConfig(job: StreamJob, jobVersion: StreamJobVersion, creator: String): String
 
   def generateJobTemplate(jobTemplate: JobTemplateFiles): String
+
+  def getLatestByJobId(jobId: Long ):StreamTask
 }

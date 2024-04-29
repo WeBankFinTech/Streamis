@@ -423,30 +423,30 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     hookList.foreach(hook => {
       val hookStartTimeMills = System.currentTimeMillis()
       var hookFuture: Future[_] = null
-      Utils.tryCatch {
-        val hookTask = new Runnable {
-          override def run(): Unit = {
-            Utils.tryAndWarn {
-              hook.doBeforeJobShutdown(streamTask.getId.toString, streamJob.getProjectName, streamJob.getName,
-                JobManagerConf.JOB_SHUTDOWN_HOOK_TIMEOUT_MILLS.getHotValue(), hookExtraParams)
-              logger.info(s"hook : ${hook.getName} succeed, costed ${System.currentTimeMillis() - hookStartTimeMills}mills.")
-            }
-          }
-        }
-        hookFuture = Utils.defaultScheduler.submit(hookTask)
-        hookFuture.get(JobManagerConf.JOB_SHUTDOWN_HOOK_TIMEOUT_MILLS.getHotValue(), TimeUnit.MILLISECONDS)
-      } {
-        case e: Exception =>
-          logger.error(s"hook : ${hook.getName} failed, costed ${System.currentTimeMillis() - hookStartTimeMills}mills.")
-          val msg = s"job : ${streamJob.getProjectName}.${streamJob.getName} execute hook : ${hook.getName} failed, because : ${e.getMessage}"
-          logger.error(msg, e)
-          if (null != hookFuture && !hookFuture.isDone) {
-            hookFuture.cancel(true)
-          }
-          if (!skipHookError) {
-            throw new HookExecutionException(msg)
-          }
-      }
+//      Utils.tryCatch {
+//        val hookTask = new Runnable {
+//          override def run(): Unit = {
+//            Utils.tryAndWarn {
+//              hook.doBeforeJobShutdown(streamTask.getId.toString, streamJob.getProjectName, streamJob.getName,
+//                JobManagerConf.JOB_SHUTDOWN_HOOK_TIMEOUT_MILLS.getHotValue(), hookExtraParams)
+//              logger.info(s"hook : ${hook.getName} succeed, costed ${System.currentTimeMillis() - hookStartTimeMills}mills.")
+//            }
+//          }
+//        }
+//        hookFuture = Utils.defaultScheduler.submit(hookTask)
+//        hookFuture.get(JobManagerConf.JOB_SHUTDOWN_HOOK_TIMEOUT_MILLS.getHotValue(), TimeUnit.MILLISECONDS)
+//      } {
+//        case e: Exception =>
+////          logger.error(s"hook : ${hook.getName} failed, costed ${System.currentTimeMillis() - hookStartTimeMills}mills.")
+////          val msg = s"job : ${streamJob.getProjectName}.${streamJob.getName} execute hook : ${hook.getName} failed, because : ${e.getMessage}"
+////          logger.error(msg, e)
+////          if (null != hookFuture && !hookFuture.isDone) {
+////            hookFuture.cancel(true)
+////          }
+////          if (!skipHookError) {
+////            throw new HookExecutionException(msg)
+////          }
+//      }
     })
     logger.info(s"execute all ${hookList.size} cost ${System.currentTimeMillis() - startTimeMills}mills.")
   }
@@ -1089,5 +1089,10 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     }
     val parsedConfigJson = jsonObj.toString
     parsedConfigJson
+  }
+
+  override def getLatestByJobId(jobId: Long):StreamTask = {
+    val streamTask = streamTaskMapper.getLatestByJobId(jobId)
+    streamTask
   }
 }
