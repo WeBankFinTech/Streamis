@@ -75,6 +75,7 @@
         <mysql.connector.version>5.1.47</mysql.connector.version>
         <validation.api.version>2.0.1.Final</validation.api.version>
         <xstream.version>1.4.20</xstream.version>
+        <jetty-server.version>9.4.54.v20240208</jetty-server.version>
     </properties>
 
 
