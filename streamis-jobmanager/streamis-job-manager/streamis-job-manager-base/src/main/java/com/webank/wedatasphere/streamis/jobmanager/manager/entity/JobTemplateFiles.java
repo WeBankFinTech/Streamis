@@ -20,6 +20,8 @@ public class JobTemplateFiles {
 
     private Date date;
 
+    private Boolean enable;
+
     public String getProjectName() {
         return projectName;
     }
@@ -74,5 +76,13 @@ public class JobTemplateFiles {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public Boolean getEnable() {
+        return enable;
+    }
+
+    public void setEnable(Boolean enable) {
+        this.enable = enable;
     }
 }

@@ -30,7 +30,6 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.util.ReaderUtils;
 
 import com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles;
 import com.webank.wedatasphere.streamis.projectmanager.service.ProjectManagerService;
-import com.webank.wedatasphere.streamis.projectmanager.utils.JobRefreshUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -203,7 +202,8 @@ public class ProjectManagerRestfulApi {
                            @RequestParam(value = "projectName",required = false) String projectName) {
         String username = ModuleUserUtils.getOperationUser(req, "Delete file:" + fileName + " in project: " + projectName);
         if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
-        return (projectManagerService.delete(fileName, projectName, username) && projectManagerService.deleteTemplate(fileName, projectName, username))? Message.ok()
+        projectManagerService.deleteTemplate(fileName,projectName,username);
+        return projectManagerService.delete(fileName, projectName, username)? Message.ok()
                 : Message.warn("you have no permission delete some files not belong to you");
     }
 
@@ -267,38 +267,6 @@ public class ProjectManagerRestfulApi {
             os.flush();
         } catch (Exception e) {
             LOG.error("download file: {} failed , message is : {}", file.getFileName(), e);
-            return Message.error(e.getMessage());
-        }
-        return Message.ok();
-    }
-
-    @RequestMapping(path = "/files/template", method = RequestMethod.GET)
-    public Message downloadTemplate( HttpServletRequest req, HttpServletResponse response,
-                             @RequestParam(value = "id") Long id,
-                             @RequestParam(value = "projectName",required = false)String projectName){
-        String userName = ModuleUserUtils.getOperationUser(req, "download job");
-        if (org.apache.commons.lang.StringUtils.isBlank(userName)) return Message.error("current user has no permission");
-        JobTemplateFiles file = streamJobService.getJobTemplateById(id);
-        if (file == null) {
-            return Message.error("no such file in this project");
-        }
-        if (StringUtils.isBlank(file.getStorePath())) {
-            return Message.error("storePath is null");
-        }
-        response.setContentType("application/x-download");
-        response.setHeader("content-Disposition", "attachment;filename=" + file.getName());
-
-        try (InputStream is = projectManagerService.downloadTemplate(file,userName);
-             OutputStream os = response.getOutputStream()
-        ) {
-            int len = 0;
-            byte[] arr = new byte[2048];
-            while ((len = is.read(arr)) > 0) {
-                os.write(arr, 0, len);
-            }
-            os.flush();
-        } catch (Exception e) {
-            LOG.error("download file: {} failed , message is : {}", file.getName(), e);
             return Message.error(e.getMessage());
         }
         return Message.ok();

@@ -121,20 +121,6 @@ abstract class AbstractJobContentParser extends JobContentParser with Logging {
     streamTaskService.generateJobTemplate(jobTemplate)
   }
 
-//  protected def getJobTemplateFile(job: StreamJob, jobVersion: StreamJobVersion): JobTemplateFiles = {
-//    val projectName: String = job.getProjectName
-////    val streamTask = streamTaskMapper.getLatestByJobId(jobId)
-////    val jobTemplate: String = if (null != streamTask) {
-////      if (streamTask.getStatus.equals(JobConf.FLINK_JOB_STATUS_RUNNING.getValue)) {
-////        streamJobMapper.getJobTemplateJson(streamTask.getTemplateId)
-////      } else {
-////        streamJobMapper.getLatestJobTemplate(projectName)
-////      }
-////    } else {
-////      streamJobMapper.getLatestJobTemplate(projectName)
-////    }
-//  }
-
 }
 object AbstractJobContentParser {
 

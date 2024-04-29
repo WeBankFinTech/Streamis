@@ -49,9 +49,15 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
     transformJob.setStreamJob(streamJob)
     val jobConfig: util.Map[String, AnyRef] = Option(streamJobConfService.getJobConfig(streamJob.getId))
       .getOrElse(new util.HashMap[String, AnyRef]())
-    val jobTemplateMap = streamJobService.getJobTemplateConfMap(streamJob)
-    val finalJobConfig: util.Map[String, Object] = new util.HashMap[String, Object](jobTemplateMap)
-    streamJobService.mergeJobConfig(finalJobConfig,jobConfig)
+    val jobTemplateMapOption = Option(streamJobService.getJobTemplateConfMap(streamJob))
+    val finalJobConfig: util.Map[String, AnyRef] = jobTemplateMapOption match {
+      case Some(jobTemplateMap) =>
+        val mergedConfig = new util.HashMap[String, Object](jobTemplateMap)
+        streamJobService.mergeJobConfig(mergedConfig, jobConfig)
+        mergedConfig
+      case None =>
+        jobConfig
+    }
     // Put and overwrite internal group, users cannot customize the internal configuration
     val internalGroup = new util.HashMap[String, AnyRef]()
     finalJobConfig.put(JobConfKeyConstants.GROUP_INTERNAL.getValue, internalGroup)
@@ -63,12 +69,12 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
     val streamTask = streamTaskService.getLatestByJobId(streamJob.getId)
     val jobTemplate: JobTemplateFiles = if (null != streamTask) {
       if (streamTask.getStatus.equals(JobConf.FLINK_JOB_STATUS_RUNNING.getValue)) {
-        streamJobMapper.getJobTemplate(streamTask.getTemplateId)
+        streamJobMapper.getJobTemplate(streamTask.getTemplateId,true)
       }else{
-        streamJobMapper.getLatestJobTemplateFile(streamJob.getProjectName)
+        streamJobMapper.getLatestJobTemplateFile(streamJob.getProjectName,true)
       }
     }else{
-      streamJobMapper.getLatestJobTemplateFile(streamJob.getProjectName)
+      streamJobMapper.getLatestJobTemplateFile(streamJob.getProjectName,true)
     }
     transformJob.setStreamisTransformJobContent(createStreamisTransformJobContent(transformJob,jobTemplate))
     transformJob

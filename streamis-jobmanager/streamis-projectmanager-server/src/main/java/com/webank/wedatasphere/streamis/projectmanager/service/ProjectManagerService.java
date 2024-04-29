@@ -43,13 +43,11 @@ public interface ProjectManagerService {
 
     InputStream download(StreamisFile projectFiles) throws JsonProcessingException;
 
-    InputStream downloadTemplate(JobTemplateFiles jobTemplateFiles,String userName) throws JsonProcessingException;
-
     ProjectFiles getById(Long id);
 
     boolean delete(String fileName, String projectName, String username);
 
-    boolean deleteTemplate(String name, String projectName, String username);
+    void deleteTemplate(String name, String projectName, String username);
 
     ProjectFiles getFile(Long id, String projectName);
 
