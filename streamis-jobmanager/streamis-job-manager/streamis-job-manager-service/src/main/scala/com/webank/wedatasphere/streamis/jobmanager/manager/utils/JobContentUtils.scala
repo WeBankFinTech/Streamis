@@ -57,7 +57,7 @@ object JobContentUtils {
       val metaJsonTemplate = JsonUtils.jackson.readValue(jobTemplate, classOf[util.Map[String, Object]])
 //      val jobConfigTemplate = metaJsonTemplate.get("jobContent").asInstanceOf[JavaMap[String, Object]]
       val finalJobConfig: JavaMap[String, Object] = new java.util.HashMap[String, Object](metaJsonTemplate)
-      mergeUtils.merge(finalJobConfig,jobConfigMap)
+      MergeUtils.merge(finalJobConfig,jobConfigMap)
       finalJobConfig
     } else {
       jobConfigMap

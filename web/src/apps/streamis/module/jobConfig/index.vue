@@ -6,12 +6,12 @@
           <h3>{{ part.name }}</h3>
           <div>
             <Form v-if="valueMap[part.key]" :model="valueMap[part.key]" :ref="part.key" :rules="rule[part.key]">
-              <FormItem v-for="(def, index) in part.child_def" :key="index" :label="def.name" :prop="def.key" :data-prop="def.key">
-                <Input :disabled="!editable" v-if="def.type === 'INPUT' || def.type === 'NUMBER'" v-model="valueMap[part.key][def.key]" />
+              <FormItem v-for="(def, index) in part.child_def" :key="index" :label="def.name + ` ${isTemplateMap.get(part.key+def.key) ? '(template)' : '(job)'}`" :prop="def.key" :data-prop="def.key">
+                <Input :disabled="!editable || isTemplateMap.get(part.key+def.key)" v-if="def.type === 'INPUT' || def.type === 'NUMBER'" v-model="valueMap[part.key][def.key]" />
                 <!-- <Input :disabled="!editable" v-else-if="def.type === 'NUMBER'" v-model="valueMap[part.key][def.key]" type="number" /> -->
                 <Select 
                   v-else
-                  :disabled="!editable"
+                  :disabled="!editable || isTemplateMap.get(part.key+def.key)"
                   v-model="valueMap[part.key][def.key]"
                   class="select"
                 >
@@ -36,22 +36,24 @@
                   <FormItem>
                     <div class="inputWrap">
                       <div class="flinkIndex">{{ index + 1 }}</div>
-                      <Input :disabled="!editable" v-model="item.key" />
+                      <Input :disabled="!editable || isTemplateMap.get(part.key+item.key)" v-model="item.key" />
                       <div class="equity">=</div>
                     </div>
                   </FormItem>
                 </Col>
                 <Col span="5">
                   <FormItem>
-                    <Input :disabled="!editable" v-model="item.value" />
+                    <Input :disabled="!editable || isTemplateMap.get(part.key+item.key)" v-model="item.value" />
                   </FormItem>
                 </Col>
                 <Col span="10">
                   <div class="inputWrap">
+                    <span class="tag" v-if="isTemplateMap.get(part.key+item.key)">(template)</span>
+                    <span class="tag" v-else>(job)</span>
                     <div
                       class="icon"
                       @click="removeParameter(index, part.key)"
-                      v-show="diyMap[part.key].length !== 1"
+                      v-show="diyMap[part.key].length !== 1 && !isTemplateMap.get(part.key+item.key)"
                     >
                       <Icon type="md-close" />
                     </div>
@@ -99,6 +101,7 @@ export default {
       rule: {},
       enable: this.$route.params.enable, // 任务是否启用
       editable: true,
+      isTemplateMap: new Map()
     }
   },
   mounted() {
@@ -134,12 +137,14 @@ export default {
                 Object.keys(res.template[k]).forEach(j => {
                   const formatKey = j.replace(/\./g, '/');
                   valueMap[k][formatKey] = res.template[k][j];
+                  this.isTemplateMap.set(k+formatKey, true)
                 })
               })
             } else {
               Object.keys(res[key]).forEach(k => {
                 const formatKey = k.replace(/\./g, '/');
                 valueMap[key][formatKey] = res[key][k];
+                this.isTemplateMap.set(key+formatKey, false)
               })
             }
           })
@@ -289,6 +294,11 @@ export default {
 <style lang="scss" scoped>
 .inputWrap {
   display: flex;
+  align-items: center;
+}
+
+.tag{
+  margin-left: 10px;
 }
 .unit {
   margin-left: 10px;

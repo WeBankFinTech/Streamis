@@ -22,10 +22,12 @@ import org.apache.linkis.manager.label.entity.engine.RunType.RunType
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{JobTemplateFiles, StreamJob}
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.{StreamJobService, StreamTaskService}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.StreamisTransformJobBuilder
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisJobConnect, StreamisJobConnectImpl, StreamisJobEngineConnImpl, StreamisTransformJob, StreamisTransformJobContent, StreamisTransformJobImpl}
 import org.springframework.beans.factory.annotation.Autowired
 
+import java.util.{Map => JavaMap}
 import java.util
 import scala.collection.JavaConverters.mapAsJavaMapConverter
 /**
@@ -35,6 +37,8 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
 
   @Autowired private var streamJobMapper: StreamJobMapper = _
   @Autowired private var streamJobConfService: StreamJobConfService = _
+  @Autowired private var streamJobService: StreamJobService = _
+  @Autowired private var streamTaskService: StreamTaskService = _
 
   protected def createStreamisTransformJob(): StreamisTransformJobImpl = new StreamisTransformJobImpl
 
@@ -45,15 +49,27 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
     transformJob.setStreamJob(streamJob)
     val jobConfig: util.Map[String, AnyRef] = Option(streamJobConfService.getJobConfig(streamJob.getId))
       .getOrElse(new util.HashMap[String, AnyRef]())
+    val jobTemplateMap = streamJobService.getJobTemplateConfMap(streamJob)
+    val finalJobConfig: util.Map[String, Object] = new util.HashMap[String, Object](jobTemplateMap)
+    streamJobService.mergeJobConfig(finalJobConfig,jobConfig)
     // Put and overwrite internal group, users cannot customize the internal configuration
     val internalGroup = new util.HashMap[String, AnyRef]()
-    jobConfig.put(JobConfKeyConstants.GROUP_INTERNAL.getValue, internalGroup)
+    finalJobConfig.put(JobConfKeyConstants.GROUP_INTERNAL.getValue, internalGroup)
     internalLogConfig(internalGroup)
-    transformJob.setConfigMap(jobConfig)
+    transformJob.setConfigMap(finalJobConfig)
     val streamJobVersions = streamJobMapper.getJobVersions(streamJob.getId)
     // 无需判断streamJobVersions是否非空，因为TaskService已经判断了
     transformJob.setStreamJobVersion(streamJobVersions.get(0))
-    val jobTemplate = streamJobMapper.getLatestJobTemplateFile(streamJob.getProjectName)
+    val streamTask = streamTaskService.getLatestByJobId(streamJob.getId)
+    val jobTemplate: JobTemplateFiles = if (null != streamTask) {
+      if (streamTask.getStatus.equals(JobConf.FLINK_JOB_STATUS_RUNNING.getValue)) {
+        streamJobMapper.getJobTemplate(streamTask.getTemplateId)
+      }else{
+        streamJobMapper.getLatestJobTemplateFile(streamJob.getProjectName)
+      }
+    }else{
+      streamJobMapper.getLatestJobTemplateFile(streamJob.getProjectName)
+    }
     transformJob.setStreamisTransformJobContent(createStreamisTransformJobContent(transformJob,jobTemplate))
     transformJob
   }

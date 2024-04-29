@@ -1091,4 +1091,9 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     val parsedConfigJson = jsonObj.toString
     parsedConfigJson
   }
+
+  override def getLatestByJobId(jobId: Long):StreamTask = {
+    val streamTask = streamTaskMapper.getLatestByJobId(jobId)
+    streamTask
+  }
 }
