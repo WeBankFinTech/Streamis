@@ -138,6 +138,7 @@ export default {
                   const formatKey = j.replace(/\./g, '/');
                   valueMap[k][formatKey] = res.template[k][j];
                   this.isTemplateMap.set(k+j, true)
+                  this.isTemplateMap.set(k+formatKey, true)
                 })
               })
             } else {
@@ -145,6 +146,7 @@ export default {
                 const formatKey = k.replace(/\./g, '/');
                 valueMap[key][formatKey] = res[key][k];
                 this.isTemplateMap.set(key+k, false)
+                this.isTemplateMap.set(key+formatKey, false)
               })
             }
           })
