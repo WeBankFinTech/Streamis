@@ -260,7 +260,7 @@ export default {
         (this.diyMap[key] || []).forEach(mapKey => {
           console.log('mapKey: ', mapKey);
           if (key !== 'wds.linkis.flink.custom') emptyWarning = !mapKey.key || !mapKey.key.trim();
-          if (configuration[key][mapKey.key]) warning = true;
+          // if (configuration[key][mapKey.key]) warning = true;
           configuration[key][mapKey.key] = mapKey.value || '';
         });
         if ((this.diyMap[key] || []).length <= 1) {
