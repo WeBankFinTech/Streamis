@@ -202,7 +202,9 @@ public class ProjectManagerRestfulApi {
                            @RequestParam(value = "projectName",required = false) String projectName) {
         String username = ModuleUserUtils.getOperationUser(req, "Delete file:" + fileName + " in project: " + projectName);
         if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
-        projectManagerService.deleteTemplate(fileName,projectName,username);
+        if(fileName.endsWith(templateName)){
+            projectManagerService.deleteTemplate(fileName,projectName,username);
+        }
         return projectManagerService.delete(fileName, projectName, username)? Message.ok()
                 : Message.warn("you have no permission delete some files not belong to you");
     }

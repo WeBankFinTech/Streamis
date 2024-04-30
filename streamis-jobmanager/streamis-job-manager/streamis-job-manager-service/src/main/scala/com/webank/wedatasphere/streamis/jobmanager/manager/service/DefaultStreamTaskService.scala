@@ -726,22 +726,23 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       jobClient = getJobLaunchManager(streamTask).launch(launchJob, state)
     } {
       case e: Exception =>
-        val result: Future[_] = streamTaskService.errorCodeMatchException(streamJob.getId, streamTask, e.toString)
+        val result: Future[_] = streamTaskService.errorCodeMatchException(streamJob.getId, streamTask, e.getMessage)
         logger.error(s"get jobClient failed ", e)
-        val executor = Executors.newSingleThreadExecutor()
-        executor.execute(new Runnable {
-          override def run(): Unit = {
-            try {
-              result.get()
-              logger.error("get jobClient failed, but error handler succeeded", e)
-              throw e
-            } catch {
-              case ex: Throwable =>
-                logger.error("get jobClient failed, and error handler also failed", ex)
-                throw ex
-            }
-          }
-        })
+        throw e
+//        val executor = Executors.newSingleThreadExecutor()
+//        executor.execute(new Runnable {
+//          override def run(): Unit = {
+//            try {
+//              result.get()
+//              logger.error("get jobClient failed, but error handler succeeded", e)
+//              throw e
+//            } catch {
+//              case ex: Throwable =>
+//                logger.error("get jobClient failed, and error handler also failed", ex)
+//                throw ex
+//            }
+//          }
+//        })
     }
     // Refresh and store the information from JobClient
     Utils.tryCatch {
