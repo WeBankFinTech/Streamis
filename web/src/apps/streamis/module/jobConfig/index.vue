@@ -36,24 +36,24 @@
                   <FormItem>
                     <div class="inputWrap">
                       <div class="flinkIndex">{{ index + 1 }}</div>
-                      <Input :disabled="!editable || isTemplateMap.get(part.key+item.key)" v-model="item.key" />
+                      <Input :disabled="!editable || item.isTemplate" v-model="item.key" @on-blur="onFlinkCustomBlur(part.key, index)"/>
                       <div class="equity">=</div>
                     </div>
                   </FormItem>
                 </Col>
                 <Col span="5">
                   <FormItem>
-                    <Input :disabled="!editable || isTemplateMap.get(part.key+item.key)" v-model="item.value" />
+                    <Input :disabled="!editable || item.isTemplate" v-model="item.value" />
                   </FormItem>
                 </Col>
                 <Col span="10">
                   <div class="inputWrap">
-                    <span class="tag" v-if="isTemplateMap.get(part.key+item.key)">(template)</span>
+                    <span class="tag" v-if="item.isTemplate">(template)</span>
                     <span class="tag" v-else>(job)</span>
                     <div
                       class="icon"
                       @click="removeParameter(index, part.key)"
-                      v-show="diyMap[part.key].length !== 1 && !isTemplateMap.get(part.key+item.key)"
+                      v-show="diyMap[part.key].length !== 1 && !item.isTemplate"
                     >
                       <Icon type="md-close" />
                     </div>
@@ -152,9 +152,9 @@ export default {
           })
           Object.keys(this.diyMap).forEach(key => {
             if (Object.keys(valueMap).includes(key)) {
-              let keyValue = Object.keys(valueMap[key] || {}).map(k => ({key: k.replace(/\//g, '.'), value: valueMap[key][k]}));
+              let keyValue = Object.keys(valueMap[key] || {}).map(k => ({key: k.replace(/\//g, '.'), value: valueMap[key][k], isTemplate: this.isTemplateMap.get(key+k)}));
               valueMap[key] = {};
-              if (!keyValue.length) keyValue = [{value: '', key: ''}];
+              if (!keyValue.length) keyValue = [{value: '', key: '', isTemplate: false}];
               this.diyMap = {
                 ...this.diyMap,
                 [key]: keyValue
@@ -214,7 +214,15 @@ export default {
       this.diyMap = {...this.diyMap, [key]: keyValue}
     },
     addParameter(key) {
-      this.diyMap = {...this.diyMap, [key]: this.diyMap[key].concat({value: '', key: ''})}
+      this.diyMap = {...this.diyMap, [key]: this.diyMap[key].concat({value: '', key: '', isTemplate: false})}
+    },
+    onFlinkCustomBlur(key, index) {
+      const flinks = this.diyMap[key].filter(item => !item.isTemplate).map(item => item.key)
+      const now = this.diyMap[key][index].key
+      if (flinks.filter(item => item === now).length > 1) {
+        this.diyMap[key][index].key = ''
+        this.$Message.warning('Job Flink参数key不能重复')
+      }
     },
     async handleSaveConfig() {
       this.valueMap = cloneDeep(this.valueMap);
