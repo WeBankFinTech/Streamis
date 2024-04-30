@@ -105,7 +105,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
               logger.error(msg)
               stopMsg = msg
           }
-          throw new FlinkJobLaunchErrorException(-1, exceptionAnalyze(s"Fail to obtain launched job info(获取任务信息失败,引擎服务可能启动失败). ${stopMsg}", t), t)
+          throw new FlinkJobLaunchErrorException(-1, t.getMessage, t)
       }
       val client = AbstractJobClientFactory.getJobManager().createJobClient(onceJob, jobInfo, getJobStateManager)
       client
@@ -113,7 +113,7 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
       case e: FlinkJobLaunchErrorException => throw e
       case t: Throwable =>
         error(s"Server Exception in submitting Flink job [${job.getJobName}] to Linkis remote server", t)
-        throw new FlinkJobLaunchErrorException(-1, exceptionAnalyze(s"Exception in submitting Flink job to Linkis remote server (提交至Linkis服务失败，请检查服务及网络)", t), t)
+        throw new FlinkJobLaunchErrorException(-1, t.getMessage, t)
     }
   }
 

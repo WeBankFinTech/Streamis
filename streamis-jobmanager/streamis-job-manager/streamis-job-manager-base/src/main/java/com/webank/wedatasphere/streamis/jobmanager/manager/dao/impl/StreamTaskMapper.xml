@@ -31,8 +31,8 @@
         <result column="version" property="version" jdbcType="VARCHAR"/>
         <result column="server_instance" property="serverInstance" jdbcType="VARCHAR"/>
         <result column="linkis_job_info" property="linkisJobInfo" jdbcType="LONGVARCHAR"/>
-        <result column="job_start_config" property="jobStartConfig" jdbcType="LONGNVARCHAR" />
-        <result column="solution" property="solution" jdbcType="LONGNVARCHAR" />
+        <result column="job_start_config" property="jobStartConfig" jdbcType="LONGVARCHAR" />
+        <result column="solution" property="solution" jdbcType="LONGVARCHAR" />
         <result column="template_id" property="templateId" jdbcType="BIGINT"/>
     </resultMap>
 
@@ -42,6 +42,7 @@
         <result column="status" property="status" jdbcType="BIGINT"/>
         <result column="version" property="version" jdbcType="VARCHAR"/>
         <result column="err_desc" property="errDesc" jdbcType="VARCHAR"/>
+        <result column="solution" property="solution" jdbcType="LONGVARCHAR"/>
     </resultMap>
     <sql id="StreamTask_Column">
         `id`,`job_version_id`,`job_id`,`status`,`start_time`,`last_update_time`,`err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`, `server_instance`
@@ -95,6 +96,9 @@
             </if>
             <if test="task.errDesc != null">
                 err_desc=#{task.errDesc},
+            </if>
+            <if test="task.solution != null">
+                solution=#{task.solution},
             </if>
         </trim>
         WHERE id=#{task.id} AND status = #{status};
