@@ -71,6 +71,8 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
 
     private static final String JSON_TYPE = ".json";
 
+    private static final String templateName = "-meta.json";
+
     private static final Integer RUNNING = 5;
 
     @Override
@@ -166,7 +168,9 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
             }
             for (Long id : list){
                 ProjectFiles projectFile = projectManagerMapper.getById(id);
-                projectManagerMapper.setEnableByVersion(projectFile.getFileName(),projectFile.getVersion(),false);
+                if(projectFile.getFileName().endsWith(templateName)){
+                    projectManagerMapper.setEnableByVersion(projectFile.getFileName(),projectFile.getVersion(),false);
+                }
             }
         }
     }

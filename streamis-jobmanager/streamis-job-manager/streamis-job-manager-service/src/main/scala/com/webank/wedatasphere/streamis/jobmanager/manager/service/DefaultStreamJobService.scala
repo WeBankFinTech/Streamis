@@ -26,6 +26,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobCon
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobManagerConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants
+import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants.PRODUCE_PARAM
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamAlertMapper, StreamJobMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity._
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobStatusVo, QueryJobListVo, TaskCoreNumVo, VersionDetailVo}
@@ -237,7 +238,14 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     val version = deployStreamJob(validateResult.streamJob, metaJsonInfo, userName, validateResult.updateVersion, source)
     // Save the job configuration, lock the job again if exists
     if (null != metaJsonInfo.getJobConfig){
-      this.streamJobConfService.saveJobConfig(version.getJobId, metaJsonInfo.getJobConfig.asInstanceOf[util.Map[String, AnyRef]])
+      if(metaJsonInfo.getJobConfig.containsKey(PRODUCE_PARAM)){
+        if(metaJsonInfo.getJobConfig.get(PRODUCE_PARAM) == null) throw new JobCreateErrorException(30030,s"jobConfig does not contain wds.linkis.flink.produce, please check")
+        this.streamJobConfService.saveJobConfig(version.getJobId, metaJsonInfo.getJobConfig.asInstanceOf[util.Map[String, AnyRef]])
+      }else{
+        throw new JobCreateErrorException(30030,s"jobConfig does not contain wds.linkis.flink.produce, please check")
+      }
+    }else{
+      throw new JobCreateErrorException(30030,s"meta_json does not contain jobConfig, please check")
     }
 //    this.streamJobConfService.saveJobConfig(version.getJobId, finalJobConfig.asInstanceOf[util.Map[String, AnyRef]])
     //  上传所有非meta.json的文件
