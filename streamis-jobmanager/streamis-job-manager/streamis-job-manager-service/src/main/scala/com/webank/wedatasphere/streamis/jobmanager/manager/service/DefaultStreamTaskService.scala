@@ -259,7 +259,15 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           finalTask.setId(newTaskId.asInstanceOf[Long])
           finalTask.setStatus(JobConf.FLINK_JOB_STATUS_FAILED.getValue)
           // Output message equals error message, you can use t.getMessage()
-          finalTask.setErrDesc(scheduleJob.getOutput)
+          val result = errorCodeMatchException(scheduleJob.getOutput)
+          val errorMsg = result._1
+          val solution = result._2
+          if(StringUtils.isBlank(errorMsg)){
+            finalTask.setErrDesc(scheduleJob.getOutput)
+          }else{
+            finalTask.setErrDesc(errorMsg)
+            finalTask.setSolution(solution)
+          }
           finalTask.setServerInstance(instanceService.getThisServiceInstance)
           if (streamTaskMapper.updateTaskInStatus(finalTask, JobConf.FLINK_JOB_STATUS_STARTING.getValue) > 0) {
             info(s"Transient the StreamTask [$newTaskId]'status from STARTING to FAILED and flush the output message.")
@@ -721,29 +729,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     launchJob = Transform.getTransforms.foldLeft(launchJob)((job, transform) => transform.transform(transformJob, job))
     info(s"StreamJob [${streamJob.getName}] has transformed with launchJob $launchJob, now to launch it.")
     //TODO getLinkisJobManager should use jobManagerType to instance in future, since not only `simpleFlink` mode is supported in future.
-    var jobClient: JobClient[_ <: JobInfo] = null
-    Utils.tryCatch {
-      jobClient = getJobLaunchManager(streamTask).launch(launchJob, state)
-    } {
-      case e: Exception =>
-        val result: Future[_] = streamTaskService.errorCodeMatchException(streamJob.getId, streamTask, e.getMessage)
-        logger.error(s"get jobClient failed ", e)
-        throw e
-//        val executor = Executors.newSingleThreadExecutor()
-//        executor.execute(new Runnable {
-//          override def run(): Unit = {
-//            try {
-//              result.get()
-//              logger.error("get jobClient failed, but error handler succeeded", e)
-//              throw e
-//            } catch {
-//              case ex: Throwable =>
-//                logger.error("get jobClient failed, and error handler also failed", ex)
-//                throw ex
-//            }
-//          }
-//        })
-    }
+    val jobClient = getJobLaunchManager(streamTask).launch(launchJob, state)
     // Refresh and store the information from JobClient
     Utils.tryCatch {
       // Refresh the job info(If the job shutdown immediately)
@@ -997,38 +983,13 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     })
   }
 
-  override def errorCodeMatchException(jobId: Long, streamTask: StreamTask, exception: String): Future[_] = {
+  override def errorCodeMatchException(exception: String): (String,String) = {
     var errorMsg = ""
     var solution = ""
-    val taskId = streamTask.getId
-//    Thread.sleep(2000)
-    Utils.defaultScheduler.submit(new Runnable {
-      override def run(): Unit = {
-        Utils.tryCatch {
-          val result = exceptionAnalyze(errorMsg, exception, solution)
-          errorMsg = result._1
-          solution = result._2
-          if (errorMsg.isEmpty) {
-            errorMsg = JobConf.DEFAULT_ERROR_MSG.getHotValue()
-          }
-        } {
-          case e: Exception =>
-            logger.error("errorCodeMatching failed. ", e)
-            val newStreamTask = new StreamTask()
-            newStreamTask.setErrDesc(JobConf.ANALYZE_ERROR_MSG.getHotValue())
-            streamTaskService.updateTask(newStreamTask)
-        }
-        val newStreamTask = new StreamTask()
-        newStreamTask.setId(taskId);
-        if (errorMsg.equals(JobConf.DEFAULT_ERROR_MSG.getHotValue())) {
-          newStreamTask.setErrDesc(JobConf.FINAL_ERROR_MSG.getHotValue())
-        } else {
-          newStreamTask.setErrDesc(errorMsg)
-        }
-        newStreamTask.setSolution(solution)
-        streamTaskService.updateTask(newStreamTask)
-      }
-    })
+    val result = exceptionAnalyze(errorMsg, exception, solution)
+    errorMsg = result._1
+    solution = result._2
+    (errorMsg,solution)
   }
 
   def getLog(jobId : Long,taskId: Long, username: String,logType: String, fromLine: Int): String = {
