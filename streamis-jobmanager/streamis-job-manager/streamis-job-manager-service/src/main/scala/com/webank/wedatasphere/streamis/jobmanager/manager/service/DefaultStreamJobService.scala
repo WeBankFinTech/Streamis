@@ -27,7 +27,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
 import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobManagerConf
 import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants
 import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants.PRODUCE_PARAM
-import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamAlertMapper, StreamJobMapper, StreamTaskMapper}
+import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamAlertMapper, StreamJobMapper, StreamJobTemplateMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity._
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobStatusVo, QueryJobListVo, TaskCoreNumVo, VersionDetailVo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.DefaultStreamJobService.JobDeployValidateResult
@@ -61,6 +61,8 @@ class DefaultStreamJobService extends StreamJobService with Logging {
   private var streamJobConfService: StreamJobConfService = _
   @Autowired
   private var streamAlertMapper:StreamAlertMapper = _
+  @Autowired
+  private var streamJobTemplateMapper:StreamJobTemplateMapper = _
 
   override def getJobById(jobId: Long): StreamJob = {
     this.streamJobMapper.getJobById(jobId)
@@ -281,12 +283,12 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     val streamTask = streamTaskMapper.getLatestByJobId(jobId)
     val jobTemplate: JobTemplateFiles = if (null != streamTask) {
       if (streamTask.getStatus.equals(JobConf.FLINK_JOB_STATUS_RUNNING.getValue)) {
-        streamJobMapper.getJobTemplate(streamTask.getTemplateId,true)
+        streamJobTemplateMapper.getJobTemplate(streamTask.getTemplateId,true)
       }else{
-        streamJobMapper.getLatestJobTemplateFile(projectName,true)
+        streamJobTemplateMapper.getLatestJobTemplateFile(projectName,true)
       }
     }else{
-      streamJobMapper.getLatestJobTemplateFile(projectName,true)
+      streamJobTemplateMapper.getLatestJobTemplateFile(projectName,true)
     }
     jobContentParsers.find(_.canParse(job, jobVersion)).map(_.parseTo(job, jobVersion,jobTemplate))
       .getOrElse(throw new JobFetchErrorException(30030, s"Cannot find a JobContentParser to parse jobContent."))
@@ -484,11 +486,11 @@ class DefaultStreamJobService extends StreamJobService with Logging {
   }
 
   override def getLatestJobTemplate(projectName: String): String = {
-    streamJobMapper.getLatestJobTemplate(projectName,true)
+    streamJobTemplateMapper.getLatestJobTemplate(projectName,true)
   }
 
   override def getJobTemplateConfMap(streamJob: StreamJob): util.Map[String, AnyRef] = {
-    val jobTemplate = streamJobMapper.getLatestJobTemplate(streamJob.getProjectName,true)
+    val jobTemplate = streamJobTemplateMapper.getLatestJobTemplate(streamJob.getProjectName,true)
     MergeUtils.getJobTemplateConfMap(jobTemplate)
   }
 

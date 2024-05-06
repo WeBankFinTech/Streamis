@@ -117,38 +117,4 @@
         WHERE jvf.id = #{id}
     </select>
 
-    <update id="setEnableByVersion" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles">
-        UPDATE linkis_stream_project_job_template
-        <trim prefix="set" suffixOverrides=",">
-            <if test="enable != null">
-                enable=#{enable},
-            </if>
-        </trim>
-        where name = #{name} AND version = #{version}
-    </update>
-
-    <delete id="deleteTemplateVersions">
-        DELETE FROM linkis_stream_project_job_template WHERE project_name =
-        #{projectName} AND name = #{name}
-        ORDER BY version desc LIMIT 1
-    </delete>
-
-    <select id="selectTemplateId" resultType="long">
-        SELECT id FROM linkis_stream_project_job_template WHERE project_name =
-        #{projectName} AND name = #{name}
-    </select>
-
-    <update id="setEnable" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles">
-        UPDATE linkis_stream_project_job_template
-        <trim prefix="set" suffixOverrides=",">
-            <if test="enable != null">
-                enable=#{enable},
-            </if>
-        </trim>
-        WHERE id in
-        <foreach collection="templateIds" item="templateId" open="(" separator="," close=")">
-            #{templateId}
-        </foreach>
-    </update>
-
 </mapper>

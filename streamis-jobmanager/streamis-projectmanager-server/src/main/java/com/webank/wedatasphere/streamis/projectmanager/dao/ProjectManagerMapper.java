@@ -52,12 +52,4 @@ public interface ProjectManagerMapper {
     String getProjectNameById(Long id);
 
     String getProjectNameByFileId(Long id);
-
-    Integer setEnableByVersion(@Param("name")String name, @Param("version")String version,@Param("enable")Boolean enable);
-
-    void deleteTemplateVersions(@Param("name")String name, @Param("projectName")String projectName);
-
-    List<Long> selectTemplateId(@Param("name")String name, @Param("projectName")String projectName);
-
-    void setEnable(@Param("templateIds")List<Long> templateIds,@Param("enable")Boolean enable);
 }

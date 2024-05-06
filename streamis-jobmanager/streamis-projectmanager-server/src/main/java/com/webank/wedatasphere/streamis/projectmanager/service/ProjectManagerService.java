@@ -16,7 +16,6 @@
 package com.webank.wedatasphere.streamis.projectmanager.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles;
@@ -35,7 +34,7 @@ public interface ProjectManagerService {
 
     boolean deleteFiles(String ids,String username);
 
-    void deleteTemplateFiles(String ids);
+    void disableTemplateFiles(String ids);
 
     ProjectFiles selectFile(String fileName, String version, String projectName);
 
@@ -47,7 +46,7 @@ public interface ProjectManagerService {
 
     boolean delete(String fileName, String projectName, String username);
 
-    void deleteTemplate(String name, String projectName, String username);
+    void disableTemplate(String name, String projectName, String username);
 
     ProjectFiles getFile(Long id, String projectName);
 

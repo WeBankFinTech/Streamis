@@ -87,17 +87,4 @@ public interface StreamJobMapper {
 
     StreamJobVersionFiles getJobFileById(@Param("id") Long jobVersionFileId);
 
-    JobTemplateFiles getJobTemplate(@Param("id")Long id,@Param("enable") Boolean enable);
-
-    void insertJobTemplate(JobTemplateFiles jobTemplateFiles);
-
-    JobTemplateFiles selectJobTemplate(@Param("name")String name, @Param("version")String version, @Param("projectName")String projectName);
-
-    void updateJobTemplateById (JobTemplateFiles jobTemplateFiles);
-
-    String getLatestJobTemplate (@Param("projectName")String projectName,@Param("enable") Boolean enable);
-
-    JobTemplateFiles getLatestJobTemplateFile (@Param("projectName")String projectName,@Param("enable") Boolean enable);
-
-    Long getJobTemplateByProject(@Param("projectName")String projectName);
 }

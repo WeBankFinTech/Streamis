@@ -20,7 +20,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import org.apache.linkis.common.conf.CommonVars
 import org.apache.linkis.manager.label.entity.engine.RunType.RunType
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
-import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper
+import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamJobTemplateMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{JobTemplateFiles, StreamJob}
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.{StreamJobService, StreamTaskService}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.StreamisTransformJobBuilder
@@ -39,6 +39,7 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
   @Autowired private var streamJobConfService: StreamJobConfService = _
   @Autowired private var streamJobService: StreamJobService = _
   @Autowired private var streamTaskService: StreamTaskService = _
+  @Autowired private var streamJobTemplateMapper:StreamJobTemplateMapper = _
 
   protected def createStreamisTransformJob(): StreamisTransformJobImpl = new StreamisTransformJobImpl
 
@@ -69,12 +70,12 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
     val streamTask = streamTaskService.getLatestByJobId(streamJob.getId)
     val jobTemplate: JobTemplateFiles = if (null != streamTask) {
       if (streamTask.getStatus.equals(JobConf.FLINK_JOB_STATUS_RUNNING.getValue)) {
-        streamJobMapper.getJobTemplate(streamTask.getTemplateId,true)
+        streamJobTemplateMapper.getJobTemplate(streamTask.getTemplateId,true)
       }else{
-        streamJobMapper.getLatestJobTemplateFile(streamJob.getProjectName,true)
+        streamJobTemplateMapper.getLatestJobTemplateFile(streamJob.getProjectName,true)
       }
     }else{
-      streamJobMapper.getLatestJobTemplateFile(streamJob.getProjectName,true)
+      streamJobTemplateMapper.getLatestJobTemplateFile(streamJob.getProjectName,true)
     }
     transformJob.setStreamisTransformJobContent(createStreamisTransformJobContent(transformJob,jobTemplate))
     transformJob
