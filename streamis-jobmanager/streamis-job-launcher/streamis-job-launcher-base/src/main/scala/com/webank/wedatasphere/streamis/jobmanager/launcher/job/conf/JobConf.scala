@@ -159,4 +159,6 @@ object JobConf {
   val PRODUCT_NAME_KEY: CommonVars[String] = CommonVars("wds.linkis.flink.product.key", "wds.linkis.flink.product")
 
   val PRODUCT_NAME_SWITCH: CommonVars[Boolean] = CommonVars("wds.linkis.flink.product.key.enable", true)
+
+  val FLINK_APPLICATION_SEPARATE: CommonVars[String] = CommonVars("wds.linkis.flink.application.separate", "#")
 }
