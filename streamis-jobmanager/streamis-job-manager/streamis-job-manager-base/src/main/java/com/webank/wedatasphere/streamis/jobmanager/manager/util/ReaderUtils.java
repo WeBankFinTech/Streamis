@@ -58,6 +58,8 @@ public class ReaderUtils {
     private static final String templateName = "-meta.json";
     private static final String JSON_TYPE = ".json";
 
+    private static final String PRODUCE_PARAM = "wds.linkis.flink.produce";
+
 
     private static final Logger LOG = LoggerFactory.getLogger(ReaderUtils.class);
 
@@ -331,6 +333,10 @@ public class ReaderUtils {
         if (projectName.equals(fileName.substring(0, index))) {
             String path = inputPath.replace(JSON_TYPE, "");
             MetaJsonInfo metaJsonInfo = parseJson(path,projectName);
+            Map<String, Object> jobConfig = metaJsonInfo.getJobConfig();
+            if (jobConfig != null && jobConfig.containsKey(PRODUCE_PARAM)) {
+                return false;
+            }
             if ((metaJsonInfo.getJobName() == null || metaJsonInfo.getJobName().isEmpty()) &&
                     (metaJsonInfo.getJobType() == null || metaJsonInfo.getJobType().isEmpty()) &&
                     (metaJsonInfo.getTags() == null || metaJsonInfo.getTags().isEmpty()) &&
