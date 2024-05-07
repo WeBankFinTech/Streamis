@@ -20,7 +20,6 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
@@ -49,7 +48,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @RequestMapping(path = "/streamis/streamProjectManager/project")
@@ -129,7 +127,7 @@ public class ProjectManagerRestfulApi {
             is = p.getInputStream();
             os = IoUtils.generateExportOutputStream(inputPath);
             IOUtils.copy(is, os);
-            if (!p.isEmpty() && (p.getContentType().equals("application/json") || p.getOriginalFilename().endsWith(templateName))) {
+            if (!p.isEmpty() && p.getOriginalFilename().endsWith(templateName)) {
                 if(!readerUtils.checkMetaTemplate(fileName,inputPath,projectName)) return Message.error("meta template is not correct,eg:testProject(项目名)-meta.json");
                 projectManagerService.upload(username, fileName, version, projectName, inputPath, comment, source);
                 StreamisFile file = projectManagerService.selectFile(fileName,version,projectName);
@@ -203,7 +201,7 @@ public class ProjectManagerRestfulApi {
         String username = ModuleUserUtils.getOperationUser(req, "Delete file:" + fileName + " in project: " + projectName);
         if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
         if(fileName.endsWith(templateName)){
-            projectManagerService.deleteTemplate(fileName,projectName,username);
+            projectManagerService.disableTemplate(fileName,projectName,username);
         }
         return projectManagerService.delete(fileName, projectName, username)? Message.ok()
                 : Message.warn("you have no permission delete some files not belong to you");
@@ -223,7 +221,7 @@ public class ProjectManagerRestfulApi {
         if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) {
             return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
         }
-        projectManagerService.deleteTemplateFiles(ids);
+        projectManagerService.disableTemplateFiles(ids);
         return projectManagerService.deleteFiles(ids, username) ? Message.ok()
                 : Message.warn("you have no permission delete some files not belong to you");
     }

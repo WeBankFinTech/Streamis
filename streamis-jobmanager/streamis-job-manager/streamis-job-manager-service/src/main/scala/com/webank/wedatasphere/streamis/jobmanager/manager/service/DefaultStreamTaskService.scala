@@ -33,7 +33,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.S
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.{FlinkCheckpoint, FlinkSavepoint}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.SpringContextHolder
-import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
+import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamJobTemplateMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo._
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{JobTemplateFiles, MetaJsonInfo, StreamJob, StreamJobMode, StreamJobVersion, StreamTask}
 import com.webank.wedatasphere.streamis.jobmanager.manager.scheduler.FutureScheduler
@@ -80,6 +80,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   @Autowired private var streamisTransformJobBuilders: Array[StreamisTransformJobBuilder] = _
   @Autowired private var taskMetricsParser: Array[TaskMetricsParser] = _
   @Autowired private var streamJobService: StreamJobService = _
+  @Autowired private var streamJobTemplateMapper:StreamJobTemplateMapper = _
 
   @Resource
   private var jobLaunchManager: JobLaunchManager[_ <: JobInfo] = _
@@ -685,9 +686,9 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
               streamTask.setStatus(status)
               streamTask.setServerInstance(instanceService.getThisServiceInstance)
               logger.info(s"Produce a new StreamTask [jobId: $jobId, version: ${jobVersion.getVersion}, creator: $creator, status: ${streamTask.getStatus}]")
-              val jobTemplateId = streamJobMapper.getJobTemplateByProject(job.getProjectName)
+              val jobTemplateId = streamJobTemplateMapper.getJobTemplateByProject(job.getProjectName)
               streamTask.setTemplateId(jobTemplateId)
-              val jobTemplate = streamJobMapper.getJobTemplate(jobTemplateId,true)
+              val jobTemplate = streamJobTemplateMapper.getJobTemplate(jobTemplateId,true)
               val jobStartConfig = generateJobStartConfig(job, jobVersion, creator,jobTemplate)
               streamTask.setJobStartConfig(jobStartConfig)
               streamTaskMapper.insertTask(streamTask)

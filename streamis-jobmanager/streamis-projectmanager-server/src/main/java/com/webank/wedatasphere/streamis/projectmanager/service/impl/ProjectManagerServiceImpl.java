@@ -22,6 +22,7 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.job.utils.JobUtils;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants;
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper;
+import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobTemplateMapper;
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamTaskMapper;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask;
@@ -68,6 +69,9 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
 
     @Autowired
     private StreamTaskMapper streamTaskMapper;
+
+    @Autowired
+    private StreamJobTemplateMapper streamJobTemplateMapper;
 
     private static final String JSON_TYPE = ".json";
 
@@ -130,9 +134,9 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
     }
 
     @Override
-    public void deleteTemplate(String name, String projectName, String username){
-        List<Long> templateIds = projectManagerMapper.selectTemplateId(name,projectName);
-        projectManagerMapper.setEnable(templateIds,false);
+    public void disableTemplate(String name, String projectName, String username){
+        List<Long> templateIds = streamJobTemplateMapper.selectTemplateId(name,projectName);
+        streamJobTemplateMapper.setEnable(templateIds,false);
     }
 
     @Override
@@ -159,7 +163,7 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
     }
 
     @Override
-    public void deleteTemplateFiles(String ids) {
+    public void disableTemplateFiles(String ids) {
         if (!StringUtils.isBlank(ids) && !ArrayUtils.isEmpty(ids.split(","))) {
             String[] split = ids.split(",");
             List<Long> list = new ArrayList<>();
@@ -169,7 +173,7 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
             for (Long id : list){
                 ProjectFiles projectFile = projectManagerMapper.getById(id);
                 if(projectFile.getFileName().endsWith(templateName)){
-                    projectManagerMapper.setEnableByVersion(projectFile.getFileName(),projectFile.getVersion(),false);
+                    streamJobTemplateMapper.setEnableByVersion(projectFile.getFileName(),projectFile.getVersion(),false);
                 }
             }
         }
@@ -216,16 +220,16 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
 
         JobTemplateFiles file = selectJobTemplate(fileName, version, projectName);
         if (file == null) {
-            streamJobMapper.insertJobTemplate(jobTemplateFiles);
+            streamJobTemplateMapper.insertJobTemplate(jobTemplateFiles);
         }else {
             jobTemplateFiles.setId(file.getId());
             jobTemplateFiles.setDate(new Date());
-            streamJobMapper.updateJobTemplateById(jobTemplateFiles);
+            streamJobTemplateMapper.updateJobTemplateById(jobTemplateFiles);
         }
     }
 
     public JobTemplateFiles selectJobTemplate(String fileName, String version, String projectName) {
-        return streamJobMapper.selectJobTemplate(fileName, version, projectName);
+        return streamJobTemplateMapper.selectJobTemplate(fileName, version, projectName);
     }
 
     public String generateJobTemplate(MetaJsonInfo metaJsonInfo){
