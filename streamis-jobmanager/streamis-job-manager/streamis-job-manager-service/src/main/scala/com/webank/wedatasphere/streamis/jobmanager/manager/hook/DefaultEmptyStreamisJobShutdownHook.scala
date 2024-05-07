@@ -24,4 +24,5 @@ class DefaultEmptyStreamisJobShutdownHook extends StreamisJobShutdownHook with L
 
   override def getName: String = "emptyJobShutdownHook"
 
+  override def cancel(): Unit = {}
 }

@@ -413,7 +413,11 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     val hookList = hookNameList.map(name => {
       val hook = StreamisJobShutdownHookFactory.getHookByName(name)
       if (null == hook) {
-        logger.error(s"Got null hook for name : ${name}")
+        val msg = s"Got null hook for name : ${name}"
+        logger.error(msg)
+        if (!skipHookError) {
+          throw new HookExecutionException(msg)
+        }
       }
       hook
     }).filter(null != _)
@@ -446,8 +450,14 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       } {
         case e: Exception =>
           logger.error(s"hook : ${hook.getName} failed, costed ${System.currentTimeMillis() - hookStartTimeMills}mills.")
-          val msg = s"job : ${streamJob.getProjectName}.${streamJob.getName} execute hook : ${hook.getName} failed, because : ${e.getMessage}"
+          val reason = if (null != e.getCause) {
+            e.toString + ". cause : " + e.getCause.toString
+          } else {
+            e.toString
+          }
+          val msg = s"job : ${streamJob.getProjectName}.${streamJob.getName} execute hook : ${hook.getName} failed, because : ${reason}"
           logger.error(msg, e)
+          Utils.tryAndWarn(hook.cancel())
           if (null != hookFuture && !hookFuture.isDone) {
             hookFuture.cancel(true)
           }
