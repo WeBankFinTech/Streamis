@@ -168,5 +168,12 @@ object JobConf {
 
   val JOB_CONFIG_EDIT_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.job.config.edit.enable", true)
 
-  val FLINK_APPLICATION_SEPARATE: CommonVars[String] = CommonVars("wds.linkis.flink.application.separate", " ")
+  val STMS_FLINK_APPLICATION_SEPARATE_KEY: CommonVars[String] = CommonVars("wds.streamis.flink.app.args.separate.key", "flink.app.args.separate")
+
+  val STMS_FLINK_APPLICATION_ARGS_KEY: CommonVars[String] = CommonVars("wds.streamis.flink.app.args.key", "flink.app.args")
+
+  val STMS_FLINK_APPLICATION_MAIN_CLASS_KEY: CommonVars[String] = CommonVars("wds.streamis.flink.app.main.class.key", "flink.app.main.class")
+
+  val FLINK_APPLICATION_SEPARATE: CommonVars[String] = CommonVars("wds.streamis.flink.app.args.separate", " ")
+
 }

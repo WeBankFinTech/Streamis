@@ -37,9 +37,9 @@ class FlinkJarStreamisJobContentTransform extends StreamisJobContentTransform {
   override protected def transformJobContent(transformJob: StreamisTransformJobContent): util.HashMap[String, AnyRef] = transformJob match {
     case transformJobContent: StreamisJarTransformJobContent =>
       val jobContent = new util.HashMap[String, AnyRef]
-      jobContent.put("flink.app.args", transformJobContent.getArgs.asScala.mkString(JobConf.FLINK_APPLICATION_SEPARATE.getHotValue()))
-      jobContent.put("wds.linkis.flink.application.separate", JobConf.FLINK_APPLICATION_SEPARATE.getHotValue())
-      jobContent.put("flink.app.main.class", transformJobContent.getMainClass)
+      jobContent.put(JobConf.STMS_FLINK_APPLICATION_ARGS_KEY.getValue, transformJobContent.getArgs.asScala.mkString(JobConf.FLINK_APPLICATION_SEPARATE.getHotValue()))
+      jobContent.put(JobConf.STMS_FLINK_APPLICATION_SEPARATE_KEY.getValue, JobConf.FLINK_APPLICATION_SEPARATE.getHotValue())
+      jobContent.put(JobConf.STMS_FLINK_APPLICATION_MAIN_CLASS_KEY.getValue, transformJobContent.getMainClass)
       jobContent
     case _ => null
   }

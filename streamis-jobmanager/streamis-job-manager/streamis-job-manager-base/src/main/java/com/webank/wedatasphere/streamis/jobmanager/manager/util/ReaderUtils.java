@@ -19,6 +19,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.PublishRequestVo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
@@ -57,7 +58,6 @@ public class ReaderUtils {
     private boolean hasProjectName = false;
     private static final String templateName = "-meta.json";
     private static final String JSON_TYPE = ".json";
-
     private static final String PRODUCE_PARAM = "wds.linkis.flink.produce";
 
 
