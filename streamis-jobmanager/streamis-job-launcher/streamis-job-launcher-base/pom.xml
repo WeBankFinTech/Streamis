@@ -20,21 +20,12 @@
     <parent>
         <artifactId>streamis-jobmanager</artifactId>
         <groupId>com.webank.wedatasphere.streamis</groupId>
-<<<<<<<< HEAD:streamis-jobmanager/streamis-job-launcher/streamis-job-launcher-service/pom.xml
-        <version>0.3.0</version>
-========
-        <version>0.3.8-wedatasphere-SNAPSHOT</version>
->>>>>>>> dev-0.3.8-webank:streamis-jobmanager/streamis-job-launcher/streamis-job-launcher-base/pom.xml
+        <version>0.3.1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-<<<<<<<< HEAD:streamis-jobmanager/streamis-job-launcher/streamis-job-launcher-service/pom.xml
-    <artifactId>streamis-job-launcher-service</artifactId>
-========
     <artifactId>streamis-job-launcher-base</artifactId>
-
->>>>>>>> dev-0.3.8-webank:streamis-jobmanager/streamis-job-launcher/streamis-job-launcher-base/pom.xml
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -43,11 +34,6 @@
 
     <dependencies>
         <dependency>
-<<<<<<<< HEAD:streamis-jobmanager/streamis-job-launcher/streamis-job-launcher-service/pom.xml
-            <groupId>com.webank.wedatasphere.streamis</groupId>
-            <artifactId>streamis-job-launcher-linkis</artifactId>
-            <version>${jobmanager.version}</version>
-========
             <groupId>org.apache.linkis</groupId>
             <artifactId>linkis-common</artifactId>
             <version>${linkis.version}</version>
@@ -57,17 +43,10 @@
             <groupId>org.apache.linkis</groupId>
             <artifactId>linkis-computation-governance-common</artifactId>
             <version>${linkis.version}</version>
->>>>>>>> dev-0.3.8-webank:streamis-jobmanager/streamis-job-launcher/streamis-job-launcher-base/pom.xml
         </dependency>
         <dependency>
             <groupId>org.apache.linkis</groupId>
             <artifactId>linkis-mybatis</artifactId>
-        </dependency>
-        <dependency>
-<<<<<<<< HEAD:streamis-jobmanager/streamis-job-launcher/streamis-job-launcher-service/pom.xml
-            <groupId>com.webank.wedatasphere.streamis</groupId>
-            <artifactId>streamis-job-launcher-base</artifactId>
-            <version>${jobmanager.version}</version>
         </dependency>
         <dependency>
             <groupId>com.webank.wedatasphere.streamis</groupId>
@@ -78,12 +57,6 @@
             <groupId>org.apache.linkis</groupId>
             <artifactId>linkis-module</artifactId>
         </dependency>
-========
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>${gson.version}</version>
-        </dependency>
->>>>>>>> dev-0.3.8-webank:streamis-jobmanager/streamis-job-launcher/streamis-job-launcher-base/pom.xml
     </dependencies>
     <build>
         <plugins>
