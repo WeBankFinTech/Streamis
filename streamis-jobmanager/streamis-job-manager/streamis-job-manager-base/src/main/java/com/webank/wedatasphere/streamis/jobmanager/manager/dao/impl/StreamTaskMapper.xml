@@ -29,7 +29,11 @@
         <result column="submit_user" property="submitUser" jdbcType="VARCHAR"/>
         <result column="linkis_job_id" property="linkisJobId" jdbcType="VARCHAR"/>
         <result column="version" property="version" jdbcType="VARCHAR"/>
+        <result column="server_instance" property="serverInstance" jdbcType="VARCHAR"/>
         <result column="linkis_job_info" property="linkisJobInfo" jdbcType="LONGVARCHAR"/>
+        <result column="job_start_config" property="jobStartConfig" jdbcType="LONGVARCHAR" />
+        <result column="solution" property="solution" jdbcType="LONGVARCHAR" />
+        <result column="template_id" property="templateId" jdbcType="BIGINT"/>
     </resultMap>
 
     <resultMap id="StreamTaskStatusInfo" type="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask">
@@ -38,15 +42,16 @@
         <result column="status" property="status" jdbcType="BIGINT"/>
         <result column="version" property="version" jdbcType="VARCHAR"/>
         <result column="err_desc" property="errDesc" jdbcType="VARCHAR"/>
+        <result column="solution" property="solution" jdbcType="LONGVARCHAR"/>
     </resultMap>
     <sql id="StreamTask_Column">
-        `id`,`job_version_id`,`job_id`,`status`,`start_time`,`last_update_time`,`err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`
+        `id`,`job_version_id`,`job_id`,`status`,`start_time`,`last_update_time`,`err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`, `server_instance`
     </sql>
 
     <insert id="insertTask" useGeneratedKeys="true" keyProperty="id"
             parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamTask">
-        INSERT INTO  linkis_stream_task(`job_version_id`,`job_id`,`version`,`status`,`start_time`,`last_update_time`,`err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`)
-        VALUES(#{jobVersionId},#{jobId},#{version},#{status},#{startTime},#{lastUpdateTime},#{errDesc},#{submitUser},#{linkisJobId},#{linkisJobInfo})
+        INSERT INTO  linkis_stream_task(`job_version_id`,`job_id`,`version`,`status`,`start_time`,`last_update_time`,`err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`,`server_instance`,`job_start_config`,`solution`,`template_id`)
+        VALUES(#{jobVersionId},#{jobId},#{version},#{status},#{startTime},#{lastUpdateTime},#{errDesc},#{submitUser},#{linkisJobId},#{linkisJobInfo},#{serverInstance},#{jobStartConfig},#{solution},#{templateId})
     </insert>
 
     <update id="updateTask">
@@ -66,6 +71,9 @@
             </if>
             <if test="errDesc != null">
                 err_desc=#{errDesc},
+            </if>
+            <if test="solution != null">
+                solution=#{solution},
             </if>
         </trim>
         WHERE id=#{id}
@@ -89,6 +97,9 @@
             <if test="task.errDesc != null">
                 err_desc=#{task.errDesc},
             </if>
+            <if test="task.solution != null">
+                solution=#{task.solution},
+            </if>
         </trim>
         WHERE id=#{task.id} AND status = #{status};
     </update>
@@ -96,7 +107,7 @@
     <select id="getByJobVersionId" resultMap="StreamTaskMap">
         SELECT `id`,`job_version_id`,`job_id`, status
         ,`start_time`,`last_update_time`,
-        `err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`
+        `err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`, `job_start_config`,`template_id`
         FROM linkis_stream_task
         <where>
             <if test="jobVersionId != null">
@@ -107,12 +118,26 @@
             </if>
         </where>
         ORDER BY start_time DESC
+        LIMIT #{pageSize} OFFSET #{pageNow}
+    </select>
+
+    <select id="countGetByJobVersionId" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM linkis_stream_task
+        <where>
+            <if test="jobVersionId != null">
+                AND job_version_id=#{jobVersionId}
+            </if>
+            <if test="version != null">
+                AND version=#{version}
+            </if>
+        </where>
     </select>
 
     <select id="getLatestByJobVersionId" resultMap="StreamTaskMap">
         SELECT `id`,`job_version_id`,`job_id`, status
         ,`start_time`,`last_update_time`,
-        `err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`
+        `err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`,`solution`,`template_id`
         FROM linkis_stream_task
         <where>
             <if test="jobVersionId != null">
@@ -128,7 +153,7 @@
     <select id="getLatestByJobId" resultMap="StreamTaskMap">
         SELECT `id`,`job_version_id`,`job_id`,`version`, status
         ,`start_time`,`last_update_time`,
-        `err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`
+        `err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`,`solution`,`template_id`
         FROM linkis_stream_task where `job_id`=#{jobId} ORDER BY start_time DESC, id DESC LIMIT 1
     </select>
 
@@ -192,4 +217,15 @@
             #{item}
         </foreach> GROUP BY job_id)
     </select>
+
+    <select id="getTaskInfoByTemplateId" resultMap="StreamTaskMap">
+        SELECT `id`,`job_version_id`,`job_id`,`version`, status
+        ,`start_time`,`last_update_time`,
+        `err_desc`,`submit_user`, `linkis_job_id`, `linkis_job_info`,`solution`,`template_id`
+        FROM linkis_stream_task where template_id in
+        <foreach collection="list" item="template_id" open="(" separator="," close=")">
+            #{templateId}
+        </foreach>
+    </select>
+
 </mapper>

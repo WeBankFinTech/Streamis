@@ -2,7 +2,7 @@
 
 ## 1. Preface
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This article is a quick start document for Streamis 0.3.0, which covers the basic usage process of Stremis. More details on operation and usage will be provided in the user documentation.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This article is a quick start document for Streamis 0.2.5-webank, which covers the basic usage process of Stremis. More details on operation and usage will be provided in the user documentation.
   
 
 ## 2. Streamis entrance

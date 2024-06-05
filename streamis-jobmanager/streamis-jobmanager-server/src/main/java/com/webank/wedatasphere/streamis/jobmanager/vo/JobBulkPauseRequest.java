@@ -27,6 +27,8 @@ public class JobBulkPauseRequest extends JobBulkRequest{
      */
     private boolean snapshot = false;
 
+    private boolean skipHookError = false;
+
     public JobBulkPauseRequest(){
         super();
     }
@@ -36,5 +38,13 @@ public class JobBulkPauseRequest extends JobBulkRequest{
 
     public void setSnapshot(boolean snapshot) {
         this.snapshot = snapshot;
+    }
+
+    public boolean isSkipHookError() {
+        return skipHookError;
+    }
+
+    public void setSkipHookError(boolean skipHookError) {
+        this.skipHookError = skipHookError;
     }
 }

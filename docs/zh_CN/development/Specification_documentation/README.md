@@ -6,8 +6,9 @@
 
 ## 2. 代码提交规范
 
-但是在正式发布Release Notes时，为了保证Release Notes的完整性，请各位模块负责人按照需求文档，先提好各个 issue，并将 issue 加入到开发中的版本 [Project列表](https://github.com/WeBankFinTech/Streamis/projects?type=classic)。
+但是在正式发布Release Notes时，为了保证Release Notes的完整性，请各位模块负责人按照需求文档，先提好各个 issue，并将 issue 加入到 [Project-0.2.5-webank](https://github.com/WeBankFinTech/Streamis/projects/2)。
 
+请注意：Streamis-0.2.5-webank 使用 [Project-0.2.5-webank](https://github.com/WeBankFinTech/Streamis/projects/2) 作为 DPMS 工具，来全程追踪和管理版本的进度。
 
 ## 2. 后台开发规范
 

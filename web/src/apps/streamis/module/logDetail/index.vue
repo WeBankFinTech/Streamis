@@ -6,6 +6,7 @@
       footer-hide
       width="1200"
       @on-cancel="cancel"
+      :class="full ? 'full' : ''"
     >
       <div>
         <Form ref="queryForm" inline>
@@ -47,13 +48,21 @@
             </Button>
           </FormItem>
         </Form>
-        <Input
-          v-model="logs"
-          type="textarea"
-          :autosize="{ minRows: 10, maxRows: 15 }"
-          readonly
-          :placeholder="$t('message.streamis.logDetail.noLog')"
-        />
+        <div class="log-wrapper">
+          <Input
+            v-model="logs"
+            type="textarea"
+            :autosize="{ minRows: 10, maxRows: 15 }"
+            readonly
+            :placeholder="$t('message.streamis.logDetail.noLog')"
+          />
+          <span 
+            class="full-btn"
+            @click="fullToggle"
+          >
+            {{ full ? '> <' : '< >' }}
+          </span>
+        </div>
         <div class="btnWrap">
           <Button
             type="primary"
@@ -64,7 +73,7 @@
           </Button>
           <Button
             type="primary"
-            :disabled="endLine === fromLine"
+            :disabled="toEnd"
             @click="handleMore('next')"
             style="margin-left: 30px;"
           >
@@ -108,13 +117,15 @@ export default {
         value: 'yarn'
       }],
       fromLine: 1,
-      endLine: 0,
+      endLine: 100,
+      toEnd: false,
       logs: '',
-      spinShow: false
+      spinShow: false,
+      full: false,
     }
   },
   methods: {
-    getDatas(taskId) {
+    getDatas(type, taskId) {
       // const logs = new Array(1000).fill(
       //   'pps/pps/streamis/module/versionDetailtreamis/module/versionDetailpps/streamis/module/versionDetailpps/streamis/module/versionDetailpps/streamis/module/versionDetailpps/streamis/module/versionDetail'
       // )
@@ -134,11 +145,19 @@ export default {
         .then(res => {
           this.spinShow = false
           if (res && res.logs) {
-            if (res.logs.endLine <= this.fromLine) {
-              this.fromLine = res.logs.endLine;
-              this.endLine = res.logs.endLine;
+            console.log(this.fromLine, this.endLine)
+            if (res.logs.endLine < (this.fromLine + 99)) {
+              this.toEnd = true;
+            }else{
+              this.toEnd = false;
             }
-            this.logs = res.logs.logs.join('\n')
+            this.endLine = res.logs.endLine;
+            if (res.logs.logs.length > 0) { // 如果有数据，就替换
+              this.logs = res.logs.logs.join('\n')
+            }
+            if (type === 'query') { // 如果是查询时请求该接口，则不管是否有数据都替换内容
+              this.logs = res.logs.logs.join('\n')
+            }
           } else {
             this.logs = ''
           }
@@ -151,14 +170,16 @@ export default {
     },
     cancel() {
       this.fromLine = 1
-      this.endLine = 0
+      this.endLine = 100
       this.spinShow = false
+      this.toEnd = false;
       this.query = {
         ignoreKeywords: '',
         onlyKeywords: '',
         logType: 'client'
       }
       this.$emit('modalCancel')
+      this.full = false
     },
     handleMore(type) {
       if (type === 'more') {
@@ -173,14 +194,18 @@ export default {
       } else {
         this.fromLine = this.fromLine > 100 ? this.fromLine - 100 : 1
       }
-      this.getDatas()
+      this.getDatas('more')
     },
     handleQuery() {
       this.fromLine = 1
-      this.endLine = 0
-      this.getDatas()
-    }
-  }
+      this.endLine = 100
+      this.toEnd = false;
+      this.getDatas('query')
+    },
+    fullToggle(){
+      this.full = !this.full
+    },
+  },
 }
 </script>
 <style lang="scss" scoped>
@@ -189,5 +214,31 @@ export default {
   justify-content: center;
   align-items: center;
   margin-top: 20px;
+}
+.log-wrapper{
+  position: relative;
+  .full-btn{
+    position: absolute;
+    cursor: pointer;
+    top: 5px;
+    right: 8px;
+    font-weight: bold;
+  }
+}
+.full {
+  /deep/.ivu-modal{
+    width: 100vw !important;
+    height: 100vh;
+    min-height: 430px;
+    top:0;
+    .ivu-modal-content{
+      height: 100%;
+    }
+  }
+  /deep/textarea{
+   height: calc(100vh - 200px) !important;
+   min-height: 200px;
+   max-height: calc(100vh - 200px) !important;
+  }
 }
 </style>

@@ -17,13 +17,17 @@ package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobException;
 import com.webank.wedatasphere.streamis.jobmanager.exception.JobExceptionManager;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJobVersion;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.BMLService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.ZipHelper;
+import com.webank.wedatasphere.streamis.jobmanager.service.HighAvailableService;
+import com.webank.wedatasphere.streamis.jobmanager.utils.JsonUtil;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.linkis.server.Message;
@@ -47,6 +51,9 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RequestMapping(path = "/streamis/streamJobManager/job")
 @RestController
@@ -63,17 +70,24 @@ public class UploadRestfulApi {
     @Autowired
     private ProjectPrivilegeService projectPrivilegeService;
 
+    @Autowired
+    private HighAvailableService highAvailableService;
+
+    private static final String NO_OPERATION_PERMISSION_MESSAGE = "the current user has no operation permission";
+
     @RequestMapping(path = "/upload", method = RequestMethod.POST)
     public Message uploadJar(HttpServletRequest request,
                              @RequestParam(name = "projectName", required = false) String projectName,
-                              @RequestParam(name = "file") List<MultipartFile> files) throws IOException, JobException {
+                             @RequestParam(name = "file") List<MultipartFile> files,
+                             @RequestParam(name = "source",required = false) String source) throws IOException, JobException {
 
         String userName = ModuleUserUtils.getOperationUser(request, "upload job zip file");
         if (files == null || files.size() <= 0) {
             throw JobExceptionManager.createException(30300, "uploaded files");
         }
-        if (!projectPrivilegeService.hasEditPrivilege(request, projectName)) return Message.error("the current user has no operation permission");
-
+        if (!projectPrivilegeService.hasEditPrivilege(request, projectName)) {
+            return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
+        }
         //Only uses 1st file(只取第一个文件)
         MultipartFile p = files.get(0);
         String fileName = new String(p.getOriginalFilename().getBytes("ISO8859-1"), StandardCharsets.UTF_8);
@@ -81,11 +95,17 @@ public class UploadRestfulApi {
         if(!ZipHelper.isZip(fileName)){
             throw JobExceptionManager.createException(30302);
         }
+        if ((Boolean) JobConf.STANDARD_AUTHENTICATION_KEY().getHotValue()){
+            if (!highAvailableService.confirmToken(source)){
+                return Message.error("As this job is not from standard release, it is not allowed to upload");
+            }
+        }
         InputStream is = null;
         OutputStream os = null;
         File file = null;
         String inputPath = null;
         try {
+            IoUtils.validateFileName(fileName);
             inputPath = IoUtils.generateIOPath(userName, "streamis", fileName);
             file = new File(inputPath);
             if (file.getParentFile().exists()) {
@@ -94,7 +114,7 @@ public class UploadRestfulApi {
             is = p.getInputStream();
             os = IoUtils.generateExportOutputStream(inputPath);
             IOUtils.copy(is, os);
-            StreamJobVersion job = streamJobService.uploadJob(projectName, userName, inputPath);
+            StreamJobVersion job = streamJobService.uploadJob(projectName, userName, inputPath, source);
             return Message.ok().data("jobId", job.getJobId());
         } catch (Exception e) {
             LOG.error("Failed to upload zip {} to project {} for user {}.", fileName, projectName, userName, e);

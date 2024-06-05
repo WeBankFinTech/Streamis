@@ -15,15 +15,17 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.parser
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobExecuteErrorException
+import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants.{TYPE_JOB, TYPE_PROJECT}
+
 import java.io.InputStream
 import java.util
-
 import org.apache.linkis.common.conf.Configuration
 import org.apache.linkis.common.utils.{JsonUtils, Logging}
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion, StreamisFile}
-import com.webank.wedatasphere.streamis.jobmanager.manager.service.{BMLService, StreamiFileService}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{JobTemplateFiles, StreamJob, StreamJobVersion, StreamisFile}
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.{BMLService, StreamTaskService, StreamiFileService}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.StringUtils
@@ -39,6 +41,7 @@ abstract class AbstractJobContentParser extends JobContentParser with Logging {
   @Autowired private var streamJobMapper: StreamJobMapper = _
   @Autowired private var bmlService: BMLService = _
   @Autowired private var streamiFileService: StreamiFileService = _
+  @Autowired private var streamTaskService: StreamTaskService = _
 
   private def findFromProject(projectName: String, fileName: String): StreamisFile = fileName match {
     case AbstractJobContentParser.PROJECT_FILE_REGEX(name, version) =>
@@ -60,9 +63,19 @@ abstract class AbstractJobContentParser extends JobContentParser with Logging {
 
   protected def findFile(job: StreamJob, jobVersion: StreamJobVersion, fileName: String): StreamisFile = {
     val files = streamJobMapper.getStreamJobVersionFiles(jobVersion.getJobId, jobVersion.getId)
-    val (file, fileSource) = if(files == null || files.isEmpty)
-      (findFromProject(job.getProjectName, fileName), "project")
-    else files.asScala.find(_.getFileName == fileName).map((_, "jobVersion")).getOrElse((findFromProject(job.getProjectName, fileName), "project"))
+    val (file, fileSource) = if(files == null || files.isEmpty) {
+      val projFile = findFromProject(job.getProjectName, fileName)
+      projFile.setMaterialType(TYPE_PROJECT)
+      (projFile, TYPE_PROJECT)
+    } else files.asScala.find(_.getFileName == fileName)
+           .map{ file => file.setMaterialType(TYPE_JOB)
+                 (file, TYPE_JOB)
+           }
+           .getOrElse{
+              val projFile = findFromProject(job.getProjectName, fileName)
+              projFile.setMaterialType(TYPE_PROJECT)
+              (projFile, TYPE_PROJECT)
+           }
     info(s"Find a $fileSource file(${file.getFileName}, ${file.getVersion}) with storePath ${file.getStorePath} for StreamJob-${job.getName} with file $fileName.")
     file
   }
@@ -103,6 +116,10 @@ abstract class AbstractJobContentParser extends JobContentParser with Logging {
     IOUtils.toString(readBMLFile(userName, resourceId, version), Configuration.BDP_ENCODING.getValue)
 
   override def canParse(job: StreamJob, jobVersion: StreamJobVersion): Boolean = jobType == job.getJobType
+
+  protected def getFinalTemplate(jobTemplate: JobTemplateFiles): String = {
+    streamTaskService.generateJobTemplate(jobTemplate)
+  }
 
 }
 object AbstractJobContentParser {

@@ -1,0 +1,16 @@
+include:
+  - project: 'mumblefe/gitlab-ci'
+    file: 'aomp_1.0.yml'
+variables:
+  # aomp静态资源上传目录
+  DIST_DIR: "dist"
+  # aomp发布模版Id
+  PROJECT_TPL_ID: "59000"
+  # aomp系统名
+  PROJECT_SYS_ID: "BDP-DQM"
+  # 版本号
+  VERSION: "{{PACKAGEJSON.version}}"
+  # 测试打包命令
+  TEST_BUILD_CMD: "npm run prod"
+  # 生产打包命令
+  PROD_BUILD_CMD: "npm run prod"

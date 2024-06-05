@@ -123,6 +123,31 @@ public class StreamisLogAppenderConfig {
         }
 
         /**
+         * Rpc heartbeat enable
+         * @param heartbeatEnable
+         * @return
+         */
+        public StreamisLogAppenderConfig.Builder setRpcHeartbeatEnable(boolean heartbeatEnable) {
+            this.rpcLogSenderConfig.setHeartbeatEnable(heartbeatEnable);
+            return this;
+        }
+
+        /**
+         *
+         * @param heartbeatAddress
+         * @return
+         */
+        public StreamisLogAppenderConfig.Builder setRpcHeartbeatAddress(String heartbeatAddress){
+            this.rpcLogSenderConfig.setHeartbeatAddress(heartbeatAddress);
+            return this;
+        }
+
+        public StreamisLogAppenderConfig.Builder setRpcHeartbeatInterval(int heartbeatInterval){
+            this.rpcLogSenderConfig.setHeartbeatInterval(heartbeatInterval);
+            return this;
+        }
+
+        /**
          * Rpc auth token code key
          * @param tokenCodeKey key of token code
          * @return builder

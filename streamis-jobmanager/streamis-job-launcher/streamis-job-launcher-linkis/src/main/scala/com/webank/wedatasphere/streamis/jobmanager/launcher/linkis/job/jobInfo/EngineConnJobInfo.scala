@@ -31,6 +31,11 @@ class EngineConnJobInfo extends YarnJobInfo with LinkisJobInfo {
   private var jobParams: java.util.Map[String, Object] = _
   private var ecInstance: ServiceInstance = _
 
+  /**
+   * The default value must be null and placeholders cannot be used
+   */
+  private var highAvailablePolicy: String = null
+
   override def getApplicationId: String = applicationId
 
   def setApplicationId(applicationId: String): Unit = this.applicationId = applicationId
@@ -155,5 +160,11 @@ class EngineConnJobInfo extends YarnJobInfo with LinkisJobInfo {
   def setEcInstance(instance: ServiceInstance): EngineConnJobInfo = {
     this.ecInstance = instance
     this
+  }
+
+  override def getHighAvailablePolicy(): String = highAvailablePolicy
+
+  def setHighAvailablePolicy(highAvailablePolicy: String): Unit = {
+    this.highAvailablePolicy = highAvailablePolicy
   }
 }

@@ -17,13 +17,14 @@ import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.E
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.FlinkSavepoint
 import org.apache.commons.lang3.StringUtils
 import org.apache.linkis.common.exception.LinkisRetryException
-import org.apache.linkis.common.utils.{JsonUtils, Logging, RetryHandler}
+import org.apache.linkis.common.utils.{JsonUtils, Logging, RetryHandler, Utils}
 import org.apache.linkis.computation.client.once.OnceJob
 import org.apache.linkis.computation.client.once.result.EngineConnOperateResult
 import org.apache.linkis.computation.client.once.simple.SimpleOnceJob
 import org.apache.linkis.governance.common.constant.ec.ECConstants
 import org.apache.linkis.ujes.client.exception.UJESJobException
 
+import java.io.IOException
 import java.util
 import scala.collection.JavaConverters.asScalaBufferConverter
 
@@ -54,8 +55,8 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
     onceJob match {
       case simpleOnceJob: SimpleOnceJob =>
         if (StringUtils.isNotBlank(jobInfo.getStatus) && JobConf.isCompleted(JobConf.linkisStatusToStreamisStatus(jobInfo.getStatus))) {
-          jobInfo.setStatus(simpleOnceJob.getStatus)
-          logger.info(s"Job : ${simpleOnceJob.getId} is completed, no need to get status from linkis.")
+//          jobInfo.setStatus(simpleOnceJob.getStatus)
+          logger.info(s"Job : ${simpleOnceJob.getId} is completed : ${jobInfo.getStatus}, no need to get status from linkis.")
         } else if (refresh && isDetachJob(jobInfo)) {
           jobInfo match {
             case engineConnJobInfo: EngineConnJobInfo =>
@@ -79,9 +80,8 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
         case _ =>
           throw new FlinkJobParamErrorException(s"Invalid jobInfo : ${jobInfo} , cannot stop.", null)
       }
-    } else {
-      return super.stop(snapshot)
     }
+    Utils.tryAndWarn(super.stop(snapshot))
   }
 
   def getJobStatusWithRetry(appId: String): String = {
@@ -92,6 +92,7 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
     retryHandler.addRetryException(classOf[UJESJobException])
     retryHandler.addRetryException(classOf[LinkisRetryException])
     retryHandler.addRetryException(classOf[FlinkJobStateFetchException])
+    retryHandler.addRetryException(classOf[IOException])
     retryHandler.retry(
       {
     val statusAction = new FlinkStatusAction(appId, null)
@@ -121,7 +122,7 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
   def stopApp(appId: String, snapshot: Boolean): JobStateInfo = {
     val jobStateInfo = new JobStateInfo()
     if (snapshot) {
-      val savepointURI = this.stateManager.getJobStateDir(classOf[FlinkSavepoint], jobInfo.getName)
+      val savepointURI = this.stateManager.getJobStateDir(classOf[FlinkSavepoint], jobInfo.getName,jobInfo.getHighAvailablePolicy)
       val flinkSavepoint = doSavePoint(appId, null, savepointURI.toString, JobLauncherConfiguration.FLINK_TRIGGER_SAVEPOINT_MODE.getValue)
       jobStateInfo.setLocation(flinkSavepoint.getLocation.toString)
       jobStateInfo.setTimestamp(flinkSavepoint.getTimestamp)
@@ -139,6 +140,19 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
     }
     if (StringUtils.isBlank(jobStateInfo.getLocation)) {
       jobStateInfo.setLocation("No location")
+    }
+    // wait for task to change status to stopped
+    val MAX_WAIT_TIME = JobLauncherConfiguration.MAX_WAIT_NUM_AFTER_KILL.getHotValue()
+    val WAIT_MILLS = 1000
+    var retryNum = 0
+    while (retryNum < MAX_WAIT_TIME && StringUtils.isNotBlank(jobInfo.getStatus) && !JobConf.isCompleted(JobConf.linkisStatusToStreamisStatus(jobInfo.getStatus))) {
+      retryNum += 1
+      jobInfo.setStatus(getJobStatusWithRetry(appId))
+      Thread.sleep(WAIT_MILLS)
+    }
+    if (retryNum >= MAX_WAIT_TIME) {
+      val times = MAX_WAIT_TIME * WAIT_MILLS / 1000.0
+      logger.warn(s"waiting for ${times}s after app : ${appId} was killed, but the task is not completed , status : ${jobInfo.getStatus}")
     }
     jobStateInfo
   }
