@@ -46,16 +46,16 @@ Dimension节点、Transform节点、Sink节点 和 [Visualis](https://github.com
 ![流式应用配置](docs/images/stream_job_config_1.png)
 ![流式应用配置](docs/images/stream_job_config_2.png)
 
-&nbsp; &nbsp; &nbsp; &nbsp;更多功能，请参考：[Streamis 用户手册](docs/zh_CN/0.2.5-webank/使用文档/Streamis用户手册.md)。
+&nbsp; &nbsp; &nbsp; &nbsp;更多功能，请参考：[Streamis 用户手册](docs/zh_CN/使用文档/Streamis用户手册.md)。
 
 ----
 
 ## 依赖的生态组件
 
 | 依赖的应用工具    | 描述                                                         | Streamis 兼容版本 |
-|--------------|---------------------------------------------------------------|--------------|
-| [DataSphereStudio](https://github.com/WeBankFinTech/DataSphereStudio) | 数据应用开发管理集成框架。以工作流式的图形化拖拽开发体验，将满足从数据交换、脱敏清洗、分析挖掘、质量检测、可视化展现、定时调度到数据输出应用等，数据应用开发全流程场景需求。 | &gt;= DSS1.1.0（已发布）|
-| [Linkis](https://github.com/apache/incubator-linkis) | 计算中间件 Apache Linkis，通过提供 REST/WebSocket/JDBC/SDK 等标准接口，上层应用可以方便地连接访问 MySQL/Spark/Hive/Presto/Flink 等底层引擎。 | &gt;= Linkis1.1.1（已发布），部分功能需要Linkis 1.1.2支持 |
+|--------------|---------------------------------------------------------------|---------------------------------------------|
+| [DataSphereStudio](https://github.com/WeBankFinTech/DataSphereStudio) | 数据应用开发管理集成框架。以工作流式的图形化拖拽开发体验，将满足从数据交换、脱敏清洗、分析挖掘、质量检测、可视化展现、定时调度到数据输出应用等，数据应用开发全流程场景需求。 | &gt;= DSS1.1.2（已发布）                         |
+| [Linkis](https://github.com/apache/incubator-linkis) | 计算中间件 Apache Linkis，通过提供 REST/WebSocket/JDBC/SDK 等标准接口，上层应用可以方便地连接访问 MySQL/Spark/Hive/Presto/Flink 等底层引擎。 | &gt;= Linkis1.4.0（已发布） |
 
 ----
 
@@ -73,14 +73,14 @@ Dimension节点、Transform节点、Sink节点 和 [Visualis](https://github.com
 
 ## 编译和安装部署
 
-&nbsp; &nbsp; &nbsp; &nbsp;请参考 [Streamis 安装部署文档](docs/zh_CN/0.2.5-webank/Streamis安装文档.md) ，用于安装部署 Streamis 及其依赖环境。
+&nbsp; &nbsp; &nbsp; &nbsp;请参考 [Streamis 安装部署文档](docs/zh_CN/安装文档/Streamis安装文档.md) ，用于安装部署 Streamis 及其依赖环境。
 
 
 ----
 
 ## 示例和使用指引
 
-&nbsp; &nbsp; &nbsp; &nbsp;请到 [用户使用文档](docs/zh_CN/0.2.5-webank/使用文档/Streamis用户手册.md) ，了解如何快速使用 Streamis。
+&nbsp; &nbsp; &nbsp; &nbsp;请到 [用户使用文档](docs/zh_CN/使用文档/Streamis用户手册.md) ，了解如何快速使用 Streamis。
 
 ----
 
@@ -115,7 +115,7 @@ Dimension节点、Transform节点、Sink节点 和 [Visualis](https://github.com
 
 &nbsp; &nbsp; &nbsp; &nbsp;对 Streamis 的任何问题和建议，敬请提交 [issue](https://github.com/WeBankFinTech/Streamis/issues)，以便跟踪处理和经验沉淀共享。
 
-&nbsp; &nbsp; &nbsp; &nbsp;您也可以扫描下面的二维码，加入我们的 微信/QQ群，以获得更快速的响应。
+&nbsp; &nbsp; &nbsp; &nbsp;您也可以扫描下面的二维码，加入我们的 微信群，以获得更快速的响应。
 
 ![交流](images/zh_CN/readme/communication.png)
 

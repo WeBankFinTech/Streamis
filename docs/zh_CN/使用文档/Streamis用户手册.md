@@ -2,7 +2,7 @@
 
 ## 1. 前言
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本文是Streamis0.2.5的快速入门文档，涵盖了Stremis的基本使用流程，更多的操作使用细节，将会在用户使用文档中提供。  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本文是Streamis0.3.0的快速入门文档，涵盖了Stremis的基本使用流程，更多的操作使用细节，将会在用户使用文档中提供。  
 
 
 ## 2. Streamis整合至DSS
@@ -133,7 +133,7 @@ meta.json是StreamisJob的元数据信息，其格式为：
 }
 ```
 
-其中，jobConfig为从0.2.5版本开始支持的配置项，该配置项可以不填，有默认的配置项，具体如下：
+其中，jobConfig为从0.3.0版本开始支持的配置项，该配置项可以不填，有默认的配置项，具体如下：
 
 ```yaml
 "jobConfig": {

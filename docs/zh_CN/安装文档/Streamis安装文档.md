@@ -37,10 +37,10 @@ npm run build
 
 #### 2.2 Linkis 和 DSS 环境
 
-- Linkis (>=1.1.1)，Streamis 的执行依赖于 Linkis 的 Flink 引擎，并且依赖 **Linkis-1.1.1** 及以上版本，部分功能需要Linkis-1.1.2支持。
-- DataSphere Studio (>=1.1.0)，Streamis 流式作业的开发和调试，依赖于 DSS-Scriptis，Streamis 流式生产中心则需嵌入到 DSS 工程框架体系之中，所以依赖于 **DSS-1.1.0** 及以上版本。
+- Linkis (>=1.4.0)，Streamis 的执行依赖于 Linkis 的 Flink 引擎，并且依赖 **Linkis-1.4.0** 及以上版本。
+- DataSphere Studio (>=1.1.2)，Streamis 流式作业的开发和调试，依赖于 DSS-Scriptis，Streamis 流式生产中心则需嵌入到 DSS 工程框架体系之中，所以依赖于 **DSS-1.1.2** 及以上版本。
 
-在正式安装 Streamis 之前，请先安装 Linkis1.1.1 和 DSS1.1.0 及以上版本，并且保证 Linkis Flink 引擎 和 DSS 可以正常使用，DSS 和 Linkis 安装，可参照 [DSS & Linkis 一键安装部署文档](https://github.com/WeBankFinTech/DataSphereStudio-Doc/blob/main/zh_CN/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/DSS%E5%8D%95%E6%9C%BA%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.md)。
+在正式安装 Streamis 之前，请先安装 Linkis1.4.0 和 DSS1.1.2 及以上版本，并且保证 Linkis Flink 引擎 和 DSS 可以正常使用，DSS 和 Linkis 安装，可参照 [DSS & Linkis 一键安装部署文档](https://github.com/WeBankFinTech/DataSphereStudio-Doc/blob/main/zh_CN/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/DSS%E5%8D%95%E6%9C%BA%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.md)。
 
 如何验证 DSS 和 Linkis 已基本可用？您可以在 DSS-Scriptis 上新建一个 flinksql 脚本并执行，如果 flinksql 能正确执行并返回结果集，表示 DSS 和 linkis 环境是可用的。
 
@@ -115,8 +115,7 @@ GATEWAY_PORT=9001
 STREAMIS_SERVER_INSTALL_IP=127.0.0.1
 STREAMIS_SERVER_INSTALL_PORT=9400
 
-STREAMIS_VERSION=0.2.5
-
+STREAMIS_VERSION=0.3.0
 STREAMIS_FILE_NAME="STREAMIS-$STREAMIS_VERSION"
 ```
 
@@ -212,10 +211,10 @@ sudo nginx -s reload
 
 ## 4. 接入DSS
 
-如您想正常使用 Streamis0.2.5 前端，还需安装 DSS StreamisAppConn 插件，请参考: [StreamisAppConn 插件安装文档](../development/StreamisAppConn安装文档.md)
+如您想正常使用 Streamis0.3.0 前端，还需安装 DSS StreamisAppConn 插件，请参考: [StreamisAppConn 插件安装文档](../development/StreamisAppConn安装文档.md)
 
 ## 5.Linkis Flink引擎编译安装
-如您想正常执行 Streamis0.2.5，还需安装 Linkis Flink 引擎，请参考: [Linkis Flink 引擎安装文档](https://linkis.apache.org/zh-CN/docs/1.1.2/engine_usage/flink/)
+如您想正常执行 Streamis0.3.0，还需安装 Linkis Flink 引擎，请参考: [Linkis Flink 引擎安装文档](https://linkis.apache.org/zh-CN/docs/1.1.2/engine_usage/flink/)
 
 ## 6.Streamis组件升级文档/脚本
-如您想从Streamis较低版本升级到 Streamis0.2.5 ，请参考：[Streamis升级文档](../版本升级文档/0.2.5/Streamis升级文档.md)
+如您想从Streamis较低版本升级到 Streamis0.3.0 ，请参考：[Streamis升级文档](../版本升级文档/0.3.0/Streamis升级文档.md)
