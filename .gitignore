@@ -32,3 +32,4 @@ streamis-appconn/target
 /streamis-jobmanager/streamis-job-audit-log/target/
 
 **/._*
+**/.flattened-pom.xml
