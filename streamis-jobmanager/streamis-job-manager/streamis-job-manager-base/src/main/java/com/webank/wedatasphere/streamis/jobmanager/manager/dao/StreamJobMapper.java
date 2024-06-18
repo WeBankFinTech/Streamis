@@ -26,13 +26,16 @@ import java.util.List;
 public interface StreamJobMapper {
 
     List<QueryJobListVo> getJobLists(@Param("projectName") String projectName, @Param("userName") String userName, @Param("name") String name,
-                                     @Param("status") Integer status, @Param("createBy") String createBy, @Param("label") String label, @Param("manageModeKey") String manageModeKey, @Param("jobNameList") List<String> jobNameList);
+                                     @Param("status") Integer status, @Param("createBy") String createBy, @Param("label") String label, @Param("manageModeKey") String manageModeKey,
+                                     @Param("jobNameList") List<String> jobNameList, @Param("enable") Boolean enable, @Param("jobType")String jobType);
 
     List<VersionDetailVo> getJobVersionDetails(@Param("jobId") Long jobId);
 
     StreamJob getJobById(@Param("jobId") Long jobId);
 
     List<StreamJob> getJobByName(@Param("jobName") String jobName);
+
+    StreamJob getJobByProjectAndJobName(@Param("applicationName") String applicationName);
 
     List<StreamJobVersion> getJobVersions(@Param("jobId") Long jobId);
 
@@ -50,6 +53,10 @@ public interface StreamJobMapper {
     void insertJobVersion(StreamJobVersion streamJobVersion);
 
     void updateJob(StreamJob streamJob);
+
+    void updateJobContent(StreamJobVersion streamJobVersion);
+
+    void updateSource(StreamJobVersion streamJobVersion);
 
     List<StreamJob> getJobListsByProjectName(String projectName);
 
@@ -74,5 +81,10 @@ public interface StreamJobMapper {
      * @param jobId job id
      * @return stream job
      */
-    StreamJob queryAndLockJobById(@Param("jobId")Long jobId);
+    StreamJob queryJobById(@Param("jobId")Long jobId);
+
+    void updateJobEnable(StreamJob streamJob);
+
+    StreamJobVersionFiles getJobFileById(@Param("id") Long jobVersionFileId);
+
 }

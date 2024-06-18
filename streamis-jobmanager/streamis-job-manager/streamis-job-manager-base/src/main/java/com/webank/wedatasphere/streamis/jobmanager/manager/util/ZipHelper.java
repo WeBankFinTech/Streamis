@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 
 public class ZipHelper {
@@ -32,9 +33,16 @@ public class ZipHelper {
     private static final String UN_ZIP_CMD = "unzip";
     private static final String ZIP_TYPE = ".zip";
 
+    private static final Pattern pattern = Pattern.compile("[;|&><`!]");
+
     private ZipHelper(){}
 
     public static String unzip(String dirPath)throws Exception {
+
+        if (!isValidDirPath(dirPath)) {
+            throw new IllegalArgumentException("Invalid directory path: " + dirPath);
+        }
+
         File file = new File(dirPath);
         if(!file.exists()){
             logger.error("{} does not exist, can not unzip", dirPath);
@@ -88,5 +96,9 @@ public class ZipHelper {
 
     public static boolean isZip(String fileName){
         return fileName.substring(fileName.lastIndexOf('.')).equals(ZIP_TYPE);
+    }
+
+    private static boolean isValidDirPath(String dirPath) {
+        return StringUtils.isNotBlank(dirPath) && !pattern.matcher(dirPath).find();
     }
 }

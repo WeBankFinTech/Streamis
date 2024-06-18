@@ -1,6 +1,13 @@
 <template>
   <div class="container">
     <div class="navWrap">
+      <Button
+        type="primary"
+        @click="back()"
+        style="height:24px;background:rgba(22, 155, 213, 1);margin-right: 15px;"
+      >
+        返回
+      </Button>
       <div @click="jumpToCenter()" class="center">
         <Icon type="ios-home" size="20" />
         <span>{{ $t('message.streamis.routerName.realTimeJobCenter') }}</span>
@@ -44,7 +51,7 @@
           :label="$t('message.streamis.moduleName.jobHistory')"
         >
           <div class="contWrap">
-            <jobHistory />
+            <jobHistory :projectName="projectName" />
           </div>
         </TabPane>
         <TabPane
@@ -128,6 +135,9 @@ export default {
     linksInfo(data) {
       console.log(data)
       this.linkInfo = { ...data }
+    },
+    back() {
+      this.$router.back()
     }
   }
 }

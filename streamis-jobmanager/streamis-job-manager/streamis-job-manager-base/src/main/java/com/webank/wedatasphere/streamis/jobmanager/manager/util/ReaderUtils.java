@@ -18,20 +18,27 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.PublishRequestVo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileExceptionManager;
 import org.apache.commons.lang.StringUtils;
+import org.apache.linkis.server.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ReaderUtils {
     private static final String metaFileName = "meta.txt";
     private static final String metaFileJsonName = "meta.json";
+
+    private static final String templateMetaFileJsonName = "-meta.json";
     private static final String type = "type";
     private static final String fileName = "filename";
     private static final String projectName = "projectname";
@@ -49,6 +56,9 @@ public class ReaderUtils {
     private String zipName;
     private boolean hasTags = false;
     private boolean hasProjectName = false;
+    private static final String templateName = "-meta.json";
+    private static final String JSON_TYPE = ".json";
+    private static final String PRODUCE_PARAM = "wds.linkis.flink.produce";
 
 
     private static final Logger LOG = LoggerFactory.getLogger(ReaderUtils.class);
@@ -68,11 +78,24 @@ public class ReaderUtils {
     }
 
     public boolean checkName(String fileName) {
-        String name = fileName.substring(0, fileName.lastIndexOf("."));
-        if (fileName.endsWith(".jar")) {
-            return name.matches(jarRegex);
+        if (!fileName.contains(".")) {
+            return fileName.matches(regex);
+        } else {
+            String name = fileName.substring(0, fileName.lastIndexOf("."));
+            if (fileName.endsWith(".jar")) {
+                return name.matches(jarRegex);
+            }
+            return name.matches(regex);
         }
-        return name.matches(regex);
+    }
+
+    public static boolean isValidFileFormat(String fileName) {
+        String fileFormats = JobConf.STREAMIS_CHECK_FILE_FORMAT().getHotValue();
+        String regexPattern = ".*\\.(" + fileFormats + ")$";
+        Pattern pattern = Pattern.compile(regexPattern, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(fileName);
+
+        return matcher.matches();
     }
 
     public List<String> listFiles(String path) throws FileException {
@@ -299,5 +322,62 @@ public class ReaderUtils {
         String regex = "^[a-zA-Z0-9_\u4e00-\u9fa5]+$";
         return str.matches(regex);
     }
+    public Boolean checkMetaTemplate(String fileName,String inputPath,String projectName) throws FileException, IOException {
+        if (!fileName.endsWith(templateName)) {
+            return false;
+        }
+        int index = fileName.indexOf('-');
+        if (index == -1) {
+            return false;
+        }
+        if (projectName.equals(fileName.substring(0, index))) {
+            String path = inputPath.replace(JSON_TYPE, "");
+            MetaJsonInfo metaJsonInfo = parseJson(path,projectName);
+            Map<String, Object> jobConfig = metaJsonInfo.getJobConfig();
+            if (jobConfig != null && jobConfig.containsKey(PRODUCE_PARAM)) {
+                return false;
+            }
+            if ((metaJsonInfo.getJobName() == null || metaJsonInfo.getJobName().isEmpty()) &&
+                    (metaJsonInfo.getJobType() == null || metaJsonInfo.getJobType().isEmpty()) &&
+                    (metaJsonInfo.getTags() == null || metaJsonInfo.getTags().isEmpty()) &&
+                    (metaJsonInfo.getDescription() == null || metaJsonInfo.getDescription().isEmpty())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
+    public MetaJsonInfo parseJson(String dirPath,String projectName) throws IOException, FileException {
+        getBasePath(dirPath);
+        InputStream inputStream = null;
+        InputStreamReader streamReader = null;
+        try {
+            inputStream = generateInputStream(basePath,projectName);
+            streamReader = new InputStreamReader(inputStream);
+            BufferedReader reader = new BufferedReader(streamReader);
+            return readJson(reader);
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+            throw e;
+        } finally {
+            try {
+                if (null != inputStream) {
+                    inputStream.close();
+                }
+                if (null != streamReader) {
+                    streamReader.close();
+                }
+            } catch (Exception e1) {
+                LOG.warn("close stream error, {}", e1.getMessage());
+            }
+        }
+    }
+
+    private InputStream generateInputStream(String basePath,String projectName) throws IOException, FileException {
+        File metaFile = new File(basePath + File.separator + projectName +templateMetaFileJsonName);
+        if (!metaFile.exists()) {
+            throw new FileException(30603, metaFileJsonName);
+        }
+        return IoUtils.generateInputInputStream(basePath + File.separator + projectName +templateMetaFileJsonName);
+    }
 }

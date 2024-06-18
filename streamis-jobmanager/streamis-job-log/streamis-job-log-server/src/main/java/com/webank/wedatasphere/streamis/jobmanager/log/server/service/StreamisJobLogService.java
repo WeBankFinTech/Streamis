@@ -1,6 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.log.server.service;
 
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisLogEvents;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 
 /**
  * Job log service
@@ -12,5 +13,7 @@ public interface StreamisJobLogService {
      * @param user user own
      * @param events events
      */
-    void store(String user, StreamisLogEvents events);
+    void store(String user, StreamisLogEvents events,String productName);
+
+    String getProductName(String projectName,String jobName,String value);
 }

@@ -1,6 +1,18 @@
 <template>
   <div>
     <div class="itemWrap">
+      <p>{{ $t('message.streamis.jobListTableColumns.instance') }}:</p>
+      <div>
+        {{ instance }}
+      </div>
+    </div>
+    <div class="itemWrap">
+      <p>{{ $t('message.streamis.jobListTableColumns.appId') }}:</p>
+      <div>
+        {{ appId }}
+      </div>
+    </div>
+    <div class="itemWrap">
       <p>{{ $t('message.streamis.jobListTableColumns.jobType') }}:</p>
       <div>
         {{ jobType }}
@@ -143,6 +155,8 @@ export default {
       loadCondition: [],
       dataNumber: [],
       realTimeTraffic: [],
+      instance: '',
+      appId: '',
       jobType: this.$route.params.jobType,
       launchMode: this.$route.params.launchMode,
       manageMode: this.$route.params.manageMode,
@@ -163,6 +177,10 @@ export default {
         .then(res => {
           if (res && res.details) {
             const conditions = res.details.loadCondition || []
+            this.instance = res.details.linkisJobInfo ? 
+              res.details.linkisJobInfo.ecInstance ? res.details.linkisJobInfo.ecInstance.instance || '' : ''
+              : '',
+            this.appId = res.details.linkisJobInfo ? res.details.linkisJobInfo.applicationId || '' : '',
             this.loadCondition = conditions.map(item => {
               item.memoryUse = item.memory + ' / ' + item.totalMemory + ' G'
               item.memoryPercent = Math.ceil(

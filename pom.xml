@@ -21,7 +21,7 @@
 
     <groupId>com.webank.wedatasphere.streamis</groupId>
     <artifactId>streamis</artifactId>
-    <version>0.3.0</version>
+    <version>0.3.1</version>
     <packaging>pom</packaging>
 
     <name>Streamis Project Parent POM</name>
@@ -48,11 +48,11 @@
         <linkis.version>1.4.0</linkis.version>
         <junit.version>4.12</junit.version>
         <dss.version>1.1.2</dss.version>
-        <streamis.version>0.3.0</streamis.version>
-        <scala.version>2.12.17</scala.version>
+        <streamis.version>0.3.1</streamis.version>
+        <scala.version>2.11.12</scala.version>
         <jdk.compile.version>1.8</jdk.compile.version>
         <maven.version>3.3.3</maven.version>
-        <gson.version>2.10.1</gson.version>
+        <gson.version>2.8.5</gson.version>
         <snakeyaml.version>1.31</snakeyaml.version>
         <fasterxml.jackson.version>2.13.2</fasterxml.jackson.version>
         <math3.version>3.1.1</math3.version>
@@ -65,12 +65,12 @@
         <spring.boot.version>2.3.7.RELEASE</spring.boot.version>
         <spring.cloud.version>2.2.6.RELEASE</spring.cloud.version>
         <commons.math.version>3.1.1</commons.math.version>
-        <commons.lang3.version>3.8.1</commons.lang3.version>
+        <commons.lang3.version>3.12.0</commons.lang3.version>
         <commons.lang.version>2.6</commons.lang.version>
         <reflections.version>0.9.10</reflections.version>
         <jersey-bean-validation.version>2.21</jersey-bean-validation.version>
         <aspectj.version>1.9.5</aspectj.version>
-        <jobmanager.version>0.3.0</jobmanager.version>
+        <xstream.version>1.4.19</xstream.version>
         <mysql.connector.version>5.1.47</mysql.connector.version>
         <validation.api.version>2.0.1.Final</validation.api.version>
         <xstream.version>1.4.20</xstream.version>
