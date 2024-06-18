@@ -46,6 +46,7 @@ public abstract class SendLogCacheConsumer<T extends LogElement> implements Runn
         long expireTimeInSec = rpcSenderConfig.getBufferConfig().getExpireTimeInSec();
         this.bufferExpireTimeInMills = expireTimeInSec > 0 ? TimeUnit.SECONDS
                 .toMillis(expireTimeInSec) : -1;
+        System.out.println("SendLogCacheConsumer with id : " + id + " started.");
 
     }
 
@@ -85,6 +86,7 @@ public abstract class SendLogCacheConsumer<T extends LogElement> implements Runn
                 }
             } catch (Exception e){
                 if (this.isTerminated && e instanceof InterruptedException){
+                    System.out.println("SendLogCacheConsumer[" + Thread.currentThread().getName() + "] with id : " + id + " isTerminated or Interrupted.");
                     return;
                 } else {
                     e.printStackTrace();

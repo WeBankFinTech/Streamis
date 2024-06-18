@@ -79,4 +79,6 @@ trait JobInfo {
    * @return
    */
   def getClientType: String
+
+  def getHighAvailablePolicy: String
 }

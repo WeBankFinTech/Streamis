@@ -46,7 +46,7 @@ class EngineConnJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManager: JobS
             engineConnLogOperator match {
               case clientLogOperator: FlinkClientLogOperator =>
                 var logDirSuffix = this.jobInfo.asInstanceOf[EngineConnJobInfo].getLogDirSuffix
-                if (StringUtils.isBlank(logDirSuffix) && requestPayload.isLogHistory){
+                if (StringUtils.isBlank(logDirSuffix)){
                   // If want to fetch the history log, must get the log directory suffix first
                   getLinkisClient match {
                     case client: DWSHttpClient =>

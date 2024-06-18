@@ -10,7 +10,7 @@
                 type="primary"
                 :disabled="!selections.length"
                 @click="clickBatchRestart(true)"
-                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.snapshotRestart')}}
               </Button>
@@ -20,7 +20,7 @@
                 type="primary"
                 :disabled="!selections.length"
                 @click="clickBatchRestart(false)"
-                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 16px;display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.directRestart')}}
               </Button>
@@ -28,27 +28,63 @@
             <FormItem>
               <Button
                 type="primary"
+                :disabled="!selections.length"
+                @click="clickBatchEditTags()"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 16px;display: flex;align-items: center;justify-content: center;"
+              >
+                {{$t('message.streamis.formItems.editTags')}}
+              </Button>
+            </FormItem>
+            <FormItem>
+              <Button
+                type="primary"
+                :disabled="!selections.length || query.enable === 'all'"
+                @click="clickBatchDisable"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 16px;display: flex;align-items: center;justify-content: center;"
+              >
+                禁用
+              </Button>
+            </FormItem>
+            <FormItem>
+              <Button
+                type="primary"
+                :disabled="!selections.length || query.enable === 'all'"
+                @click="clickBatchStart"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 16px;display: flex;align-items: center;justify-content: center;"
+              >
+                启动
+              </Button>
+            </FormItem>
+            <FormItem>
+              <Button
+                type="primary"
+                :disabled="!selections.length || query.enable === 'all'"
+                @click="clickBatchStop"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 16px;display: flex;align-items: center;justify-content: center;"
+              >
+                停止
+              </Button>
+            </FormItem>
+            <FormItem>
+              <Button
+                type="primary"
                 @click="hideButtons"
-                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 16px;display: flex;align-items: center;justify-content: center;"
               >
                 {{$t('message.streamis.formItems.cancel')}}
               </Button>
             </FormItem>
           </Form>
-          <Form ref="queryForm" inline v-else @submit.native.prevent>
-            <FormItem>
+          <Form ref="queryForm" class="query-form" :model="query" :rules="queryRuleValidate" inline v-else @submit.native.prevent :label-width="80">
+            <FormItem prop="jobName" :label="$t('message.streamis.formItems.jobName')">
               <Input
-                search
                 v-model="query.jobName"
                 :placeholder="$t('message.streamis.formItems.jobName')"
-                @on-click="handleNameQuery"
-                @on-enter="handleNameQuery"
               >
               </Input>
             </FormItem>
             <FormItem
               :label="$t('message.streamis.formItems.jobStatus')"
-              :label-width="120"
             >
               <Select v-model="query.jobStatus" class="select">
                 <Option
@@ -60,28 +96,77 @@
                 </Option>
               </Select>
             </FormItem>
-
-            <FormItem>
+            <FormItem
+              label="启用状态"
+            >
+              <Select v-model="query.enable" @on-change="onEnableStatusChange" class="select">
+                <Option
+                  v-for="item in enableStatus"
+                  :value="item.value"
+                  :key="item.value"
+                >
+                  {{ item.label }}
+                </Option>
+              </Select>
+            </FormItem>
+            <FormItem label="作业类型">
+              <Input
+                v-model="query.jobType"
+                placeholder="作业类型"
+              >
+              </Input>
+            </FormItem>
+            <FormItem prop="label" :label="$t('message.streamis.formItems.tag')">
+              <Input
+                v-model="query.label"
+                :placeholder="$t('message.streamis.formItems.tagPlaceHolder')"
+              >
+              </Input>
+            </FormItem>
+            <FormItem class="button-item">
               <Button
                 type="primary"
                 @click="handleQuery()"
-                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;"
+                style="width:100px;height:30px;background:rgba(22, 155, 213, 1);"
               >
                 {{ $t('message.streamis.formItems.queryBtn') }}
               </Button>
             </FormItem>
 
-            <FormItem>
+            <FormItem class="button-item">
               <Button
                 type="primary"
+                @click="resetQuery()"
+                style="width:100px;height:30px;background:rgba(22, 155, 213, 1);"
+              >
+                重置
+              </Button>
+            </FormItem>
+
+            <FormItem class="button-item">
+              <Button
+                type="primary"
+                :disabled="query.enable !== 1"
                 @click="showButtons"
-                style="width:80px;height:30px;background:rgba(22, 155, 213, 1);margin-left: 80px;display: flex;align-items: center;justify-content: center;"
+                style="width:100px;height:30px;background:rgba(22, 155, 213, 1);"
               >
                 {{$t('message.streamis.formItems.batchAction')}}
               </Button>
             </FormItem>
+
+            <FormItem class="button-item">
+              <Button
+                v-if="!query.enable"
+                type="primary"
+                :disabled="!selections.length"
+                @click="clickBatchEnable"
+                style="width:100px;height:30px;background:rgba(22, 155, 213, 1);"
+              >
+                启用
+              </Button>
+            </FormItem>
           </Form>
-          <Table ref="list" :columns="columns" :data="tableDatas" :loading="loading" @on-selection-change="selectionChange" :class="{table: isBatching}">
+          <Table ref="list" :row-class-name="rowClassName" :columns="columns" :data="tableDatas" :loading="loading" @on-selection-change="selectionChange" :class="{ table: isBatching || (!query.enable) }">
             <template slot-scope="{ row, index }" slot="jobName">
               <div
                 class="jobName"
@@ -100,19 +185,27 @@
                   :on-success="jarUploadSuccess"
                   :on-error="jarUploadError"
                   :show-upload-list="false"
+                  v-if="enableUpload"
                 >
                   <Icon type="md-add" class="upload" />
                   <span>{{
                     $t('message.streamis.jobListTableColumns.upload')
-                  }}</span></Upload
-                >
+                  }}</span>  
+                </Upload>
+                <div v-else @click="beforeUpload()">
+                  <Icon type="md-add" class="upload" />
+                  <span>{{
+                    $t('message.streamis.jobListTableColumns.upload')
+                  }}</span> 
+                </div>
               </div>
               <div class="jobName" v-show="index !== 0">
-                <Dropdown transfer @on-click="name => handleRouter(row, name)">
+                <Dropdown transfer transfer-class-name="joblist-table-ivu-select-dropdown" @on-click="name => handleRouter(row, name)">
                   <Icon type="md-more" class="more" />
                   <DropdownMenu slot="list">
                     <DropdownItem
-                      v-for="(item, index) in jobMoudleRouter"
+                      v-for="(item, index) in jobMoudleRouter.concat(!row.enable ? 'enable' : 'disable')"
+                      :disabled="(!row.enable && item !== 'enable') || (item === 'disable' && [5,8,9].includes(row.status))"
                       :name="item"
                       :key="index"
                     >
@@ -123,6 +216,21 @@
                 <div style="margin-left: 5px" @click="handleRouter(row)">
                   <a href="javascript:void(0)">{{ row.name }} </a>
                 </div>
+              </div>
+            </template>
+            <template slot-scope="{ row, index }" slot="status">
+              <div v-if="index !== 0">
+                <strong :style="`color: ${row.statusObj.color || '#000'};`">
+                  {{   row.statusObj.name ? $t('message.streamis.jobStatus.' + row.statusObj.name) : '' }}
+                </strong>
+                <span v-if="row.status === 6" class="failureReasonWrapper" @click="showFailureReason(row)">
+                  {{ $t('message.streamis.jobStatus.failureReason') }}
+                </span>
+              </div>
+            </template>
+            <template slot-scope="{ row, index }" slot="enable">
+              <div v-if="index !== 0">
+                {{  row.enable ? '已启用' : '已禁用' }}
               </div>
             </template>
             <template slot-scope="{ row, index }" slot="version">
@@ -138,19 +246,20 @@
               <div v-show="index !== 0">
                 <Button
                   type="primary"
-                  v-show="row.status !== 5"
-                  :loading="row.buttonLoading"
+                  v-show="row.status !== 5 && row.status !== 9"
+                  :loading="row.buttonLoading || row.status === 8"
                   style="height:22px;background:#008000;margin-right: 5px; font-size:10px;"
+                  :disabled="!row.enable"
                   @click="handleAction(row, index)"
                 >
                   {{ $t('message.streamis.formItems.startBtn') }}
                 </Button>
-                <Poptip placement="top" v-model="row.poptipVisible" :disabled="row.buttonLoading">
+                <Poptip :transfer="true" placement="top" v-model="row.poptipVisible" :disabled="row.buttonLoading">
                   <Button
                     type="primary"
-                    v-show="row.status === 5"
+                    v-show="row.status === 5 || row.status === 9"
                     :disabled="row.buttonLoading"
-                    :loading="row.buttonLoading"
+                    :loading="row.buttonLoading || row.status === 9"
                     style="height:22px;background:#ff0000;margin-right: 5px; font-size:10px;"
                   >
                     {{ $t('message.streamis.formItems.stopBtn') }}
@@ -175,6 +284,7 @@
                       >
                         {{ $t('message.streamis.formItems.snapshotAndStop') }}
                       </Button>
+                      <Checkbox v-if="hasHook" v-model="ignoreHookException">跳过Hook异常</Checkbox>
                     </div>
                   </div>
                 </Poptip>
@@ -220,6 +330,8 @@
     <Modal
       v-model="processModalVisable"
       :title="modalTitle"
+      :closable="false"
+      :mask-closable="false"
       width="800"
       footer-hide
       @on-visible-change="onClose"
@@ -279,15 +391,81 @@
       :mask-closable="false"
     >
       <div class="wrap">
-        <Table border :columns="checkColumns" :data="checkData"></Table>
+        <Table border :row-class-name="rowClassName" :columns="checkColumns" :data="checkData" :loading="startHintLoading">
+          <template slot-scope="{row}" slot="yarn">
+            <div v-for="(item, index) in row.yarn" :key="index">
+              <a class="red-color" v-if="item.applicationUrl && item.applicationUrl !== '无' && item.applicationId" style="display: block" @click="goToNewTab(item.applicationUrl)">{{item.yarnAppType}}: {{item.applicationName}}</a>
+              <div v-else>{{ item.applicationUrl }}</div>
+            </div>
+          </template>
+          <template #consistency="{row}">
+            <div v-if="row.consistency.includes('不通过')" class="red-color">{{ row.consistency }}</div>
+            <div v-else>{{ row.consistency }}</div>
+          </template>
+        </Table>
       </div>
       <template slot="footer">
-        <div style="display: flex; width: 100%">
-          <div style="textAlign: left; width: 836px; position: relative; top: 3px">当前一共需要确认的作业数量：{{checkData.length}}个</div>
-          <Button type="primary" @click="confirmStarting">{{ $t('message.streamis.formItems.confirmBtn') }}</Button>
-          <Button type="primary" @click="cancelStartHint">{{ $t('message.streamis.formItems.cancel') }}</Button>
+        <div class="modal-footer-wrapper">
+          <div class="modal-footer-descs">
+            <div style="marginRight: 16px;">以上 {{checkData.length}} 个作业</div>
+            <div v-if="hasWarningCount" class="warning-color">检查到 {{hasWarningCount}} 个作业存在异常，可能导致启动失败，请检查</div>
+          </div>
+          <div class="modal-footer-btns">
+            <Button type="primary" @click="confirmStarting" :disabled="startHintLoading">{{ $t('message.streamis.formItems.confirmBtn') }}</Button>
+            <Button type="primary" @click="cancelStartHint">{{ $t('message.streamis.formItems.cancel') }}</Button>
+          </div>
         </div>
       </template>
+    </Modal>
+    <Modal
+      v-model="showEditTags"
+      :title="$t('message.streamis.formItems.editTags')"
+      @on-visible-change="changeVisible">
+      <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="0">
+        <FormItem prop="newTag">
+          <Input v-model="formValidate.newTag" :placeholder="$t('message.streamis.formItems.editTagsPlaceHolder')"></Input>
+        </FormItem>
+      </Form>
+      <div>{{ $t('message.streamis.formItems.editTagsHint') }}</div>
+      <template #footer>
+        <Button @click="showEditTags = false">取消</Button>
+        <Button type="primary" @click="confirmEditTags" :loading="editTagsLoading">确定</Button>
+      </template>
+    </Modal>
+    <Modal
+      v-model="failureReasonShow"
+      :title="$t('message.streamis.formItems.failureReason')"
+      :footer-hide="true"
+    >
+      <div class="text">
+        {{ failureReason }}
+      </div>
+      <a class="solution" v-if="solutionURL" target="_blank" :href="knowledgeLibraryUrl + solutionURL">解决方案</a>
+    </Modal>
+    <Modal
+      v-model="stopDataShow"
+      title="批量停止"
+      @on-cancel="modalCancel"
+      :mask-closable="false"
+    >
+      <div class="wrap">
+        <Table border :row-class-name="rowClassName" :columns="stopColumns" :data="stopData">
+        </Table>
+      </div>
+      <div class="text" style="margin-top: 16px;">
+        以上{{ stopData.length }}个应用待停止
+      </div>
+      <template #footer>
+        <Button type="primary" @click="batchStop" :disabled="startHintLoading">{{ $t('message.streamis.formItems.confirmBtn') }}</Button>
+        <Button type="primary" @click="modalCancel">{{ $t('message.streamis.formItems.cancel') }}</Button>
+      </template>
+    </Modal>
+    <Modal
+      v-model="ignoreHookModal"
+      title="确认"
+      @on-ok="confirmIgnoreHookModal"
+    >
+      <Checkbox v-model="ignoreHookException">跳过Hook异常</Checkbox>
     </Modal>
   </div>
 </template>
@@ -296,7 +474,7 @@ import api from '@/common/service/api'
 import titleCard from '@/apps/streamis/components/titleCard'
 import versionDetail from '@/apps/streamis/module/versionDetail'
 import uploadJobJar from '@/apps/streamis/module/uploadJobJar'
-import { allJobStatuses } from '@/apps/streamis/common/common'
+import { allJobStatuses, enableStatus } from '@/apps/streamis/common/common'
 import moment from 'moment'
 
 /**
@@ -319,13 +497,40 @@ function renderSpecialHeader(h, params) {
 
 export default {
   components: { titleCard, versionDetail, uploadJobJar },
+  props: ['hasHook'],
   data() {
     return {
       query: {
         jobName: '',
-        jobStatus: 'all'
+        jobStatus: 'all',
+        jobType: '',
+        label: '',
+        enable: 1,
       },
+      enableStatus: enableStatus,
       jobStatus: ['all'].concat(allJobStatuses.map(item => item.name)),
+
+      // 批量修改标签
+      showEditTags: false,
+      editTagsLoading: false,
+      newTag: '',
+      formValidate: {
+        newTag: ''
+      },
+      ruleValidate: {
+        newTag: [
+          { required: true, message: '请输入新标签', trigger: 'blur' },
+          { pattern: /^[a-zA-Z0-9_,.\s]+$/, message: '仅支持大小写字母、数字、下划线、小数点、逗号', trigger: 'blur' }
+        ],
+      },
+      queryRuleValidate: {
+        jobName: [
+          { pattern: /^[a-zA-Z0-9_,.\s]+$/, message: '仅支持大小写字母、数字、下划线、小数点、逗号', trigger: 'blur' }
+        ],
+        label: [
+          { pattern: /^[a-zA-Z0-9_,.\s]+$/, message: '仅支持大小写字母、数字、下划线、小数点、逗号', trigger: 'blur' }
+        ],
+      },
 
       tableDatas: [
         {},
@@ -384,24 +589,13 @@ export default {
           title: this.$t('message.streamis.jobListTableColumns.taskStatus'),
           key: 'status',
           renderHeader: renderSpecialHeader,
-          render: (h, params) => {
-            const hitStatus = allJobStatuses.find(
-              item => item.code === params.row.status
-            )
-            if (hitStatus) {
-              return h('div', [
-                h(
-                  'strong',
-                  {
-                    style: {
-                      color: hitStatus.color
-                    }
-                  },
-                  this.$t('message.streamis.jobStatus.' + hitStatus.name)
-                )
-              ])
-            }
-          }
+          slot: 'status'
+        },
+        {
+          title: '启用状态',
+          key: 'enable',
+          renderHeader: renderSpecialHeader,
+          slot: 'enable'
         },
         {
           title: this.$t('message.streamis.jobListTableColumns.jobType'),
@@ -481,7 +675,9 @@ export default {
       uploadVisible: false,
       projectName: this.$route.query.projectName,
       // 作业启动弹框
+      waitSingleStartCheck: false,
       startHintVisible: false,
+      startHintLoading: false,
       isBatchRestart: false,
       // 启动弹框的列和数据
       checkColumns: [
@@ -504,22 +700,83 @@ export default {
           align: 'center'
         },
         {
+          title: '同名yarn任务',
+          slot: 'yarn',
+          align: 'center',
+          width: 200,
+        },
+        {
+          title: '主备一致性检查',
+          slot: 'consistency',
+          align: 'center',
+          width: 140,
+        },
+        {
           title: '快照',
           key: 'link',
-          align: 'center'
+          align: 'center',
         },
       ],
+      stopDataShow: false,
+      stopData: [],
+      // 停止弹窗的列和数据
+      stopColumns: [
+        {
+          title: '作业名',
+          key: 'name',
+          align: 'center',
+        },
+        {
+          title: '运行状态',
+          key: 'status',
+          align: 'center',
+        }
+      ],
+      hasWarningCount: 0,
       checkData: [],
       // 当前正在查看的data
-      currentViewData: {}
+      currentViewData: {},
+      // 失败原因
+      failureReason: '',
+      failureReasonShow: false,
+      solutionURL: '',
+      knowledgeLibraryUrl: '',
+      enableUpload: true,
+      ignoreHookModal: false,
+      ignoreHookException: false,
+      isBatchRestartHook: false,
+      snapshot: false,
     }
   },
-  mounted() {
-    this.getJobList()
+  async mounted() {
+    await this.$nextTick()
+    const { jobName, jobStatus, enable, label, jobType, pageNow, pageSize } = this.$route.query
+    const hitStatus = allJobStatuses.find(item => item.code === parseInt(jobStatus))
+    Object.assign(this.query, {
+      jobName,
+      label,
+      jobType,
+      jobStatus: hitStatus ? hitStatus.name : 'all',
+      enable: enable === 'true' ? 1 : enable === 'false' ? 0 : enable || 1,
+    })
+    if(!this.query.enable){
+      this.columns.unshift({
+        type: 'selection',
+        width: 60,
+        align: 'center'
+      });
+    }
+    Object.assign(this.pageData, {
+      pageNow: parseInt(pageNow) || 1,
+      pageSize: parseInt(pageSize) || 10,
+    })
+    this.getJobList(false)
+    this.knowledgeLibraryUrl = window.knowledgeLibraryUrl || 'http://kn.dss.weoa.com/'
+    this.enableUpload = window.enableUpload
   },
   methods: {
     // 获取任务列表
-    getJobList() {
+    getJobList(shouldPush = true) {
       if (this.loading) {
         return
       }
@@ -532,21 +789,36 @@ export default {
         // projectName: 'stream_job',
         // projectName: 'streamis025_checkpoint',
         // 本地开发sit环境用的
-        // projectName: 'streamis025_version',
+        // projectName: 'streamis0606',
         // 正式环境用的
         projectName: this.projectName
       }
-      const { jobName, jobStatus } = this.query
-      if (jobName) {
-        params.jobName = jobName
-      }
+      const { jobName, jobStatus, enable, label, jobType } = this.query
+      params.jobName = jobName || ''
+      params.jobType = jobType || ''
+      params.label = label || ''
+      params.enable = enable === 'all' ? '' : Boolean(enable)
       if (jobStatus !== 'all') {
         const hitStatus = allJobStatuses.find(item => item.name === jobStatus)
         params.jobStatus = hitStatus.code
+      } else {
+        params.jobStatus=''
       }
 
+
+      const toQuery = {
+        ...this.$route.query,
+        ...params,
+        enable: params.enable === '' ? 'all' : params.enable
+      }
+      if (shouldPush) {
+        this.$router.push({
+          path: this.$route.path, 
+          query: toQuery
+        })
+      }
       const queries = Object.entries(params)
-        .filter(item => !!item[1] || item[1] === 0)
+        .filter(item => !!item[1] || item[1] === 0 || item[1] === false)
         .map(item => item.join('='))
         .join('&')
       api
@@ -563,10 +835,17 @@ export default {
               }
             })
             datas.unshift({})
-            this.tableDatas = datas.map(r => ({...r, poptipVisible: false, manageMode: r.manageMode && r.manageMode.toUpperCase() === 'DETACH' ? 'DETACH' : 'ATTACH', manageModeChinese: r.manageMode && r.manageMode.toUpperCase() === 'DETACH' ? '分离式' : '非分离式'}))
+            this.tableDatas = datas.map(r => ({
+              ...r,
+              poptipVisible: false,
+              manageMode: r.manageMode && r.manageMode.toUpperCase() === 'ATTACH' ? 'ATTACH' : 'DETACH',
+              manageModeChinese: r.manageMode && r.manageMode.toUpperCase() === 'ATTACH' ? '非分离式' : '分离式',
+              statusObj: allJobStatuses.find(item => item.code === r.status),
+            }))
             if (this.tableDatas[0]) {
-              delete this.tableDatas[0].manageMode
+              delete this.tableDatas[0].manageMode  
               delete this.tableDatas[0].manageModeChinese
+              delete this.tableDatas[0].enable
             }
             // console.log(JSON.stringify(datas))
             console.log('this.tableDatas: ', this.tableDatas);
@@ -579,14 +858,39 @@ export default {
           this.loading = false
         })
     },
-    handleNameQuery() {
+    goToNewTab(url) {
+      window.open(url, new Date().getTime())
     },
     handleQuery() {
-      this.pageData.current = 1
-      this.getJobList()
+      this.$refs['queryForm'].validate(async (valid) => {
+        console.log('valid: ', valid);
+        if (valid) {
+          this.pageData.current = 1
+          this.getJobList()
+        }
+      })
+
+    },
+    resetQuery() {
+      Object.assign(this.query, {
+        jobName: '',
+        jobStatus: 'all',
+        jobType: '',
+        label: '',
+        enable: 1
+      })
+      Object.assign(this.pageData, {
+        pageNow: 1,
+        pageSize: 10,
+      })
+      this.hideButtons()
+      this.handleQuery()
     },
     handleUpload() {
       this.uploadVisible = true
+    },
+    beforeUpload() {
+      this.$Message.error({ content: '禁止页面上传任务，请通过aomp发布' });
     },
     handleStop(data, type, index) {
       const { id } = data
@@ -596,7 +900,7 @@ export default {
       data.poptipVisible = false
       this.$set(this.tableDatas, index, data)
       api
-        .fetch(path, { jobId: id, snapshot: !!type }, 'get')
+        .fetch(path, { jobId: id, snapshot: !!type, skipHookError: this.ignoreHookException }, 'get')
         .then(res => {
           data.buttonLoading = false
           this.choosedRowId = ''
@@ -613,8 +917,60 @@ export default {
           this.getJobList()
         })
     },
+    confirmIgnoreHookModal() {
+      console.log('Is ignore hook ?', this.ignoreHookException)
+      if(this.isBatchRestartHook) {
+        this.batchRestart(this.snapshot)
+      }else{
+        this.stopDataShow = true
+      }
+    },
+    changeVisible(value) {
+      console.log('value: ', value);
+      if (!value) this.$refs['formValidate'].resetFields()
+    },
+    // 批量修改标签
+    async confirmEditTags() {
+      this.editTagsLoading = true
+      if (this.formValidate.newTag.includes(' ')) {
+        this.editTagsLoading = false;
+        return this.$Message.error({ content: '标签不能有空格，仅支持大小写字母、数字、下划线、小数点、逗号' });
+      }
+      this.$refs['formValidate'].validate(async (valid) => {
+        console.log('valid: ', valid);
+        if (valid) {
+          console.log('this.selections: ', this.selections);
+          const tasks = []
+          this.selections.forEach(item => {
+            tasks.push({
+              id: item.id,
+              label: this.formValidate.newTag
+            })
+          })
+          // 修改标签接口
+          try {
+            await api.fetch('/streamis/streamJobManager/job/updateLabel', { tasks }, 'post');
+            this.$refs['formValidate'].resetFields();
+            this.showEditTags = false;
+            this.editTagsLoading = false;
+            this.getJobList()
+            this.selections = []
+          } catch {
+            this.editTagsLoading = false;
+          }
+        } else {
+          this.editTagsLoading = false;
+        }
+      })
+    },
 
 
+    rowClassName(row){
+      if(row.enable === false){
+        return 'disabled-row'
+      }
+      return row.warningRow ? 'warning-row' : ''
+    },
     // 1、快照重启和直接重启只有调用接口时snapshot参数的区别
     // 2、快照重启、直接重启、启动 都需要调用inspect接口
     // 3、快照重启、直接重启调用inspect接口前，需要pause接口返回成功；启动 不需要调用pause接口
@@ -626,37 +982,140 @@ export default {
     async clickBatchRestart(snapshot) {
       // 3、快照重启、直接重启调用inspect接口前，需要pause接口返回成功
       const bulk_sbj = this.selections.map(item => +item.id);
+      if(!this.checkTask(bulk_sbj)){
+        this.$Message.error('存在已禁用的任务，请取消勾选已禁用的任务再执行该操作!')
+        return
+      }
+      if(!this.checkTaskStatus(bulk_sbj)){
+        this.$Message.error('存在未启动、启动中、停止中的任务，请取消勾选此类任务再执行该操作!')
+        return
+      }
+      if (this.hasHook) {
+        this.ignoreHookModal = true
+        this.isBatchRestartHook = true
+        this.snapshot = snapshot
+      } else {
+        this.batchRestart(snapshot)
+      }
+      
+    },
+    async batchRestart(snapshot) {
+      const bulk_sbj = this.selections.map(item => +item.id);
       // 点击批量重启的按钮后，就应该弹出弹窗，pause结束后改变这个一体弹窗的进度，然后开始请求inspect，如果inspect都为空，一体弹窗直接进入下一步启动，如果不为空，上层遮罩再弹出inspect的弹窗需要确认
       this.processModalVisable = true;
       this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
       this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
 
-      const pauseRes = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot });
-      console.log('pause pauseRes', pauseRes);
-      if (!pauseRes.result || !pauseRes.result.Success || !pauseRes.result.Failed) throw new Error('停止接口后台返回异常');
-      // this.modalLoading = false;
-      if (snapshot) {
-        this.snapPaths = pauseRes.result.Success.data.map(item => ({
+      try {
+        const pauseRes = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot, skipHookError: this.ignoreHookException });
+        console.log('pause pauseRes', pauseRes);
+        if (!pauseRes.result || !pauseRes.result.Success || !pauseRes.result.Failed) {
+          this.isFinish = true;
+          this.modalContent = "停止接口后台返回异常"
+          return
+        }
+        // this.modalLoading = false;
+        if (snapshot) {
+          this.snapPaths = pauseRes.result.Success.data.map(item => ({
+            taskId: item.jobId,
+            taskName: item.scheduleId,
+            info: item.snapshotPath,
+          }));
+        }
+        this.failTasks = pauseRes.result.Failed.data.map(item => ({
           taskId: item.jobId,
           taskName: item.scheduleId,
-          info: item.snapshotPath,
+          info: item.message,
         }));
-      }
-      this.failTasks = pauseRes.result.Failed.data.map(item => ({
-        taskId: item.jobId,
-        taskName: item.scheduleId,
-        info: item.message,
-      }));
-      this.orderNum = this.selections.length - this.failTasks.length;
-      if (this.failTasks.length) {
-        this.isFinish = true;
-        this.modalTitle = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
-        this.modalContent = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+        this.orderNum = this.selections.length - this.failTasks.length;
+        if (this.failTasks.length) {
+          this.isFinish = true;
+          this.modalTitle = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+          this.modalContent = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+          return;
+        }
+      } catch (error) {
+        console.log('clickBatchRestart err: ', error);
+        this.isFinish = true
+        this.modalContent = '停止任务失败，失败信息：' + error
         return;
       }
 
-      // 1、快照重启和直接重启只有调用接口时snapshot参数的区别
-      this.handleAction(this.selections, 0, snapshot)
+      try {
+        // 1、快照重启和直接重启只有调用接口时snapshot参数的区别
+        await this.handleAction(this.selections, 0, snapshot)
+      } catch (error) {
+        this.processModalVisable = false;
+      }
+    },
+    async clickBatchStart(){
+      const bulk_sbj = this.selections.map(item => +item.id);
+      if(!this.checkTaskStatus(bulk_sbj, 'batchStart')){
+        this.$Message.error('存在运行中、启动中、停止中的任务，请取消勾选此类任务再执行该操作!')
+        return
+      }
+      try {
+        // 1、快照重启和直接重启只有调用接口时snapshot参数的区别
+        await this.handleAction(this.selections, 0, false)
+      } catch (error) {
+        this.processModalVisable = false;
+      }
+    },
+    async clickBatchStop(){
+      const bulk_sbj = this.selections.map(item => +item.id);
+      this.stopData = this.selections.slice().map(item=>({...item, status: '运行中'}))
+      if(!this.checkTaskStatus(bulk_sbj, 'batchStop')){
+        this.$Message.error('存在非运行中的任务，请取消勾选此类任务再执行该操作!')
+        return
+      }
+      if (this.hasHook) {
+        this.ignoreHookModal = true
+        this.isBatchRestartHook = false
+      } else {
+        this.stopDataShow = true
+      }
+    },
+    async batchStop(){
+      const bulk_sbj = this.selections.map(item => +item.id);
+      this.processModalVisable = true;
+      this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
+      this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
+      try {
+        const pauseRes = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot: false, skipHookError: this.ignoreHookException });
+        console.log('pause pauseRes', pauseRes);
+        if (!pauseRes.result || !pauseRes.result.Success || !pauseRes.result.Failed) {
+          this.isFinish = true;
+          this.modalContent = "停止接口后台返回异常"
+          return
+        }
+        this.failTasks = pauseRes.result.Failed.data.map(item => ({
+          taskId: item.jobId,
+          taskName: item.scheduleId,
+          info: item.message,
+        }));
+        this.orderNum = this.selections.length - this.failTasks.length;
+        if (this.failTasks.length) {
+          this.isFinish = true;
+          this.modalTitle = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+          this.modalContent = this.$t('message.streamis.jobListTableColumns.endTaskTitle');
+          return;
+        }
+        this.processModalVisable = false;
+        this.stopDataShow = false;
+      } catch (error) {
+        console.log('clickBatchStop err: ', error);
+        this.isFinish = true
+        this.modalContent = '停止任务失败，失败信息：' + error
+        return;
+      }
+    },
+    clickBatchEditTags(){
+      const bulk_sbj = this.selections.map(item => +item.id);
+      if(!this.checkTask(bulk_sbj)){
+        this.$Message.error('存在已禁用的任务，请取消勾选已禁用的任务再执行该操作!')
+        return
+      }
+      this.showEditTags = true
     },
     async handleAction(data, index, snapshot) {
       console.log('handleAction snapshot: ', snapshot);
@@ -676,38 +1135,99 @@ export default {
 
       if (this.isBatchRestart) {
         // 是批量重启，tempData是数组
-        this.tempData.forEach(async (item) => {
-          const { id, name } = item
-          const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
-          const inspectRes = await api.fetch(checkPath, {}, 'put')
+        this.hasWarningCount = 0;
+        try {
+          this.startHintVisible = true
+          this.startHintLoading = true
+          const inspectRes = await Promise.all(this.tempData.map(async (item) => {
+            const { id, name } = item
+            const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
+            const inspectRes = await api.fetch(checkPath, {}, 'put')
+            const tempData = {
+              id,
+              jobName: name,
+              link: inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--',
+              latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
+              lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
+              yarn: inspectRes.list && inspectRes.list.list ? inspectRes.list.list : [],
+              consistency: inspectRes.highavailable && inspectRes.highavailable.highAvailable ? '通过：检查通过' : (inspectRes.highavailable.msg ? '不通过：' + inspectRes.highavailable.msg + '不一致' : '--'),
+              warningRow: false
+            }
+            if (tempData.consistency.includes('不通过')) {
+              tempData.warningRow = true
+            }
+            if (Array.isArray(tempData.yarn)) {
+              for (let i = 0; i < tempData.yarn.length; i++) {
+                if (tempData.yarn[i].applicationId && tempData.yarn[i].applicationId !== '无') {
+                  tempData.warningRow = true
+                  break
+                }
+              }
+            }
+            if (tempData.warningRow === true) {
+              this.hasWarningCount++
+            }
+            this.checkData.push(tempData)
+          }))
+          this.startHintLoading = false
           console.log('inspectRes: ', inspectRes);
+          // 上面虽然是调用多个接口，但因为是await，所以这里的打开弹框的顺序可以按照同步的方式写
+          this.startHintVisible = true
+          console.log('打开弹框 this.startHintData: ', this.startHintData);
+        } catch (error) {
+          this.startHintLoading = false
+          this.startHintVisible = false
+          this.processModalVisable = false
+        }
+      } else {
+        try {
+          if (this.waitSingleStartCheck) {
+            return
+          }
+          // 是单个重启，tempData是对象
+          this.hasWarningCount = 0;
+          const { id, name } = this.tempData
+          const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
+          this.waitSingleStartCheck = true;
+          this.startHintVisible = true
+          this.startHintLoading = true
+          const inspectRes = await api.fetch(checkPath, {}, 'put')
+          this.startHintLoading = false
+          this.waitSingleStartCheck = false;
           const tempData = {
             id,
             jobName: name,
             link: inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--',
             latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
             lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
+            yarn: inspectRes.list && inspectRes.list.list ? inspectRes.list.list : [],
+            consistency: inspectRes.highavailable && inspectRes.highavailable.highAvailable ? '通过：检查通过' : (inspectRes.highavailable.msg ? '不通过：' + inspectRes.highavailable.msg + '不一致' : '--'),
+            warningRow: false
+          }
+          if (tempData.consistency.includes('不通过')) {
+            tempData.warningRow = true
+          }
+          if (Array.isArray(tempData.yarn)) {
+            for (let i = 0; i < tempData.yarn.length; i++) {
+              if (tempData.yarn[i].applicationId && tempData.yarn[i].applicationId !== '无') {
+                tempData.warningRow = true
+                break
+              }
+            }
+          }
+          if (tempData.warningRow === true) {
+            this.hasWarningCount++
           }
           this.checkData.push(tempData)
-        })
-        // 上面虽然是调用多个接口，但因为是await，所以这里的打开弹框的顺序可以按照同步的方式写
-        this.startHintVisible = true
-        console.log('打开弹框 this.startHintData: ', this.startHintData);
-      } else {
-        // 是单个重启，tempData是对象
-        const { id, name } = this.tempData
-        const checkPath = `streamis/streamJobManager/job/execute/inspect?jobId=${id}`
-        const inspectRes = await api.fetch(checkPath, {}, 'put')
-        const tempData = {
-          id,
-          jobName: name,
-          link: inspectRes.snapshot && inspectRes.snapshot.path ? inspectRes.snapshot.path : '--',
-          latestVersion: inspectRes.version && inspectRes.version.now && inspectRes.version.now.version ? inspectRes.version.now.version : '--',
-          lastVersion: inspectRes.version && inspectRes.version.last && inspectRes.version.last.version ? inspectRes.version.last.version : '--',
+          console.log('this.checkData: ', this.checkData);
+          this.startHintVisible = true
+          console.log('打开弹框 this.startHintData: ', this.startHintData);
+        } catch (error) {
+          this.startHintLoading = false
+          this.startHintVisible = false
+          this.waitSingleStartCheck = false;
+          this.processModalVisable = false
         }
-        this.checkData.push(tempData)
-        this.startHintVisible = true
-        console.log('打开弹框 this.startHintData: ', this.startHintData);
       }
     },
     cancelStartHint() {
@@ -727,36 +1247,44 @@ export default {
         this.tempData.buttonLoading = true
         this.choosedRowId = id
         this.$set(this.tableDatas, this.tempIndex, this.tempData)
-        api
-          .fetch(path, second)
-          .then(res => {
-            console.log('execute res: ', res);
-            this.tempData.buttonLoading = false
-            this.choosedRowId = ''
-            if (res) {
-              this.$emit('refreshCoreIndex')
+        try {
+          api
+            .fetch(path, second)
+            .then(res => {
+              console.log('execute res: ', res);
+              this.tempData.buttonLoading = false
+              this.choosedRowId = ''
+              if (res) {
+                this.$emit('refreshCoreIndex')
+                this.loading = false
+                this.getJobList()
+              }
+            })
+            .catch(err => {
+              console.log('err: ', err);
               this.loading = false
+              this.tempData.buttonLoading = false
+              this.choosedRowId = ''
               this.getJobList()
-            }
-          })
-          .catch(err => {
-            console.log('execute err: ', err);
-            this.loading = false
-            this.tempData.buttonLoading = false
-            this.choosedRowId = ''
-            this.getJobList()
-          })
+              throw new Error(err)
+            })
+        } catch (error) {
+          console.log('error: ', error);
+          this.$Message.error({ content: '后台接口异常，请联系开发处理！' });
+        }
       } else {
         // 批量启动
         console.log('bulkExecution');
         try {
           const bulk_sbj = this.selections.map(item => +item.id);
           const result = await api.fetch('streamis/streamJobManager/job/bulk/execution', { bulk_sbj });
+          this.processModalVisable = true
           console.log('start result', result);
           this.queryProcess(bulk_sbj);
         } catch (err) {
           console.log('bulkExecution err: ', err);
-          this.modalContent = '停止任务失败，失败信息：' + err
+          this.isFinish = true;
+          this.modalContent = '批量启动任务失败，失败信息：' + err;
         }
       }
     },
@@ -785,10 +1313,74 @@ export default {
           this.loading = false
         })
     },
+    // 判断任务的启用禁用情况
+    checkTask(ids){
+      const resArray = this.tableDatas.filter(item=> ids.includes(item.id)).map(item=>item.enable)
+      console.log(ids)
+      return resArray.includes(false) ? false : true // 存在禁用的任务，批量操作任务预检查失败，不能执行批量操作
+    },
+    // 判断任务的运行状态情况, 默认用于是否允许批量启动、停止
+    checkTaskStatus(ids, type = "startOrStop") {
+      const resArray = this.tableDatas.filter(item => ids.includes(item.id)).map(item => item.status)
+      if (type === "startOrStop") {
+        return (resArray.includes(0) || resArray.includes(8) || resArray.includes(9)) ? false : true // 存在未启动、启动中或停止中的任务，不允许执行启动、停止
+      }
+      if (type === "batchStart") {
+        return (resArray.includes(5) || resArray.includes(8) || resArray.includes(9)) ? false : true // 存在运行中、启动中或停止中的任务，不允许执行启动
+      }
+      if (type === "batchStop") {
+        return resArray.every(item=> item === 5) // 存在非运行中的任务，不允许执行停止
+      }
+      if (type === "disableCheck") { // 用于是否允许批量禁止
+        return (resArray.includes(8) || resArray.includes(9) || resArray.includes(5)) ? false : true // 存在运行中、启动中或停止中的任务，不允许执行禁止
+      }
+    },
+    enableTask(ids){
+      this.loading = true
+      api.fetch(
+        '/streamis/streamJobManager/job/enable',
+        ids,
+        'post'
+      ).then(res=>{
+        console.log('enableTask res: ', res);
+        if (res) {
+          this.loading = false
+          this.getJobList();
+        }
+      }).catch(err => {
+        console.log('enableTask err: ', err);
+        this.loading = false
+      })
+    },
+    disableTask(ids){
+      this.loading = true
+      api.fetch(
+        '/streamis/streamJobManager/job/ban',
+        ids,
+        'post'
+      ).then(res=>{
+        console.log('disableTask res: ', res);
+        if (res) {
+          this.loading = false
+          this.getJobList();
+        }
+      }).catch(err => {
+        console.log('disableTask err: ', err);
+        this.loading = false
+      })
+    },
     handleRouter(rowData, moduleName) {
       if(moduleName === 'savepoint'){
         this.stopSavepoint(rowData);
         return;
+      }
+      if(moduleName === 'enable'){
+        this.enableTask([rowData.id])
+        return
+      }
+      if(moduleName === 'disable'){
+        this.disableTask([rowData.id])
+        return
       }
       const moduleMap = {
         paramsConfiguration: 'jobConfig',
@@ -808,7 +1400,8 @@ export default {
           status: rowData.status,
           jobType: rowData.jobType,
           manageMode: rowData.manageMode,
-          projectName: rowData.projectName || this.projectName
+          projectName: rowData.projectName || this.projectName,
+          enable: rowData.enable,
         }
       })
     },
@@ -821,6 +1414,19 @@ export default {
       this.pageData.pageSize = pageSize
       this.pageData.current = 1
       this.getJobList()
+    },
+    showFailureReason(row){
+      api.fetch(`streamis/streamJobManager/job/execute/errorMsg?jobId=${row.id}`,'get').then(
+        res=>{
+          console.log(res)
+          this.failureReason = res.details.errDesc || '原因未知'
+          this.solutionURL = res.details.solution || ''
+        }
+      ).catch(err=>{
+        console.log('showFailureReason err:',err)
+      }).finally(()=>{
+        this.failureReasonShow = true
+      })
     },
     versionDetailPageChange(page) {
       this.versionDetail(this.currentViewData, page)
@@ -847,6 +1453,7 @@ export default {
     },
     modalCancel() {
       this.modalVisible = false
+      this.stopDataShow = false
     },
     jarModalCancel() {
       this.uploadVisible = false
@@ -879,6 +1486,34 @@ export default {
     selectionChange(val) {
       const selections = (val || []).filter(item => item.id);
       this.selections = selections;
+    },
+    onEnableStatusChange(val) {
+      if (val === 0) {
+        this.columns.unshift({
+          type: 'selection',
+          width: 60,
+          align: 'center'
+        });
+      } else {
+        this.hideButtons()
+      }
+      this.pageData.current = 1
+      this.getJobList()
+    },
+    clickBatchEnable() {
+      this.enableTask(this.selections.map(item => item.id))
+    },
+    clickBatchDisable() {
+      const bulk_sbj = this.selections.map(item => +item.id);
+      if (!this.checkTask(bulk_sbj)) {
+        this.$Message.error('存在已禁用的任务，请取消勾选已禁用的任务再执行该操作!')
+        return
+      }
+      if (!this.checkTaskStatus(bulk_sbj, 'disableCheck')) {
+        this.$Message.error('存在启动中、停止中、运行中的任务，请取消勾选此类任务再执行该操作!')
+        return
+      }
+      this.disableTask(this.selections.map(item => item.id))
     },
     async queryProcess(id_list) {
       console.log('queryProcess');
@@ -917,6 +1552,8 @@ export default {
     onClose(status) {
       if (status) return;
       this.processModalVisable = false;
+      this.modalVisible = false;
+      this.stopDataShow = false;
       this.snapPaths = []
       this.isFinish = false;
       clearTimeout(this.timer);
@@ -929,6 +1566,14 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+.text{
+  word-break: break-all;
+}
+
+.solution{
+  margin-top: 6px;
+  display: block;
+}
 .select {
   width: 200px;
 }
@@ -944,6 +1589,10 @@ export default {
 }
 .page {
   margin-top: 20px;
+}
+.failureReasonWrapper{
+  color: red;
+  cursor: pointer;
 }
 .versionWrap {
   display: flex;
@@ -997,5 +1646,47 @@ export default {
       }
     }
   }
+}
+.red-color {
+  color: red;
+}
+.warning-color{
+  color: #ff9900;
+}
+
+/deep/.ivu-table .warning-row td{
+  background-color: #ff9900;
+  border-right: none;
+}
+/deep/.ivu-table .disabled-row td{
+  background-color: #eee;
+  border-right: none;
+}
+.modal-footer-wrapper{
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  .modal-footer-descs{
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  .modal-footer-btns{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+}
+</style>
+
+<style lang="scss">
+.button-item {
+  .ivu-form-item-content {
+    margin-left: 16px !important;
+  }
+}
+.joblist-table-ivu-select-dropdown{
+  max-height: 400px;
 }
 </style>

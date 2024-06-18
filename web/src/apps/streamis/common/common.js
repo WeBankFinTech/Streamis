@@ -16,3 +16,9 @@ export const jobStatuses = [
 ]
 
 export const allJobStatuses = [...jobStatuses, { name: 'unstarted', code: 0 }]
+
+export const enableStatus = [
+  { value: 1, label: '已启用' },
+  { value: 0, label: '已禁用' },
+  { value: 'all', label: '全部' },
+]

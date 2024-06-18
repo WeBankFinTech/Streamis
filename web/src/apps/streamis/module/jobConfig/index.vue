@@ -6,11 +6,12 @@
           <h3>{{ part.name }}</h3>
           <div>
             <Form v-if="valueMap[part.key]" :model="valueMap[part.key]" :ref="part.key" :rules="rule[part.key]">
-              <FormItem v-for="(def, index) in part.child_def" :key="index" :label="def.name" :prop="def.key" :data-prop="def.key">
-                <Input v-if="def.type === 'INPUT' || def.type === 'NUMBER'" v-model="valueMap[part.key][def.key]" />
-                <!-- <Input v-else-if="def.type === 'NUMBER'" v-model="valueMap[part.key][def.key]" type="number" /> -->
-                <Select
+              <FormItem v-for="(def, index) in part.child_def" :key="index" :label="def.name + ` ${isTemplateMap.get(part.key+def.key) ? '(template)' : '(job)'}`" :prop="def.key" :data-prop="def.key">
+                <Input :disabled="!editable || isTemplateMap.get(part.key+def.key)" v-if="def.type === 'INPUT' || def.type === 'NUMBER'" v-model="valueMap[part.key][def.key]" />
+                <!-- <Input :disabled="!editable" v-else-if="def.type === 'NUMBER'" v-model="valueMap[part.key][def.key]" type="number" /> -->
+                <Select 
                   v-else
+                  :disabled="!editable || isTemplateMap.get(part.key+def.key)"
                   v-model="valueMap[part.key][def.key]"
                   class="select"
                 >
@@ -35,22 +36,24 @@
                   <FormItem>
                     <div class="inputWrap">
                       <div class="flinkIndex">{{ index + 1 }}</div>
-                      <Input v-model="item.key" />
+                      <Input :disabled="!editable || item.isTemplate" v-model="item.key" @on-blur="onFlinkCustomBlur(part.key, index)"/>
                       <div class="equity">=</div>
                     </div>
                   </FormItem>
                 </Col>
                 <Col span="5">
                   <FormItem>
-                    <Input v-model="item.value" />
+                    <Input :disabled="!editable || item.isTemplate" v-model="item.value" />
                   </FormItem>
                 </Col>
                 <Col span="10">
                   <div class="inputWrap">
+                    <span class="tag" v-if="item.isTemplate">(template)</span>
+                    <span class="tag" v-else>(job)</span>
                     <div
                       class="icon"
                       @click="removeParameter(index, part.key)"
-                      v-show="diyMap[part.key].length !== 1"
+                      v-show="diyMap[part.key].length !== 1 && !item.isTemplate"
                     >
                       <Icon type="md-close" />
                     </div>
@@ -76,6 +79,7 @@
       <Button
         type="primary"
         @click="handleSaveConfig()"
+        :disabled="!enable || !editable"
         :loading="saveLoading"
         style="width:100px;height:40px;background:rgba(22, 155, 213, 1);"
       >
@@ -95,11 +99,15 @@ export default {
       diyMap: {},
       saveLoading: false,
       rule: {},
+      enable: this.$route.params.enable, // 任务是否启用
+      editable: true,
+      isTemplateMap: new Map()
     }
   },
   mounted() {
     this.getUsers()
     this.getConfigs()
+    this.editable = window.enableUpload
   },
   methods: {
     getUsers() {
@@ -120,18 +128,33 @@ export default {
         )
         .then(res => {
           const valueMap = this.valueMap;
+          this.editable = res.editEnable
           Object.keys(res || {}).forEach(key => {
-            valueMap[key] = {};
-            Object.keys(res[key]).forEach(k => {
-              const formatKey = k.replace(/\./g, '/');
-              valueMap[key][formatKey] = res[key][k];
-            })
+            if(valueMap[key] === undefined) valueMap[key] = {}
+            if (key === 'editEnable') return
+            if (key === 'template') { // 先使用模板的value
+              Object.keys(res.template).forEach(k => {
+                Object.keys(res.template[k]).forEach(j => {
+                  const formatKey = j.replace(/\./g, '/');
+                  valueMap[k][formatKey] = res.template[k][j];
+                  this.isTemplateMap.set(k+j, true)
+                  this.isTemplateMap.set(k+formatKey, true)
+                })
+              })
+            } else {
+              Object.keys(res[key]).forEach(k => {
+                const formatKey = k.replace(/\./g, '/');
+                valueMap[key][formatKey] = res[key][k];
+                this.isTemplateMap.set(key+k, false)
+                this.isTemplateMap.set(key+formatKey, false)
+              })
+            }
           })
           Object.keys(this.diyMap).forEach(key => {
             if (Object.keys(valueMap).includes(key)) {
-              let keyValue = Object.keys(valueMap[key] || {}).map(k => ({key: k.replace(/\//g, '.'), value: valueMap[key][k]}));
+              let keyValue = Object.keys(valueMap[key] || {}).map(k => ({key: k.replace(/\//g, '.'), value: valueMap[key][k], isTemplate: this.isTemplateMap.get(key+k)}));
               valueMap[key] = {};
-              if (!keyValue.length) keyValue = [{value: '', key: ''}];
+              if (!keyValue.length) keyValue = [{value: '', key: '', isTemplate: false}];
               this.diyMap = {
                 ...this.diyMap,
                 [key]: keyValue
@@ -191,7 +214,15 @@ export default {
       this.diyMap = {...this.diyMap, [key]: keyValue}
     },
     addParameter(key) {
-      this.diyMap = {...this.diyMap, [key]: this.diyMap[key].concat({value: '', key: ''})}
+      this.diyMap = {...this.diyMap, [key]: this.diyMap[key].concat({value: '', key: '', isTemplate: false})}
+    },
+    onFlinkCustomBlur(key, index) {
+      const flinks = this.diyMap[key].filter(item => !item.isTemplate).map(item => item.key)
+      const now = this.diyMap[key][index].key
+      if (flinks.filter(item => item === now).length > 1) {
+        this.diyMap[key][index].key = ''
+        this.$Message.warning('Job Flink参数key不能重复')
+      }
     },
     async handleSaveConfig() {
       this.valueMap = cloneDeep(this.valueMap);
@@ -229,7 +260,7 @@ export default {
         (this.diyMap[key] || []).forEach(mapKey => {
           console.log('mapKey: ', mapKey);
           if (key !== 'wds.linkis.flink.custom') emptyWarning = !mapKey.key || !mapKey.key.trim();
-          if (configuration[key][mapKey.key]) warning = true;
+          // if (configuration[key][mapKey.key]) warning = true;
           configuration[key][mapKey.key] = mapKey.value || '';
         });
         if ((this.diyMap[key] || []).length <= 1) {
@@ -273,6 +304,11 @@ export default {
 <style lang="scss" scoped>
 .inputWrap {
   display: flex;
+  align-items: center;
+}
+
+.tag{
+  margin-left: 10px;
 }
 .unit {
   margin-left: 10px;

@@ -27,6 +27,18 @@ public class FlinkStreamisConfigDefine {
     public static final ConfigOption<String> LOG_COLLECT_PATH = ConfigOptions.key("stream.log.collect.path")
             .stringType().defaultValue("/api/rest_j/v1/streamis/streamJobManager/log/collect/events").withDescription("The entrypoint path of collecting log");
 
+
+    public static final ConfigOption<String> LOG_HEARTBEAT_PATH = ConfigOptions.key("stream.log.heartbeat.path")
+            .stringType().defaultValue("/api/rest_j/v1/streamis/streamJobManager/log/heartbeat").withDescription("The entrypoint path of heartbeat log");
+
+
+    public static final ConfigOption<Integer> LOG_HEARTBEAT_INTERVAL = ConfigOptions.key("stream.log.heartbeat.interval")
+            .intType().defaultValue(30 * 60 * 1000).withDescription("Heartbeat interval (ms) in log RPC module");
+
+
+    public static final ConfigOption<Boolean> LOG_HEARTBEAT_ENABLE = ConfigOptions.key("stream.log.heartbeat.enable")
+            .booleanType().defaultValue(true).withDescription("Heartbeat enable");
+
     /**
      * Connection timeout(in milliseconds) in log RPC module
      */

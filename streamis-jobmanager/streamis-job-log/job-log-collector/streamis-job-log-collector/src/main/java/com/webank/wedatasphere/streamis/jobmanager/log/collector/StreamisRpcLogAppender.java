@@ -5,6 +5,7 @@ import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcLogSe
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.config.StreamisLogAppenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.log4j2.StreamisLog4j2AppenderConfig;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.message.filters.LogMessageFilter;
+import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.RpcHeartbeatService;
 import com.webank.wedatasphere.streamis.jobmanager.log.collector.sender.StreamisRpcLogSender;
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.StreamisLogEvent;
 import com.webank.wedatasphere.streamis.jobmanager.plugin.StreamisConfigAutowired;
@@ -77,14 +78,20 @@ public class StreamisRpcLogAppender extends AbstractAppender {
 
     @Override
     public void append(LogEvent event) {
-        String content = Arrays.toString(getLayout().toByteArray(event));
+        String content = new String(getLayout().toByteArray(event));
         if (messageFilterFunction.test(event.getLoggerName(), content)) {
             StreamisLogEvent logEvent = new StreamisLogEvent(content, event.getTimeMillis());
             try {
+                if (appenderConfig.getSenderConfig().isDebugMode()) {
+                    System.out.println("debug: start to cache log at time : " + logEvent.getLogTimeStamp());
+                }
                 this.logCache.cacheLog(logEvent);
             } catch (InterruptedException e) {
                 LOGGER.error("StreamisRpcLogAppender: {} interrupted when cache the log into the RPC sender, message: {}", this.getName(), e.getMessage());
-                
+            }
+        } else {
+            if (appenderConfig.getSenderConfig().isDebugMode()) {
+                System.out.println("debug: event didn't pass messageFilterFunction, will ignore. content:\n" + content);
             }
         }
     }
@@ -119,6 +126,7 @@ public class StreamisRpcLogAppender extends AbstractAppender {
             throw new IllegalArgumentException("Application name cannot be empty");
         }
         System.out.println("StreamisRpcLogAppender: init with config => " + logAppenderConfig);
+        new RpcHeartbeatService(logAppenderConfig).startHeartbeat();
         return new StreamisRpcLogAppender(name, logAppenderConfig.getFilter(), layout, ignoreExceptions, Property.EMPTY_ARRAY, logAppenderConfig);
     }
 

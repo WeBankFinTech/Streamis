@@ -2,6 +2,7 @@ package com.webank.wedatasphere.streamis.jobmanager.log.server.storage.bucket;
 
 import com.webank.wedatasphere.streamis.jobmanager.log.entities.LogElement;
 import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.context.JobLogStorageContext;
+import com.webank.wedatasphere.streamis.jobmanager.log.server.storage.utils.RegularUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.linkis.common.conf.CommonVars;
@@ -309,7 +310,7 @@ public class Log4j2JobLogBucket implements JobLogBucket{
         if (fileHoldDay > 0){
             // Create the actions to delete old file
             builder.withCustomActions(new Action[]{
-                            DeleteAction.createDeleteAction(new File(fileName).getParent(), false, 2, false, null,
+                            DeleteAction.createDeleteAction(new File(FilenameUtils.normalize(fileName)).getParent(), false, 2, false, null,
                                     new PathCondition[]{
                                             IfFileName.createNameCondition(null, ".*"),
                                             IfLastModified.createAgeCondition(Duration.parse(fileHoldDay + "d"))
@@ -333,6 +334,10 @@ public class Log4j2JobLogBucket implements JobLogBucket{
             basePath += "/";
         }
         basePath += fileName.replace(".", "/");
+        String[] fileNameArray = RegularUtils.split(fileName);
+        if (fileNameArray.length > 3){
+            fileName = fileNameArray[0] + "." + fileNameArray[1] + "." + fileNameArray[3];
+        }
         return basePath + "/" + fileName.substring(bucketName.indexOf(".") + 1) + ".log";
     }
 

@@ -15,8 +15,10 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity;
 
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.JobTemplateFiles;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by enjoyyin on 2021/9/23.
@@ -26,10 +28,20 @@ public class StreamisJarTransformJobContent implements StreamisTransformJobConte
     private StreamisFile mainClassJar;
     private String mainClass;
     private List<String> args;
-
+    private Boolean isHighAvailable;
+    private String highAvailableMessage;
     private List<StreamisFile> dependencyJars;
     private List<String> hdfsJars;
     private List<StreamisFile> resources;
+    private String source;
+    private JobTemplateFiles jobTemplate;
+    public JobTemplateFiles getJobTemplate() {
+        return jobTemplate;
+    }
+
+    public void setJobTemplate(JobTemplateFiles jobTemplate) {
+        this.jobTemplate = jobTemplate;
+    }
 
     public StreamisFile getMainClassJar() {
         return mainClassJar;
@@ -77,5 +89,29 @@ public class StreamisJarTransformJobContent implements StreamisTransformJobConte
 
     public void setResources(List<StreamisFile> resources) {
         this.resources = resources;
+    }
+
+    public Boolean getHighAvailable() {
+        return isHighAvailable;
+    }
+
+    public void setHighAvailable(Boolean highAvailable) {
+        isHighAvailable = highAvailable;
+    }
+
+    public String getHighAvailableMessage() {
+        return highAvailableMessage;
+    }
+
+    public void setHighAvailableMessage(String highAvailableMessage) {
+        this.highAvailableMessage = highAvailableMessage;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 }

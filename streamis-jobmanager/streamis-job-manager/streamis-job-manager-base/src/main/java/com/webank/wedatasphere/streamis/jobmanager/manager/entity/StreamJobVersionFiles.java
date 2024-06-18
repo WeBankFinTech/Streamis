@@ -40,7 +40,17 @@ public class StreamJobVersionFiles implements StreamisFile {
     private String storeType = StreamisFile.BML_STORE_TYPE;
     private Date createTime;
     private String createBy;
+    private String source;
+    private String materialType;
 
+    @Override
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
 
     public Long getId() {
         return id;
@@ -117,5 +127,14 @@ public class StreamJobVersionFiles implements StreamisFile {
 
     public void setCreateBy(String createBy) {
         this.createBy = createBy;
+    }
+
+    public String getMaterialType() {
+        return materialType;
+    }
+
+    @Override
+    public void setMaterialType(String materialType) {
+        this.materialType = materialType;
     }
 }

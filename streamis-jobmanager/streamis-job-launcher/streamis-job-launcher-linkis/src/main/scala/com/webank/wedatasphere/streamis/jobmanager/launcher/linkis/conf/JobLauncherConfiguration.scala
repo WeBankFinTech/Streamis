@@ -11,6 +11,8 @@ object JobLauncherConfiguration {
 
   val FLINK_FETCH_APPLICATION_INFO_MAX_TIMES: CommonVars[Int] = CommonVars("wds.streamis.application.info.fetch.max", 6)
 
+  val FLINK_FETCH_APPLICATION_LOG_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.flink.log.fetch.enable", false)
+
   val FLINK_STATE_DEFAULT_SCHEME: CommonVars[String] = CommonVars("wds.streamis.launch.flink.state.default.scheme", "hdfs")
   /**
    * Support schema protocols to store flink job states
@@ -68,9 +70,19 @@ object JobLauncherConfiguration {
 
   val FLINKK_MANAGER_EXIT_TIME: CommonVars[Long] = CommonVars("wds.streamis.flink.manager.ec.expire.time.mills", 12 * 3600 * 1000)
 
+  val FLINK_MANAGER_EXTRA_INIT_CONFIGS: CommonVars[String] = CommonVars("wds.streamis.flink.manager.ec.extra_init.params", "linkis.user.udf.all.load=false")
+
   val LINKIS_EC_EXPIRE_TIME_KEY: CommonVars[String] = CommonVars("linkis.ec.expire.key", "wds.linkis.engineconn.max.free.time")
 
-  val ENABLE_FLINK_LIST_INSPECT: CommonVars[Boolean] = CommonVars("wds.streamis.job.inspect.list.enable", true)
+  val ENABLE_FLINK_LIST_INSPECT: CommonVars[Boolean] = CommonVars("wds.streamis.job.inspact.list.enable", true)
 
   val LINKIS_EC_SUPPORT_PARALLEM = "wds.linkis.engineconn.support.parallelism"
+
+  val LINKIS_LOG_Match: CommonVars[String] = CommonVars("linkis.log.match", "^(01|12|13|22|30|31|41|42|43|47|)\\d+")
+
+  val ENABLE_STATUS_ON_FETCH_METRICS: CommonVars[Boolean] = CommonVars("wds.streamis.job.create.metrics.status.enable", true)
+
+  val LINKIS_FLINK_LOG4J_CHECK_KEYWORDS = CommonVars("linkis.flink.log4j.check.keywords", "MainAppender,StreamRpcLog")
+
+  val MAX_WAIT_NUM_AFTER_KILL = CommonVars("wds.streamis.job.kill.wait.num", 10)
 }

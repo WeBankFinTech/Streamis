@@ -2,8 +2,8 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import com.github.pagehelper.PageInfo
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{MetaJsonInfo, StreamAlertRecord, StreamJob, StreamJobVersion}
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{QueryJobListVo, TaskCoreNumVo, VersionDetailVo}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{JobTemplateFiles, MetaJsonInfo, StreamAlertRecord, StreamJob, StreamJobVersion, StreamJobVersionFiles}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobStatusVo, QueryJobListVo, TaskCoreNumVo, VersionDetailVo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent
 
 import java.util
@@ -16,6 +16,8 @@ trait StreamJobService {
 
   def getJobById(jobId: Long): StreamJob
 
+  def getLatestJobVersion(jobId :Long): StreamJobVersion
+
   def getJobByName(jobName: String): util.List[StreamJob]
 
   /**
@@ -27,7 +29,7 @@ trait StreamJobService {
    * @param jobCreator  job creator
    * @return
    */
-  def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String, label: String): PageInfo[QueryJobListVo]
+  def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String, label: String, enable: java.lang.Boolean = null,jobType :String): PageInfo[QueryJobListVo]
 
   /**
    * Page list query of version info
@@ -77,7 +79,7 @@ trait StreamJobService {
    * @param updateVersion should update version
    * @return
    */
-  def deployStreamJob(streamJob: StreamJob, metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean): StreamJobVersion
+  def deployStreamJob(streamJob: StreamJob, metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean,source: String = null): StreamJobVersion
 
   /**
    * Upload job
@@ -87,7 +89,7 @@ trait StreamJobService {
    * @param inputZipPath input zip path
    * @return
    */
-  def uploadJob(projectName: String, userName: String, inputZipPath: String): StreamJobVersion
+  def uploadJob(projectName: String, userName: String, inputZipPath: String, source: String): StreamJobVersion
 
   /**
    * Create or update job with meta json
@@ -106,6 +108,14 @@ trait StreamJobService {
    * @return
    */
   def getJobContent(jobId: Long, version: String): StreamisTransformJobContent
+
+  /**
+   *
+   * @param jobId
+   * @param version
+   * @return
+   */
+  def updateArgs(jobId: Long, version: String, args: util.List[String], isHighAvailable: Boolean, highAvailableMessage: String): StreamisTransformJobContent
 
   /**
    * Has permission
@@ -151,9 +161,30 @@ trait StreamJobService {
    * @param version  version
    * @return
    */
-  def getAlert(username: String, jobId: Long, version: String): util.List[StreamAlertRecord]
+  def getJobVersionById(username: String, jobId: Long, version: String): StreamJobVersion
+
+  def getAlertByProList(username: String, jobId: Long,  versionId: Long): PageInfo[StreamAlertRecord]
+
 
   def updateLabel(streamJob: StreamJob): Unit
 
   def getLinkisFlinkAlertLevel(job: StreamJob): AlertLevel
+
+  def canBeDisabled(jobId: Long): Boolean
+
+  def disableJob(streamJob: StreamJob): Unit
+
+  def canbeActivated(jobId: Long): Boolean
+
+  def activateJob(streamJob: StreamJob): Unit
+
+  def getEnableStatus(jobId: Long): Boolean
+
+  def getJobFileById(id: Long): StreamJobVersionFiles
+
+  def getLatestJobTemplate(projectName: String): String
+
+  def getJobTemplateConfMap(streamJob: StreamJob): util.Map[String, AnyRef]
+
+  def mergeJobConfig(destination: util.Map[String, AnyRef], source: util.Map[String, AnyRef]): Unit
 }

@@ -30,7 +30,8 @@
         "uploaded" : "已上传",
         "all": "全部",
         "stopped": "已停止",
-        "unstarted": "未启动"
+        "unstarted": "未启动",
+        "failureReason": "查看失败原因"
       },
       "formItems": {
         "queryBtn": "查询",
@@ -39,18 +40,24 @@
         "jobStatus": "作业状态",
         "jobCreator": "提交人",
         "jobName": "作业名称",
+        "tag": "标签",
+        "tagPlaceHolder": "请输入标签名",
         "stopBtn": "停止",
         "directStop": "直接停止",
         "snapshotAndStop": "快照并停止",
         "directRestart": "直接重启",
         "snapshotRestart": "快照重启",
+        "editTags": "修改标签",
+        "editTagsPlaceHolder": "请输入新标签",
+        "editTagsHint": "输入新标签，现有标签会被覆盖",
         "startBtn": "启动",
         "configBtn": "配置",
         "saveBtn": "保存",
         "confirmBtn": "确认",
         "updateBtn": "更新",
         "notEmpty": "不能为空",
-        "wrongFormat": "格式错误"
+        "wrongFormat": "格式错误",
+        "failureReason": "失败原因"
       },
       "startHint": {
         "title": "作业启动确认",
@@ -63,6 +70,8 @@
         "batchConfirm": "确认所有批量作业"
       },
       "jobListTableColumns":{
+        "instance": "客户端实例",
+        "appId": "APP ID",
         "jobName": "作业名称",
         "jobType": "作业类型",
         "launchMode": "运行模式",
@@ -72,6 +81,8 @@
         "label": "标签",
         "version": "版本",
         "lastRelease": "最近发布人",
+        "updateTime": "更新时间",
+        "md5": "md5",
         "description": "描述",
         "operation": "操作",
         "upload": "导入",
@@ -104,7 +115,9 @@
         "alertConfiguration": "告警配置",
         "runningHistory": "运行历史",
         "runningLogs": "运行日志",
-        "savepoint": "快照【savepoint】"
+        "savepoint": "快照【savepoint】",
+        "enable": "启用",
+        "disable": "禁用"
       },
       "jobSummary": {
         "resourceUse": "资源使用",
@@ -134,7 +147,13 @@
         "operation": "操作",
         "showVersionInfo":"查看版本信息",
         "detail":"详情",
-        "logs":"历史日志"
+        "logs": "历史日志",
+        "metaJson": "查看",
+        "download": "下载",
+        "jobParams": "Job参数",
+        "copy": "复制",
+        "close": "关闭",
+        "noInfo": "没有Meta.json信息"
       },
       "jobDetail": {
         "flinkJarPac": "Flink主Jar包",
@@ -143,6 +162,7 @@
         "sqlContent": "SQL内容",
         "urlEmpty": "链接为空",
         "columns": {
+            "type": "类型",
             "name": "名称",
             "version": "版本",
             "versionDescription": "版本描述",

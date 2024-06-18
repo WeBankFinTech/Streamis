@@ -1,6 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.enums.FlinkManagerActionType
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{FlinkManagerAction, FlinkManagerClient}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.{FlinkJobFlinkECErrorException, FlinkJobParamErrorException}
@@ -70,6 +71,24 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
     initProperties.put(JobLauncherConfiguration.LINKIS_EC_EXPIRE_TIME_KEY.getValue, JobLauncherConfiguration.FLINKK_MANAGER_EXIT_TIME.getHotValue().toString)
     initProperties.put(JobLauncherConfiguration.LINKIS_EC_SUPPORT_PARALLEM, true.toString)
 
+    if (StringUtils.isNotBlank(JobLauncherConfiguration.FLINK_MANAGER_EXTRA_INIT_CONFIGS.getValue)) {
+      JobLauncherConfiguration.FLINK_MANAGER_EXTRA_INIT_CONFIGS.getValue.split(JobConstants.DELIMITER_COMMA).foreach(s => {
+        if (StringUtils.isNotBlank(s)) {
+          val arr = s.split(JobConstants.DELIMITER_EUQAL)
+          if (null != arr && arr.length == 2) {
+            val key = arr(0)
+            val value = arr(1)
+            if (initProperties.containsKey(arr(0))) {
+              logger.warn(s"init extra params ${key}=${value} will overite params : ${key}=${initProperties.get(key)} for flink manager ec.")
+            } else {
+              logger.info(s"add init extra params : ${key}=${value} for flink manager ec.")
+            }
+            initProperties.put(key, value)
+          }
+        }
+      })
+    }
+
     var askEngineConnAction = AskEngineConnAction
       .newBuilder()
       .setCreateService(getClass.getSimpleName)
@@ -93,8 +112,6 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
     }
     val tmpLabels = SerializationUtils.clone(initLabels).asInstanceOf[util.Map[String, String]]
     val tmpProps = SerializationUtils.clone(initProperties).asInstanceOf[util.Map[String, String]]
-//    var lastAsyncId: String = null
-//    var lastManagerInstance: ServiceInstance = null
     var retryCount = 0
     val MAX_RETRY_COUNT = 10
 
@@ -129,11 +146,11 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
             } else {
               throw new FlinkJobFlinkECErrorException(s"Start manager ec failed. Because : ${failMsg}")
             }
-          case null =>
+          case _ =>
             end = true
-            logger.error(s"start flink manager ec failed because: null ec result status")
+            logger.error(s"start flink manager ec failed because: unknonw ec result status : ${nodeInfo.get(AMConstant.EC_ASYNC_START_RESULT_KEY)}")
             logger.warn(s"askEngineConnAction: ${askEngineConnAction.getRequestPayload}")
-            throw new FlinkJobFlinkECErrorException(s"Start manager ec failed. Null ec result status")
+            throw new FlinkJobFlinkECErrorException(s"Start manager ec failed. Unkown ec result status")
         }
       }
       Thread.sleep(1000)
@@ -353,7 +370,7 @@ object LinkisFlinkManagerClient extends Logging {
 
 
   def initScheduledTask(): Unit = {
-    if (!JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE.getValue) {
+    if (!JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE.getHotValue()) {
       logger.info("Flink manager ec refresh task was disabled. Will skip the scheduled refreshing task.")
       return
     }

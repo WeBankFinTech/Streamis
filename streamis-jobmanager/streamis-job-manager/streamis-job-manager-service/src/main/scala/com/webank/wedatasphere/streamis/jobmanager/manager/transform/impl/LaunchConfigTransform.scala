@@ -15,6 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 
@@ -32,10 +33,13 @@ import org.apache.linkis.DataWorkCloudApplication
 class LaunchConfigTransform extends Transform {
 
   override def transform(streamisTransformJob: StreamisTransformJob, job: LaunchJob): LaunchJob = {
+    val prodConfig = streamisTransformJob.getConfigMap.get(JobConfKeyConstants.GROUP_PRODUCE.getValue).asInstanceOf[util.HashMap[String, AnyRef]]
+    val highAvailablePolicy = prodConfig.getOrDefault(JobConf.HIGHAVAILABLE_POLICY_KEY.getHotValue(), JobConf.HIGHAVAILABLE_DEFAULT_POLICY.getHotValue())
     val launchConfigs = if(job.getLaunchConfigs != null) job.getLaunchConfigs else new util.HashMap[String, AnyRef]
     launchConfigs.putIfAbsent(LaunchJob.LAUNCH_CONFIG_CREATE_SERVICE, DataWorkCloudApplication.getServiceInstance.toString)
     launchConfigs.putIfAbsent(LaunchJob.LAUNCH_CONFIG_DESCRIPTION, streamisTransformJob.getStreamJob.getDescription)
     launchConfigs.putIfAbsent(LaunchJob.LAUNCH_CONFIG_MAX_SUBMIT_TIME, JobConf.TASK_SUBMIT_TIME_MAX.getValue.toLong.toString)
+    launchConfigs.putIfAbsent(JobConf.HIGHAVAILABLE_POLICY_KEY.getHotValue(),highAvailablePolicy)
     LaunchJob.builder().setLaunchJob(job).setLaunchConfigs(launchConfigs).build()
   }
 

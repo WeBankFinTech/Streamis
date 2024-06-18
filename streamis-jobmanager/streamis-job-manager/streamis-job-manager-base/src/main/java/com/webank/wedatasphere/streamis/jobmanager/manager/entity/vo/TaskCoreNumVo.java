@@ -15,6 +15,9 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * job核心指标
  */
@@ -35,6 +38,29 @@ public class TaskCoreNumVo {
     private Integer successNum = 0;
     //已停止数目
     private Integer stoppedNum = 0;
+    //启动中数目
+    private Integer startingNum = 0;
+
+    private List<String> jobShutdownHooks = new ArrayList<>();
+
+    public Integer getStartingNum() {
+        return startingNum;
+    }
+
+    public void setStartingNum(Integer startingNum) {
+        this.startingNum = startingNum;
+    }
+
+    public Integer getStoppingNum() {
+        return stoppingNum;
+    }
+
+    public void setStoppingNum(Integer stoppingNum) {
+        this.stoppingNum = stoppingNum;
+    }
+
+    //停止中数目
+    private Integer stoppingNum = 0;
 
     public Integer getStoppedNum() {
         return stoppedNum;
@@ -106,5 +132,13 @@ public class TaskCoreNumVo {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public List<String> getJobShutdownHooks() {
+        return jobShutdownHooks;
+    }
+
+    public void setJobShutdownHooks(List<String> jobShutdownHooks) {
+        this.jobShutdownHooks = jobShutdownHooks;
     }
 }
