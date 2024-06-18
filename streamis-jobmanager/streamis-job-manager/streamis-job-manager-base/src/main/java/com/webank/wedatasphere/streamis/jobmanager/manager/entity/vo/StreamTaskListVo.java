@@ -30,6 +30,8 @@ public class StreamTaskListVo {
 
     private String versionContent;
 
+    private String jobStartConfig;
+
     public Long getTaskId() {
         return taskId;
     }
@@ -116,5 +118,13 @@ public class StreamTaskListVo {
 
     public void setVersionContent(String versionContent) {
         this.versionContent = versionContent;
+    }
+
+    public String getJobStartConfig() {
+        return jobStartConfig;
+    }
+
+    public void setJobStartConfig(String jobStartConfig) {
+        this.jobStartConfig = jobStartConfig;
     }
 }

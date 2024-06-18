@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public interface JobInspectVo {
 
     enum Types{
-        VERSION, SNAPSHOT, STATUS, LIST
+        VERSION, SNAPSHOT, STATUS, LIST, HIGHAVAILABLE
     }
     @JsonIgnore
     String getInspectName();

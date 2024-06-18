@@ -11,6 +11,8 @@ object JobConf {
 
   val STREAMIS_JOB_MONITOR_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.job.monitor.enable", true)
 
+  val STREAMIS_JOB_RESET_ON_START_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.job.reset_on_restart.enable", true)
+
   val STREAMIS_JOB_PARAM_BLANK_PLACEHOLDER: CommonVars[String] = CommonVars("wds.streamis.job.param.blank.placeholder", "\u0001")
 
   /**
@@ -22,6 +24,12 @@ object JobConf {
    * Path for collecting stream job log
    */
   val STREAMIS_JOB_LOG_COLLECT_PATH: CommonVars[String] = CommonVars("wds.streamis.job.log.collect.path", "/api/rest_j/v1/streamis/streamJobManager/log/collect/events")
+
+  val STREAMIS_JOB_LOG_HEARTBEAT_PATH: CommonVars[String] = CommonVars("wds.streamis.log.heartbeat.path", "/api/rest_j/v1/streamis/streamJobManager/log/heartbeat")
+
+  val STREAMIS_JOB_LOG_HEARTBEAT_INTERVAL: CommonVars[Int] = CommonVars("wds.streamis.log.heartbeat.interval.mills", 30 * 60 * 1000)
+
+  val STREAMIS_JOB_LOG_HEARTBEAT_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.log.heartbeat.enable", true)
 
   /**
    * Enable to use material container
@@ -70,6 +78,11 @@ object JobConf {
     case _ => false
   }
 
+  def isFinished(status: Int): Boolean = status match {
+    case 0 | 1 | 6 | 7 => true
+    case _ => false
+  }
+
   def linkisStatusToStreamisStatus(status: String): Int = status.toLowerCase match {
     case "starting" | "unlock" | "locked" | "idle" | "busy" | "running" => FLINK_JOB_STATUS_RUNNING.getValue
     case "success" => FLINK_JOB_STATUS_COMPLETED.getValue
@@ -86,4 +99,81 @@ object JobConf {
   val SUPPORTED_JOB_TYPES: CommonVars[String] = CommonVars("wds.streamis.supported.job.types", "flink.jar,flink.sql,spark.jar")
 
   val SUPPORTED_MANAGEMENT_JOB_TYPES: CommonVars[String] = CommonVars("wds.streamis.management.supported.job.types", "flink.jar,flink.sql")
+
+  val ERROR_CODE_MATCHING_YARN_TIME: CommonVars[Int] = CommonVars("wds.streamis.error.code.matching.yarn.time", 2)
+
+  val DEFAULT_ERROR_MSG: CommonVars[String] = CommonVars("wds.streamis.default.error.msg", "正在分析日志，请稍后")
+
+  val ANALYZE_ERROR_MSG: CommonVars[String] = CommonVars("wds.streamis.default.error.msg", "错误原因分析失败")
+
+  val FINAL_ERROR_MSG: CommonVars[String] = CommonVars("wds.streamis.default.error.msg", "无法匹配到对应错误码，请联系管理员")
+
+  val PROJECT_NAME_STRICT_CHECK_SWITCH: CommonVars[Boolean] = CommonVars("wds.streamis.project.name.strict.check.enable", false)
+
+  val HIGHAVAILABLE_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.app.highavailable.enable", true)
+
+  val HIGHAVAILABLE_SOURCE: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.source", "aomp")
+
+//  val HIGHAVAILABLE_POLICY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.double", "double")
+
+  val HIGHAVAILABLE_POLICY_DOUBLE: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.double", "double")
+
+  val HIGHAVAILABLE_POLICY_DOUBLE_BAK: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.doubleWithBak", "doubleWithBak")
+
+  val HIGHAVAILABLE_POLICY_SINGLE_BAK: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.singleWithBak", "singleWithBak")
+
+  val HIGHAVAILABLE_POLICY_MANAGERSLAVE: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.managerSlave", "managerSlave")
+
+  val HIGHAVAILABLE_POLICY_MANAGERSLAVE_BAK: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.managerSlaveWithBak", "managerSlaveWithBak")
+
+  val HIGHAVAILABLE_DEFAULT_POLICY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.default.policy", "single")
+
+  val JOB_SCHEMA_SINGLE: CommonVars[String] = CommonVars("wds.streamis.app.job.schema.single", "single")
+
+  val JOB_SCHEMA_DOUBLE: CommonVars[String] = CommonVars("wds.streamis.app.job.schema.double", "double")
+
+  val JOB_SCHEMA_MANAGER_SLAVE: CommonVars[String] = CommonVars("wds.streamis.app.job.schema.managerSlave", "managerSlave")
+
+  val HIGHAVAILABLE_POLICY_KEY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.key", "wds.streamis.app.highavailable.policy")
+
+  val STREAMIS_CHECK_FILE_FORMAT: CommonVars[String] = CommonVars("wds.streamis.check.file.format", "yaml|text|jar|properties|txt|pem|json")
+
+  val STREAMIS_OLD_SNAPSHOT_PATH_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.old snapshot path.enable", true)
+
+  val DEFAULT_ARGS_LENGTH: CommonVars[Int] = CommonVars("wds.streamis.default.args.length", 2000)
+
+  val AUTO_RESTART_JOB: CommonVars[Boolean] = CommonVars("wds.streamis.app.highavailable.auto.restart.job", true)
+
+  val LOGS_HEARTBEAT_CHECK_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.logs.heartbeat.enable", true)
+
+  val LOGS_HEARTBEAT_ALARMS_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.logs.heartbeat.alarms.enable", true)
+
+  val LOGS_HEARTBEAT_REGISTER_ALARMS_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.logs.heartbeat.register.alarms.enable", true)
+
+  val LOGS_HEARTBEAT_CHECK_INTERVAL: CommonVars[Int] = CommonVars("wds.streamis.logs.check.heartbeat.interval.mills", 10 *60 * 1000)
+
+  val LOGS_HEARTBEAT_INTERVAL_TIMEOUT: CommonVars[Int] = CommonVars("wds.streamis.logs.check.heartbeat.interval.timeout.mills", 30 * 60 * 1000)
+
+  val JOB_NAME_LENGTH_MAX: CommonVars[Int] = CommonVars("wds.streamis.job.name.length.max", 2000)
+
+  val PRODUCT_NAME_KEY: CommonVars[String] = CommonVars("wds.linkis.flink.product.key", "wds.linkis.flink.product")
+
+  val PRODUCT_NAME_SWITCH: CommonVars[Boolean] = CommonVars("wds.linkis.flink.product.key.enable", true)
+
+  val HIGHAVAILABLE_TOKEN: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.token", "streamis0.3.8")
+
+  val STANDARD_AUTHENTICATION_KEY: CommonVars[Boolean] = CommonVars("wds.streamis.standard.authentication.key", true)
+
+  val JOB_CONTENT_EDIT_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.job.content.edit.enable", true)
+
+  val JOB_CONFIG_EDIT_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.job.config.edit.enable", true)
+
+  val STMS_FLINK_APPLICATION_SEPARATE_KEY: CommonVars[String] = CommonVars("wds.streamis.flink.app.args.separate.key", "flink.app.args.separate")
+
+  val STMS_FLINK_APPLICATION_ARGS_KEY: CommonVars[String] = CommonVars("wds.streamis.flink.app.args.key", "flink.app.args")
+
+  val STMS_FLINK_APPLICATION_MAIN_CLASS_KEY: CommonVars[String] = CommonVars("wds.streamis.flink.app.main.class.key", "flink.app.main.class")
+
+  val FLINK_APPLICATION_SEPARATE: CommonVars[String] = CommonVars("wds.streamis.flink.app.args.separate", " ")
+
 }

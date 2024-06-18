@@ -48,12 +48,17 @@ public class FlinkStreamisConfigAutowired implements StreamisConfigAutowired {
             if (gateway.endsWith("/")){
                 gateway = gateway.substring(0, gateway.length() - 1);
             }
-            gateway += this.configuration.getString(LOG_COLLECT_PATH, "/");
-            builder.setRpcAddress(gateway);
+            String heartbeatAddress =gateway + this.configuration.getString(LOG_HEARTBEAT_PATH, "/");
+            String rpcAddress = gateway + this.configuration.getString(LOG_COLLECT_PATH, "/");
+            builder.setRpcAddress(rpcAddress);
+            builder.setRpcHeartbeatAddress(heartbeatAddress);
         }
         if (builder instanceof StreamisLog4j2AppenderConfig.Builder) {
             List<String> filterStrategies = this.configuration.get(LOG_FILTER_STRATEGIES);
             for (String filterStrategy : filterStrategies) {
+                if (this.configuration.getBoolean(DEBUG_MODE)) {
+                    System.out.println("Found strategy: " + filterStrategy);
+                }
                 if ("LevelMatch".equals(filterStrategy)) {
                     ((StreamisLog4j2AppenderConfig.Builder)builder).withFilter(LevelMatchFilter.newBuilder().setOnMatch(Filter.Result.ACCEPT).setOnMismatch(Filter.Result.DENY)
                             .setLevel(Level.getLevel(this.configuration.getString(LOG_FILTER_LEVEL_MATCH))).build());
@@ -91,7 +96,9 @@ public class FlinkStreamisConfigAutowired implements StreamisConfigAutowired {
                 .setDiscard(this.configuration.getBoolean(LOG_RPC_CACHE_DISCARD))
                 .setDiscardWindow(this.configuration.getInteger(LOG_RPC_CACHE_DISCARD_WINDOW))
                 .setRpcBufferSize(this.configuration.getInteger(LOG_RPC_BUFFER_SIZE))
-                .setRpcBufferExpireTimeInSec(this.configuration.getInteger(LOG_RPC_BUFFER_EXPIRE_TIME)).build();
+                .setRpcBufferExpireTimeInSec(this.configuration.getInteger(LOG_RPC_BUFFER_EXPIRE_TIME))
+                .setRpcHeartbeatEnable(this.configuration.getBoolean(LOG_HEARTBEAT_ENABLE))
+                .setRpcHeartbeatInterval(this.configuration.getInteger(LOG_HEARTBEAT_INTERVAL)).build();
     }
 
 

@@ -111,7 +111,8 @@ export default {
           api
             .fetch(
               'streamis/streamProjectManager/project/files/upload',
-              formData
+              formData,
+              {headers: {'Content-Type': 'multipart/form-data'}}
             )
             .then(res => {
               this.loading = false

@@ -52,7 +52,7 @@ The Dimension node, Transform node, Sink node and [Visualis](https://github.com/
 
 ## Depended ecosystems
 
-| Depended Component | Description | Streamis compatibility       |
+| Depended Component | Description | Streamis compatibility |
 | -------------- | -------------------------------------------------------------- |------------------------------|
 | [DataSphereStudio](https://github.com/WeBankFinTech/DataSphereStudio) | Data application development management framework. With a unified UI, the workflow-like graphical drag-and-drop development experience meets the entire lifecycle of data application development from data import, desensitization cleaning, data analysis, data mining, quality inspection, visualization, scheduling to data output applications, etc. | &gt;= DSS1.1.2 (Released)    |
 | [Linkis](https://github.com/apache/linkis) | Apache Linkis, builds a layer of computation middleware, by using standard interfaces such as REST/WS/JDBC provided by Linkis, the upper applications can easily access the underlying engines such as MySQL/Spark/Hive/Presto/Flink, etc. | &gt;= Linkis1.4.0 (Released) |
@@ -115,7 +115,7 @@ please refer to [Streamis Installation and Deployment Document](docs/en_US/0.3.0
 
 &nbsp; &nbsp; &nbsp; &nbsp;For any questions or suggestions, please kindly submit an [issue](https://github.com/WeBankFinTech/Streamis/issues).
 
-&nbsp; &nbsp; &nbsp; &nbsp;You can scan the QR code below to join our WeChat group to get more immediate response.
+&nbsp; &nbsp; &nbsp; &nbsp;You can scan the QR code below to join our WeChat and QQ group to get more immediate response.
 
 ![comminicate](images/zh_CN/readme/communication.png)
 

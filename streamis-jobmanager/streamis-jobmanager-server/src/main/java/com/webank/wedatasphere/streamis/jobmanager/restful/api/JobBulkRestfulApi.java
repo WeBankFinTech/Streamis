@@ -1,12 +1,17 @@
 package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.ExecResultVo;
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.JobHighAvailableVo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.PauseResultVo;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobExecuteErrorException;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamTaskService;
+import com.webank.wedatasphere.streamis.jobmanager.service.HighAvailableService;
 import com.webank.wedatasphere.streamis.jobmanager.vo.BaseBulkRequest;
 import com.webank.wedatasphere.streamis.jobmanager.vo.BulkResponse;
 import com.webank.wedatasphere.streamis.jobmanager.vo.JobBulkPauseRequest;
@@ -17,6 +22,7 @@ import org.apache.linkis.server.Message;
 import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -27,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 
 @RequestMapping(path = "/streamis/streamJobManager/job/bulk")
 @RestController
@@ -46,6 +53,11 @@ public class JobBulkRestfulApi {
     @Resource
     private StreamJobService streamjobService;
 
+    @Autowired
+    private StreamJobConfService streamJobConfService;
+
+    @Autowired
+    private HighAvailableService highAvailableService;
     /**
      * Bulk execution
      * @param execBulkRequest bulk request
@@ -71,6 +83,21 @@ public class JobBulkRestfulApi {
                  if (!streamjobService.hasPermission(streamJob, username) &&
                         !this.privilegeService.hasEditPrivilege(request, streamJob.getProjectName())){
                      throw new JobExecuteErrorException(-1, "Have no permission to execute StreamJob [" + jobId + "]");
+                 }
+                 String  managementMode = this.streamJobConfService.getJobConfValue(Long.parseLong(jobId.toString()), JobConfKeyConstants.MANAGE_MODE_KEY().getValue());
+                 if (!Boolean.parseBoolean(JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE().getHotValue().toString()) &&
+                         managementMode.equals("detach")){
+                     return Message.error("The system does not enable the detach feature ,detach job cannot start [" + jobId + "]");
+                 }
+                 JobHighAvailableVo inspectVo = highAvailableService.getJobHighAvailableVo(Long.parseLong(jobId.toString()));
+                 if (!inspectVo.isHighAvailable()){
+                     return Message.error("The master and backup cluster materials do not match, please check the material");
+                 }
+                 if (!streamjobService.getEnableStatus(Long.parseLong(jobId.toString()))){
+                     return Message.error("current Job " + streamJob.getName() + "has been banned, cannot start,please enable job" );
+                 }
+                 if(!highAvailableService.canBeStarted(Long.parseLong(jobId.toString()))){
+                     return Message.error("current Job " + streamJob.getName() + " is in managerSlave mode,please check whether it runs on manager cluster" );
                  }
              }
              // TODO Enable to accept 'restore' parameter from request
@@ -126,12 +153,15 @@ public class JobBulkRestfulApi {
                             !this.privilegeService.hasEditPrivilege(request, streamJob.getProjectName())){
                         throw new JobExecuteErrorException(-1, "Have no permission to execute StreamJob [" + jobId + "]");
                     }
+                    if (!streamjobService.getEnableStatus(Long.parseLong(jobId.toString()))){
+                        return Message.error("current Job " + streamJob.getName() + "has been banned, cannot stop,please enable job" );
+                    }
                 }
                 pauseResults = streamTaskService.bulkPause(new ArrayList<>(pauseRequest.getBulkSubject()),
-                        Collections.emptyList(), username, pauseRequest.isSnapshot());
+                        Collections.emptyList(), username, pauseRequest.isSnapshot(), pauseRequest.isSkipHookError());
             } else {
                 pauseResults = streamTaskService.bulkPause(Collections.emptyList(),
-                        new ArrayList<>(pauseRequest.getBulkSubject()), username, pauseRequest.isSnapshot());
+                        new ArrayList<>(pauseRequest.getBulkSubject()), username, pauseRequest.isSnapshot(), pauseRequest.isSkipHookError());
             }
             // Convert to bulk response
             BulkResponse<PauseResultVo> response = new BulkResponse<>(pauseResult -> {

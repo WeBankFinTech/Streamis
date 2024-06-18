@@ -38,7 +38,7 @@
     </dependencySets>
 
     <fileSets>
-        <fileSet>
+        <!--<fileSet>
             <directory>${basedir}/src/main/resources</directory>
             <includes>
                 <include>*</include>
@@ -46,7 +46,7 @@
             <fileMode>0777</fileMode>
             <outputDirectory>conf</outputDirectory>
             <lineEnding>unix</lineEnding>
-        </fileSet>
+        </fileSet>-->
         <fileSet>
             <directory>${basedir}/bin</directory>
             <includes>

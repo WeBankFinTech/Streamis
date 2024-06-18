@@ -16,11 +16,13 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.enums.JobClientType
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.errorcode.JobLaunchErrorCode
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState, JobStateInfo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.{JobClient, JobInfo, LaunchJob}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.exception.StreamisJobLaunchException
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager.SimpleFlinkJobLaunchManager.INSTANCE_NAME
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.LinkisJobInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.jobInfo.EngineConnJobInfo
@@ -34,6 +36,7 @@ import org.apache.linkis.computation.client.once.{OnceJob, SubmittableOnceJob}
 import org.apache.linkis.computation.client.operator.impl.EngineConnApplicationInfoOperator
 import org.apache.linkis.governance.common.constant.ec.ECConstants
 import org.apache.linkis.httpclient.dws.DWSHttpClient
+import org.apache.linkis.manager.common.entity.enumeration.NodeStatus
 import org.apache.linkis.protocol.utils.TaskUtils
 import org.apache.linkis.ujes.client.exception.UJESJobException
 
@@ -65,6 +68,7 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
     jobInfo.setName(StringEscapeUtils.escapeJava(job.getJobName))
     jobInfo.setId(onceJob.getId)
     jobInfo.setUser(job.getSubmitUser)
+    jobInfo.setHighAvailablePolicy(job.getLaunchConfigs.get(JobConf.HIGHAVAILABLE_POLICY_KEY.getHotValue()).toString)
     onceJob match {
       case submittableSimpleOnceJob: SubmittableSimpleOnceJob =>
         jobInfo.setEcInstance(submittableSimpleOnceJob.getEcServiceInstance)
@@ -79,10 +83,15 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
     logger.info(s"Job manager mode : ${managerMode}")
     Utils.tryCatch(fetchApplicationInfo(onceJob, jobInfo)) { t =>
       val message = s"Unable to fetch the application info of launched job [${job.getJobName}], maybe the engine has been shutdown"
-      error(message, t)
+      logger.error(message, t)
       // Mark failed
       jobInfo.setStatus("failed")
-      jobInfo.setCompletedMsg(message)
+      jobInfo.setCompletedMsg(exceptionAnalyze(message,t))
+      // kill ec
+      Utils.tryAndWarn {
+        logger.error(s"Will kill failed ec : ${jobInfo.getEcInstance().toString()} with appid : ${jobInfo.getApplicationId}, url : ${jobInfo.getApplicationUrl}")
+        onceJob.kill()
+      }
     }
     jobInfo.setJobParams(job.getParams.asInstanceOf[util.Map[String, Object]])
     jobInfo.setResources(nodeInfo.get("nodeResource").asInstanceOf[util.Map[String, Object]])
@@ -149,6 +158,25 @@ class SimpleFlinkJobLaunchManager extends FlinkJobLaunchManager {
       getEngingConnAction.addRequestPayload(JobConstants.INSTANCE_KEY, ecInstance.getInstance)
     }
     val rs = SimpleOnceJobBuilder.getLinkisManagerClient.getEngineConn(getEngingConnAction)
+    if (JobLauncherConfiguration.ENABLE_STATUS_ON_FETCH_METRICS.getHotValue()) {
+      val engine = rs.getData.getOrDefault(JobConstants.RESULT_EC_ENGINE_KEY, new util.HashMap[String, AnyRef]).asInstanceOf[util.Map[String, AnyRef]]
+      if (!engine.isEmpty) {
+        val status = engine.getOrDefault(ECConstants.NODE_STATUS_KEY, "").toString
+        logger.info(s"Got ec : ${ecInstance.toString()} status : ${status}")
+        if (StringUtils.isNotBlank(status)) {
+          if (NodeStatus.isCompleted(NodeStatus.toNodeStatus(status))) {
+            val msg = s"Ec : ${ecInstance.toString()} has completed with status : ${status}"
+            logger.error(msg)
+            throw new StreamisJobLaunchException(JobLaunchErrorCode.JOB_EC_ERROR_CODE, msg, null)
+          }
+        } else {
+          logger.error(s"Got null status for ec : ${ecInstance.toString()}")
+        }
+      } else {
+        logger.error(s"Got null ec info for ec : ${ecInstance.toString()}")
+      }
+    }
+
     val metricsStr = rs.getData.getOrDefault(JobConstants.RESULT_EC_METRICS_KEY, "{}")
     val metricsMap = if (null != metricsStr) {
       JsonUtils.jackson.readValue(metricsStr.toString, classOf[util.Map[String, AnyRef]])

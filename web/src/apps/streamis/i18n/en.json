@@ -31,18 +31,24 @@
         "uploaded" : "Uploaded",
         "all": "All",
         "stopped": "Stopped",
-        "unstarted": "Unstarted"
+        "unstarted": "Unstarted",
+        "failureReason": "View failure reason"
       },
       "formItems": {
         "queryBtn": "Query",
         "jobStatus": "Job status",
         "jobCreator": "Job Creator",
         "jobName": "Job name",
+        "tag": "Tag",
+        "tagPlaceHolder": "Please input tag name",
         "stopBtn": "Stop",
         "directStop": "Stop directly",
         "directRestart": "Restart directly",
         "snapshotRestart": "Restart and snapshot",
         "snapshotAndStop": "Snapshot and stop",
+        "editTags": "editTags",
+        "editTagsPlaceHolder": "Please input new tags",
+        "editTagsHint": "Edit new tags to replace old ones",
         "startBtn": "Start",
         "configBtn": "Config",
         "saveBtn": "Save",
@@ -51,7 +57,8 @@
         "confirmBtn": "confirm",
         "cancel": "cancel",
         "notEmpty": "Not empty",
-        "wrongFormat": "Wrong format"
+        "wrongFormat": "Wrong format",
+        "failureReason": "Failure reason"
       },
       "startHint": {
         "title": "Job Starting Confirm",
@@ -64,6 +71,8 @@
         "batchConfirm": "Confirm all the jobs"
       },
       "jobListTableColumns":{
+        "instance": "Client Instance",
+        "appId": "APP ID",
         "jobName": "Job name",
         "jobType": "Job type",
         "launchMode": "Launch Mode",
@@ -73,6 +82,8 @@
         "label": "Label",
         "version": "Version",
         "lastRelease": "Last release",
+        "updateTime": "Update Time",
+        "md5": "md5",
         "description": "Description",
         "operation": "Operation",
         "upload": "Upload",
@@ -106,7 +117,9 @@
         "alertConfiguration": "Alert configuration",
         "runningHistory": "Running history",
         "runningLogs": "Running logs",
-        "savepoint": "Snapshot Savepoint"
+        "savepoint": "Snapshot Savepoint",
+        "enable": "Enable",
+        "disable": "Disable"
       },
       "jobSummary": {
         "resourceUse": "Resource use",
@@ -136,7 +149,12 @@
         "operation": "Operation",
         "showVersionInfo":"Show version info",
         "detail":"Detail",
-        "logs":"History logs"
+        "logs": "History logs",
+        "metaJson": "View",
+        "download": "download",
+        "jobParams": "Job Params",
+        "copy": "Copy",
+        "close": "Close"
       },
       "jobDetail": {
         "flinkJarPac": "Flink main Jar package",
@@ -145,6 +163,7 @@
         "sqlContent": "SQL content",
         "urlEmpty": "Url is empty",
         "columns": {
+            "type": "Type",
             "name": "Name",
             "version": "Version",
             "versionDescription": "Version description",

@@ -16,21 +16,25 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
 import java.util
-import java.util.{Date, List}
+import java.util.{Date, List, Map}
 import com.github.pagehelper.PageInfo
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobCreateErrorException, JobFetchErrorException}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobCreateErrorException, JobErrorException, JobFetchErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
 import com.webank.wedatasphere.streamis.jobmanager.manager.alert.AlertLevel
-import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamAlertMapper, StreamJobMapper, StreamTaskMapper}
+import com.webank.wedatasphere.streamis.jobmanager.manager.conf.JobManagerConf
+import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants
+import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants.PRODUCE_PARAM
+import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamAlertMapper, StreamJobMapper, StreamJobTemplateMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity._
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{QueryJobListVo, TaskCoreNumVo, VersionDetailVo}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobStatusVo, QueryJobListVo, TaskCoreNumVo, VersionDetailVo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.DefaultStreamJobService.JobDeployValidateResult
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.StreamisTransformJobContent
-import com.webank.wedatasphere.streamis.jobmanager.manager.util.{JobUtils, ReaderUtils, ZipHelper}
+import com.webank.wedatasphere.streamis.jobmanager.manager.util.{JobUtils, JsonUtils, ReaderUtils, ZipHelper}
+import com.webank.wedatasphere.streamis.jobmanager.manager.utils.{JobContentUtils, MergeUtils, SourceUtils}
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.lang3.ObjectUtils
 import org.apache.linkis.common.exception.ErrorException
@@ -57,21 +61,26 @@ class DefaultStreamJobService extends StreamJobService with Logging {
   private var streamJobConfService: StreamJobConfService = _
   @Autowired
   private var streamAlertMapper:StreamAlertMapper = _
+  @Autowired
+  private var streamJobTemplateMapper:StreamJobTemplateMapper = _
 
   override def getJobById(jobId: Long): StreamJob = {
     this.streamJobMapper.getJobById(jobId)
   }
+  override def getLatestJobVersion(jobId: Long): StreamJobVersion = {
+    this.streamJobMapper.getLatestJobVersion(jobId)
+  }
 
   override def getJobByName(jobName: String): util.List[StreamJob] = streamJobMapper.getJobByName(jobName)
 
-  override def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String, label: String): PageInfo[QueryJobListVo] = {
+  override def getByProList(projectName: String, userName: String, jobName: String, jobStatus: Integer, jobCreator: String, label: String, enable: java.lang.Boolean = null,jobType :String): PageInfo[QueryJobListVo] = {
     var streamJobList: util.List[QueryJobListVo] = null
-    if (StringUtils.isNotBlank(jobName) && jobName.contains(JobConstants.JOB_NAME_DELIMITER)) {
+    if (StringUtils.isNotBlank(jobName) && jobName.contains(JobConstants.DELIMITER_COMMA)) {
       val jobNameList = new util.ArrayList[String]()
-      jobName.split(JobConstants.JOB_NAME_DELIMITER).filter(StringUtils.isNotBlank(_)).foreach(jobNameList.add)
-      streamJobList = streamJobMapper.getJobLists(projectName, userName, null, jobStatus, jobCreator, JobUtils.escapeChar(label), JobConfKeyConstants.MANAGE_MODE_KEY.getValue, jobNameList)
+      jobName.split(JobConstants.DELIMITER_COMMA).filter(StringUtils.isNotBlank(_)).foreach(jobNameList.add)
+      streamJobList = streamJobMapper.getJobLists(projectName, userName, null, jobStatus, jobCreator, JobUtils.escapeChar(label), JobConfKeyConstants.MANAGE_MODE_KEY.getValue, jobNameList, enable,jobType)
     } else {
-      streamJobList = streamJobMapper.getJobLists(projectName, userName, JobUtils.escapeChar(jobName), jobStatus, jobCreator, JobUtils.escapeChar(label), JobConfKeyConstants.MANAGE_MODE_KEY.getValue, null)
+      streamJobList = streamJobMapper.getJobLists(projectName, userName, JobUtils.escapeChar(jobName), jobStatus, jobCreator, JobUtils.escapeChar(label), JobConfKeyConstants.MANAGE_MODE_KEY.getValue, null, enable,jobType)
     }
     if (streamJobList != null && !streamJobList.isEmpty) {
       val pageInfo = new PageInfo[QueryJobListVo](streamJobList)
@@ -97,7 +106,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
    * COre indicator(核心指标)
    */
   override def countByCores(projectName: String, userName: String): TaskCoreNumVo = {
-    val jobs = streamJobMapper.getJobLists(projectName, userName, null, null, null, null, JobConfKeyConstants.MANAGE_MODE_KEY.getValue, null)
+    val jobs = streamJobMapper.getJobLists(projectName, userName, null, null, null, null, JobConfKeyConstants.MANAGE_MODE_KEY.getValue, null,null,null)
     val taskNum = new TaskCoreNumVo()
     taskNum.setProjectName(projectName)
     if (jobs != null && !jobs.isEmpty) {
@@ -109,7 +118,12 @@ class DefaultStreamJobService extends StreamJobService with Logging {
         else if (fo._1.equals(JobConf.FLINK_JOB_STATUS_RUNNING.getValue)) taskNum.setRunningNum(fo._2)
         else if (fo._1.equals(JobConf.FLINK_JOB_STATUS_FAILED.getValue)) taskNum.setFailureNum(fo._2)
         else if (fo._1.equals(JobConf.FLINK_JOB_STATUS_STOPPED.getValue)) taskNum.setStoppedNum(fo._2)
+        else if (fo._1.equals(JobConf.FLINK_JOB_STATUS_STARTING.getValue)) taskNum.setStartingNum(fo._2)
+        else if (fo._1.equals(JobConf.FLINK_JOB_STATUS_STOPPING.getValue)) taskNum.setStoppingNum(fo._2)
       })
+    }
+    if (JobManagerConf.ENABLE_JOB_SHUTDOWN_HOOKS.getValue) {
+      taskNum.setJobShutdownHooks(JobManagerConf.getHooksByProject(projectName))
     }
     taskNum
   }
@@ -148,13 +162,13 @@ class DefaultStreamJobService extends StreamJobService with Logging {
 
 
   override def deployStreamJob(streamJob: StreamJob,
-                               metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean): StreamJobVersion = {
+                               metaJsonInfo: MetaJsonInfo, userName: String, updateVersion: Boolean,source: String = null): StreamJobVersion = {
     if(StringUtils.isBlank(metaJsonInfo.getJobType))
       throw new JobCreateErrorException(30030, s"jobType is needed.")
     else if(!JobConf.SUPPORTED_JOB_TYPES.getValue.contains(metaJsonInfo.getJobType)) {
       throw new JobCreateErrorException(30030, s"jobType ${metaJsonInfo.getJobType} is not supported.")
     }
-    if(metaJsonInfo.getJobContent == null || metaJsonInfo.getJobContent.isEmpty)
+    if (metaJsonInfo.getJobContent == null || metaJsonInfo.getJobContent.isEmpty)
       throw new JobCreateErrorException(30030, s"jobContent is needed.")
     val jobVersion = new StreamJobVersion()
     val newStreamJob = new StreamJob()
@@ -170,6 +184,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
       newStreamJob.setLabel(metaJsonInfo.getTags)
       newStreamJob.setName(metaJsonInfo.getJobName)
       newStreamJob.setProjectName(metaJsonInfo.getProjectName)
+      newStreamJob.setEnable(true)
       streamJobMapper.insertJob(newStreamJob)
     } else {
       val jobVersions = streamJobMapper.getJobVersions(streamJob.getId)
@@ -196,7 +211,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     jobVersion.setJobContent(metaJsonInfo.getMetaInfo)
     jobVersion.setCreateBy(userName)
     jobVersion.setCreateTime(new Date)
-    jobVersion.setSource("upload by user.")
+    jobVersion.setSource(source)
     if (StringUtils.isNotBlank(metaJsonInfo.getComment))
       jobVersion.setComment(metaJsonInfo.getComment)
     else jobVersion.setComment("upload by user.")
@@ -207,21 +222,34 @@ class DefaultStreamJobService extends StreamJobService with Logging {
 
   @throws(classOf[ErrorException])
   @Transactional(rollbackFor = Array(classOf[Exception]))
-  override def uploadJob(projectName: String, userName: String, inputZipPath: String): StreamJobVersion = {
+  override def uploadJob(projectName: String, userName: String, inputZipPath: String,source: String): StreamJobVersion = {
     val inputPath = ZipHelper.unzip(inputZipPath)
     val readerUtils = new ReaderUtils
     val metaJsonInfo = readerUtils.parseJson(inputPath)
     if (StringUtils.isNotBlank(projectName) && !projectName.equals(metaJsonInfo.getProjectName)) {
+      if (JobConf.PROJECT_NAME_STRICT_CHECK_SWITCH.getHotValue && StringUtils.isNotBlank(metaJsonInfo.getProjectName)){
+        logger.error(s"The projectName [${projectName}] dose not match metaJson ProjectName [${metaJsonInfo.getProjectName}]")
+        throw new JobCreateErrorException(30030,s"The projectName [${projectName}] dose not match metaJson ProjectName [${metaJsonInfo.getProjectName}]")
+      }
       logger.warn(s"The projectName [${metaJsonInfo.getProjectName}] is not matching the project, will change it to [${projectName}] automatically")
       metaJsonInfo.setProjectName(projectName)
+
     }
     val validateResult = validateJobDeploy(metaJsonInfo.getProjectName, metaJsonInfo.getJobName, userName)
     //  生成StreamJob，根据StreamJob生成StreamJobVersion
-    val version = deployStreamJob(validateResult.streamJob, metaJsonInfo, userName, validateResult.updateVersion)
+    val version = deployStreamJob(validateResult.streamJob, metaJsonInfo, userName, validateResult.updateVersion, source)
     // Save the job configuration, lock the job again if exists
     if (null != metaJsonInfo.getJobConfig){
-      this.streamJobConfService.saveJobConfig(version.getJobId, metaJsonInfo.getJobConfig.asInstanceOf[util.Map[String, AnyRef]])
+      if(metaJsonInfo.getJobConfig.containsKey(PRODUCE_PARAM)){
+        if(metaJsonInfo.getJobConfig.get(PRODUCE_PARAM) == null) throw new JobCreateErrorException(30030,s"jobConfig does not contain wds.linkis.flink.produce, please check")
+        this.streamJobConfService.saveJobConfig(version.getJobId, metaJsonInfo.getJobConfig.asInstanceOf[util.Map[String, AnyRef]])
+      }else{
+        throw new JobCreateErrorException(30030,s"jobConfig does not contain wds.linkis.flink.produce, please check")
+      }
+    }else{
+      throw new JobCreateErrorException(30030,s"meta_json does not contain jobConfig, please check")
     }
+//    this.streamJobConfService.saveJobConfig(version.getJobId, finalJobConfig.asInstanceOf[util.Map[String, AnyRef]])
     //  上传所有非meta.json的文件
     uploadFiles(metaJsonInfo, version, inputZipPath)
     version
@@ -233,6 +261,7 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     val validateResult = validateJobDeploy(metaJsonInfo.getProjectName, metaJsonInfo.getJobName, userName)
     val readerUtils = new ReaderUtils
     metaJsonInfo.setMetaInfo(readerUtils.readAsJson(metaJsonInfo))
+    val projectName = metaJsonInfo.getProjectName
     val version = deployStreamJob(validateResult.streamJob, metaJsonInfo, userName, validateResult.updateVersion)
     // Save the job configuration, lock the job again if exists
     if (null != metaJsonInfo.getJobConfig){
@@ -249,8 +278,71 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     } else streamJobMapper.getJobVersionById(jobId, version)
     if(jobVersion == null)
       throw new JobFetchErrorException(30030, s"job has no versions.")
-    jobContentParsers.find(_.canParse(job, jobVersion)).map(_.parseTo(job, jobVersion))
+    val streamJob: StreamJob = streamJobMapper.getJobById(jobId)
+    val projectName: String = streamJob.getProjectName
+    val streamTask = streamTaskMapper.getLatestByJobId(jobId)
+    val jobTemplate: JobTemplateFiles = if (null != streamTask) {
+      if (streamTask.getStatus.equals(JobConf.FLINK_JOB_STATUS_RUNNING.getValue)) {
+        streamJobTemplateMapper.getJobTemplate(streamTask.getTemplateId,true)
+      }else{
+        streamJobTemplateMapper.getLatestJobTemplateFile(projectName,true)
+      }
+    }else{
+      streamJobTemplateMapper.getLatestJobTemplateFile(projectName,true)
+    }
+    jobContentParsers.find(_.canParse(job, jobVersion)).map(_.parseTo(job, jobVersion,jobTemplate))
       .getOrElse(throw new JobFetchErrorException(30030, s"Cannot find a JobContentParser to parse jobContent."))
+  }
+
+  override def updateArgs(jobId: Long, version: String,args: util.List[String],isHighAvailable: Boolean, highAvailableMessage: String): StreamisTransformJobContent = {
+    val jobVersion =streamJobMapper.getLatestJobVersion(jobId)
+    val checkContent = getJobContent(jobId, jobVersion.getVersion)
+    val streamJob = streamJobMapper.queryJobById(jobId)
+    val jobContent = jobVersion.getJobContent
+    if (args != null){
+      val newJobContent = JsonUtils.manageArgs(jobContent,args)
+      val streamJobVersion = new StreamJobVersion
+      streamJobVersion.setJobId(jobVersion.getJobId)
+      streamJobVersion.setCreateBy(jobVersion.getCreateBy)
+      streamJobVersion.setManageMode(jobVersion.getManageMode)
+      streamJobVersion.setCreateTime(new Date())
+      streamJobVersion.setJobContent(newJobContent)
+      streamJobVersion.setSource("update args")
+      streamJobVersion.setVersion(rollingJobVersion(jobVersion.getVersion))
+      streamJobVersion.setComment("用户"+ jobVersion.getCreateBy + "修改args")
+      streamJobMapper.insertJobVersion(streamJobVersion)
+      val oldVersionFiles: util.List[StreamJobVersionFiles] = streamJobMapper.getStreamJobVersionFiles(jobId, jobVersion.getId)
+      oldVersionFiles.asScala.foreach { version =>
+        val jobVersionFiles = new StreamJobVersionFiles
+        jobVersionFiles.setJobId(version.getJobId)
+        jobVersionFiles.setJobVersionId(streamJobVersion.getId)
+        jobVersionFiles.setCreateBy(version.getCreateBy)
+        jobVersionFiles.setVersion(streamJobVersion.getVersion)
+        jobVersionFiles.setFileName(version.getFileName)
+        jobVersionFiles.setCreateTime(new Date(System.currentTimeMillis()))
+        jobVersionFiles.setStorePath(version.getStorePath)
+        streamJobMapper.insertJobVersionFiles(jobVersionFiles)
+      }
+      val task = streamTaskMapper.getLatestByJobId(streamJob.getId)
+      if (task != null && !JobConf.isCompleted(task.getStatus)) {
+        logger.warn(s"StreamJob-${streamJob.getName} is in status ${task.getStatus}, your deployment will not update the version in job")
+      } else {
+        streamJob.setCurrentVersion(rollingJobVersion(jobVersion.getVersion))
+        streamJobMapper.updateJob(streamJob)
+      }
+      getJobContent(jobId,streamJobVersion.getVersion)
+    } else {
+      var source = jobVersion.getSource
+      if (source == null){
+        source = JsonUtils.manageSource(JobConstrants.DEFAULT_JSON, isHighAvailable, highAvailableMessage)
+      }
+      else {
+        source = JsonUtils.manageSource(jobVersion.getSource, isHighAvailable, highAvailableMessage)
+      }
+      jobVersion.setSource(source)
+      streamJobMapper.updateSource(jobVersion)
+      getJobContent(jobId,jobVersion.getVersion)
+    }
   }
 
 
@@ -297,10 +389,18 @@ class DefaultStreamJobService extends StreamJobService with Logging {
     username.equals(job.getCreateBy)
   }
 
-  override def getAlert(username: String, jobId: Long, version: String): util.List[StreamAlertRecord] = {
+  override def getJobVersionById(username: String, jobId: Long, version: String): StreamJobVersion = {
     val job = streamJobMapper.getJobVersionById(jobId, version)
-    if (job == null) return null
-    streamAlertMapper.getAlertByJobIdAndVersion(username,jobId,job.getId)
+    job
+  }
+
+  override def getAlertByProList(username: String, jobId: Long,  versionId: Long): PageInfo[StreamAlertRecord] = {
+    val streamJobList = streamAlertMapper.getAlertByJobIdAndVersion(username,jobId,versionId)
+    if (streamJobList != null && !streamJobList.isEmpty) {
+      val pageInfo = new PageInfo[StreamAlertRecord](streamJobList)
+      return pageInfo
+    }
+    new PageInfo[StreamAlertRecord](new util.ArrayList[StreamAlertRecord]())
   }
 
   private def validateJobDeploy(projectName: String, jobName: String, userName: String): JobDeployValidateResult = {
@@ -325,6 +425,78 @@ class DefaultStreamJobService extends StreamJobService with Logging {
   @throws(classOf[ErrorException])
   @Transactional(rollbackFor = Array(classOf[Exception]))
   override def updateLabel(streamJob: StreamJob): Unit = streamJobMapper.updateJob(streamJob)
+
+  override def canBeDisabled(jobId: Long): Boolean = {
+    val streamJob = streamJobMapper.getJobById(jobId);
+    if(streamJob == null) throw new JobFetchErrorException(30030, s"job does not exist.")
+    //处理job是首次上传且未被启动的情况
+    if (streamJob.getStatus == 0){
+      val streamTask = this.streamTaskMapper.getLatestByJobId(jobId)
+      if (streamTask != null) {
+        val statusCode = streamTask.getStatus
+        val status = JobConf.getStatusString(statusCode)
+        if (!JobConf.isFinished(statusCode)) {
+          logger.warn(s"StreamJob-${jobId} is in status ${status}, the job has not completed, can not be disabled")
+          return false
+        }
+      }
+    }
+    if (!streamJob.getEnable) {
+      logger.warn(s"StreamJob-${jobId} has been disabled, could not be disabled again")
+      false
+    } else {
+      true
+    }
+  }
+
+
+  override def disableJob(streamJob: StreamJob): Unit = {
+    if(streamJob == null) throw new JobFetchErrorException(30030, s"job does not exist.")
+    streamJob.setEnable(false)
+    streamJobMapper.updateJobEnable(streamJob)
+  }
+
+  override def canbeActivated(jobId: Long): Boolean = {
+    val streamJob = streamJobMapper.getJobById(jobId)
+    if(streamJob == null) throw new JobFetchErrorException(30030, s"job does not exist.")
+    if (streamJob.getEnable){
+      false
+    } else {
+      true
+    }
+  }
+
+  override def activateJob(streamJob: StreamJob): Unit = {
+    streamJob.setEnable(true)
+    streamJobMapper.updateJobEnable(streamJob)
+  }
+
+  override def getEnableStatus(jobId: Long): Boolean = {
+    val streamJob = streamJobMapper.getJobById(jobId)
+    if (streamJob.getEnable) {
+      true
+    } else {
+      false
+    }
+  }
+
+  override def getJobFileById(id: Long): StreamJobVersionFiles = {
+    val streamJobVersionFiles = streamJobMapper.getJobFileById(id)
+    streamJobVersionFiles
+  }
+
+  override def getLatestJobTemplate(projectName: String): String = {
+    streamJobTemplateMapper.getLatestJobTemplate(projectName,true)
+  }
+
+  override def getJobTemplateConfMap(streamJob: StreamJob): util.Map[String, AnyRef] = {
+    val jobTemplate = streamJobTemplateMapper.getLatestJobTemplate(streamJob.getProjectName,true)
+    MergeUtils.getJobTemplateConfMap(jobTemplate)
+  }
+
+  override def mergeJobConfig(destination: util.Map[String, AnyRef], source: util.Map[String, AnyRef]): Unit={
+    MergeUtils.merge(destination,source)
+  }
 
 }
 

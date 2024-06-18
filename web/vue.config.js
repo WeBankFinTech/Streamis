@@ -127,6 +127,7 @@ module.exports = {
         target: 'http://***REMOVED***',
         // target: 'http://***REMOVED***:9188',
         // target: 'http://***REMOVED***:9400',
+        // target: 'http://***REMOVED***:8088',
         changeOrigin: true,
         pathRewrite: {
           //'^/api': '/mock/15/api'

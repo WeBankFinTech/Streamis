@@ -26,7 +26,7 @@
                 <SendLogCache size="300" maxConsumeThread="10"/>
                 <SendBuffer size="50" expireTimeInSec="2"/>
             </RpcLogSender>
-        </StreamRpcLog>`
+        </StreamRpcLog>
     </appenders>
     <loggers>
         <root level="INFO" additivity="true">

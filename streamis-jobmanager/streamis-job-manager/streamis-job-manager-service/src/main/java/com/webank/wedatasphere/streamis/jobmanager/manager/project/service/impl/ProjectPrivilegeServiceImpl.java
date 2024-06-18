@@ -77,6 +77,10 @@ public class ProjectPrivilegeServiceImpl implements ProjectPrivilegeService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
         LOG.info("obtain the operation privilege of the user,request url {}", url);
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            LOG.error("Unsupported protocol in the request URL: {}", url);
+            return null;
+        }
         ResponseEntity<Map> responseEntity = restTemplate.exchange(url, HttpMethod.GET, requestEntity, Map.class);
         LOG.info("obtain the operation privilege of the user,return response body:{}", responseEntity.getBody());
         if(responseEntity.getBody()!=null && ((int)(responseEntity.getBody().get("status")))==0){

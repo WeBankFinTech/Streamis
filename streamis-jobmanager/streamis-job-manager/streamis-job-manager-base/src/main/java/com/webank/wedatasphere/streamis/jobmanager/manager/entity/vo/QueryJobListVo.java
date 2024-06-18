@@ -30,6 +30,7 @@ public class QueryJobListVo {
     private Date createTime;
     private Integer status;
     private String version;
+    private Boolean enable;
     /**
      * Last version
      */
@@ -167,5 +168,13 @@ public class QueryJobListVo {
 
     public void setLastVersion(String lastVersion) {
         this.lastVersion = lastVersion;
+    }
+
+    public Boolean getEnable() {
+        return enable;
+    }
+
+    public void setEnable(Boolean enable) {
+        this.enable = enable;
     }
 }

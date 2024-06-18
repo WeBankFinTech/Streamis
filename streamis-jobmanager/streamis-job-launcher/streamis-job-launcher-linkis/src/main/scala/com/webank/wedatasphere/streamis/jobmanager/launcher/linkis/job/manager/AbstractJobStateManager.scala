@@ -16,6 +16,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.manager
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobState, JobStateFetcher}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
@@ -66,6 +67,12 @@ abstract class AbstractJobStateManager extends JobStateManager {
     case _ => null.asInstanceOf[T]
   }
 
+
+  override def getJobState[T <: JobState](clazz: Class[_], jobInfo: JobInfo, highAvailablePolicy: String): T = Option(getOrCreateJobStateFetcher[T](clazz)) match {
+    case Some(jobStateFetcher: JobStateFetcher[T]) =>jobStateFetcher.getState(jobInfo,highAvailablePolicy)
+    case _ => null.asInstanceOf[T]
+  }
+
   /**
    * Register job state fetcher
    *
@@ -77,14 +84,19 @@ abstract class AbstractJobStateManager extends JobStateManager {
     stateFetcherLoaders.put(clazz.getCanonicalName, builder)
   }
 
-  override def getJobStateDir[T <: JobState](clazz: Class[_], scheme: String, relativePath: String): URI = {
-    getJobStateDir(clazz, scheme, null, relativePath)
+  override def getJobStateDir[T <: JobState](clazz: Class[_], relativePath: String, highAvailablePolicy: String): URI = {
+    getJobStateDir(clazz, JobLauncherConfiguration.FLINK_STATE_DEFAULT_SCHEME.getValue,
+      JobLauncherConfiguration.FLINK_STATE_DEFAULT_AUTHORITY.getValue, relativePath,highAvailablePolicy)
   }
 
 
-  override def getJobStateDir[T <: JobState](clazz: Class[_], relativePath: String): URI = {
+  override def  getJobStateDir[T <: JobState](clazz: Class[_], relativePath: String): URI = {
     getJobStateDir(clazz, JobLauncherConfiguration.FLINK_STATE_DEFAULT_SCHEME.getValue,
       JobLauncherConfiguration.FLINK_STATE_DEFAULT_AUTHORITY.getValue, relativePath)
+  }
+
+  override def getJobStateDir[T <: JobState](clazz: Class[_], scheme: String, authority: String, relativePath: String): URI = {
+    new URI(scheme, authority, normalizePath(getJobStateRootPath(clazz, scheme) + "/" + relativePath), null, null)
   }
 
   /**
@@ -97,9 +109,16 @@ abstract class AbstractJobStateManager extends JobStateManager {
    * @tparam T
    * @return
    */
-  override def getJobStateDir[T <: JobState](clazz: Class[_], scheme: String, authority: String, relativePath: String): URI = {
-    // To Support all schema
-    new URI(scheme, authority, normalizePath(getJobStateRootPath(clazz, scheme) + "/" + relativePath), null, null)
+  override def getJobStateDir[T <: JobState](clazz: Class[_], scheme: String, authority: String, relativePath: String,highAvailablePolicy: String): URI = {
+    val jobSchema = matchJobSchema(highAvailablePolicy)
+    new URI(scheme, authority, normalizePath(getJobStateRootPath(clazz, scheme) + "/" + jobSchema + "/" + relativePath), null, null)
+  }
+
+  private def matchJobSchema(highAvailablePolicy: String): String = highAvailablePolicy match {
+    case JobConf.HIGHAVAILABLE_DEFAULT_POLICY.getValue | "NULL" | JobConf.HIGHAVAILABLE_POLICY_SINGLE_BAK.getValue => JobConf.JOB_SCHEMA_SINGLE.getValue
+    case JobConf.HIGHAVAILABLE_POLICY_DOUBLE.getValue | JobConf.HIGHAVAILABLE_POLICY_DOUBLE_BAK.getValue  => JobConf.JOB_SCHEMA_DOUBLE.getValue
+    case JobConf.HIGHAVAILABLE_POLICY_MANAGERSLAVE.getValue | JobConf.HIGHAVAILABLE_POLICY_MANAGERSLAVE_BAK.getValue =>  JobConf.JOB_SCHEMA_MANAGER_SLAVE.getValue
+    case _ =>  JobConf.JOB_SCHEMA_SINGLE.getValue
   }
 
   private def normalizePath(input: String): String = {

@@ -52,7 +52,7 @@ Dimension节点、Transform节点、Sink节点 和 [Visualis](https://github.com
 
 ## 依赖的生态组件
 
-| 依赖的应用工具    | 描述                                                         | Streamis 兼容版本                               |
+| 依赖的应用工具    | 描述                                                         | Streamis 兼容版本 |
 |--------------|---------------------------------------------------------------|---------------------------------------------|
 | [DataSphereStudio](https://github.com/WeBankFinTech/DataSphereStudio) | 数据应用开发管理集成框架。以工作流式的图形化拖拽开发体验，将满足从数据交换、脱敏清洗、分析挖掘、质量检测、可视化展现、定时调度到数据输出应用等，数据应用开发全流程场景需求。 | &gt;= DSS1.1.2（已发布）                         |
 | [Linkis](https://github.com/apache/incubator-linkis) | 计算中间件 Apache Linkis，通过提供 REST/WebSocket/JDBC/SDK 等标准接口，上层应用可以方便地连接访问 MySQL/Spark/Hive/Presto/Flink 等底层引擎。 | &gt;= Linkis1.4.0（已发布） |

@@ -45,6 +45,20 @@ public class RpcLogSenderConfig {
     /**
      * Auth config
      */
+    /**
+     * If true, flink app will exit when registered failed
+     */
+    private boolean heartbeatEnable = true;
+    /**
+     * send heartbeat address
+     */
+    private String heartbeatAddress;
+
+    /**
+     * Heartbeat interval
+     */
+
+    private int heartbeatInterval = 30 * 60 * 1000;
     private RpcAuthConfig authConfig = new RpcAuthConfig();
 
     /**
@@ -57,20 +71,22 @@ public class RpcLogSenderConfig {
      */
     private SendBufferConfig bufferConfig = new SendBufferConfig();
 
+
     public RpcLogSenderConfig(){
 
     }
 
     public RpcLogSenderConfig(String address, int sendRetryCnt, int connectionTimeout, int socketTimeout,
                               int serverRecoveryTimeInSec, int maxDelayTimeInSec,
-                              RpcAuthConfig authConfig, SendLogCacheConfig cacheConfig, SendBufferConfig bufferConfig){
+                              RpcAuthConfig authConfig, SendLogCacheConfig cacheConfig, SendBufferConfig bufferConfig, String heartbeatAddress, int heartbeatInterval){
         this.address = address;
         this.sendRetryCnt = sendRetryCnt;
         this.connectionTimeout = connectionTimeout;
         this.socketTimeout = socketTimeout;
         this.serverRecoveryTimeInSec = serverRecoveryTimeInSec;
         this.maxDelayTimeInSec = maxDelayTimeInSec;
-        if (Objects.nonNull(authConfig)){
+        this.heartbeatInterval = heartbeatInterval;
+        if (Objects.nonNull(authConfig)) {
             this.authConfig = authConfig;
         }
         if (Objects.nonNull(cacheConfig)){
@@ -78,6 +94,9 @@ public class RpcLogSenderConfig {
         }
         if (Objects.nonNull(bufferConfig)){
             this.bufferConfig = bufferConfig;
+        }
+        if (Objects.nonNull(heartbeatAddress)) {
+            this.heartbeatAddress = heartbeatAddress;
         }
     }
 
@@ -161,6 +180,30 @@ public class RpcLogSenderConfig {
         this.debugMode = debugMode;
     }
 
+    public String getHeartbeatAddress() {
+        return heartbeatAddress;
+    }
+
+    public void setHeartbeatAddress(String heartbeatAddress) {
+        this.heartbeatAddress = heartbeatAddress;
+    }
+
+    public int getHeartbeatInterval() {
+        return heartbeatInterval;
+    }
+
+    public void setHeartbeatInterval(int heartbeatInterval) {
+        this.heartbeatInterval = heartbeatInterval;
+    }
+
+    public boolean isHeartbeatEnable() {
+        return heartbeatEnable;
+    }
+
+    public void setHeartbeatEnable(boolean heartbeatEnable) {
+        this.heartbeatEnable = heartbeatEnable;
+    }
+
     @Override
     public String toString() {
         return "RpcLogSenderConfig{" +
@@ -173,6 +216,9 @@ public class RpcLogSenderConfig {
                 ", authConfig=" + authConfig +
                 ", cacheConfig=" + cacheConfig +
                 ", bufferConfig=" + bufferConfig +
+                ", heartbeatEnable=" + heartbeatEnable +
+                ", heartbeatAddress=" + heartbeatAddress +
+                ", heartbeatInterval=" + heartbeatInterval +
                 ", debug=" + debugMode +
                 '}';
     }

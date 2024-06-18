@@ -1,5 +1,7 @@
 package com.webank.wedatasphere.streamis.projectmanager.utils;
 
+import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +45,7 @@ public class MD5Utils {
         FileInputStream fis = null;
         ByteArrayOutputStream bos = null;
         try {
+             IoUtils.validateFileName(FilenameUtils.getName(filePath));
              File file = new File(filePath);
              fis = new FileInputStream(file);
              bos = new ByteArrayOutputStream(1000);

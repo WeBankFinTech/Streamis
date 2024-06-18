@@ -17,7 +17,6 @@ package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.CookieUtils;
 import com.webank.wedatasphere.streamis.jobmanager.service.UserService;
-import com.webank.wedatasphere.streamis.jobmanager.utils.RegularUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.utils.ModuleUserUtils;
@@ -46,7 +45,8 @@ public class JobConfExtRestfulApi {
         //获取工作空间
         List<String> userList = new ArrayList<>();
         String workspaceId = CookieUtils.getCookieWorkspaceId(req);
-        if (RegularUtil.matches(workspaceId)) {
+        if (StringUtils.isNotBlank(workspaceId)) {
+
             userList.addAll(userService.workspaceUserQuery(req, workspaceId));
         } else {
             LOG.warn("Cannot find the workspaceID from DSS，perhaps the cookie value has been lost in request from: {}", req.getLocalAddr());

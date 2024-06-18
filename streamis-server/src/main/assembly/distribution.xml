@@ -43,6 +43,9 @@
             <includes>
                 <include>*</include>
             </includes>
+            <excludes>
+                <exclude>*.yml</exclude>
+            </excludes>
             <fileMode>0777</fileMode>
             <outputDirectory>conf</outputDirectory>
             <lineEnding>unix</lineEnding>
