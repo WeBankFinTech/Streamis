@@ -16,6 +16,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state;
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.JobInfo;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobStateManager;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobState;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.JobStateFetcher;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -46,8 +48,9 @@ import java.util.function.Predicate;
  * Linkis Job state fetcher
  * 1) Init to build http client
  * 2) Invoke the getState method to fetch form /api/rest_j/v1/filesystem/getDirFileTrees, the new JobState info
- *   (Note: linkis doesn't support to fetch the file tree recursively, so should invoke several times)
+ * (Note: linkis doesn't support to fetch the file tree recursively, so should invoke several times)
  * 3) Destroy to close the http client when the system is closed
+ *
  * @param <T>
  */
 
@@ -73,7 +76,7 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
 
     private final JobStateManager jobStateManager;
 
-    protected AbstractLinkisJobStateFetcher(Class<T> stateClass, JobStateManager jobStateManager){
+    protected AbstractLinkisJobStateFetcher(Class<T> stateClass, JobStateManager jobStateManager) {
         this.stateClass = stateClass;
         this.jobStateManager = jobStateManager;
     }
@@ -91,14 +94,15 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
 
     /**
      * Main entrance
+     *
      * @param jobInfo job info
      * @return
      */
     @Override
     public T getState(JobInfo jobInfo) {
-        String treeDir = this.jobStateManager.getJobStateDir(stateClass, jobInfo.getName()).toString();
-        StateFileTree stateFileTree =  traverseFileTreeToFind(jobInfo, getDirFileTree(jobInfo, treeDir), this::isMatch, false);
-        if (Objects.nonNull(stateFileTree) && StringUtils.isNotBlank(stateFileTree.getPath())){
+        String treeDir = this.jobStateManager.getJobStateDir(stateClass, jobInfo.getName(), jobInfo.getHighAvailablePolicy()).toString();
+        StateFileTree stateFileTree = traverseFileTreeToFind(jobInfo, getDirFileTree(jobInfo, treeDir), this::isMatch, false);
+        if (Objects.nonNull(stateFileTree) && StringUtils.isNotBlank(stateFileTree.getPath())) {
             JobStateFileInfo stateFileInfo = new JobStateFileInfo(stateFileTree.getName(),
                     stateFileTree.getPath(), stateFileTree.getParentPath(),
                     Long.parseLong(stateFileTree.getProperties().getOrDefault(PROPS_SIZE, "0")),
@@ -110,39 +114,81 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
 
 
     @Override
+    public T getState(JobInfo jobInfo, String highAvailablePolicy) {
+        JobStateFileInfo secondStateFileInfo = null;
+        LOG.info("config wds.streamis.old snapshot path.enable vaule is " + JobConf.STREAMIS_OLD_SNAPSHOT_PATH_ENABLE().toString());
+        if (Boolean.parseBoolean(JobConf.STREAMIS_OLD_SNAPSHOT_PATH_ENABLE().getHotValue().toString())) {
+            String secondTreeDir = this.jobStateManager.getJobStateDir(stateClass, jobInfo.getName()).toString();
+            StateFileTree secondStateFileTree = traverseFileTreeToFind(jobInfo, getDirFileTree(jobInfo, secondTreeDir), this::isMatch, false);
+            if (Objects.nonNull(secondStateFileTree) && StringUtils.isNotBlank(secondStateFileTree.getPath())) {
+                secondStateFileInfo = new JobStateFileInfo(secondStateFileTree.getName(),
+                        secondStateFileTree.getPath(), secondStateFileTree.getParentPath(),
+                        Long.parseLong(secondStateFileTree.getProperties().getOrDefault(PROPS_SIZE, "0")),
+                        Long.parseLong(secondStateFileTree.getProperties().getOrDefault(PROPS_MODIFY_TIME, "0")));
+            }
+        }
+        String treeDir = this.jobStateManager.getJobStateDir(stateClass, jobInfo.getName(), highAvailablePolicy).toString();
+        StateFileTree stateFileTree = traverseFileTreeToFind(jobInfo, getDirFileTree(jobInfo, treeDir), this::isMatch, false);
+        if (Objects.nonNull(stateFileTree) && StringUtils.isNotBlank(stateFileTree.getPath())) {
+            JobStateFileInfo stateFileInfo = new JobStateFileInfo(stateFileTree.getName(),
+                    stateFileTree.getPath(), stateFileTree.getParentPath(),
+                    Long.parseLong(stateFileTree.getProperties().getOrDefault(PROPS_SIZE, "0")),
+                    Long.parseLong(stateFileTree.getProperties().getOrDefault(PROPS_MODIFY_TIME, "0")));
+            if (Objects.nonNull(secondStateFileInfo)) {
+                long modifyTime = stateFileInfo.getModifytime();
+                long secondModifyTime = secondStateFileInfo.getModifytime();
+                if (secondModifyTime > modifyTime) {
+                    return getState(secondStateFileInfo);
+                } else {
+                    return getState(stateFileInfo);
+                }
+            } else {
+                return getState(stateFileInfo);
+            }
+        } else {
+            if (Objects.nonNull(secondStateFileInfo)) {
+                return getState(secondStateFileInfo);
+            }
+        }
+        return null;
+    }
+
+
+    @Override
     public void destroy() {
         try {
             client.close();
         } catch (IOException e) {
             throw new StreamisJobLaunchException.Runtime(-1,
-                    "Fail to destroy httpClient in JobStateFetcher[" + this.getClass().getSimpleName() + "]",e);
+                    "Fail to destroy httpClient in JobStateFetcher[" + this.getClass().getSimpleName() + "]", e);
         }
     }
 
     /**
      * Traverse the file tree to find the suitable state file
-     * @param jobInfo job info
+     *
+     * @param jobInfo       job info
      * @param stateFileTree state file tree
-     * @param matcher matcher
-     * @param resolved resolved
+     * @param matcher       matcher
+     * @param resolved      resolved
      * @return
      */
     private StateFileTree traverseFileTreeToFind(JobInfo jobInfo, StateFileTree stateFileTree, Predicate<String> matcher,
-                                                    boolean resolved){
+                                                 boolean resolved) {
         AtomicReference<StateFileTree> latestFileTree = new AtomicReference<>(new StateFileTree());
-        if (Objects.nonNull(stateFileTree)){
-            if (!resolved && stateFileTree.getIsLeaf()){
-                if (matcher.test(stateFileTree.getPath()) && compareTime(stateFileTree, latestFileTree.get()) > 0){
+        if (Objects.nonNull(stateFileTree)) {
+            if (!resolved && stateFileTree.getIsLeaf()) {
+                if (matcher.test(stateFileTree.getPath()) && compareTime(stateFileTree, latestFileTree.get()) > 0) {
                     latestFileTree.set(stateFileTree);
                 }
-            } else if (!stateFileTree.getIsLeaf()){
+            } else if (!stateFileTree.getIsLeaf()) {
                 Optional.ofNullable(stateFileTree.getChildren()).ifPresent(children -> children.forEach(childStateFileTree -> {
                     StateFileTree candidateFileTree = childStateFileTree.getIsLeaf() ? childStateFileTree :
                             traverseFileTreeToFind(jobInfo,
-                                Objects.nonNull(childStateFileTree.getChildren())? childStateFileTree : getDirFileTree(jobInfo, childStateFileTree.getPath()),
-                                matcher,
-                                true);
-                    if (compareTime(candidateFileTree, latestFileTree.get()) > 0 && matcher.test(candidateFileTree.getPath())){
+                                    Objects.nonNull(childStateFileTree.getChildren()) ? childStateFileTree : getDirFileTree(jobInfo, childStateFileTree.getPath()),
+                                    matcher,
+                                    true);
+                    if (compareTime(candidateFileTree, latestFileTree.get()) > 0 && matcher.test(candidateFileTree.getPath())) {
                         latestFileTree.set(candidateFileTree);
                     }
                 }));
@@ -153,72 +199,77 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
 
     /**
      * Fetch the File tree form directory
+     *
      * @param jobInfo job info
      * @param dirPath directory path
      * @return state file tree
      */
-    private StateFileTree getDirFileTree(JobInfo jobInfo, String dirPath){
+    private StateFileTree getDirFileTree(JobInfo jobInfo, String dirPath) {
         try {
             LinkisJobStateGetAction getAction = new LinkisJobStateGetAction(jobInfo.getUser(), dirPath);
             Result result = client.execute(getAction);
             String responseBody = Optional.ofNullable(result.getResponseBody()).orElse("");
             LOG.trace("JobState FileTree => [responseBody: {}]",
-                    responseBody.length() > 100? responseBody.substring(0, 100) + "..." : responseBody);
+                    responseBody.length() > 100 ? responseBody.substring(0, 100) + "..." : responseBody);
             StateFileTree stateFileTree;
-            if (result instanceof ResultSetListResult){
-                ResultSetListResult setListResult = (ResultSetListResult)result;
+            if (result instanceof ResultSetListResult) {
+                ResultSetListResult setListResult = (ResultSetListResult) result;
                 checkFetchStateResult(setListResult);
                 stateFileTree = DWSHttpClient.jacksonJson().convertValue(setListResult.getDirFileTrees(), StateFileTree.class);
-            } else if(result instanceof LinkisJobStateResult){
+            } else if (result instanceof LinkisJobStateResult) {
                 LinkisJobStateResult stateResult = (LinkisJobStateResult) result;
                 checkFetchStateResult(stateResult);
                 stateFileTree = stateResult.getStateFileTree();
-            }else {
+            } else {
                 throw new FlinkJobStateFetchException(-1, "JobState FileTree result is not a unrecognized type: " +
-                        "[" + result.getClass().getCanonicalName() + "]",null);
+                        "[" + result.getClass().getCanonicalName() + "]", null);
             }
-            if(stateFileTree == null){
+            if (stateFileTree == null) {
                 LOG.warn("'StateFileTree' for path [{}] is null/empty, just return the null FileTree", dirPath);
                 return null;
             }
             LOG.trace(stateFileTree.getChildren() + "");
             return stateFileTree;
         } catch (FlinkJobStateFetchException e) {
-            throw new StreamisJobLaunchException.Runtime(e.getErrCode(),e.getMessage(),e);
+            throw new StreamisJobLaunchException.Runtime(e.getErrCode(), e.getMessage(), e);
         } catch (Exception e) {
-            throw new StreamisJobLaunchException.Runtime(-1,"Unexpected exception in fetching JobState FileTree",e);
+            throw new StreamisJobLaunchException.Runtime(-1, "Unexpected exception in fetching JobState FileTree", e);
         }
     }
 
     private void checkFetchStateResult(DWSResult result) throws FlinkJobStateFetchException {
-        if(result.getStatus()!= 0) {
+        if (result.getStatus() != 0) {
             String errMsg = result.getMessage();
             throw new FlinkJobStateFetchException(-1, "Fail to fetch JobState FileTree, message: " + errMsg, null);
         }
     }
+
     /**
      * Compare timestamp value in file trees
-     * @param leftTree left
+     *
+     * @param leftTree  left
      * @param rightTree right
      * @return size
      */
-    private long compareTime(StateFileTree leftTree, StateFileTree rightTree){
+    private long compareTime(StateFileTree leftTree, StateFileTree rightTree) {
         long leftTime = 0L;
         long rightTime = 0L;
         try {
             leftTime = Long.parseLong(Optional.ofNullable(leftTree.getProperties()).orElse(new HashMap<>()).getOrDefault(PROPS_MODIFY_TIME, "0"));
-        } catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             LOG.warn("Illegal format value for property '{}' in FilePath [{}]", PROPS_MODIFY_TIME, leftTree.getPath(), e);
         }
         try {
             rightTime = Long.parseLong(Optional.ofNullable(rightTree.getProperties()).orElse(new HashMap<>()).getOrDefault(PROPS_MODIFY_TIME, "0"));
-        } catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             LOG.warn("Illegal format value for property '{}' in FilePath [{}]", PROPS_MODIFY_TIME, rightTree.getPath(), e);
         }
         return leftTime - rightTime;
     }
+
     /**
      * Is the path is match
+     *
      * @param path path
      * @return boolean
      */
@@ -226,6 +277,7 @@ public abstract class AbstractLinkisJobStateFetcher<T extends JobState> implemen
 
     /**
      * Get the concrete JobState entity from FileInfo
+     *
      * @param fileInfo file info
      * @return JobState
      */

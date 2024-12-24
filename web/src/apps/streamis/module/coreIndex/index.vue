@@ -33,6 +33,10 @@
       <Icon type="md-folder-open" size="18" />
       <p>{{ $t('message.streamis.routerName.projectResourceFiles') }}</p>
     </div>
+    <div class="auditLogs" @click="gotoAuditLogs()">
+      <Icon type="md-paper" size="18" />
+      <p>查看操作日志</p>
+    </div>
   </div>
 </template>
 <script>
@@ -41,6 +45,7 @@ import titleCard from '@/apps/streamis/components/titleCard'
 import { jobStatuses } from '@/apps/streamis/common/common'
 export default {
   components: { titleCard },
+  props: ['hasHook'],
   data() {
     return {
       indexItems: [...jobStatuses]
@@ -65,6 +70,8 @@ export default {
               newDatas.push(newItem)
             })
             this.indexItems = newDatas
+            const hasHook = Array.isArray(res.taskCore.jobShutdownHooks) && res.taskCore.jobShutdownHooks.length > 0
+            this.$emit('input', hasHook)
           }
         })
         .catch(e => console.log(e))
@@ -72,6 +79,14 @@ export default {
     gotoProjectFiles() {
       this.$router.push({
         name: 'ProjectResourceFiles',
+        params: {
+          projectName: this.$route.query.projectName
+        }
+      })
+    },
+    gotoAuditLogs() {
+      this.$router.push({
+        name: 'AuditLogs',
         params: {
           projectName: this.$route.query.projectName
         }
@@ -87,6 +102,17 @@ export default {
 .projectFile {
   position: absolute;
   top: 16px;
+  right: 25px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 12px;
+  color: #2d8cf0;
+  cursor: pointer;
+}
+.auditLogs {
+  position: absolute;
+  top: 40px;
   right: 25px;
   display: flex;
   justify-content: flex-end;

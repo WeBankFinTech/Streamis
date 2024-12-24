@@ -32,4 +32,9 @@ public interface StreamisFile {
 
     String getCreateBy();
 
+    String getSource();
+
+    void setMaterialType(String materialType);
+
+    String getMaterialType();
 }

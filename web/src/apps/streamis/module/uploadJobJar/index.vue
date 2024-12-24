@@ -107,7 +107,7 @@ export default {
           })
           this.loading = true
           api
-            .fetch('streamis/streamJobManager/config/upload', formData)
+            .fetch('streamis/streamJobManager/config/upload', formData, {headers: {'Content-Type': 'multipart/form-data'}})
             .then(res => {
               this.loading = false
               this.$t('message.streamis.operationSuccess')

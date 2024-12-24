@@ -20,13 +20,12 @@
     <parent>
         <artifactId>streamis-jobmanager</artifactId>
         <groupId>com.webank.wedatasphere.streamis</groupId>
-        <version>0.3.0</version>
+        <version>0.3.1</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>streamis-job-launcher-base</artifactId>
-
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -45,8 +44,15 @@
             <artifactId>linkis-computation-governance-common</artifactId>
             <version>${linkis.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.linkis</groupId>
+            <artifactId>linkis-mybatis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.linkis</groupId>
+            <artifactId>linkis-module</artifactId>
+        </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -63,6 +69,14 @@
                 <artifactId>maven-jar-plugin</artifactId>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+        </resources>
         <finalName>${project.artifactId}-${project.version}</finalName>
     </build>
 </project>

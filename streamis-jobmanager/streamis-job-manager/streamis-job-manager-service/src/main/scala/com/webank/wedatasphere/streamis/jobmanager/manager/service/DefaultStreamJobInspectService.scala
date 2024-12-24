@@ -1,15 +1,18 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
+
 import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.errorcode.JobLaunchErrorCode
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobCreateErrorException, JobErrorException, JobFetchErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.client.LinkisFlinkManagerJobClient
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamTaskMapper}
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion}
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobInspectVo, JobListInspectVo, JobSnapshotInspectVo, JobVersionInspectVo}
-import org.apache.commons.lang3.StringUtils
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion, StreamJobVersionFiles}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobHighAvailableVo, JobInspectVo, JobListInspectVo, JobSnapshotInspectVo, JobVersionInspectVo}
+import com.webank.wedatasphere.streamis.jobmanager.manager.utils.SourceUtils
+import org.apache.commons.lang.StringUtils
 import org.apache.linkis.common.exception.ErrorException
 import org.apache.linkis.common.utils.{JsonUtils, Logging, Utils}
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,7 +24,7 @@ import java.util
 import scala.collection.JavaConverters.asScalaBufferConverter
 
 @Service
-class DefaultStreamJobInspectService extends StreamJobInspectService with Logging{
+class DefaultStreamJobInspectService extends StreamJobInspectService with Logging {
 
   @Autowired
   private var streamTaskService: StreamTaskService = _
@@ -34,6 +37,7 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
 
   @Autowired
   private var streamJobConfMapper: StreamJobConfMapper = _
+
   /**
    * Inspect method
    *
@@ -44,27 +48,30 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
   @throws(classOf[ErrorException])
   @Transactional(rollbackFor = Array(classOf[Exception]))
   override def inspect(jobId: Long, types: Array[JobInspectVo.Types]): util.List[JobInspectVo] = {
-     val inspectVos: util.List[JobInspectVo] = new util.ArrayList[JobInspectVo]
-     // Lock the stream job
-     Option(this.streamJobMapper.queryAndLockJobById(jobId)) match {
-       case Some(streamJob) =>
-         types.foreach {
-           case JobInspectVo.Types.VERSION =>
-             Option(versionInspect(streamJob)).foreach(inspectVos.add(_))
-           case JobInspectVo.Types.SNAPSHOT =>
-             Option(snapshotInspect(streamJob)).foreach(inspectVos.add(_))
-           case JobInspectVo.Types.LIST =>
-             Option(listInspect(streamJob)).foreach(inspectVos.add(_))
-           case _ => null
-           // Do nothing
-         }
-       case _ => //Ignore
-     }
-     inspectVos
+    val inspectVos: util.List[JobInspectVo] = new util.ArrayList[JobInspectVo]
+    // Lock the stream job
+    Option(this.streamJobMapper.queryJobById(jobId)) match {
+      case Some(streamJob) =>
+        types.foreach {
+          case JobInspectVo.Types.VERSION =>
+            Option(versionInspect(streamJob)).foreach(inspectVos.add(_))
+          case JobInspectVo.Types.SNAPSHOT =>
+            Option(snapshotInspect(streamJob)).foreach(inspectVos.add(_))
+          case JobInspectVo.Types.LIST =>
+            Option(listInspect(streamJob)).foreach(inspectVos.add(_))
+          case JobInspectVo.Types.HIGHAVAILABLE =>
+            Option(highAvailableInspect(streamJob)).foreach(inspectVos.add(_))
+          case _ => null
+          // Do nothing
+        }
+      case _ => //Ignore
+    }
+    inspectVos
   }
 
   /**
    * Inspect the job version
+   *
    * @param streamJob stream job
    * @return
    */
@@ -83,6 +90,7 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
 
   /**
    * Inspect the snapshot
+   *
    * @param streamJob stream job
    * @return
    */
@@ -111,7 +119,7 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
   private def listInspect(job: StreamJob): JobListInspectVo = {
     // 如果分离式特性开关开启，就获取分离式client，发送list请求
     val listVo = new JobListInspectVo
-    if (JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE.getValue && JobLauncherConfiguration.ENABLE_FLINK_LIST_INSPECT.getHotValue) {
+    if (JobLauncherConfiguration.ENABLE_FLINK_MANAGER_EC_ENABLE.getHotValue() && JobLauncherConfiguration.ENABLE_FLINK_LIST_INSPECT.getHotValue) {
       val appName = s"${job.getProjectName}.${job.getName}"
       Utils.tryCatch {
         val appType = if (job.getJobType.toLowerCase().contains("flink")) {
@@ -129,7 +137,7 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
         logger.info(s"job appType is  : ${appType}")
         val appList = LinkisFlinkManagerJobClient.listYarnApp(appName, job.getSubmitUser, "streamis", appTypeList)
         if (null != appList && !appList.isEmpty) {
-          appList.asScala.foreach{
+          appList.asScala.foreach {
             app =>
               if (app.getApplicationName().equalsIgnoreCase(appName)) {
                 listVo.addYarnApp(app)
@@ -137,7 +145,13 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
                 logger.info(s"yarn app name : ${app.getApplicationName()} like but not equals job name : ${appName}, ignore it. ")
               }
           }
-          logger.info(s"There are ${listVo.getList.size()} apps with same name : ${appName}")
+          var size = 0
+          if (listVo.getList != null) {
+            size = listVo.getList.size
+          } else {
+            listVo.addOneUrl(null, "无", null)
+          }
+          logger.info(s"There are ${size} apps with same name : ${appName}")
           logger.info(JsonUtils.jackson.writeValueAsString(appList))
         } else {
           listVo.addOneUrl(null, "无", null)
@@ -155,6 +169,25 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
       listVo.addOneUrl(null, "管理员未开启检查运行中同名yarn应用特性", null)
     }
     listVo
+  }
+
+  private def highAvailableInspect(job: StreamJob): JobHighAvailableVo = {
+    Utils.tryAndError {
+      var inspectVo = new JobHighAvailableVo
+      val jobId = job.getId
+      val jobVersion = streamJobMapper.getLatestJobVersion(jobId)
+      val highAvailablePolicy = streamJobConfMapper.getRawConfValue(jobId, JobConf.HIGHAVAILABLE_POLICY_KEY.getValue)
+      val sourceOption: Option[String] = Option(jobVersion.getSource)
+      sourceOption match {
+        case Some(source) =>
+          inspectVo = SourceUtils.manageJobProjectFile(highAvailablePolicy, source)
+        case None =>
+          logger.warn("this job source is null")
+          inspectVo.setHighAvailable(true)
+          inspectVo.setMsg("用户直接从页面上传，job的source为空，跳过高可用检查")
+      }
+      inspectVo
+    }
   }
 
 }

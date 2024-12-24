@@ -18,12 +18,15 @@ package com.webank.wedatasphere.streamis.projectmanager.restful.api;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
 import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileException;
-import com.webank.wedatasphere.streamis.jobmanager.manager.exception.FileExceptionManager;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.IoUtils;
 import com.webank.wedatasphere.streamis.jobmanager.manager.util.ReaderUtils;
+
 import com.webank.wedatasphere.streamis.projectmanager.entity.ProjectFiles;
 import com.webank.wedatasphere.streamis.projectmanager.service.ProjectManagerService;
 import org.apache.commons.io.IOUtils;
@@ -42,9 +45,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +60,18 @@ public class ProjectManagerRestfulApi {
     private ProjectManagerService projectManagerService;
     @Autowired
     private ProjectPrivilegeService projectPrivilegeService;
+    @Autowired
+    private StreamJobService streamJobService;
+    @Autowired
+    private StreamJobConfService streamJobConfService;
+
+    private static final String NO_OPERATION_PERMISSION_MESSAGE = "the current user has no operation permission";
+
+    private static final String TYPE_PROJECT = "project";
+
+    private static final String TYPE_JOB = "job";
+
+    private static final String templateName = "-meta.json";
 
     @RequestMapping(path = "/files/upload", method = RequestMethod.POST)
     public Message upload(HttpServletRequest req,
@@ -66,7 +79,8 @@ public class ProjectManagerRestfulApi {
                            @RequestParam(name = "projectName",required = false) String projectName,
                            @RequestParam(name = "comment", required = false) String comment,
                            @RequestParam(name = "updateWhenExists", required = false) boolean updateWhenExists,
-                           @RequestParam(name = "file") List<MultipartFile> files) throws UnsupportedEncodingException, FileException {
+                           @RequestParam(name = "file") List<MultipartFile> files,
+                           @RequestParam(name = "source",required = false) String source) throws UnsupportedEncodingException, FileException {
         String username = ModuleUserUtils.getOperationUser(req, "upload project files");
         if (StringUtils.isBlank(version)) {
             return Message.error("version is null");
@@ -74,15 +88,30 @@ public class ProjectManagerRestfulApi {
         if (StringUtils.isBlank(projectName)) {
             return Message.error("projectName is null");
         }
-        if (version.length()>=30) return Message.error("version character length is to long ,Please less than 30 （版本字符长度过长，请小于30）");
-        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
-
+        if (StringUtils.isBlank(source)) {
+            LOG.info("source的值为空");
+        }
+        if (version.length()>=30){
+            return Message.error("version character length is to long ,Please less than 30 （版本字符长度过长，请小于30）");
+        }
+        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) {
+            return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
+        }
+        if ((Boolean) JobConf.STANDARD_AUTHENTICATION_KEY().getHotValue()){
+            if (!projectManagerService.confirmToken(source)){
+                return Message.error("As this file is not from standard release, it is not allowed to upload");
+            }
+        }
         //Only uses 1st file(只取第一个文件)
         MultipartFile p = files.get(0);
         String fileName = new String(p.getOriginalFilename().getBytes("ISO8859-1"), StandardCharsets.UTF_8);
         ReaderUtils readerUtils = new ReaderUtils();
         if (!readerUtils.checkName(fileName)) {
-            throw FileExceptionManager.createException(30601, fileName);
+            return Message.warn("fileName should only contains numeric/English characters and '-_'(仅允许包含数字，英文,中划线,下划线)");
+        }
+
+        if (!ReaderUtils.isValidFileFormat(fileName)){
+            return Message.warn("file should only "+ JobConf.STREAMIS_CHECK_FILE_FORMAT().getHotValue() +"(仅允许 " +JobConf.STREAMIS_CHECK_FILE_FORMAT().getHotValue()+"格式)");
         }
         if (!updateWhenExists) {
             ProjectFiles projectFiles = projectManagerService.selectFile(fileName, version, projectName);
@@ -93,11 +122,23 @@ public class ProjectManagerRestfulApi {
         InputStream is = null;
         OutputStream os = null;
         try {
+            IoUtils.validateFileName(fileName);
             String inputPath = IoUtils.generateIOPath(username, "streamis", fileName);
             is = p.getInputStream();
             os = IoUtils.generateExportOutputStream(inputPath);
             IOUtils.copy(is, os);
-            projectManagerService.upload(username, fileName, version, projectName, inputPath,comment);
+            if (!p.isEmpty() && p.getOriginalFilename().endsWith(templateName)) {
+                if(!readerUtils.checkMetaTemplate(fileName,inputPath,projectName)) return Message.error("meta template is not correct,eg:testProject(项目名)-meta.json");
+                projectManagerService.upload(username, fileName, version, projectName, inputPath, comment, source);
+                StreamisFile file = projectManagerService.selectFile(fileName,version,projectName);
+                projectManagerService.uploadJobTemplate(username,fileName,inputPath,projectName,version,file.getStorePath());
+            }else{
+                projectManagerService.upload(username, fileName, version, projectName, inputPath, comment, source);
+            }
+            File file = new File(inputPath);
+            if (file.exists()) {
+                file.delete();
+            }
         } catch (Exception e) {
             LOG.error("failed to upload zip {} fo user {}", fileName, username, e);
             return Message.error(e.getMessage());
@@ -118,7 +159,7 @@ public class ProjectManagerRestfulApi {
         if (StringUtils.isBlank(projectName)) {
             return Message.error("projectName is null");
         }
-        if (!projectPrivilegeService.hasAccessPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
+        if (!projectPrivilegeService.hasAccessPrivilege(req,projectName)) return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
         PageHelper.startPage(pageNow, pageSize);
         List<ProjectFiles> fileList;
         try {
@@ -141,7 +182,7 @@ public class ProjectManagerRestfulApi {
         if (StringUtils.isBlank(fileName)) {
             return Message.error("fileName is null");
         }
-        if (!projectPrivilegeService.hasAccessPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
+        if (!projectPrivilegeService.hasAccessPrivilege(req,projectName)) return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
         PageHelper.startPage(pageNow, pageSize);
         List<? extends StreamisFile> fileList;
         try {
@@ -158,9 +199,11 @@ public class ProjectManagerRestfulApi {
     public Message delete( HttpServletRequest req, @RequestParam(value = "fileName",required = false) String fileName,
                            @RequestParam(value = "projectName",required = false) String projectName) {
         String username = ModuleUserUtils.getOperationUser(req, "Delete file:" + fileName + " in project: " + projectName);
-        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
-
-        return projectManagerService.delete(fileName, projectName, username) ? Message.ok()
+        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
+        if(fileName.endsWith(templateName)){
+            projectManagerService.disableTemplate(fileName,projectName,username);
+        }
+        return projectManagerService.delete(fileName, projectName, username)? Message.ok()
                 : Message.warn("you have no permission delete some files not belong to you");
     }
 
@@ -176,31 +219,44 @@ public class ProjectManagerRestfulApi {
         }
         String projectName = projectManagerService.getProjectNameByFileId(Long.valueOf(ids));
         if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) {
-            return Message.error("the current user has no operation permission");
+            return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
         }
-
+        projectManagerService.disableTemplateFiles(ids);
         return projectManagerService.deleteFiles(ids, username) ? Message.ok()
                 : Message.warn("you have no permission delete some files not belong to you");
     }
 
     @RequestMapping(path = "/files/download", method = RequestMethod.GET)
-    public Message download( HttpServletRequest req, HttpServletResponse response, @RequestParam(value = "id",required = false) Long id,
+    public Message download( HttpServletRequest req, HttpServletResponse response,
+                             @RequestParam(value = "id",required = false) Long id,
+                             @RequestParam(value = "materialType",required = false) String materialType,
                              @RequestParam(value = "projectName",required = false)String projectName) {
-        if(StringUtils.isBlank(projectName)){
-            projectName = projectManagerService.getProjectNameByFileId(id);
+        StreamisFile file = null;
+        String userName = ModuleUserUtils.getOperationUser(req, "download job");
+        if (org.apache.commons.lang.StringUtils.isBlank(userName)) return Message.error("current user has no permission");
+        if (StringUtils.isBlank(projectName)) {
+            if (StringUtils.isBlank(materialType)) {
+                return Message.error("projectName and materialType is null");
+            } else if (materialType.equals(TYPE_JOB)) {
+                file = streamJobService.getJobFileById(id);
+            } else if (materialType.equals(TYPE_PROJECT)){
+                file = projectManagerService.getFile(id, projectName);
+            }
+        } else {
+            if (!projectPrivilegeService.hasEditPrivilege(req, projectName))
+                return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
+            file = projectManagerService.getFile(id, projectName);
         }
-        ProjectFiles projectFiles = projectManagerService.getFile(id, projectName);
-        if (projectFiles == null) {
+        if (file == null) {
             return Message.error("no such file in this project");
         }
-        if (StringUtils.isBlank(projectFiles.getStorePath())) {
+        if (StringUtils.isBlank(file.getStorePath())) {
             return Message.error("storePath is null");
         }
-        if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) return Message.error("the current user has no operation permission");
-
         response.setContentType("application/x-download");
-        response.setHeader("content-Disposition", "attachment;filename=" + projectFiles.getFileName());
-        try (InputStream is = projectManagerService.download(projectFiles);
+        response.setHeader("content-Disposition", "attachment;filename=" + file.getFileName());
+
+        try (InputStream is = projectManagerService.download(file);
              OutputStream os = response.getOutputStream()
         ) {
             int len = 0;
@@ -210,7 +266,7 @@ public class ProjectManagerRestfulApi {
             }
             os.flush();
         } catch (Exception e) {
-            LOG.error("download file: {} failed , message is : {}" , projectFiles.getFileName(), e);
+            LOG.error("download file: {} failed , message is : {}", file.getFileName(), e);
             return Message.error(e.getMessage());
         }
         return Message.ok();

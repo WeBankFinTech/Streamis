@@ -1,11 +1,13 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.core
 
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration
+
 import java.io.Closeable
 import java.util
-
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.entity.LogRequestPayload
-import org.apache.linkis.common.utils.Utils
-import org.apache.linkis.computation.client.operator.impl.EngineConnLogOperator
+import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.operator.FlinkYarnLogOperator
+import org.apache.linkis.common.utils.{Logging, Utils}
+import org.apache.linkis.computation.client.operator.impl.{EngineConnLogOperator, EngineConnLogs}
 
 /**
  *
@@ -24,7 +26,7 @@ trait FlinkLogIterator extends Iterator[String] with Closeable {
 }
 
 class SimpleFlinkJobLogIterator(override val requestPayload: LogRequestPayload,
-                                override val engineConnLogOperator: EngineConnLogOperator) extends FlinkLogIterator {
+                                override val engineConnLogOperator: EngineConnLogOperator) extends FlinkLogIterator with Logging {
 
   private var logs: util.ArrayList[String] = _
   private var index = 0
@@ -39,7 +41,20 @@ class SimpleFlinkJobLogIterator(override val requestPayload: LogRequestPayload,
     engineConnLogOperator.setIgnoreKeywords(requestPayload.getIgnoreKeywords)
     engineConnLogOperator.setOnlyKeywords(requestPayload.getOnlyKeywords)
     engineConnLogOperator.setLastRows(requestPayload.getLastRows)
-    val engineConnLog = engineConnLogOperator()
+    var engineConnLog = EngineConnLogs(null,
+      new util.ArrayList[String](
+          util.Arrays.asList("yarn log is disabled, please contact flink operator to see logs(yarn日志已关闭，请联系Flink运维查看日志).")),
+      1)
+    engineConnLogOperator match {
+      case yarnLogOperator: FlinkYarnLogOperator =>
+        if (JobLauncherConfiguration.FLINK_FETCH_APPLICATION_LOG_ENABLE.getHotValue()) {
+          engineConnLog = engineConnLogOperator()
+        } else {
+          logger.info("will not get flink yarn log, because switch if off.")
+        }
+      case _ =>
+        engineConnLog = engineConnLogOperator()
+    }
     logs = engineConnLog.logs
     logPath = engineConnLog.logPath
     endLine = engineConnLog.endLine

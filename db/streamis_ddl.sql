@@ -222,6 +222,7 @@ CREATE TABLE `linkis_stream_task` (
   `submit_user` varchar(50) DEFAULT NULL,
   `linkis_job_id` varchar(200) DEFAULT NULL,
   `linkis_job_info` mediumtext,
+  `job_start_config` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'streamis job startup config',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='任务表';
 
@@ -252,9 +253,39 @@ CREATE TABLE `linkis_stream_project_privilege` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='项目权限表';
 
 
+DROP TABLE IF EXISTS `linkis_stream_error_code`;
+
+CREATE TABLE `linkis_stream_error_code` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `error_code` varchar(50) COLLATE utf8_bin NOT NULL,
+  `error_desc` varchar(1024) COLLATE utf8_bin NOT NULL,
+  `error_regex` varchar(1024) COLLATE utf8_bin DEFAULT NULL,
+  `error_type` int(3) DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+DROP TABLE IF EXISTS `linkis_stream_audit_log`;
+
+CREATE TABLE `linkis_stream_audit_log` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user` varchar(100) COLLATE utf8_bin DEFAULT NULL,
+  `proxy_user` varchar(100) COLLATE utf8_bin DEFAULT NULL,
+  `api_name` varchar(100) COLLATE utf8_bin DEFAULT NULL,
+  `api_desc` varchar(100) COLLATE utf8_bin DEFAULT NULL,
+  `api_type` varchar(100) COLLATE utf8_bin DEFAULT NULL,
+  `operate_time` datetime DEFAULT NULL,
+  `input_parameters` text COLLATE utf8_bin,
+  `output_parameters` text COLLATE utf8_bin,
+  `project_name` varchar(100) COLLATE utf8_bin DEFAULT NULL,
+  `client_ip` varchar(100) COLLATE utf8_bin DEFAULT NULL,
+  `cost_time_mills` bigint(20) NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+
 ALTER TABLE `linkis_stream_project` ADD create_time datetime DEFAULT NULL;
 ALTER TABLE `linkis_stream_project` ADD last_update_by varchar(50) DEFAULT NULL;
 ALTER TABLE `linkis_stream_project` ADD last_update_time datetime DEFAULT NULL;
 ALTER TABLE `linkis_stream_project` ADD is_deleted tinyint unsigned DEFAULT 0;
-
+ALTER TABLE linkis_stream_project_files ADD source varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL;
 SET FOREIGN_KEY_CHECKS = 1;

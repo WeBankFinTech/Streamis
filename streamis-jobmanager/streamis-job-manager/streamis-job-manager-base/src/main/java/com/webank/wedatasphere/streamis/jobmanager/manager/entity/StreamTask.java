@@ -15,6 +15,7 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.entity;
 
+
 import java.util.Calendar;
 import java.util.Date;
 
@@ -33,13 +34,29 @@ public class StreamTask {
     private String version;
     private Integer status;
 
-    public StreamTask(){
+    private String serverInstance;
+
+    private String jobStartConfig;
+
+    private String solution;
+
+    private Long templateId;
+
+    public Long getTemplateId() {
+        return templateId;
+    }
+
+    public void setTemplateId(Long templateId) {
+        this.templateId = templateId;
+    }
+
+    public StreamTask() {
         Calendar calendar = Calendar.getInstance();
         this.lastUpdateTime = calendar.getTime();
         this.startTime = calendar.getTime();
     }
 
-    public StreamTask(Long jobId, Long jobVersionId, String version, String submitUser){
+    public StreamTask(Long jobId, Long jobVersionId, String version, String submitUser) {
         this();
         this.jobId = jobId;
         this.jobVersionId = jobVersionId;
@@ -142,6 +159,30 @@ public class StreamTask {
         this.jobType = jobType;
     }
 
+    public String getServerInstance() {
+        return serverInstance;
+    }
+
+    public void setServerInstance(String serverInstance) {
+        this.serverInstance = serverInstance;
+    }
+
+    public String getJobStartConfig() {
+        return jobStartConfig;
+    }
+
+    public void setJobStartConfig(String jobStartConfig) {
+        this.jobStartConfig = jobStartConfig;
+    }
+
+    public String getSolution() {
+        return solution;
+    }
+
+    public void setSolution(String solution) {
+        this.solution = solution;
+    }
+
     @Override
     public String toString() {
         return "StreamTask{" +
@@ -157,6 +198,7 @@ public class StreamTask {
                 ", errDesc='" + errDesc + '\'' +
                 ", version='" + version + '\'' +
                 ", status=" + status +
+                ", serverInstance='" + serverInstance + '\'' +
                 '}';
     }
 }

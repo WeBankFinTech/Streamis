@@ -17,8 +17,8 @@ import org.apache.logging.log4j.core.util.Integers;
 public class RpcLogSenderConfig extends com.webank.wedatasphere.streamis.jobmanager.log.collector.config.RpcLogSenderConfig {
 
     public RpcLogSenderConfig(String address, int sendRetryCnt, int connectionTimeout, int socketTimeout, int serverRecoveryTimeInSec, int maxDelayTimeInSec,
-                              RpcAuthConfig authConfig, SendLogCacheConfig cacheConfig, SendBufferConfig bufferConfig) {
-        super(address, sendRetryCnt, connectionTimeout, socketTimeout, serverRecoveryTimeInSec, maxDelayTimeInSec, authConfig, cacheConfig, bufferConfig);
+                              RpcAuthConfig authConfig, SendLogCacheConfig cacheConfig, SendBufferConfig bufferConfig, String heartbeatAddress, int heartbeatInterval) {
+        super(address, sendRetryCnt, connectionTimeout, socketTimeout, serverRecoveryTimeInSec, maxDelayTimeInSec, authConfig, cacheConfig, bufferConfig, heartbeatAddress, heartbeatInterval);
     }
 
     @PluginFactory
@@ -27,13 +27,17 @@ public class RpcLogSenderConfig extends com.webank.wedatasphere.streamis.jobmana
             @PluginAttribute("connectionTimeout") String connectionTimeout, @PluginAttribute("socketTimeout") String socketTimeout,
             @PluginAttribute("serverRecoveryTimeInSec") String serverRecoveryTimeInSec, @PluginAttribute("maxDelayTimeInSec") String maxDelayTimeInSec,
             @PluginAttribute("debugMode")String debugMode,
+            @PluginAttribute("heartbeatEnable")String heartbeatEnable,
+            @PluginAttribute("heartbeatAddress")String heartbeatAddress,
+            @PluginAttribute("heartbeatInterval")String heartbeatInterval,
             @PluginElement("AuthConfig")RpcAuthConfig authConfig, @PluginElement("SendLogCache") SendLogCacheConfig cacheConfig,
             @PluginElement("SendBuffer")SendBufferConfig bufferConfig){
         RpcLogSenderConfig config =  new RpcLogSenderConfig(address, Integers.parseInt(sendRetryCnt, 3),
                 Integers.parseInt(connectionTimeout, 3000), Integers.parseInt(socketTimeout, 15000),
                 Integers.parseInt(serverRecoveryTimeInSec, 5), Integers.parseInt(maxDelayTimeInSec, 60),
-                authConfig, cacheConfig, bufferConfig);
+                authConfig, cacheConfig, bufferConfig, heartbeatAddress, Integers.parseInt(heartbeatInterval, 30 * 60 * 1000));
         config.setDebugMode(Boolean.parseBoolean(debugMode));
+        config.setHeartbeatEnable(Boolean.parseBoolean(heartbeatEnable));
         return config;
     }
 

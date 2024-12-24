@@ -16,16 +16,18 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.parser
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.JobExecuteErrorException
-import java.util
 
-import org.apache.linkis.common.utils.JsonUtils
+import java.util
+import org.apache.linkis.common.utils.{JsonUtils, Utils}
 import org.apache.linkis.manager.label.entity.engine.RunType
 import org.apache.linkis.manager.label.entity.engine.RunType.RunType
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion, StreamisFile}
+import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{JobTemplateFiles, StreamJob, StreamJobVersion, StreamisFile}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.entity.{StreamisJarTransformJobContent, StreamisTransformJobContent}
+import com.webank.wedatasphere.streamis.jobmanager.manager.utils.JobContentUtils
 import org.apache.commons.lang.StringUtils
 import org.springframework.stereotype.Component
 
+import java.util.{Map => JavaMap}
 import scala.collection.JavaConverters._
 
 /**
@@ -34,31 +36,34 @@ import scala.collection.JavaConverters._
 @Component
 class FlinkJarJobContentParser extends AbstractJobContentParser {
 
-  override def parseTo(job: StreamJob, jobVersion: StreamJobVersion): StreamisTransformJobContent = {
+  override def parseTo(job: StreamJob, jobVersion: StreamJobVersion,jobTemplate: JobTemplateFiles): StreamisTransformJobContent = {
     val transformJobContent = new StreamisJarTransformJobContent
-    val jobContent = JsonUtils.jackson.readValue(jobVersion.getJobContent, classOf[util.Map[String, Object]])
-    jobContent.get("main.class.jar") match {
+    var finalJobContent = JsonUtils.jackson.readValue(jobVersion.getJobContent, classOf[util.Map[String, Object]])
+    if (null != jobTemplate){
+      finalJobContent = JobContentUtils.getFinalJobContent(jobVersion, jobTemplate.getMetaJson)
+    }
+    finalJobContent.get("main.class.jar") match {
       case mainClassJar: String =>
         val file = dealStreamisFile(job, jobVersion, mainClassJar, "main.class.jar")
         transformJobContent.setMainClassJar(file)
       case _ => throw new JobExecuteErrorException(30500, "main.class.jar is needed.")
     }
-    jobContent.get("main.class") match {
+    finalJobContent.get("main.class") match {
       case mainClass: String =>
         transformJobContent.setMainClass(mainClass)
       case _ => throw new JobExecuteErrorException(30500, "main.class is needed.")
     }
-    jobContent.get("args") match {
+    finalJobContent.get("args") match {
       case args: util.List[String] =>
         transformJobContent.setArgs(args)
       case _ =>
     }
-    jobContent.get("hdfs.jars") match {
+    finalJobContent.get("hdfs.jars") match {
       case hdfsJars: util.List[String] =>
         transformJobContent.setHdfsJars(hdfsJars)
       case _ =>
     }
-    jobContent.get("dependency.jars") match {
+    finalJobContent.get("dependency.jars") match {
       case dependencyJars: util.List[String] =>
         val parsedDependencyJars = dependencyJars.asScala.filter(StringUtils.isNotBlank).map {
           dependencyJar => dealStreamisFile(job, jobVersion, dependencyJar, "dependency.jar")
@@ -66,13 +71,29 @@ class FlinkJarJobContentParser extends AbstractJobContentParser {
         transformJobContent.setDependencyJars(parsedDependencyJars)
       case _ =>
     }
-    jobContent.get("resources") match {
+    finalJobContent.get("resources") match {
       case resources: util.List[String] =>
         val parsedResources = resources.asScala.filter(StringUtils.isNotBlank).map {
           resource => dealStreamisFile(job, jobVersion, resource, "resources")
         }.asJava
         transformJobContent.setResources(parsedResources)
       case _ =>
+    }
+    val jobTemplateMapOption: Option[JobTemplateFiles] = Option(jobTemplate)
+    jobTemplateMapOption match {
+      case Some(jobTemplate) =>
+        val jobFinalTemplateJson = getFinalTemplate(jobTemplate)
+        jobTemplate.setMetaJson(jobFinalTemplateJson)
+        transformJobContent.setJobTemplate(jobTemplate)
+      case None =>
+        logger.warn("job template is null")
+    }
+    val sourceOption: Option[String] = Option(jobVersion.getSource)
+    sourceOption match {
+      case Some(source) =>
+        transformJobContent.setSource(source)
+      case None =>
+        logger.warn("this job source is null")
     }
     transformJobContent
   }
