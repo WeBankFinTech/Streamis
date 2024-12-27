@@ -771,7 +771,7 @@ export default {
       pageSize: parseInt(pageSize) || 10,
     })
     this.getJobList(false)
-    this.knowledgeLibraryUrl = window.knowledgeLibraryUrl || 'http://kn.dss.weoa.com/'
+    this.knowledgeLibraryUrl = window.knowledgeLibraryUrl || 'http://127.0.0.1:80/'
     this.enableUpload = window.enableUpload
   },
   methods: {
