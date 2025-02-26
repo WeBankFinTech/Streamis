@@ -16,11 +16,10 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
 import com.webank.wedatasphere.streamis.jobmanager.launcher.JobLauncherAutoConfiguration
-import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 
 import java.util
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.{JobConf, JobConfKeyConstants}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.job.state.FlinkCheckpoint
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl.FlinkCheckpointConfigTransform.CHECKPOINT_PATH_CONFIG_NAME

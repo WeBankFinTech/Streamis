@@ -72,6 +72,8 @@ object JobLauncherConfiguration {
 
   val FLINK_MANAGER_EXTRA_INIT_CONFIGS: CommonVars[String] = CommonVars("wds.streamis.flink.manager.ec.extra_init.params", "linkis.user.udf.all.load=false")
 
+  val FLINK_MANAGER_EC_CLASSLOADER_RESOLVE_ORDER: CommonVars[String] = CommonVars("wds.streamis.flink.manager.ec.classloader.resolve-order", "parent-first")
+
   val LINKIS_EC_EXPIRE_TIME_KEY: CommonVars[String] = CommonVars("linkis.ec.expire.key", "wds.linkis.engineconn.max.free.time")
 
   val ENABLE_FLINK_LIST_INSPECT: CommonVars[Boolean] = CommonVars("wds.streamis.job.inspact.list.enable", true)

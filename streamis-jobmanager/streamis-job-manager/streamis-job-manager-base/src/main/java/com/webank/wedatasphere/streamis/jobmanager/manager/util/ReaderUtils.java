@@ -19,6 +19,7 @@ package com.webank.wedatasphere.streamis.jobmanager.manager.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConfKeyConstants;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.MetaJsonInfo;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.PublishRequestVo;
@@ -35,19 +36,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ReaderUtils {
-    private static final String metaFileName = "meta.txt";
+
     private static final String metaFileJsonName = "meta.json";
 
     private static final String templateMetaFileJsonName = "-meta.json";
     private static final String type = "type";
-    private static final String fileName = "filename";
     private static final String projectName = "projectname";
     private static final String jobName = "jobname";
     private static final String tags = "tags";
     private static final String description = "description";
     private static final String defaultTagList = "prod,streamis";
     private static final String version = "v00001";
-    private static final String regex = "^[a-z0-9A-Z_-]+$";
+    private static final String regex = "^[a-z0-9A-Z._-]+$";
     private static final String jarRegex = "^[a-z0-9A-Z._-]+$";
     private static final int defaultLength = 64;
     private static final int descriptionLength = 128;
@@ -58,8 +58,6 @@ public class ReaderUtils {
     private boolean hasProjectName = false;
     private static final String templateName = "-meta.json";
     private static final String JSON_TYPE = ".json";
-    private static final String PRODUCE_PARAM = "wds.linkis.flink.produce";
-
 
     private static final Logger LOG = LoggerFactory.getLogger(ReaderUtils.class);
 
@@ -334,7 +332,12 @@ public class ReaderUtils {
             String path = inputPath.replace(JSON_TYPE, "");
             MetaJsonInfo metaJsonInfo = parseJson(path,projectName);
             Map<String, Object> jobConfig = metaJsonInfo.getJobConfig();
-            if (jobConfig != null && jobConfig.containsKey(PRODUCE_PARAM)) {
+            if (jobConfig != null
+                    && jobConfig.containsKey(JobConfKeyConstants.GROUP_PRODUCE().getValue())
+                    && jobConfig.containsKey(JobConfKeyConstants.GROUP_RESOURCE().getValue())) {
+                return false;
+            }
+            if(metaJsonInfo.getProjectName() == null && metaJsonInfo.getProjectName().isEmpty()) {
                 return false;
             }
             if ((metaJsonInfo.getJobName() == null || metaJsonInfo.getJobName().isEmpty()) &&

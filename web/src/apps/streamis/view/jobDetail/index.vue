@@ -101,17 +101,19 @@ export default {
     jobAlert: jobAlert.component
   },
   data() {
-    const status = allJobStatuses.find(
+    const statusObj = allJobStatuses.find(
       item => item.code === this.$route.params.status
     )
+    const { version, lastVersion, status } = this.$route.params
+    const useVersion = [5, 8, 9].includes(status) ? version : lastVersion
     console.log(this.$route.params)
     return {
       choosedModule: this.$route.params.module || 'jobSummary',
       tabs: ['jobSummary', 'jobHistory', 'jobConfig', 'jobDetail'],
       name: this.$route.params.name,
-      version: this.$route.params.version,
+      version: useVersion,
       projectName: this.$route.params.projectName,
-      status: status || {},
+      status: statusObj || {},
       isHistory: !!this.$route.params.isHistory,
       linkInfo: {},
       inIframe: true

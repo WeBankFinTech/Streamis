@@ -104,17 +104,15 @@ object JobConf {
 
   val DEFAULT_ERROR_MSG: CommonVars[String] = CommonVars("wds.streamis.default.error.msg", "正在分析日志，请稍后")
 
-  val ANALYZE_ERROR_MSG: CommonVars[String] = CommonVars("wds.streamis.default.error.msg", "错误原因分析失败")
+  val ANALYZE_ERROR_MSG: CommonVars[String] = CommonVars("wds.streamis.analyze.error.msg", "错误原因分析失败")
 
-  val FINAL_ERROR_MSG: CommonVars[String] = CommonVars("wds.streamis.default.error.msg", "无法匹配到对应错误码，请联系管理员")
+  val FINAL_ERROR_MSG: CommonVars[String] = CommonVars("wds.streamis.final.error.msg", "无法匹配到对应错误码，请联系管理员")
 
   val PROJECT_NAME_STRICT_CHECK_SWITCH: CommonVars[Boolean] = CommonVars("wds.streamis.project.name.strict.check.enable", false)
 
   val HIGHAVAILABLE_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.app.highavailable.enable", true)
 
   val HIGHAVAILABLE_SOURCE: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.source", "aomp")
-
-//  val HIGHAVAILABLE_POLICY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.double", "double")
 
   val HIGHAVAILABLE_POLICY_DOUBLE: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.double", "double")
 
@@ -127,6 +125,8 @@ object JobConf {
   val HIGHAVAILABLE_POLICY_MANAGERSLAVE_BAK: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.policy.managerSlaveWithBak", "managerSlaveWithBak")
 
   val HIGHAVAILABLE_DEFAULT_POLICY: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.default.policy", "single")
+
+  val HIGHAVAILABLE_ENABLE_INTERFACE_UPLOAD: CommonVars[Boolean] = CommonVars("wds.streamis.app.highavailable.enable.interface.upload", true)
 
   val JOB_SCHEMA_SINGLE: CommonVars[String] = CommonVars("wds.streamis.app.job.schema.single", "single")
 

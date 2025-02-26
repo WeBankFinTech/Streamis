@@ -1079,7 +1079,7 @@ export default {
 <style lang="scss" scoped>
 @import '@/common/style/variables.scss';
 .workbench {
-    /deep/.ivu-tabs.ivu-tabs-card {
+    ::v-deep .ivu-tabs.ivu-tabs-card {
         border-top: $border-width-base $border-style-base #dcdee2;
         .ivu-tabs-bar .ivu-tabs-tab {
             margin-right: 0px;

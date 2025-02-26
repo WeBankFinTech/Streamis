@@ -262,6 +262,14 @@
         linkis_stream_job_version_files WHERE
         id = #{id}
     </select>
+    <select id="batchGetJobByJobIdList"
+            resultType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
+        SELECT <include refid="Job_Column"/> FROM
+        linkis_stream_job WHERE id in
+        <foreach collection="idList" item="jobId" open="(" separator="," close=")">
+            #{jobId}
+        </foreach>
+    </select>
     <update id="updateJob" parameterType="com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob">
         UPDATE linkis_stream_job
         <trim prefix="set" suffixOverrides=",">

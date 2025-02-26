@@ -33,3 +33,4 @@ streamis-appconn/target
 
 **/._*
 **/.flattened-pom.xml
+*.patch

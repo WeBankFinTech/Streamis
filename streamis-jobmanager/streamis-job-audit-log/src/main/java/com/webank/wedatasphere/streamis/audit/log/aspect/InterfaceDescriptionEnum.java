@@ -3,7 +3,9 @@ package com.webank.wedatasphere.streamis.audit.log.aspect;
 import org.springframework.util.AntPathMatcher;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public enum InterfaceDescriptionEnum {
 
@@ -47,15 +49,10 @@ public enum InterfaceDescriptionEnum {
     JOB_SNAPSHOT("/api/rest_j/v1/streamis/streamJobManager/job/snapshot/{jobId:\\w+}","生成Job快照"),
     JOB_UPLOAD("/api/rest_j/v1/streamis/streamJobManager/job/upload","上传Job"),
     JOB_ENABLE("/api/rest_j/v1/streamis/streamJobManager/job/enable","开启Job"),
-    JOB_BAN("/api/rest_j/v1/streamis/streamJobManager/job/ban","禁用Job");
+    JOB_BAN("/api/rest_j/v1/streamis/streamJobManager/job/ban","禁用Job"),
+    USERNAME_PROXYUSER("/api/rest_j/v1/streamis/streamJobManager/highAvailable/username","得到用户名和代理用户名");
     private String url;
     private String description;
-
-
-    private static  String systemPath = "/api/rest_j/v1";
-
-    private static  String projectManagerRestfulApiPath = "/streamis/streamProjectManager/project";
-
 
     InterfaceDescriptionEnum(String url, String description) {
         this.url = url;

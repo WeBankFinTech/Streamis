@@ -13,7 +13,7 @@ public class StreamisJobShutdownHookFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(StreamisJobShutdownHookFactory.class);
 
-    private static final Map<String, StreamisJobShutdownHook> hookMap = new HashMap<String, StreamisJobShutdownHook>();
+    private static final Map<String, StreamisJobShutdownHook> hookMap = new HashMap<>();
 
     public static boolean registerJobShutdownHook(StreamisJobShutdownHook hook) {
         if (null == hook) {

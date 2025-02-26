@@ -15,9 +15,9 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.{JobConfKeyConstants, JobConstants}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.{JobConf, JobConfKeyConstants}
 
 import java.util
 import org.apache.linkis.common.utils.JsonUtils

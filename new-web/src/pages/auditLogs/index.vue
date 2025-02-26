@@ -36,6 +36,14 @@
                         </FInput>
                     </div>
                     <div>
+                        <span class="condition-label">应用名称</span>
+                        <FInput
+                            v-model="searchForm.jobName"
+                            placeholder="搜索*，可显示所有项目级别审计记录"
+                        >
+                        </FInput>
+                    </div>
+                    <div>
                         <span class="condition-label">时间范围</span>
                         <FDatePicker
                             v-model="searchForm.timeRange"
@@ -88,6 +96,13 @@
                 <f-table-column
                     prop="apiType"
                     label="操作类型"
+                    :width="88"
+                    :formatter="formatterEmptyValue"
+                    ellipsis
+                />
+                <f-table-column
+                    prop="jobName"
+                    label="应用名称"
                     :width="88"
                     :formatter="formatterEmptyValue"
                     ellipsis

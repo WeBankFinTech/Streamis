@@ -73,6 +73,8 @@ public class ProjectManagerRestfulApi {
 
     private static final String templateName = "-meta.json";
 
+    private static final String NULL_PROJECT_NAME = "projectName is null";
+
     @RequestMapping(path = "/files/upload", method = RequestMethod.POST)
     public Message upload(HttpServletRequest req,
                            @RequestParam(name = "version",required = false) String version,
@@ -86,7 +88,7 @@ public class ProjectManagerRestfulApi {
             return Message.error("version is null");
         }
         if (StringUtils.isBlank(projectName)) {
-            return Message.error("projectName is null");
+            return Message.error(NULL_PROJECT_NAME);
         }
         if (StringUtils.isBlank(source)) {
             LOG.info("source的值为空");
@@ -97,17 +99,15 @@ public class ProjectManagerRestfulApi {
         if (!projectPrivilegeService.hasEditPrivilege(req,projectName)) {
             return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
         }
-        if ((Boolean) JobConf.STANDARD_AUTHENTICATION_KEY().getHotValue()){
-            if (!projectManagerService.confirmToken(source)){
+        if ((boolean) JobConf.STANDARD_AUTHENTICATION_KEY().getHotValue() && !projectManagerService.confirmToken(source)){
                 return Message.error("As this file is not from standard release, it is not allowed to upload");
             }
-        }
         //Only uses 1st file(只取第一个文件)
         MultipartFile p = files.get(0);
         String fileName = new String(p.getOriginalFilename().getBytes("ISO8859-1"), StandardCharsets.UTF_8);
         ReaderUtils readerUtils = new ReaderUtils();
         if (!readerUtils.checkName(fileName)) {
-            return Message.warn("fileName should only contains numeric/English characters and '-_'(仅允许包含数字，英文,中划线,下划线)");
+            return Message.warn("fileName " + fileName + " should only contains numeric/English characters and '-_'(仅允许包含数字，英文,中划线,下划线,点号)");
         }
 
         if (!ReaderUtils.isValidFileFormat(fileName)){
@@ -128,7 +128,7 @@ public class ProjectManagerRestfulApi {
             os = IoUtils.generateExportOutputStream(inputPath);
             IOUtils.copy(is, os);
             if (!p.isEmpty() && p.getOriginalFilename().endsWith(templateName)) {
-                if(!readerUtils.checkMetaTemplate(fileName,inputPath,projectName)) return Message.error("meta template is not correct,eg:testProject(项目名)-meta.json");
+                if(!readerUtils.checkMetaTemplate(fileName,inputPath,projectName)) return Message.error("meta template is not correct,please check");
                 projectManagerService.upload(username, fileName, version, projectName, inputPath, comment, source);
                 StreamisFile file = projectManagerService.selectFile(fileName,version,projectName);
                 projectManagerService.uploadJobTemplate(username,fileName,inputPath,projectName,version,file.getStorePath());
@@ -157,7 +157,7 @@ public class ProjectManagerRestfulApi {
                          @RequestParam(value = "pageNow",defaultValue = "1") Integer pageNow,
                          @RequestParam(value = "pageSize",defaultValue = "20") Integer pageSize) {
         if (StringUtils.isBlank(projectName)) {
-            return Message.error("projectName is null");
+            return Message.error(NULL_PROJECT_NAME);
         }
         if (!projectPrivilegeService.hasAccessPrivilege(req,projectName)) return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
         PageHelper.startPage(pageNow, pageSize);
@@ -177,7 +177,7 @@ public class ProjectManagerRestfulApi {
                                 @RequestParam(value = "pageNow",defaultValue = "1") Integer pageNow,
                                 @RequestParam(value = "pageSize",defaultValue = "20") Integer pageSize) {
         if (StringUtils.isBlank(projectName)) {
-            return Message.error("projectName is null");
+            return Message.error(NULL_PROJECT_NAME);
         }
         if (StringUtils.isBlank(fileName)) {
             return Message.error("fileName is null");
@@ -227,31 +227,39 @@ public class ProjectManagerRestfulApi {
     }
 
     @RequestMapping(path = "/files/download", method = RequestMethod.GET)
-    public Message download( HttpServletRequest req, HttpServletResponse response,
+    public void download( HttpServletRequest req, HttpServletResponse response,
                              @RequestParam(value = "id",required = false) Long id,
                              @RequestParam(value = "materialType",required = false) String materialType,
                              @RequestParam(value = "projectName",required = false)String projectName) {
         StreamisFile file = null;
         String userName = ModuleUserUtils.getOperationUser(req, "download job");
-        if (org.apache.commons.lang.StringUtils.isBlank(userName)) return Message.error("current user has no permission");
+        if (org.apache.commons.lang.StringUtils.isBlank(userName)) {
+            LOG.error("current user has no permission");
+            return;
+        }
         if (StringUtils.isBlank(projectName)) {
             if (StringUtils.isBlank(materialType)) {
-                return Message.error("projectName and materialType is null");
+                LOG.error("projectName and materialType is null");
+                return;
             } else if (materialType.equals(TYPE_JOB)) {
                 file = streamJobService.getJobFileById(id);
             } else if (materialType.equals(TYPE_PROJECT)){
                 file = projectManagerService.getFile(id, projectName);
             }
         } else {
-            if (!projectPrivilegeService.hasEditPrivilege(req, projectName))
-                return Message.error(NO_OPERATION_PERMISSION_MESSAGE);
+            if (!projectPrivilegeService.hasEditPrivilege(req, projectName)) {
+                LOG.error(NO_OPERATION_PERMISSION_MESSAGE);
+                return;
+            }
             file = projectManagerService.getFile(id, projectName);
         }
         if (file == null) {
-            return Message.error("no such file in this project");
+            LOG.error("no such file in this project");
+            return;
         }
         if (StringUtils.isBlank(file.getStorePath())) {
-            return Message.error("storePath is null");
+            LOG.error("storePath is null");
+            return;
         }
         response.setContentType("application/x-download");
         response.setHeader("content-Disposition", "attachment;filename=" + file.getFileName());
@@ -267,8 +275,6 @@ public class ProjectManagerRestfulApi {
             os.flush();
         } catch (Exception e) {
             LOG.error("download file: {} failed , message is : {}", file.getFileName(), e);
-            return Message.error(e.getMessage());
         }
-        return Message.ok();
     }
 }

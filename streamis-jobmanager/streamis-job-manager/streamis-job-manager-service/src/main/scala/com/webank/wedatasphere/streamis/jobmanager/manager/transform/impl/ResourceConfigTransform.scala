@@ -15,10 +15,9 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
-
 import java.util
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.ConfigTransform
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl.ResourceConfigTransform.RESOURCE_CONFIG_MAP
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.JobUtils

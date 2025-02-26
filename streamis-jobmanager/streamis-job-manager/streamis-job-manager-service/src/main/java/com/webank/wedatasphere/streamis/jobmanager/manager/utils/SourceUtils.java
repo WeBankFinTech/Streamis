@@ -14,18 +14,29 @@ import java.util.Optional;
 
 public class SourceUtils {
 
+    private static final String HIGH_AVAILABLE_MSG = "highAvailableMessage";
+    private static final String DEFAULT_MSG = "高可用信息为空，请联系管理员";
+
+    private SourceUtils(){}
     private static final Logger LOG = LoggerFactory.getLogger(SourceUtils.class);
 
     public static JobHighAvailableVo manageJobProjectFile(String highAvailablePolicy,String source) {
         highAvailablePolicy = Optional.ofNullable(highAvailablePolicy).orElse(JobConf.HIGHAVAILABLE_DEFAULT_POLICY().getHotValue());
         JobHighAvailableVo highAvailableVo = new JobHighAvailableVo();
         if (source.equalsIgnoreCase("update args")) {
+            if(Boolean.parseBoolean(JobConf.HIGHAVAILABLE_ENABLE_INTERFACE_UPLOAD().getHotValue().toString())){
             highAvailableVo.setHighAvailable(true);
+                highAvailableVo.setMsg("用户在页面手动修改args,跳过一致性检查");
+                return highAvailableVo;
+            } else {
+                highAvailableVo.setHighAvailable(false);
             highAvailableVo.setMsg("用户在页面手动修改args,任务不再支持高可用");
             return highAvailableVo;
         }
+
+        }
         try {
-            if (!Boolean.parseBoolean(JobConf.HIGHAVAILABLE_ENABLE().getValue().toString())) {
+            if (!Boolean.parseBoolean(JobConf.HIGHAVAILABLE_ENABLE().getHotValue().toString())) {
                 highAvailableVo.setHighAvailable(true);
                 highAvailableVo.setMsg("管理员未开启高可用配置");
                 return highAvailableVo;
@@ -33,24 +44,36 @@ public class SourceUtils {
                 //查job conf  wds.streamis.app.highavailable.policy  值
                 if (highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY_DOUBLE().getValue()) || highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY_DOUBLE_BAK().getValue())
                         || highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY_MANAGERSLAVE().getValue()) || highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY_MANAGERSLAVE_BAK().getValue())){
-                    Map map = BDPJettyServerHelper.gson().fromJson(source, Map.class);
+                    Map<String,Object> map = BDPJettyServerHelper.gson().fromJson(source, Map.class);
                     if (map.containsKey("source")) {
                         String sourceValue = map.get("source").toString();
                         if (sourceValue.equals(JobConf.HIGHAVAILABLE_SOURCE().getValue())) {
                             if (map.containsKey("isHighAvailable")) {
                                 highAvailableVo.setHighAvailable(Boolean.parseBoolean(map.get("isHighAvailable").toString()) );
                             }
-                            highAvailableVo.setMsg(map.getOrDefault("highAvailableMessage","高可用信息为空，请联系管理员").toString());
+                            highAvailableVo.setMsg(map.getOrDefault(HIGH_AVAILABLE_MSG,DEFAULT_MSG).toString());
                             return highAvailableVo;
                         }  else {
+                            if(Boolean.parseBoolean(JobConf.HIGHAVAILABLE_ENABLE_INTERFACE_UPLOAD().getHotValue().toString())){
                             highAvailableVo.setHighAvailable(true);
                             highAvailableVo.setMsg("非标准来源,不检测高可用");
                             return highAvailableVo;
-                        }
                     }   else {
+                                highAvailableVo.setHighAvailable(false);
+                                highAvailableVo.setMsg(map.getOrDefault(HIGH_AVAILABLE_MSG,DEFAULT_MSG).toString());
+                                return highAvailableVo;
+                            }
+                        }
+                    } else {
+                        if(Boolean.parseBoolean(JobConf.HIGHAVAILABLE_ENABLE_INTERFACE_UPLOAD().getHotValue().toString())){
                         highAvailableVo.setHighAvailable(true);
                         highAvailableVo.setMsg("非标准来源,不检测高可用");
                         return highAvailableVo;
+                        } else {
+                            highAvailableVo.setHighAvailable(false);
+                            highAvailableVo.setMsg(map.getOrDefault(HIGH_AVAILABLE_MSG,DEFAULT_MSG).toString());
+                            return highAvailableVo;
+                        }
                     }
                 } else {
                     highAvailableVo.setHighAvailable(true);

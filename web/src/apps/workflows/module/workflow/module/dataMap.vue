@@ -691,7 +691,7 @@ export default {
   position: relative;
   height: 100%;
   width: 100%;
-  /deep/ .diy-node {
+  ::v-deep .diy-node {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -765,7 +765,7 @@ export default {
       color: $success-color;
     }
   }
-  /deep/ .current-project {
+  ::v-deep .current-project {
     height: 100px;
     box-sizing: border-box;
     padding: 5px;

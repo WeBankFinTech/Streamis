@@ -1,8 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.service
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.{JobConf, JobConfKeyConstants}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.constants.JobConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.errorcode.JobLaunchErrorCode
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobCreateErrorException, JobErrorException, JobFetchErrorException}
@@ -12,7 +11,7 @@ import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper,
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{StreamJob, StreamJobVersion, StreamJobVersionFiles}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.vo.{JobHighAvailableVo, JobInspectVo, JobListInspectVo, JobSnapshotInspectVo, JobVersionInspectVo}
 import com.webank.wedatasphere.streamis.jobmanager.manager.utils.SourceUtils
-import org.apache.commons.lang.StringUtils
+import org.apache.commons.lang3.StringUtils
 import org.apache.linkis.common.exception.ErrorException
 import org.apache.linkis.common.utils.{JsonUtils, Logging, Utils}
 import org.springframework.beans.factory.annotation.Autowired
@@ -96,9 +95,9 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
    */
   private def snapshotInspect(streamJob: StreamJob): JobSnapshotInspectVo = {
     Option(this.streamJobConfMapper.getRawConfValue(streamJob.getId, JobConfKeyConstants.SAVEPOINT.getValue + "path")) match {
-      case Some(path) =>
+      case path if (path.isDefined && StringUtils.isNotBlank(path.get)) =>
         val inspectVo = new JobSnapshotInspectVo
-        inspectVo.setPath(new URI(path).toString)
+        inspectVo.setPath(new URI(path.get).toString)
         inspectVo
       case _ => this.streamJobConfMapper.getRawConfValue(streamJob.getId, JobConfKeyConstants.START_AUTO_RESTORE_SWITCH.getValue) match {
         case "ON" =>
@@ -183,8 +182,18 @@ class DefaultStreamJobInspectService extends StreamJobInspectService with Loggin
           inspectVo = SourceUtils.manageJobProjectFile(highAvailablePolicy, source)
         case None =>
           logger.warn("this job source is null")
+          if (highAvailablePolicy == JobConf.HIGHAVAILABLE_DEFAULT_POLICY.getValue || highAvailablePolicy == JobConf.HIGHAVAILABLE_POLICY_SINGLE_BAK.getValue){
+            inspectVo.setHighAvailable(true)
+            inspectVo.setMsg("job为单活，跳过高可用检查")
+          } else {
+            if (JobConf.HIGHAVAILABLE_ENABLE_INTERFACE_UPLOAD.getHotValue()) {
           inspectVo.setHighAvailable(true)
           inspectVo.setMsg("用户直接从页面上传，job的source为空，跳过高可用检查")
+            } else {
+              inspectVo.setHighAvailable(false)
+              inspectVo.setMsg("用户直接从页面上传，高可用检查不通过")
+            }
+          }
       }
       inspectVo
     }

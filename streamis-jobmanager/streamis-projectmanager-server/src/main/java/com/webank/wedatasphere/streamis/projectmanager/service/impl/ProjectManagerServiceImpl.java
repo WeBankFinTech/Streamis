@@ -77,8 +77,6 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
 
     private static final String templateName = "-meta.json";
 
-    private static final Integer RUNNING = 5;
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void upload(String username, String fileName, String version, String projectName, String filePath,String comment, String source) throws JsonProcessingException {
@@ -256,8 +254,7 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
         if (jsonObj.has(JobConstrants.FIELD_JOB_DESCRIPTION())) {
             jsonObj.remove(JobConstrants.FIELD_JOB_DESCRIPTION());
         }
-        String metaJson = jsonObj.toString();
-        return metaJson;
+        return jsonObj.toString();
     }
 
     @Override
@@ -265,17 +262,15 @@ public class ProjectManagerServiceImpl implements ProjectManagerService, Streami
         Optional<String> sourceOption = Optional.ofNullable(source);
         if(sourceOption.isPresent() && JsonUtil.isJson(sourceOption.get())) {
             String sourceStr = sourceOption.get();
-            Map sourceMap = BDPJettyServerHelper.gson().fromJson(sourceStr, Map.class);
+            Map<String,Object> sourceMap = BDPJettyServerHelper.gson().fromJson(sourceStr, Map.class);
             if (sourceMap.containsKey("source")) {
                 String sourceValue = sourceMap.get("source").toString();
-                if (sourceValue.equals(JobConf.HIGHAVAILABLE_SOURCE().getValue())) {
-                    if (sourceMap.containsKey("token")) {
+                if (sourceValue.equals(JobConf.HIGHAVAILABLE_SOURCE().getValue()) && sourceMap.containsKey("token")) {
                         String tokenContent = sourceMap.get("token").toString();
                         return tokenContent.equals(JobConf.HIGHAVAILABLE_TOKEN().getValue());
                     }
                 }
             }
-        }
         return false;
     }
 

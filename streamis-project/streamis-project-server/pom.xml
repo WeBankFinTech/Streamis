@@ -20,7 +20,7 @@
     <parent>
         <artifactId>streamis-project</artifactId>
         <groupId>com.webank.wedatasphere.streamis</groupId>
-        <version>0.3.1</version>
+        <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -41,16 +41,12 @@
             <version>${linkis.version}</version>
             <exclusions>
                 <exclusion>
-                    <artifactId>jackson-annotations</artifactId>
-                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>reactor-core</artifactId>
+                    <groupId>io.projectreactor</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>jackson-core</artifactId>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>guava</artifactId>
-                    <groupId>com.google.guava</groupId>
+                    <artifactId>spring-aop</artifactId>
+                    <groupId>org.springframework</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -65,7 +61,7 @@
         <dependency>
             <groupId>com.webank.wedatasphere.streamis</groupId>
             <artifactId>streamis-project-common</artifactId>
-            <version>${streamis.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -86,18 +82,28 @@
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
-                    <artifactId>jackson-annotations</artifactId>
-                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <groupId>org.apache.linkis</groupId>
+                    <artifactId>linkis-label-common</artifactId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>jackson-databind</artifactId>
-                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>spring-aop</artifactId>
+                    <groupId>org.springframework</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>jackson-core</artifactId>
-                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>spring-webmvc</artifactId>
+                    <groupId>org.springframework</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>spring-context-support</artifactId>
+                    <groupId>org.springframework</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.linkis</groupId>
+            <artifactId>linkis-label-common</artifactId>
+            <version>${linkis.version}</version>
         </dependency>
 
     </dependencies>

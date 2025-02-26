@@ -43,7 +43,7 @@ public class StreamisHeartbeatHandler {
 
     @PostConstruct
     public void startHeartbeatCheckThread() {
-        if ((Boolean) JobConf.LOGS_HEARTBEAT_CHECK_ENABLE().getValue()) {
+        if ((boolean) JobConf.LOGS_HEARTBEAT_CHECK_ENABLE().getValue()) {
             int interval = Integer.parseInt(JobConf.LOGS_HEARTBEAT_CHECK_INTERVAL().getHotValue().toString());
             Utils.defaultScheduler().scheduleAtFixedRate(() -> {
                 try {

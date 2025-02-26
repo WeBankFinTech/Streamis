@@ -32,7 +32,7 @@ public class HttpClientUtil {
 
     private HttpClientUtil() {}
 
-    private static Logger logger = LoggerFactory.getLogger(HttpClientUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(HttpClientUtil.class);
 
 
     private static String SPARK_SECRET_PATH = "";
@@ -96,8 +96,8 @@ public class HttpClientUtil {
         HttpPost httpPost = new HttpPost(uri);
         httpPost.setEntity(entity);
         if(headers.length % 2 == 0){
-            for(int i = 0; i < headers.length; i++){
-                httpPost.addHeader(headers[i], headers[++i]);
+            for(int i = 0; i < headers.length; i += 2) {
+                httpPost.addHeader(headers[i], headers[i + 1]);
             }
         }
         return httpPost;

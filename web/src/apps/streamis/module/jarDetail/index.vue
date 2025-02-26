@@ -200,7 +200,7 @@
             :autosize="{ minRows: 10, maxRows: 15 }"
             readonly
           />
-          <span 
+          <span
             class="full-btn"
             @click="fullToggle"
           >
@@ -341,8 +341,9 @@ export default {
       this.meta = this.formatJSON(this.jarData.jobTemplate ? this.jarData.jobTemplate.metaJson : '')
     },
     downloadMetaJson() {
+      this.meta = this.formatJSON(this.jarData.jobTemplate ? this.jarData.jobTemplate.metaJson : '')
       if (!this.meta) {
-        this.$Message.error({ content: '模版为空' })
+        this.$Message.error({ content: '模板为空' })
         return
       }
       const blob = new Blob([this.meta], { type: 'application/json' })
@@ -423,7 +424,7 @@ export default {
   }
 }
 .full {
-  /deep/.ivu-modal{
+  ::v-deep .ivu-modal{
     width: 100vw !important;
     height: 100vh;
     min-height: 430px;
@@ -432,7 +433,7 @@ export default {
       height: 100%;
     }
   }
-  /deep/textarea{
+  ::v-deep textarea{
    height: calc(100vh - 200px) !important;
    min-height: 200px;
    max-height: calc(100vh - 200px) !important;
