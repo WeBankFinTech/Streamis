@@ -156,11 +156,6 @@ trait FlinkJobLaunchManager extends LinkisJobLaunchManager with Logging {
    * @return
    */
   def exceptionAnalyze(errorMsg: String, t: Throwable): String = {
-    //    EXCEPTION_PATTERN.findFirstMatchIn(t.getMessage) match {
-    //      case Some(m) =>
-    //        errorMsg + s", 原因分析[${m.group(1)}]"
-    //      case _ => errorMsg
-    //    }
     if (null != t) {
       val errorCodes = StreamisErrorCodeHandler.getInstance().handle(t.getMessage)
       if (errorCodes != null && errorCodes.size() > 0) {

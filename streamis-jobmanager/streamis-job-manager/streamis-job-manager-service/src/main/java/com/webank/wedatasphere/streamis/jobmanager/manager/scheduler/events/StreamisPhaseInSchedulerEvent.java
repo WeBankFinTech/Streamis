@@ -110,8 +110,8 @@ public class StreamisPhaseInSchedulerEvent extends AbstractStreamisSchedulerEven
 
         @SuppressWarnings("unchecked")
         public <T>T getVar(String name, Class<T> type){
-            Object var = variables.get(name);
-            return Objects.nonNull(var)? (T)var : null;
+            Object value  = variables.get(name);
+            return Objects.nonNull(value )? (T)value  : null;
         }
     }
 }

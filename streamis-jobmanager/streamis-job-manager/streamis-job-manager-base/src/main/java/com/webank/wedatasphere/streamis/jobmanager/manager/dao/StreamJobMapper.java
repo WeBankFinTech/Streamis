@@ -87,4 +87,5 @@ public interface StreamJobMapper {
 
     StreamJobVersionFiles getJobFileById(@Param("id") Long jobVersionFileId);
 
+    List<StreamJob> batchGetJobByJobIdList(@Param("idList") List<Long> idList);
 }

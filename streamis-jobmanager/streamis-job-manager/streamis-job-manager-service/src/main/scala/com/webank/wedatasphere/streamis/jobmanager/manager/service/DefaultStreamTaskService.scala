@@ -21,8 +21,7 @@ import com.google.gson.JsonParser
 import java.util
 import java.util.concurrent.{Executors, Future, ScheduledExecutorService, TimeUnit}
 import java.util.{Calendar, Map, function}
-import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.{JobConf, StreamJobLauncherConf}
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.{JobConf, JobConfKeyConstants, StreamJobLauncherConf}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.exception.{JobErrorException, JobExecuteErrorException, JobFetchErrorException, JobPauseErrorException, JobTaskErrorException}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.manager.JobLaunchManager
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.state.{JobGenericState, JobState}
@@ -91,8 +90,6 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
   @Resource
   private var streamJobConfService: StreamJobConfService = _
 
-  @Resource
-  private var streamTaskService: StreamTaskService = _
   /**
    * Scheduler
    */
@@ -446,7 +443,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           }
         }
         hookFuture = Utils.defaultScheduler.submit(hookTask)
-        val rs = hookFuture.get(JobManagerConf.JOB_SHUTDOWN_HOOK_TIMEOUT_MILLS.getHotValue(), TimeUnit.MILLISECONDS)
+        hookFuture.get(JobManagerConf.JOB_SHUTDOWN_HOOK_TIMEOUT_MILLS.getHotValue(), TimeUnit.MILLISECONDS)
         logger.info(s"hook : ${hook.getName} outside succeed, costed ${System.currentTimeMillis() - hookStartTimeMills}mills.")
       } {
         case e: Exception =>
@@ -751,7 +748,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
       streamTaskMapper.updateTask(streamTask)
       info(s"StreamJob [${streamJob.getName}] is ${jobInfo.getStatus} with $jobInfo.")
       if (JobConf.FLINK_JOB_STATUS_FAILED.getValue == streamTask.getStatus){
-        val result: Future[_] = streamTaskService.errorCodeMatching(streamJob.getId,streamTask)
+        val result: Future[_] = errorCodeMatching(streamJob.getId,streamTask)
         throw new JobExecuteErrorException(-1, s"(提交流式应用状态失败, 请检查日志), errorDesc: ${streamTask.getErrDesc}")
       }
       // Drop the temporary configuration
@@ -950,7 +947,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
             logger.error("errorCodeMatching failed. ", e)
             val streamTask = new StreamTask()
             streamTask.setErrDesc(JobConf.ANALYZE_ERROR_MSG.getHotValue())
-            streamTaskService.updateTask(streamTask)
+            updateTask(streamTask)
         }
         if (errorMsg.isEmpty){
           Utils.tryCatch{
@@ -971,13 +968,13 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
             streamTask.setId(taskId);
             streamTask.setErrDesc(errorMsg)
             streamTask.setSolution(solution)
-            streamTaskService.updateTask(streamTask)
+            updateTask(streamTask)
           }{
             case e: Exception =>
               logger.error("errorCodeMatching failed. ", e)
               val streamTask = new StreamTask()
               streamTask.setErrDesc(JobConf.ANALYZE_ERROR_MSG.getHotValue())
-              streamTaskService.updateTask(streamTask)
+              updateTask(streamTask)
           }
         }
         val streamTask = new StreamTask()
@@ -988,7 +985,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
           streamTask.setErrDesc(errorMsg)
         }
         streamTask.setSolution(solution)
-        streamTaskService.updateTask(streamTask)
+        updateTask(streamTask)
       }
     })
   }
@@ -1007,7 +1004,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     payload.setLogType(logType)
     payload.setFromLine(fromLine+1)
     payload.setPageSize(100)
-    val realtimeLog = streamTaskService.getRealtimeLog(jobId, if (null != taskId) taskId else 0L, username, payload)
+    val realtimeLog = getRealtimeLog(jobId, if (null != taskId) taskId else 0L, username, payload)
     val logs = realtimeLog.getLogs
     val logString =logs.asScala.mkString("\n")
     logString
@@ -1070,14 +1067,7 @@ class DefaultStreamTaskService extends StreamTaskService with Logging{
     parsedConfigJson
   }
 
-  override def generateJobTemplate(jobTemplate: JobTemplateFiles): String = {
-    val jsonObj = new JsonParser().parse(jobTemplate.getMetaJson).getAsJsonObject
-    if (jsonObj.has(JobConstrants.FIELD_METAINFO_NAME)) {
-      jsonObj.remove(JobConstrants.FIELD_METAINFO_NAME)
-    }
-    val parsedConfigJson = jsonObj.toString
-    parsedConfigJson
-  }
+
 
   override def getLatestByJobId(jobId: Long):StreamTask = {
     val streamTask = streamTaskMapper.getLatestByJobId(jobId)

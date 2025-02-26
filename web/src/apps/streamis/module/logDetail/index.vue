@@ -56,7 +56,7 @@
             readonly
             :placeholder="$t('message.streamis.logDetail.noLog')"
           />
-          <span 
+          <span
             class="full-btn"
             @click="fullToggle"
           >
@@ -226,7 +226,7 @@ export default {
   }
 }
 .full {
-  /deep/.ivu-modal{
+  ::v-deep .ivu-modal{
     width: 100vw !important;
     height: 100vh;
     min-height: 430px;
@@ -235,7 +235,7 @@ export default {
       height: 100%;
     }
   }
-  /deep/textarea{
+  ::v-deep textarea{
    height: calc(100vh - 200px) !important;
    min-height: 200px;
    max-height: calc(100vh - 200px) !important;

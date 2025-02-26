@@ -38,16 +38,37 @@
         <if test="endDate != null">
             AND operate_time &lt;= #{endDate}
         </if>
+        <if test="jobNameIsNull != null and jobNameIsNull">
+            AND job_name IS NULL
+        </if>
+        <if test="jobNameLike != null">
+            AND job_name LIKE #{jobNameLike}
+        </if>
         order by operate_time desc
     </select>
 
     <insert id="saveAuditLog" parameterType="com.webank.wedatasphere.streamis.audit.log.entity.StreamAuditLog">
-        INSERT INTO linkis_stream_audit_log (user,api_name,api_type,api_desc,input_parameters, output_parameters, proxy_user, operate_time,project_name,client_ip,cost_time_mills)
-        VALUES (#{user}, #{apiName},#{apiType},#{apiDesc},#{inputParameters}, #{outputParameters}, #{proxyUser}, #{operateTime},#{projectName},#{clientIp},#{costTimeMills})
+        INSERT INTO linkis_stream_audit_log (user,api_name,api_type,api_desc,input_parameters, output_parameters, proxy_user, operate_time,project_name,client_ip,cost_time_mills,job_name)
+        VALUES (#{user}, #{apiName},#{apiType},#{apiDesc},#{inputParameters}, #{outputParameters}, #{proxyUser}, #{operateTime},#{projectName},#{clientIp},#{costTimeMills},#{jobName})
     </insert>
 
     <select id="getProjectNameById" resultType="java.lang.String">
         SELECT project_name FROM
         linkis_stream_job WHERE id = #{jobId}
        </select>
+
+    <select id="getJobNameById" resultType="java.lang.String">
+        SELECT name
+        FROM linkis_stream_job
+        WHERE id = #{jobId}
+    </select>
+
+    <select id="getBulkJobNameByIds" resultType="java.lang.String">
+        SELECT name
+        FROM linkis_stream_job
+        WHERE id IN
+        <foreach collection="jobIds" item="jobId" open="(" separator="," close=")">
+            #{jobId}
+        </foreach>
+    </select>
 </mapper>

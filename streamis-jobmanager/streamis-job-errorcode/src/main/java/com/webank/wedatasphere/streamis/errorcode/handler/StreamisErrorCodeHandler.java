@@ -5,14 +5,9 @@ import com.webank.wedatasphere.streamis.errorcode.manager.cache.StreamisErrorCod
 import com.webank.wedatasphere.streamis.errorcode.utils.StreamisErrorCodeMatcher;
 import org.apache.linkis.common.utils.Utils;
 import org.apache.linkis.errorcode.client.ClientConfiguration;
-import org.apache.linkis.errorcode.client.handler.LinkisErrorCodeHandler;
-import org.apache.linkis.errorcode.client.utils.ErrorCodeMatcher;
-import org.apache.linkis.errorcode.common.ErrorCode;
-import org.apache.linkis.errorcode.common.LinkisErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Option;
-import scala.Tuple2;
 import scala.Tuple3;
 
 import java.util.*;

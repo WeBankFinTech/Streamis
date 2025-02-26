@@ -55,7 +55,6 @@ class LinkisFlinkManagerJobClient(onceJob: OnceJob, jobInfo: JobInfo, stateManag
     onceJob match {
       case simpleOnceJob: SimpleOnceJob =>
         if (StringUtils.isNotBlank(jobInfo.getStatus) && JobConf.isCompleted(JobConf.linkisStatusToStreamisStatus(jobInfo.getStatus))) {
-//          jobInfo.setStatus(simpleOnceJob.getStatus)
           logger.info(s"Job : ${simpleOnceJob.getId} is completed : ${jobInfo.getStatus}, no need to get status from linkis.")
         } else if (refresh && isDetachJob(jobInfo)) {
           jobInfo match {

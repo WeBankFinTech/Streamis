@@ -55,6 +55,8 @@ public class JobConfRestfulApi {
     @Resource
     private ProjectPrivilegeService privilegeService;
 
+    private static final String SUCCESS_INFO = "success";
+
     /**
      * Definitions
      *
@@ -62,7 +64,7 @@ public class JobConfRestfulApi {
      */
     @RequestMapping(value = "/definitions")
     public Message definitions() {
-        Message result = Message.ok("success");
+        Message result = Message.ok(SUCCESS_INFO);
         try {
             List<JobConfDefinition> definitionList = this.streamJobConfService.loadAllDefinitions();
             Map<String, JobConfDefinitionVo> definitionRelation = new HashMap<>();
@@ -104,7 +106,7 @@ public class JobConfRestfulApi {
      */
     @RequestMapping(value = "/json/{jobId:\\w+}", method = RequestMethod.GET)
     public Message queryConfig(@PathVariable("jobId") Long jobId, HttpServletRequest request) {
-        Message result = Message.ok("success");
+        Message result = Message.ok(SUCCESS_INFO);
         try {
             String userName = ModuleUserUtils.getOperationUser(request, "query job config json");
             StreamJob streamJob = this.streamJobService.getJobById(jobId);
@@ -138,11 +140,11 @@ public class JobConfRestfulApi {
     @RequestMapping(value = "/json/{jobId:\\w+}", method = RequestMethod.POST)
     public Message saveConfig(@PathVariable("jobId") Long jobId, @RequestBody Map<String, Object> configContent,
                               HttpServletRequest request) {
-        Message result = Message.ok("success");
-        if (!(Boolean) JobConf.JOB_CONFIG_EDIT_ENABLE().getHotValue()){
+        Message result = Message.ok(SUCCESS_INFO);
+        if (!(boolean) JobConf.JOB_CONFIG_EDIT_ENABLE().getHotValue()){
             return Message.error("job config cannot be changed,please contact the admin for advice");
         }
-        if((Boolean) JobConf.PRODUCT_NAME_SWITCH().getHotValue()){
+        if((boolean) JobConf.PRODUCT_NAME_SWITCH().getHotValue()){
             try {
                 String productValue = Optional.ofNullable(configContent)
                         .map(jovConf -> (Map<String, Object>) jovConf.get("wds.linkis.flink.produce"))
@@ -180,7 +182,7 @@ public class JobConfRestfulApi {
     @RequestMapping(path = "/view", method = RequestMethod.GET)
     public Message viewConfigTree(@RequestParam(value = "jobId", required = false) Long jobId,
                                   HttpServletRequest req) {
-        Message result = Message.ok("success");
+        Message result = Message.ok(SUCCESS_INFO);
         try {
             if (Objects.isNull(jobId)) {
                 throw new JobErrorException(-1, "Params 'jobId' cannot be empty");
@@ -202,7 +204,7 @@ public class JobConfRestfulApi {
 
     @RequestMapping(path = {"/add", "/update"}, method = RequestMethod.POST)
     public Message saveConfigTree(@RequestBody JsonNode json, HttpServletRequest req) {
-        Message result = Message.ok("success");
+        Message result = Message.ok(SUCCESS_INFO);
         try {
             String userName = ModuleUserUtils.getOperationUser(req, "save config tree");
             JobConfValueSet fullTrees = DWSHttpClient.jacksonJson().readValue(json.get("fullTree").traverse(), JobConfValueSet.class);

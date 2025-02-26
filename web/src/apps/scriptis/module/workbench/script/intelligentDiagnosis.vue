@@ -47,7 +47,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 .we-intelligent-diagnosis {
-    /deep/.ivu-table-wrapper {
+    ::v-deep .ivu-table-wrapper {
         border: none;
     }
 }

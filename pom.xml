@@ -21,7 +21,7 @@
 
     <groupId>com.webank.wedatasphere.streamis</groupId>
     <artifactId>streamis</artifactId>
-    <version>0.3.1</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <name>Streamis Project Parent POM</name>
@@ -45,16 +45,15 @@
     </modules>
 
     <properties>
-        <linkis.version>1.4.0</linkis.version>
+        <revision>0.3.2</revision>
+        <linkis.version>1.7.0</linkis.version>
         <junit.version>4.12</junit.version>
-        <dss.version>1.1.2</dss.version>
-        <streamis.version>0.3.1</streamis.version>
+        <dss.version>1.2.2</dss.version>
         <scala.version>2.11.12</scala.version>
         <jdk.compile.version>1.8</jdk.compile.version>
         <maven.version>3.3.3</maven.version>
         <gson.version>2.8.5</gson.version>
         <snakeyaml.version>1.31</snakeyaml.version>
-        <fasterxml.jackson.version>2.13.2</fasterxml.jackson.version>
         <math3.version>3.1.1</math3.version>
         <httpclient.version>4.5.4</httpclient.version>
         <httpmime.version>4.5.4</httpmime.version>
@@ -70,10 +69,11 @@
         <reflections.version>0.9.10</reflections.version>
         <jersey-bean-validation.version>2.21</jersey-bean-validation.version>
         <aspectj.version>1.9.5</aspectj.version>
-        <xstream.version>1.4.19</xstream.version>
         <mysql.connector.version>5.1.47</mysql.connector.version>
         <validation.api.version>2.0.1.Final</validation.api.version>
-        <xstream.version>1.4.20</xstream.version>
+        <xstream.version>1.4.21</xstream.version>
+        <flatten-maven-plugin.version>1.3.0</flatten-maven-plugin.version>
+        <jetty.version>9.4.54.v20240208</jetty.version>
     </properties>
 
 
@@ -153,11 +153,6 @@
                 <version>${gson.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${fasterxml.jackson.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-math3</artifactId>
                 <version>${commons.math.version}</version>
@@ -225,6 +220,31 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>flatten-maven-plugin</artifactId>
+                    <version>${flatten-maven-plugin.version}</version>
+                    <configuration>
+                        <updatePomFile>true</updatePomFile>
+                        <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>flatten</id>
+                            <goals>
+                                <goal>flatten</goal>
+                            </goals>
+                            <phase>process-resources</phase>
+                        </execution>
+                        <execution>
+                            <id>flatten.clean</id>
+                            <goals>
+                                <goal>clean</goal>
+                            </goals>
+                            <phase>clean</phase>
+                        </execution>
+                    </executions>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
@@ -319,5 +339,11 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
     </build>
 </project>

@@ -1,5 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.parser
 
+import com.webank.wedatasphere.streamis.jobmanager.manager.constrants.JobConstrants.UNKNOWN_COMMENT
+
 import java.util
 
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob
@@ -50,27 +52,27 @@ class SparkTaskMetricsParser extends AbstractTaskMetricsParser {
       case _ =>
         val loadConditionDTO = new JobDetailsVo.LoadConditionDTO
         loadConditionDTO.setType("Driver")
-        loadConditionDTO.setHost("<Unknown>")
-        loadConditionDTO.setMemory("<Unknown>")
-        loadConditionDTO.setTotalMemory("<Unknown>")
-        loadConditionDTO.setGcLastTime("<Unknown>")
-        loadConditionDTO.setGcLastConsume("<Unknown>")
-        loadConditionDTO.setGcTotalTime("<Unknown>")
+        loadConditionDTO.setHost(UNKNOWN_COMMENT)
+        loadConditionDTO.setMemory(UNKNOWN_COMMENT)
+        loadConditionDTO.setTotalMemory(UNKNOWN_COMMENT)
+        loadConditionDTO.setGcLastTime(UNKNOWN_COMMENT)
+        loadConditionDTO.setGcLastConsume(UNKNOWN_COMMENT)
+        loadConditionDTO.setGcTotalTime(UNKNOWN_COMMENT)
         loadConditionDTOs.add(loadConditionDTO)
     }
     val realTimeTrafficDTO = new JobDetailsVo.RealTimeTrafficDTO
     metricsMap.get("batchMetrics") match {
       case batchMetrics: util.List[util.Map[String, Object]] if !batchMetrics.isEmpty =>
         val batchMetric = batchMetrics.asScala.maxBy(_.get("batchTime").asInstanceOf[String])
-        realTimeTrafficDTO.setSourceKey(metricsMap.getOrDefault("source", "<Unknown>").asInstanceOf[String])
+        realTimeTrafficDTO.setSourceKey(metricsMap.getOrDefault("source", UNKNOWN_COMMENT).asInstanceOf[String])
         realTimeTrafficDTO.setSourceSpeed(batchMetric.get("inputRecords") + " Records")
         realTimeTrafficDTO.setTransformKey("processing")
-        realTimeTrafficDTO.setSinkKey(metricsMap.getOrDefault("sink", "<Unknown>").asInstanceOf[String])
+        realTimeTrafficDTO.setSinkKey(metricsMap.getOrDefault("sink", UNKNOWN_COMMENT).asInstanceOf[String])
         val sinkSpeed = if (batchMetric.containsKey("totalDelay") && batchMetric.get("totalDelay") != null)
           Utils.msDurationToString(batchMetric.get("totalDelay").toString.toInt) + " totalDelay"
         else if (batchMetric.containsKey("taskExecuteTime") && batchMetric.get("taskExecuteTime") != null)
           Utils.msDurationToString(batchMetric.get("taskExecuteTime").toString.toInt) + " executeTime(Last Batch)"
-        else "<Unknown>"
+        else UNKNOWN_COMMENT
         realTimeTrafficDTO.setSinkSpeed(sinkSpeed)
       case _ =>
         realTimeTrafficDTO.setSourceKey("<Unknown Source>")

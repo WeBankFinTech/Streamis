@@ -1,11 +1,11 @@
 package com.webank.wedatasphere.streamis.jobmanager.launcher.service
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.dao.StreamJobConfMapper
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.JobConfValueVo.ValueList
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.vo.{JobConfValueSet, JobConfValueVo}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.entity.{JobConfDefinition, JobConfValue}
 import com.webank.wedatasphere.streamis.jobmanager.launcher.exception.ConfigurationException
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.tools.JobConfValueUtils
 import com.webank.wedatasphere.streamis.jobmanager.launcher.utils.JobConfUtil
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper

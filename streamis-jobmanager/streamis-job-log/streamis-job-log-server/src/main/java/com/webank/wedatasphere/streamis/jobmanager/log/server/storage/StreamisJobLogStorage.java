@@ -158,12 +158,7 @@ public class StreamisJobLogStorage implements JobLogStorage{
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     // Update the storage context
                     JobLogStorageContext[] contexts = this.storageContexts.toArray(new JobLogStorageContext[0]);
-                    try {
-                        updateContextWeight(contexts);
-                        onContextEvent(new ContextRefreshAllEvent());
-                    } catch (IOException e) {
-                        logger.warn("Unable to calculate weight array of storage context list", e);
-                    }
+                    updateContextWeightAndEvent(contexts);
                     if (buckets.size() > 0) {
                         StringBuilder builder = new StringBuilder("Buckets(").append(buckets.size()).append(") in LogStorage: [\n");
                         buckets.forEach((bucketName, bucket) -> {
@@ -207,6 +202,14 @@ public class StreamisJobLogStorage implements JobLogStorage{
         }
     }
 
+    private void updateContextWeightAndEvent(JobLogStorageContext[] contexts){
+        try {
+            updateContextWeight(contexts);
+            onContextEvent(new ContextRefreshAllEvent());
+        } catch (IOException e) {
+            logger.warn("Unable to calculate weight array of storage context list", e);
+        }
+    }
 
     @Override
     @PreDestroy
@@ -309,7 +312,7 @@ public class StreamisJobLogStorage implements JobLogStorage{
                     if (freeSpaceInGB <= 0) {
                         freeSpaceInGB = 1;
                     }
-                    weight = context.getScore() * (double) freeSpaceInGB;
+                    weight = context.getScore() * freeSpaceInGB;
                 }
                 weights[i] = weight;
                 if (weight > maxWeight){

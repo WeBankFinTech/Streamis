@@ -22,4 +22,6 @@ object JobConstrants {
   val FIELD_JOB_DESCRIPTION = "description"
 
   val PRODUCE_PARAM = "wds.linkis.flink.produce"
+
+  val UNKNOWN_COMMENT = "<Unknown>"
 }

@@ -1,6 +1,6 @@
 package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants;
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConfKeyConstants;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.linkis.conf.JobLauncherConfiguration;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
@@ -94,7 +94,7 @@ public class JobBulkRestfulApi {
                      return Message.error("The master and backup cluster materials do not match, please check the material");
                  }
                  if (!streamjobService.getEnableStatus(Long.parseLong(jobId.toString()))){
-                     return Message.error("current Job " + streamJob.getName() + "has been banned, cannot start,please enable job" );
+                     return Message.error("The Job " + streamJob.getName() + "has been banned, cannot start,please enable job" );
                  }
                  if(!highAvailableService.canBeStarted(Long.parseLong(jobId.toString()))){
                      return Message.error("current Job " + streamJob.getName() + " is in managerSlave mode,please check whether it runs on manager cluster" );
@@ -154,7 +154,7 @@ public class JobBulkRestfulApi {
                         throw new JobExecuteErrorException(-1, "Have no permission to execute StreamJob [" + jobId + "]");
                     }
                     if (!streamjobService.getEnableStatus(Long.parseLong(jobId.toString()))){
-                        return Message.error("current Job " + streamJob.getName() + "has been banned, cannot stop,please enable job" );
+                        return Message.error("Job " + streamJob.getName() + "has been banned, cannot stop,please enable job" );
                     }
                 }
                 pauseResults = streamTaskService.bulkPause(new ArrayList<>(pauseRequest.getBulkSubject()),

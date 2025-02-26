@@ -1,7 +1,5 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.entity;
 
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamisFile;
-
 import java.util.Date;
 
 public class JobTemplateFiles {

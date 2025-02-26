@@ -15,12 +15,11 @@
 
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.builder
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.{JobConf, JobConfKeyConstants}
 import org.apache.linkis.common.conf.CommonVars
 import org.apache.linkis.manager.label.entity.engine.RunType.RunType
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService
-import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamJobTemplateMapper}
+import com.webank.wedatasphere.streamis.jobmanager.manager.dao.{StreamJobMapper, StreamJobTemplateMapper, StreamTaskMapper}
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{JobTemplateFiles, StreamJob}
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.{StreamJobService, StreamTaskService}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.StreamisTransformJobBuilder
@@ -38,7 +37,7 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
   @Autowired private var streamJobMapper: StreamJobMapper = _
   @Autowired private var streamJobConfService: StreamJobConfService = _
   @Autowired private var streamJobService: StreamJobService = _
-  @Autowired private var streamTaskService: StreamTaskService = _
+  @Autowired private var streamTaskMapper: StreamTaskMapper = _
   @Autowired private var streamJobTemplateMapper:StreamJobTemplateMapper = _
 
   protected def createStreamisTransformJob(): StreamisTransformJobImpl = new StreamisTransformJobImpl
@@ -67,7 +66,7 @@ abstract class AbstractStreamisTransformJobBuilder extends StreamisTransformJobB
     val streamJobVersions = streamJobMapper.getJobVersions(streamJob.getId)
     // 无需判断streamJobVersions是否非空，因为TaskService已经判断了
     transformJob.setStreamJobVersion(streamJobVersions.get(0))
-    val streamTask = streamTaskService.getLatestByJobId(streamJob.getId)
+    val streamTask = streamTaskMapper.getLatestByJobId(streamJob.getId)
     val jobTemplate: JobTemplateFiles = if (null != streamTask) {
       if (streamTask.getStatus.equals(JobConf.FLINK_JOB_STATUS_RUNNING.getValue)) {
         streamJobTemplateMapper.getJobTemplate(streamTask.getTemplateId,true)

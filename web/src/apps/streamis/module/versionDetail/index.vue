@@ -91,6 +91,7 @@ export default {
           module: 'jobHistory',
           name: rowData.name,
           version: rowData.version,
+          lastVersion: rowData.lastVersion,
           status: rowData.status,
           jobType: rowData.jobType,
           isHistory: true,

@@ -167,17 +167,18 @@ export default {
   },
   methods: {
     getDatas() {
-      const { id, version } = this.$route.params || {}
+      const { id, version, lastVersion, status } = this.$route.params
+      const useVersion = [5, 8, 9].includes(status) ? version : lastVersion
 
       api
         .fetch(
-          `streamis/streamJobManager/job/details?jobId=${id}&version=${version}`,
+          `streamis/streamJobManager/job/details?jobId=${id}&version=${useVersion || version}`,
           'get'
         )
         .then(res => {
           if (res && res.details) {
             const conditions = res.details.loadCondition || []
-            this.instance = res.details.linkisJobInfo ? 
+            this.instance = res.details.linkisJobInfo ?
               res.details.linkisJobInfo.ecInstance ? res.details.linkisJobInfo.ecInstance.instance || '' : ''
               : '',
             this.appId = res.details.linkisJobInfo ? res.details.linkisJobInfo.applicationId || '' : '',

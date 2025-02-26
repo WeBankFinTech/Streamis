@@ -54,7 +54,7 @@ public interface JobLogStorage {
 
     StreamJobConfMapper getStreamJobConfMapper();
 
-    void setStreamJobMapper(StreamJobMapper streamJobMapper);;
+    void setStreamJobMapper(StreamJobMapper streamJobMapper);
 
     StreamJobMapper getStreamJobMapper();
 

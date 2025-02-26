@@ -70,6 +70,7 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
     initProperties.put(JobLauncherConfiguration.FLINK_MANAGER_EC_KEY.getValue, true.toString)
     initProperties.put(JobLauncherConfiguration.LINKIS_EC_EXPIRE_TIME_KEY.getValue, JobLauncherConfiguration.FLINKK_MANAGER_EXIT_TIME.getHotValue().toString)
     initProperties.put(JobLauncherConfiguration.LINKIS_EC_SUPPORT_PARALLEM, true.toString)
+    initProperties.put("classloader.resolve-order", JobLauncherConfiguration.FLINK_MANAGER_EC_CLASSLOADER_RESOLVE_ORDER.getValue)
 
     if (StringUtils.isNotBlank(JobLauncherConfiguration.FLINK_MANAGER_EXTRA_INIT_CONFIGS.getValue)) {
       JobLauncherConfiguration.FLINK_MANAGER_EXTRA_INIT_CONFIGS.getValue.split(JobConstants.DELIMITER_COMMA).foreach(s => {
@@ -306,14 +307,6 @@ class LinkisFlinkManagerClient extends FlinkManagerClient with Logging {
           getAs(serviceInstance, "applicationName"),
           getAs(serviceInstance, "instance")
         )
-      case _ =>
-        null
-    }
-
-  private def getManagerInstance(nodeInfo: util.Map[String, Any]): ServiceInstance =
-    nodeInfo.getOrDefault(ECConstants.MANAGER_SERVICE_INSTANCE_KEY, null) match {
-      case serviceInstance: ServiceInstance =>
-        serviceInstance
       case _ =>
         null
     }

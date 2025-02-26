@@ -132,10 +132,11 @@ CREATE TABLE `linkis_stream_job` (
   `create_time` datetime DEFAULT NULL,
   `label` varchar(200) DEFAULT NULL,
   `description` varchar(200) DEFAULT NULL,
-  `job_type` varchar(30) DEFAULT NULL COMMENT '目前只支持flink.sql、flink.jar、spark.jar',
+  `job_type` varchar(30) DEFAULT NULL COMMENT '目前只支持flink.sql、flink.jar',
   `submit_user` varchar(100) DEFAULT NULL,
   `workspace_name` varchar(50) DEFAULT NULL,
   `current_version` varchar(50) DEFAULT NULL,
+  `enable` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY(`project_name`, `name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='作业表';
@@ -148,14 +149,14 @@ CREATE TABLE `linkis_stream_job_version` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `job_id` varchar(50) DEFAULT NULL,
   `version` varchar(20) DEFAULT NULL,
-  `source` varchar(255) DEFAULT NULL COMMENT '这个版本的来源，比如：用户上传，由某个历史版本回退回来的',
+  `source` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin COMMENT '这个版本的来源，比如：用户上传，由某个历史版本回退回来的',
   `job_content` text COMMENT '内容为meta.json',
   `manage_mode` varchar(30) DEFAULT 'EngineConn' COMMENT 'Manage mode',
   `comment` varchar(255) DEFAULT NULL,
   `create_time` datetime DEFAULT NULL,
   `create_by` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY(`job_id`, `version`)
+  UNIQUE KEY  `job_id`(`job_id`, `version`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='作业表';
 
 /*Table structure for table `linkis_stream_job_version_files` */
@@ -184,6 +185,10 @@ CREATE TABLE `linkis_stream_project` (
   `workspace_id` bigint(20) DEFAULT NULL,
   `name` varchar(100) DEFAULT NULL,
   `create_by` varchar(50) DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
+  `last_update_by` varchar(50) DEFAULT NULL,
+  `last_update_time` datetime DEFAULT NULL,
+  `is_deleted` tinyint(3) unsigned DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='项目表';
 
@@ -203,10 +208,46 @@ CREATE TABLE `linkis_stream_project_files` (
   `comment` varchar(255) DEFAULT NULL COMMENT '说明',
   `update_time` datetime DEFAULT NULL,
   `md5` varchar(100) DEFAULT NULL COMMENT '文件md5',
+  `source` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='项目表';
 
+
+/*Table structure for table `linkis_stream_project_job_template` */
+
+DROP TABLE IF EXISTS `linkis_stream_project_job_template`;
+
+CREATE TABLE `linkis_stream_project_job_template` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `store_path` varchar(255) COLLATE utf8_bin DEFAULT NULL,
+  `name` varchar(255) COLLATE utf8_bin DEFAULT NULL,
+  `meta_json` text COLLATE utf8_bin,
+  `version` varchar(255) COLLATE utf8_bin DEFAULT NULL,
+  `date` datetime DEFAULT NULL,
+  `project_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `enable` tinyint(1) DEFAULT '1',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+
+/*Table structure for table `linkis_stream_register_info` */
+
+
+DROP TABLE IF EXISTS `linkis_stream_register_info`;
+
+CREATE TABLE `linkis_stream_register_info` (
+   `id` bigint(20) NOT NULL AUTO_INCREMENT,
+   `job_id` bigint(20) DEFAULT NULL,
+   `application_name` varchar(255) COLLATE utf8_bin DEFAULT NULL,
+   `password` varchar(255) COLLATE utf8_bin DEFAULT NULL,
+   `register_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   `heartbeat_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+   PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=171425 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+
 /*Table structure for table `linkis_stream_task` */
+
 
 DROP TABLE IF EXISTS `linkis_stream_task`;
 
@@ -222,7 +263,10 @@ CREATE TABLE `linkis_stream_task` (
   `submit_user` varchar(50) DEFAULT NULL,
   `linkis_job_id` varchar(200) DEFAULT NULL,
   `linkis_job_info` mediumtext,
-  `job_start_config` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'streamis job startup config',
+  `server_instance` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'streamis server instance',
+  `job_start_config` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin COMMENT 'streamis job startup config',
+  `solution` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin COMMENT 'error code solution',
+  `template_id` bigint(20) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='任务表';
 
@@ -261,6 +305,7 @@ CREATE TABLE `linkis_stream_error_code` (
   `error_desc` varchar(1024) COLLATE utf8_bin NOT NULL,
   `error_regex` varchar(1024) COLLATE utf8_bin DEFAULT NULL,
   `error_type` int(3) DEFAULT '0',
+  `solution` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin COMMENT 'error code solution',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
@@ -279,13 +324,10 @@ CREATE TABLE `linkis_stream_audit_log` (
   `project_name` varchar(100) COLLATE utf8_bin DEFAULT NULL,
   `client_ip` varchar(100) COLLATE utf8_bin DEFAULT NULL,
   `cost_time_mills` bigint(20) NULL,
+  `job_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 
-ALTER TABLE `linkis_stream_project` ADD create_time datetime DEFAULT NULL;
-ALTER TABLE `linkis_stream_project` ADD last_update_by varchar(50) DEFAULT NULL;
-ALTER TABLE `linkis_stream_project` ADD last_update_time datetime DEFAULT NULL;
-ALTER TABLE `linkis_stream_project` ADD is_deleted tinyint unsigned DEFAULT 0;
-ALTER TABLE linkis_stream_project_files ADD source varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL;
+
 SET FOREIGN_KEY_CHECKS = 1;

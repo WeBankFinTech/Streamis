@@ -100,8 +100,9 @@ export default {
   },
   methods: {
     getDatas() {
-      const { id, version } = this.$route.params || {}
-      const queries = `?jobId=${id}&version=${version}&pageNow=${this.page.current}&pageSize=${this.page.size}`
+      const { id, version, lastVersion, status } = this.$route.params
+      const useVersion = [5, 8, 9].includes(status) ? version : lastVersion
+      const queries = `?jobId=${id}&version=${useVersion || version}&pageNow=${this.page.current}&pageSize=${this.page.size}`
       this.loading = true
       api
         .fetch('streamis/streamJobManager/job/alert' + queries, 'get')

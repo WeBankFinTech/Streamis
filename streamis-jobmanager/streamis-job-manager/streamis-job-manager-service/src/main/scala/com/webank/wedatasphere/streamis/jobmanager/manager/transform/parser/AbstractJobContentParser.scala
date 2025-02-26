@@ -25,7 +25,7 @@ import org.apache.linkis.common.conf.Configuration
 import org.apache.linkis.common.utils.{JsonUtils, Logging}
 import com.webank.wedatasphere.streamis.jobmanager.manager.dao.StreamJobMapper
 import com.webank.wedatasphere.streamis.jobmanager.manager.entity.{JobTemplateFiles, StreamJob, StreamJobVersion, StreamisFile}
-import com.webank.wedatasphere.streamis.jobmanager.manager.service.{BMLService, StreamTaskService, StreamiFileService}
+import com.webank.wedatasphere.streamis.jobmanager.manager.service.{BMLService, StreamJobTemplateService, StreamTaskService, StreamiFileService}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.JobContentParser
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.StringUtils
@@ -41,7 +41,7 @@ abstract class AbstractJobContentParser extends JobContentParser with Logging {
   @Autowired private var streamJobMapper: StreamJobMapper = _
   @Autowired private var bmlService: BMLService = _
   @Autowired private var streamiFileService: StreamiFileService = _
-  @Autowired private var streamTaskService: StreamTaskService = _
+  @Autowired private var streamJobTemplateService: StreamJobTemplateService = _
 
   private def findFromProject(projectName: String, fileName: String): StreamisFile = fileName match {
     case AbstractJobContentParser.PROJECT_FILE_REGEX(name, version) =>
@@ -118,7 +118,7 @@ abstract class AbstractJobContentParser extends JobContentParser with Logging {
   override def canParse(job: StreamJob, jobVersion: StreamJobVersion): Boolean = jobType == job.getJobType
 
   protected def getFinalTemplate(jobTemplate: JobTemplateFiles): String = {
-    streamTaskService.generateJobTemplate(jobTemplate)
+    streamJobTemplateService.generateJobTemplate(jobTemplate)
   }
 
 }

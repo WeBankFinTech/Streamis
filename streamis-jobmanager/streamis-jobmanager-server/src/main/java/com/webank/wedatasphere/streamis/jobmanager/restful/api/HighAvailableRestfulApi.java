@@ -1,15 +1,13 @@
 package com.webank.wedatasphere.streamis.jobmanager.restful.api;
 
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants;
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf;
 import com.webank.wedatasphere.streamis.jobmanager.launcher.service.StreamJobConfService;
-import com.webank.wedatasphere.streamis.jobmanager.manager.entity.StreamJob;
 import com.webank.wedatasphere.streamis.jobmanager.manager.project.service.ProjectPrivilegeService;
 import com.webank.wedatasphere.streamis.jobmanager.manager.service.StreamJobService;
 import com.webank.wedatasphere.streamis.jobmanager.service.HighAvailableService;
 import com.webank.wedatasphere.streamis.jobmanager.vo.HighAvailableMsg;
 import org.apache.commons.lang.StringUtils;
+import org.apache.linkis.proxy.ProxyUserEntity;
 import org.apache.linkis.server.Message;
 import org.apache.linkis.server.utils.ModuleUserUtils;
 import org.slf4j.Logger;
@@ -17,13 +15,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.Optional;
 
 @RequestMapping(path = "/streamis/streamJobManager/highAvailable")
 @RestController
@@ -53,9 +48,12 @@ public class HighAvailableRestfulApi {
     @RequestMapping(path = "/username", method = RequestMethod.GET)
     public Message getUserName(HttpServletRequest request){
         Message result = Message.ok("success");
-        String userName = ModuleUserUtils.getOperationUser(request, "get user name");
+        ProxyUserEntity proxyUserEntity = ModuleUserUtils.getProxyUserEntity(request, "record audit log");
+        String proxyUser = proxyUserEntity.getProxyUser();
+        String userName = proxyUserEntity.getUsername();
         if (StringUtils.isBlank(userName)) return Message.error("current user has no permission");
         result.data("userName",userName);
+        result.data("proxyUser",proxyUser);
         return result;
     }
 }

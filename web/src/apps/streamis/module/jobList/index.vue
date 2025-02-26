@@ -190,13 +190,13 @@
                   <Icon type="md-add" class="upload" />
                   <span>{{
                     $t('message.streamis.jobListTableColumns.upload')
-                  }}</span>  
+                  }}</span>
                 </Upload>
                 <div v-else @click="beforeUpload()">
                   <Icon type="md-add" class="upload" />
                   <span>{{
                     $t('message.streamis.jobListTableColumns.upload')
-                  }}</span> 
+                  }}</span>
                 </div>
               </div>
               <div class="jobName" v-show="index !== 0">
@@ -288,7 +288,7 @@
                     </div>
                   </div>
                 </Poptip>
-                    
+
                 <Button
                   type="primary"
                   @click="handleRouter(row, 'jobConfig')"
@@ -296,7 +296,7 @@
                 >
                   {{ $t('message.streamis.formItems.configBtn') }}
                 </Button>
-        
+
               </div>
             </template>
           </Table>
@@ -465,7 +465,8 @@
       title="确认"
       @on-ok="confirmIgnoreHookModal"
     >
-      <Checkbox v-model="ignoreHookException">跳过Hook异常</Checkbox>
+      <Checkbox v-if="hasHook" v-model="ignoreHookException">跳过Hook异常</Checkbox>
+      <Checkbox v-if="showBatchStopSnapshotCheckBox" v-model="batchStopSnapshot">是否快照</Checkbox>
     </Modal>
   </div>
 </template>
@@ -746,6 +747,10 @@ export default {
       ignoreHookException: false,
       isBatchRestartHook: false,
       snapshot: false,
+
+      // 批量停止快照逻辑
+      batchStopSnapshot: false,
+      showBatchStopSnapshotCheckBox: false,
     }
   },
   async mounted() {
@@ -813,7 +818,7 @@ export default {
       }
       if (shouldPush) {
         this.$router.push({
-          path: this.$route.path, 
+          path: this.$route.path,
           query: toQuery
         })
       }
@@ -843,7 +848,7 @@ export default {
               statusObj: allJobStatuses.find(item => item.code === r.status),
             }))
             if (this.tableDatas[0]) {
-              delete this.tableDatas[0].manageMode  
+              delete this.tableDatas[0].manageMode
               delete this.tableDatas[0].manageModeChinese
               delete this.tableDatas[0].enable
             }
@@ -923,6 +928,7 @@ export default {
         this.batchRestart(this.snapshot)
       }else{
         this.stopDataShow = true
+        this.showBatchStopSnapshotCheckBox = false
       }
     },
     changeVisible(value) {
@@ -977,7 +983,7 @@ export default {
     // 4、快照重启、直接重启、启动，不管inspections的数据如何，全都放到表格里供用户确认（除了作业名，有三个信息，最新启动版本、上次启动版本和快照，最新启动版本一定是有的，后面两个如果没有就显示为--）；对于没有需要确认信息的作业也显示在表格
     // 5、在“作业启动确认”弹框里，用户点击确认，就启动所有弹框表格里的作业；用户点击取消，就全都不启动；对于没有inspectinos的作业也是一样处理而不是单独启动（上次版本是单独启动）
     // 6、启动是调用/job/execute接口，批量快照重启、批量直接重启是调用/job/bulk/execution接口
-    
+
     // 快照重启和直接重启
     async clickBatchRestart(snapshot) {
       // 3、快照重启、直接重启调用inspect接口前，需要pause接口返回成功
@@ -997,7 +1003,7 @@ export default {
       } else {
         this.batchRestart(snapshot)
       }
-      
+
     },
     async batchRestart(snapshot) {
       const bulk_sbj = this.selections.map(item => +item.id);
@@ -1068,12 +1074,9 @@ export default {
         this.$Message.error('存在非运行中的任务，请取消勾选此类任务再执行该操作!')
         return
       }
-      if (this.hasHook) {
         this.ignoreHookModal = true
         this.isBatchRestartHook = false
-      } else {
-        this.stopDataShow = true
-      }
+      this.showBatchStopSnapshotCheckBox = true
     },
     async batchStop(){
       const bulk_sbj = this.selections.map(item => +item.id);
@@ -1081,12 +1084,19 @@ export default {
       this.modalTitle = this.$t('message.streamis.jobListTableColumns.stopTaskTitle');
       this.modalContent = this.$t('message.streamis.jobListTableColumns.stopTaskContent');
       try {
-        const pauseRes = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot: false, skipHookError: this.ignoreHookException });
+        const pauseRes = await api.fetch('streamis/streamJobManager/job/bulk/pause', { bulk_sbj, snapshot: this.batchStopSnapshot, skipHookError: this.ignoreHookException });
         console.log('pause pauseRes', pauseRes);
         if (!pauseRes.result || !pauseRes.result.Success || !pauseRes.result.Failed) {
           this.isFinish = true;
           this.modalContent = "停止接口后台返回异常"
           return
+        }
+        if (this.batchStopSnapshot) {
+          this.snapPaths = pauseRes.result.Success.data.map(item => ({
+            taskId: item.jobId,
+            taskName: item.scheduleId,
+            info: item.snapshotPath,
+          }));
         }
         this.failTasks = pauseRes.result.Failed.data.map(item => ({
           taskId: item.jobId,
@@ -1397,6 +1407,7 @@ export default {
             : 'jobSummary',
           name: rowData.name,
           version: rowData.version,
+          lastVersion: rowData.lastVersion,
           status: rowData.status,
           jobType: rowData.jobType,
           manageMode: rowData.manageMode,
@@ -1637,7 +1648,7 @@ export default {
   }
 }
 .table {
-  /deep/ .ivu-table-tbody {
+  ::v-deep .ivu-table-tbody {
     tr:first-child {
       td:first-child {
         div:first-child {
@@ -1654,11 +1665,11 @@ export default {
   color: #ff9900;
 }
 
-/deep/.ivu-table .warning-row td{
+::v-deep .ivu-table .warning-row td{
   background-color: #ff9900;
   border-right: none;
 }
-/deep/.ivu-table .disabled-row td{
+::v-deep .ivu-table .disabled-row td{
   background-color: #eee;
   border-right: none;
 }

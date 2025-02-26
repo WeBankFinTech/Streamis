@@ -39,13 +39,24 @@ public class HighAvailableServiceImpl implements HighAvailableService {
         String highAvailablePolicy = this.streamJobConfService.getJobConfValue(jobId, JobConf.HIGHAVAILABLE_POLICY_KEY().getValue());
         JobHighAvailableVo inspectVo = new JobHighAvailableVo();
         Optional<String> sourceOption = Optional.ofNullable(jobVersion.getSource());
-        if(sourceOption.isPresent() && JsonUtil.isJson(sourceOption.get())) {
+        if(sourceOption.isPresent()) {
             String source = sourceOption.get();
             inspectVo = SourceUtils.manageJobProjectFile(highAvailablePolicy, source);
         } else {
             LOG.warn("this job source is null");
+            if (highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_DEFAULT_POLICY().getValue()) || highAvailablePolicy.equals(JobConf.HIGHAVAILABLE_POLICY_SINGLE_BAK().getValue())){
             inspectVo.setHighAvailable(true);
-            inspectVo.setMsg("User changed params of job not by deploy, will skip to check its highavailable(用户未走发布单独修改了job信息，跳过高可用检查)");
+                inspectVo.setMsg("job为单活，跳过高可用检查");
+            }else {
+                if(Boolean.parseBoolean(JobConf.HIGHAVAILABLE_ENABLE_INTERFACE_UPLOAD().getHotValue().toString())){
+                    inspectVo.setHighAvailable(true);
+                    inspectVo.setMsg("job的source为空，跳过高可用检查");
+                }else{
+                    inspectVo.setHighAvailable(false);
+                    inspectVo.setMsg("job的source为空，高可用检查不通过");
+                }
+            }
+
         }
         return inspectVo;
     }
@@ -75,17 +86,15 @@ public class HighAvailableServiceImpl implements HighAvailableService {
         Optional<String> sourceOption = Optional.ofNullable(source);
         if(sourceOption.isPresent() && JsonUtil.isJson(sourceOption.get())) {
             String sourceStr = sourceOption.get();
-            Map sourceMap = BDPJettyServerHelper.gson().fromJson(sourceStr, Map.class);
+            Map<String,Object> sourceMap = BDPJettyServerHelper.gson().fromJson(sourceStr, Map.class);
             if (sourceMap.containsKey("source")) {
                 String sourceValue = sourceMap.get("source").toString();
-                if (sourceValue.equals(JobConf.HIGHAVAILABLE_SOURCE().getValue())) {
-                    if (sourceMap.containsKey("token")) {
+                if (sourceValue.equals(JobConf.HIGHAVAILABLE_SOURCE().getValue()) && sourceMap.containsKey("token")) {
                         String tokenContent = sourceMap.get("token").toString();
                         return tokenContent.equals(JobConf.HIGHAVAILABLE_TOKEN().getValue());
                     }
                 }
             }
-        }
         return false;
     }
 }

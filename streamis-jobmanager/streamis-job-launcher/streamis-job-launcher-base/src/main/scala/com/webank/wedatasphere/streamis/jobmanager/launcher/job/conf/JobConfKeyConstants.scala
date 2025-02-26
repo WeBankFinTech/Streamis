@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.webank.wedatasphere.streamis.jobmanager.launcher.conf
+package com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf
 
 import org.apache.linkis.common.conf.CommonVars
 import org.apache.linkis.governance.common.conf.GovernanceCommonConf

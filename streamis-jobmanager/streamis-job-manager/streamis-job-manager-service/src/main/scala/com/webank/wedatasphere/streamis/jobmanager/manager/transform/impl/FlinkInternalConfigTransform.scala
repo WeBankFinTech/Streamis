@@ -1,8 +1,7 @@
 package com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl
 
-import com.webank.wedatasphere.streamis.jobmanager.launcher.conf.JobConfKeyConstants
 import com.webank.wedatasphere.streamis.jobmanager.launcher.job.LaunchJob
-import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.JobConf
+import com.webank.wedatasphere.streamis.jobmanager.launcher.job.conf.{JobConf, JobConfKeyConstants}
 import com.webank.wedatasphere.streamis.jobmanager.manager.transform.impl.FlinkInternalConfigTransform.INTERNAL_CONFIG_MAP
 import org.apache.linkis.common.conf.CommonVars
 

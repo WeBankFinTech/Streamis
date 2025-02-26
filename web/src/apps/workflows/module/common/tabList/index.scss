@@ -19,7 +19,7 @@
                 min-width: 320px;
                 .ivu-breadcrumb {
                     font-size: 21px;
-                    /deep/.ivu-breadcrumb-item-separator {
+                    ::v-deep .ivu-breadcrumb-item-separator {
                         color: rgba(0,0,0,0.65);
                     }
                 }

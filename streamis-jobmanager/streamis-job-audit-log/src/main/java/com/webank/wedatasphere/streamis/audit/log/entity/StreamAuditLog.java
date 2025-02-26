@@ -19,6 +19,8 @@ public class StreamAuditLog {
 
     private Long costTimeMills;
 
+    private String jobName;
+
     public String getClientIp() {
         return clientIp;
     }
@@ -115,5 +117,13 @@ public class StreamAuditLog {
 
     public void setCostTimeMills(Long costTimeMills) {
         this.costTimeMills = costTimeMills;
+    }
+
+    public String getJobName() {
+        return jobName;
+    }
+
+    public void setJobName(String jobName) {
+        this.jobName = jobName;
     }
 }
