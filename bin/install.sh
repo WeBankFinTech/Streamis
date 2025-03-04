@@ -121,7 +121,7 @@ isSuccess "unzip  ${SERVERNAME}.zip"
 echo "$SERVERNAME-step3:subsitution conf"
 SERVER_CONF_PATH=$SERVER_HOME/$SERVERNAME/conf/application.properties
 sed -i  "s#server.port.*#server.port=$SERVER_PORT#g" $SERVER_CONF_PATH
-sed -i  "s#eureka.client.serviceUrl.defaultZon.*#eureka.client.serviceUrl.defaultZon=$EUREKA_URL#g" $SERVER_CONF_PATH
+sed -i  "s#eureka.client.serviceUrl.defaultZone.*#eureka.client.serviceUrl.defaultZone=$EUREKA_URL#g" $SERVER_CONF_PATH
  isSuccess "subsitution conf of $SERVERNAME"
  }
 
