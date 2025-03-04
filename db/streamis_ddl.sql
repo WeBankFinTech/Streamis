@@ -241,7 +241,7 @@ CREATE TABLE `linkis_stream_register_info` (
    `application_name` varchar(255) COLLATE utf8_bin DEFAULT NULL,
    `password` varchar(255) COLLATE utf8_bin DEFAULT NULL,
    `register_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-   `heartbeat_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+   `heartbeat_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
    PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=171425 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 

@@ -49,7 +49,7 @@
         <linkis.version>1.7.0</linkis.version>
         <junit.version>4.12</junit.version>
         <dss.version>1.2.2</dss.version>
-        <scala.version>2.11.12</scala.version>
+        <scala.version>2.12.17</scala.version>
         <jdk.compile.version>1.8</jdk.compile.version>
         <maven.version>3.3.3</maven.version>
         <gson.version>2.8.5</gson.version>
@@ -296,7 +296,17 @@
                 <plugin>
                     <groupId>net.alchim31.maven</groupId>
                     <artifactId>scala-maven-plugin</artifactId>
-                    <version>3.2.2</version>
+                    <version>4.8.1</version>
+                    <configuration>
+                        <recompileMode>incremental</recompileMode>
+                        <args>
+                            <arg>-unchecked</arg>
+                            <arg>-deprecation</arg>
+                            <arg>-feature</arg>
+                            <arg>-explaintypes</arg>
+                            <arg>-target:jvm-8</arg>
+                        </args>
+                    </configuration>
                     <executions>
                         <execution>
                             <id>eclipse-add-source</id>
@@ -306,31 +316,19 @@
                         </execution>
                         <execution>
                             <id>scala-compile-first</id>
-                            <phase>process-resources</phase>
                             <goals>
                                 <goal>compile</goal>
                             </goals>
+                            <phase>process-resources</phase>
                         </execution>
                         <execution>
                             <id>scala-test-compile-first</id>
-                            <phase>process-test-resources</phase>
                             <goals>
                                 <goal>testCompile</goal>
                             </goals>
-                        </execution>
-                        <execution>
-                            <id>attach-scaladocs</id>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>doc-jar</goal>
-                            </goals>
+                            <phase>process-test-resources</phase>
                         </execution>
                     </executions>
-                    <configuration>
-                        <scalaVersion>${scala.version}</scalaVersion>
-                        <recompileMode>incremental</recompileMode>
-                        <useZincServer>true</useZincServer>
-                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

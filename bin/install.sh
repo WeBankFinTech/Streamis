@@ -119,12 +119,11 @@ cd $SERVER_HOME/;unzip $SERVERNAME.zip > /dev/null
 isSuccess "unzip  ${SERVERNAME}.zip"
 
 echo "$SERVERNAME-step3:subsitution conf"
-SERVER_CONF_PATH=$SERVER_HOME/$SERVERNAME/conf/application.yml
-sed -i  "s#port:.*#port: $SERVER_PORT#g" $SERVER_CONF_PATH
-sed -i  "s#defaultZone:.*#defaultZone: $EUREKA_URL#g" $SERVER_CONF_PATH
-sed -i  "s#hostname:.*#hostname: $SERVER_IP#g" $SERVER_CONF_PATH
-isSuccess "subsitution conf of $SERVERNAME"
-}
+SERVER_CONF_PATH=$SERVER_HOME/$SERVERNAME/conf/application.properties
+sed -i  "s#server.port.*#server.port=$SERVER_PORT#g" $SERVER_CONF_PATH
+sed -i  "s#eureka.client.serviceUrl.defaultZon.*#eureka.client.serviceUrl.defaultZon=$EUREKA_URL#g" $SERVER_CONF_PATH
+ isSuccess "subsitution conf of $SERVERNAME"
+ }
 
 function setDatasourcePassword(){
   PASSWORD=$MYSQL_PASSWORD
@@ -152,6 +151,7 @@ setDatasourcePassword
 sed -i  "s#wds.linkis.gateway.ip.*#wds.linkis.gateway.ip=$GATEWAY_INSTALL_IP#g" $SERVER_CONF_PATH
 sed -i  "s#wds.linkis.gateway.port.*#wds.linkis.gateway.port=$GATEWAY_PORT#g" $SERVER_CONF_PATH
 sed -i  "s#wds.linkis.gateway.url.*#wds.linkis.gateway.url=http://${GATEWAY_INSTALL_IP}:${GATEWAY_PORT}#g" $SERVER_CONF_PATH
+sed -i  "s#\#wds.linkis.token=.*#wds.linkis.token=${STREAMIS_LINKIS_TOKEN}#g" $SERVER_CONF_PATH
 isSuccess "subsitution linkis.properties of $SERVERNAME"
 echo "<----------------$SERVERNAME:end------------------->"
 echo ""
