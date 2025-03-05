@@ -152,6 +152,7 @@ sed -i  "s#wds.linkis.gateway.ip.*#wds.linkis.gateway.ip=$GATEWAY_INSTALL_IP#g" 
 sed -i  "s#wds.linkis.gateway.port.*#wds.linkis.gateway.port=$GATEWAY_PORT#g" $SERVER_CONF_PATH
 sed -i  "s#wds.linkis.gateway.url.*#wds.linkis.gateway.url=http://${GATEWAY_INSTALL_IP}:${GATEWAY_PORT}#g" $SERVER_CONF_PATH
 sed -i  "s#\#wds.linkis.token=.*#wds.linkis.token=${STREAMIS_LINKIS_TOKEN}#g" $SERVER_CONF_PATH
+sed -i  "s#wds.linkis.flink.engine.version=.*#wds.linkis.flink.engine.version=${LINKIS_FLINK_VERSION}#g" $SERVER_CONF_PATH
 isSuccess "subsitution linkis.properties of $SERVERNAME"
 echo "<----------------$SERVERNAME:end------------------->"
 echo ""

@@ -44,4 +44,8 @@ STREAMIS_VERSION=0.3.2
 
 STREAMIS_FILE_NAME="STREAMIS-$STREAMIS_VERSION"
 
+# guarantee that the token is configured within the Linkis management console
 STREAMIS_LINKIS_TOKEN=streamis-auth
+
+# fill in the available Flink versions on Linkis.
+LINKIS_FLINK_VERSION=1.16.2
