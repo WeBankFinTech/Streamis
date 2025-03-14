@@ -162,7 +162,7 @@ object JobConf {
 
   val HIGHAVAILABLE_TOKEN: CommonVars[String] = CommonVars("wds.streamis.app.highavailable.token", "streamis0.3.8")
 
-  val STANDARD_AUTHENTICATION_KEY: CommonVars[Boolean] = CommonVars("wds.streamis.standard.authentication.key", true)
+  val STANDARD_AUTHENTICATION_KEY: CommonVars[Boolean] = CommonVars("wds.streamis.standard.authentication.key", false)
 
   val JOB_CONTENT_EDIT_ENABLE: CommonVars[Boolean] = CommonVars("wds.streamis.job.content.edit.enable", true)
 

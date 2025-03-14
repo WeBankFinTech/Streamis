@@ -14,7 +14,7 @@ public class JobManagerConf {
 
     private static Map<String, List<String>> hookProjectMap = null;
 
-    public static final CommonVars<Boolean> ENABLE_JOB_SHUTDOWN_HOOKS = CommonVars.apply("wds.streamis.job.shutdown.hook.enable", true);
+    public static final CommonVars<Boolean> ENABLE_JOB_SHUTDOWN_HOOKS = CommonVars.apply("wds.streamis.job.shutdown.hook.enable", false);
 
 
     /*
